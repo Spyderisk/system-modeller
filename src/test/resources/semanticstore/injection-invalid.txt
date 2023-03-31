@@ -1,0 +1,10 @@
+Naughty double quote input" DELETE WHERE { ?s ?p ?o } #
+Naughty single quote input' DELETE WHERE { ?s ?p ?o } #
+" DELETE WHERE { ?s ?p ?o } # Really naughty double quote input
+' DELETE WHERE { ?s ?p ?o } # Really naughty single quote input
+Naughty double quote input but contains \"escaped\" double quotes" DELETE WHERE { ?s ?p ?o } #
+Naughty double quote input but contains \'escaped\' single quotes" DELETE WHERE { ?s ?p ?o } #
+Naughty double quote input but contains \"escaped\' mixed quotes" DELETE WHERE { ?s ?p ?o } #
+Naughty single quote input but contains \"escaped\" double quotes' DELETE WHERE { ?s ?p ?o } #
+Naughty single quote input but contains \'escaped\' single quotes' DELETE WHERE { ?s ?p ?o } #
+Naughty single quote input but contains \"escaped\' mixed quotes' DELETE WHERE { ?s ?p ?o } #

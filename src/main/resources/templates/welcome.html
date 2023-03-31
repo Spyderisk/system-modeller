@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+    <th:block th:include="fragments/head :: head"/>
+    <title th:text="${@environment.getProperty('spring.application.name') + ' - Welcome'}"></title>
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,400i|Rajdhani:400,700&display=swap" rel="stylesheet">
+    <link th:href="${@environment.getProperty('server.servlet.contextPath', T(java.lang.String))} + '/css/welcome.css'"
+          type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<div class="content">
+    <div class="welcome-page">
+        <h1 class="text-center branding">SPYDE<b>RISK</b></h1>
+        <div>
+            <a sec:authorize="isAuthenticated()" th:href="@{/dashboard}" class="btn btn-primary btn-large">View Models</a>
+            <a sec:authorize="isAnonymous()" th:href="@{/dashboard}" class="btn btn-primary btn-large">Login</a>
+            <a th:href="@{~/documentation}" class="btn btn-primary btn-large">View Documentation</a>
+        </div>
+    </div>
+    <div class="footer">
+        <div class="container">
+            <div class="row">
+				<!-- <h4 class="text-center"><span th:text="${@environment.getProperty('spring.application.version')}"></span></h4> -->
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

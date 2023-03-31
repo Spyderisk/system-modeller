@@ -1,0 +1,11 @@
+#Queries the store for all instances found that belong to a subclass of the specified class
+#Param 1 the uri of the graph
+#Param 2 the class being queried
+SELECT ?m
+WHERE{
+	GRAPH<%s>{
+		BIND(%s AS ?c)
+		?r rdfs:subClassOf* ?c .
+		?m a ?r .
+	}
+}

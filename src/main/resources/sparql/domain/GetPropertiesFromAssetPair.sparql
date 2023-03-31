@@ -1,0 +1,14 @@
+#A query to select all properties that are valid for the chosen
+#source and target assets
+#Param 1 the source asset
+#Param 2 the target asset
+SELECT ?prop 
+WHERE{
+	BIND(<%s> as ?asset1)
+	BIND(<%s> as ?asset2)
+	?asset1 rdfs:subClassOf* ?superAssets1 .
+	?asset2 rdfs:subClassOf* ?superAssets2 .
+	?prop rdfs:subPropertyOf*/a owl:ObjectProperty .
+	?prop rdfs:domain ?superAssets1 .
+	?prop rdfs:range ?superAssets2 .
+}

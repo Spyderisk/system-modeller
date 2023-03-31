@@ -1,0 +1,5 @@
+#Returns a list of all graphs found in the store
+SELECT * 
+WHERE{
+	GRAPH ?g {}
+}

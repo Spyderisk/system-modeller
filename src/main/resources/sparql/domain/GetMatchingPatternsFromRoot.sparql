@@ -1,0 +1,8 @@
+#A query to retrieve all of the matching patterns that use the specified root pattern
+#Param 1 the uri of the root pattern
+SELECT ?o
+WHERE{
+	OPTIONAL{
+		?o core:hasRootPattern <%s> . 
+	}
+}

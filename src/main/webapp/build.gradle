@@ -1,0 +1,104 @@
+import java.nio.file.*
+
+plugins {
+    id "base"
+    id "com.github.node-gradle.node"
+    // https://github.com/hierynomus/license-gradle-plugin used by license-finder software
+    id "com.github.hierynomus.license"
+}
+
+version '0.0.1'
+
+buildDir = 'dist'
+
+node {
+    version = '12.13.0'
+    download = true
+    yarnVersion = '1.21.1'
+}
+
+task bundle(type: YarnTask) {
+    args = ['run', 'bundle']
+}
+
+task bundleProd(type: YarnTask) {
+    args = ['run', 'bundleProd']
+}
+
+task start(type: YarnTask) {
+    args = ['start']
+}
+
+task stopNode(type: Exec) {
+    if (System.getProperty('os.name').toLowerCase().contains('windows')) {
+        commandLine 'taskkill', '/im', 'node.exe', '-F'
+    } else {
+        commandLine 'killall', 'node'
+    }
+}
+
+task yarnOutdated(type: YarnTask) {
+    execOverrides {
+        it.standardOutput = Files.newOutputStream(new File(it.workingDir.getAbsolutePath() + "/outdated_packages.txt").toPath())
+        //Change this to false IF AND ONLY IF you want the build to fail when one or more package is outdated
+        it.ignoreExitValue = true
+    }
+    args = ['outdated']
+}
+
+task yarnLicenses(type: YarnTask) {
+    execOverrides {
+        it.standardOutput = Files.newOutputStream(new File(it.workingDir.getAbsolutePath() + "/licenses.txt").toPath())
+        it.ignoreExitValue = true
+    }
+    args = ['licenses', 'generate-disclaimer']
+}
+
+task yarnAudit(type: YarnTask) {
+    execOverrides {
+       it.standardOutput = Files.newOutputStream(new File(it.workingDir.getAbsolutePath() + "/audit.txt").toPath())
+       it.ignoreExitValue = true
+    }
+    args = ['audit']
+}
+
+task addPackage(type: YarnTask) {
+    if (project.hasProperty('packName')) {
+        if (project.hasProperty('dev') && project.findProperty("dev") == "true") {
+            args = ['add', project.findProperty("packName") , '--dev']
+        } else {
+            args = ['add', project.findProperty("packName")]
+        }
+    } else {
+        args = ['add']
+    }
+}
+
+task removePackage(type: YarnTask) {
+    if (project.hasProperty('packName')) {
+        args = ['remove', project.findProperty("packName")]
+    } else {
+        args = ['remove']
+    }
+}
+
+task install(type: YarnTask) {
+    args = ['install']
+}
+
+task yarnUpgrade(type: YarnTask) {
+    args = ['upgrade']
+}
+
+start.dependsOn(yarn_install)
+bundle.dependsOn(yarn_install)
+bundleProd.dependsOn(yarn_install)
+yarnOutdated.dependsOn(yarn_install)
+yarnLicenses.dependsOn(yarn_install)
+bundleProd.dependsOn(yarnLicenses)
+bundle.dependsOn(yarnLicenses)
+bundleProd.dependsOn(yarnOutdated)
+bundle.dependsOn(yarnOutdated)
+bundleProd.dependsOn(yarnAudit)
+bundle.dependsOn(yarnAudit)
+yarnAudit.dependsOn(yarn_install)

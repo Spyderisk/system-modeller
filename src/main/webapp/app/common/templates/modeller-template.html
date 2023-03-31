@@ -1,0 +1,28 @@
+<!doctype html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="_model"/>
+    <meta name="_mode"/>
+    <script type="application/javascript">
+
+        let modelId = location.search.split('modelId=')[1];
+        modelId = modelId.split('&mode')[0];
+        document.querySelector('meta[name="_model"]').setAttribute("content", modelId);
+
+        let mode = location.search.split('mode=')[1];
+        document.querySelector('meta[name="_mode"]').setAttribute("content", mode);
+
+    </script>
+    <link href="/system-modeller/css/lib/bootstrap.min.css"
+          rel="stylesheet">
+    <link href="/system-modeller/css/lib/font-awesome.min.css"
+          rel="stylesheet">
+</head>
+<body>
+<div id="app" class="modeller"></div>
+<script src="/system-modeller/js/lib/jquery-3.4.1.min.js"></script>
+<script src="/system-modeller/js/lib/jsplumb.js"></script>
+
+</body>
+</html>

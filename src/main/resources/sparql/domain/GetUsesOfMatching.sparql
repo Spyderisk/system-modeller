@@ -1,0 +1,12 @@
+#A query to retrieve all of the threats and construction and validation patterns that use the specified matching pattern
+#Param 1 the uri of the matching pattern
+SELECT ?pattern ?threat
+WHERE{
+	BIND(<%s> AS ?mp)
+	OPTIONAL{
+		?pattern core:hasMatchingPattern ?mp . 
+	}
+	OPTIONAL{
+		?threat core:appliesTo ?mp .
+	}
+}

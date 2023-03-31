@@ -1,0 +1,8 @@
+#Returns a list of all of the nodes that are required for a specified control strategy to work
+#Param 1 The URI of the control strategy
+SELECT ?role
+WHERE{
+	BIND(%s as ?csg)
+	?csg core:hasControlSet ?cs .
+	?cs core:locatedAt ?role .
+}

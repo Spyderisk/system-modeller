@@ -1,0 +1,12 @@
+#
+#
+#
+INSERT{
+	#This section is generated in Java code so that every control and role is used to make the new control sets
+	%s
+}
+USING <%s>
+USING NAMED <%s>
+WHERE{
+	
+}

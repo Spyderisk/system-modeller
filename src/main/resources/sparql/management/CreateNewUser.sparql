@@ -1,0 +1,7 @@
+INSERT {
+	?uri rdfs:label "%s" . 
+	?uri v:email "%s" . 
+	?uri a core:user . 
+}WHERE{
+	BIND(<%s> AS ?uri)
+}

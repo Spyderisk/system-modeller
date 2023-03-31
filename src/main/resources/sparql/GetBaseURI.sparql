@@ -1,0 +1,8 @@
+#Gets the base uri of the given graph
+#Param 1 the graph URI
+SELECT ?uri
+WHERE{
+	GRAPH<%s>{
+		?uri a owl:Ontology .
+	}
+}

@@ -1,0 +1,11 @@
+@import "../../styles/vars";
+
+.link {
+  color: $WHITE;
+  text-decoration: none;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

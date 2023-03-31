@@ -1,0 +1,7 @@
+#Returns all instances of a specified class
+#Param 1 the class that the instances are made under
+SELECT ?m
+WHERE{
+	BIND(%s AS ?c)
+	?m rdf:type ?c .
+}

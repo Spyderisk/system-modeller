@@ -1,0 +1,4 @@
+Good double quote input\" DELETE WHERE { ?s ?p ?o } #
+Good single quote input\' DELETE WHERE { ?s ?p ?o } #
+\" DELETE WHERE { ?s ?p ?o } # Other good double quote input
+\' DELETE WHERE { ?s ?p ?o } # Other good single quote input

@@ -1,0 +1,10 @@
+#Retrieves a list of every class that is a subclass of a specified class and does not have subclasses itself
+#Param 1 the uri of the graph
+#Param 2 the class that is being queried
+SELECT ?m
+FROM <%s>
+FROM NAMED <%s>
+WHERE{
+	BIND(%s AS ?c)
+	?m rdfs:subClassOf* ?c .	
+}

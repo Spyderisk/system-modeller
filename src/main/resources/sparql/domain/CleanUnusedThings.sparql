@@ -1,0 +1,19 @@
+#Deletes all control sets in the store that are not referenced by anything
+#Param 1-4: the graph URI
+#Param 5: the class of the unused things to delete
+DELETE {
+	GRAPH <%s>{
+		?thing ?outgoingRelation ?otherThing .
+	}
+}
+USING <%s>
+USING NAMED <%s>
+WHERE {
+	GRAPH <%s> {
+		OPTIONAL { ?thing ?outgoingRelation ?otherThing . }
+		?thing rdf:type %s .
+		FILTER NOT EXISTS {
+			?yetAnotherThing ?incomingRelation ?thing .
+		}
+	}
+}

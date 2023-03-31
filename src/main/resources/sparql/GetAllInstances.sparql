@@ -1,0 +1,7 @@
+#Gets all instances of the given class
+#Param 1 the given class
+SELECT ?i WHERE {
+	BIND(<%s> AS ?class)
+	?c rdfs:subClassOf* ?class .
+	?i a ?c .
+}

@@ -1,0 +1,10 @@
+#Creates an insert statement that makes a list of info in the form of a an rdf list
+#These lists are either the range or domain of the property
+#Param 1 the generated java code for the insert query
+#Param 2 the uri of the property
+INSERT{
+	%s
+}
+WHERE{
+	BIND(<%s> as ?uri)
+}

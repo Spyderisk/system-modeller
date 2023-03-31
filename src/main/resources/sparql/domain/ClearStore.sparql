@@ -1,0 +1,20 @@
+#CLEAR GRAPH <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network>
+#Clears all of the triples from the store apart from the basic store info
+#Param 1-3 the uri of the graph
+#Param 4 the uri of the model
+DELETE{
+	GRAPH<%s>{
+		?a ?b ?c
+	}
+}
+USING <%s>
+USING NAMED <%s>
+WHERE{
+	BIND(<%s> AS ?model)
+	OPTIONAL{
+		?a ?b ?c .
+		NOT EXISTS{
+			?model ?b ?c
+		}
+	}
+}

@@ -1,0 +1,12 @@
+#Gets the x and y co ordinates of a specified component as is saved under a specified threat or pattern
+#Param 1 the threat or pattern
+#Param 2 the component
+SELECT (STR(?xp) AS ?x) (STR(?yp) AS ?y)
+WHERE{
+	BIND(<%s> AS ?parent)
+	BIND(<%s> AS ?component)
+	?parent core:hasDomainPatternUISetting ?setting .
+	?setting core:hasNode ?component .
+	?setting core:positionX ?xp .
+	?setting core:positionY ?yp .
+}

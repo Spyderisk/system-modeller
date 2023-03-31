@@ -1,0 +1,8 @@
+#A query to get the domain or range of a property
+#Param 1 is the uri of the property
+#Param 2 is the property that is being retrieved (rdfs:domain or rdfs:range)
+SELECT ?t WHERE {
+	BIND(<%s> AS ?prop)
+	?prop rdf:type owl:ObjectProperty .
+	?prop %s ?t .
+}

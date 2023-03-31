@@ -1,0 +1,19 @@
+# Find orphan subjects in the ontology, i.e. things that exist but no longer have a rdf:type
+# Make sure this is executed in the correct graph!
+DELETE{
+	?x ?p1 ?o1 .
+	?s2 ?p2 ?x .
+}WHERE{
+	{
+		?x ?p1 ?o1 .
+	} UNION {
+		?s2 ?p2 ?x .
+	}
+	FILTER (ISIRI(?x))
+	FILTER NOT EXISTS { ?x a ?type }
+	FILTER NOT EXISTS { ?x owl:unionOf ?union }
+	FILTER NOT EXISTS { ?x owl:intersectionOf ?intersection }
+	FILTER NOT EXISTS { ?x rdf:rest ?rest }
+	FILTER NOT EXISTS { ?x a owl:Restriction }
+}
+

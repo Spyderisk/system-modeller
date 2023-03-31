@@ -1,0 +1,11 @@
+#Gets the misbehaviour class and the role for all misbehaviours or secondary effect conditions that a threat has
+#Param 1 the uri of the threat
+#Param 2 either core:causesMisbehaviour or core:hasSecondaryEffectCondition
+SELECT ?mis ?role ?misset
+WHERE{
+	BIND(<%s> AS ?threat)
+	?threat %s ?misset .
+	?misset core:locatedAt ?role .
+	?misset core:hasMisbehaviour ?misinstance .
+	?misinstance rdf:type ?mis .
+}

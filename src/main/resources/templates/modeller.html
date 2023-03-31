@@ -1,0 +1,27 @@
+<!doctype html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+    <meta charset="utf-8"/>
+
+    <!-- note: csrf is disabled at the moment (need to figure out whether we need it in combination with Authorisation tokens)-->
+    <!-- <meta name="_csrf" th:content="${_csrf.token}"/> -->
+    <!-- <meta name="_csrf_header" th:content="${_csrf.parameterName}"/> -->
+    <!--/*@thymesVar id="model" type=""*/-->
+    <meta name="_model" th:content="${model}"/>
+    <meta name="_mode" th:content="${mode}"/>
+    <title th:text="${@environment.getProperty('spring.application.name') + ' - Editor'}"></title>
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,400i|Rajdhani:400,700&display=swap" rel="stylesheet">
+    <link th:href="${@environment.getProperty('server.servlet.contextPath', T(java.lang.String))} + '/css/lib/bootstrap.min.css'" type="text/css" rel="stylesheet"/>
+    <link th:href="${@environment.getProperty('server.servlet.contextPath', T(java.lang.String))} + '/css/lib/font-awesome.min.css'" type="text/css" rel="stylesheet"/>
+    <link th:href="${@environment.getProperty('server.servlet.contextPath', T(java.lang.String))} + '/dist/modeller.css'" type="text/css" rel="stylesheet"/>
+</head>
+<body>
+<div id="app-extension-container" th:if="${@environment.getProperty('mode.embedded', T(java.lang.Boolean))} == true"></div>
+<div id="app"></div>
+<script th:src="${@environment.getProperty('server.servlet.contextPath', T(java.lang.String))} + '/js/lib/jquery-3.4.1.min.js'"></script>
+<script th:src="${@environment.getProperty('server.servlet.contextPath', T(java.lang.String))} + '/js/lib/bootstrap.min.js'"></script>
+<script th:src="${@environment.getProperty('server.servlet.contextPath', T(java.lang.String))} + '/js/lib/jsplumb.js'"></script>
+<script th:src="${@environment.getProperty('server.servlet.contextPath', T(java.lang.String))} + '/dist/modeller.bundle.js'"></script>
+</body>
+</html>

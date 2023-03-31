@@ -1,0 +1,22 @@
+#A query to get the information about a link
+#Used for both the asset and role links but not all of the data will be retrieved for each case
+#Param 1 is the uri of the link
+SELECT ?to ?from ?type ?mto ?mfrom
+WHERE{
+	BIND(<%s> as ?link)
+	OPTIONAL{
+		?link core:linksTo ?to .
+	}
+	OPTIONAL{
+		?link core:linksFrom ?from .
+	}
+	OPTIONAL{
+		?link core:linkType ?type .
+	}
+	OPTIONAL{
+		?link core:metaLinksTo ?mto .
+	}
+	OPTIONAL{
+		?link core:metaLinksFrom ?mfrom .
+	}
+}

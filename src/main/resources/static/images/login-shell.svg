@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   id="Layer_1"
+   data-name="Layer 1"
+   viewBox="0 0 200 200"
+   version="1.1"
+   sodipodi:docname="login-shell.svg"
+   inkscape:version="1.1.2 (b8e25be833, 2022-02-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview14161"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="5.8"
+     inkscape:cx="81.724138"
+     inkscape:cy="100"
+     inkscape:window-width="2560"
+     inkscape:window-height="1369"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="Layer_1" />
+  <defs
+     id="defs14144">
+    <style
+       id="style14142">.cls-1{fill:none;stroke:#1c1f3d;stroke-linejoin:round;stroke-width:4px}.cls-2{fill:#1c1f3d}</style>
+  </defs>
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:48px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#1c1f3d;fill-opacity:1;stroke:#1c1f3d;stroke-opacity:1"
+     x="56.602329"
+     y="111.49609"
+     id="text16179"><tspan
+       sodipodi:role="line"
+       id="tspan30919">/  _</tspan></text>
+  <path
+     class="cls-1"
+     d="M41.36 35h104.79"
+     id="path14146" />
+  <path
+     class="cls-2"
+     d="M128.62 49.92L143.55 35l-14.93-14.92h12.67L156.21 35l-14.92 14.92h-12.67z"
+     id="path14148" />
+  <path
+     class="cls-2"
+     d="M 86.825692,119.35536 106.14078,97.303892 86.825692,75.252414 h 16.391298 l 19.30215,22.051478 -19.30215,22.051468 z"
+     id="path14148-7"
+     style="fill:#1c1f3d;stroke-width:1.38278" />
+  <path
+     class="cls-1"
+     d="M158.64 165H53.85"
+     id="path14150" />
+  <path
+     class="cls-2"
+     d="M71.38 150.08L56.45 165l14.93 14.92H58.71L43.79 165l14.92-14.92h12.67z"
+     id="path14152" />
+</svg>

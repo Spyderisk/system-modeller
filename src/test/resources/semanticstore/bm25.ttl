@@ -1,0 +1,567 @@
+# baseURI: http://it-innovation.soton.ac.uk/ontologies/trustworthiness/Benchmarking25
+# imports: http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic
+
+@prefix : <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/Benchmarking25#> .
+@prefix core: <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/core#> .
+@prefix fn: <http://www.w3.org/2005/xpath-functions#> .
+@prefix generic: <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sp: <http://spinrdf.org/sp#> .
+@prefix spin: <http://spinrdf.org/spin#> .
+@prefix spl: <http://spinrdf.org/spl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://it-innovation.soton.ac.uk/ontologies/trustworthiness/Benchmarking25>
+  rdf:type owl:Ontology ;
+  owl:imports <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic> ;
+  owl:versionInfo "owl:Ontology added by TopBraid" ;
+.
+:Customer
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:Human ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:controls ;
+      owl:someValuesFrom :CustomerPC ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:controls ;
+      owl:someValuesFrom :CustomerWebBrowser ;
+    ] ;
+.
+:CustomerPC
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:Host ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connects ;
+      owl:someValuesFrom :Internet ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:hosts ;
+      owl:someValuesFrom :CustomerWebBrowser ;
+    ] ;
+.
+:CustomerPC-Internet-Interface
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:Interface ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsFrom ;
+      owl:someValuesFrom :CustomerPC ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsTo ;
+      owl:someValuesFrom :Internet ;
+    ] ;
+.
+:CustomerWebBrowser
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:LogicalAsset ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:selectsFrom ;
+      owl:someValuesFrom :Pool_CustomerWebBrowser_TraderWebsite ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:specifies ;
+      owl:someValuesFrom :Pool_CustomerWebBrowser_TraderWebsite ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:uses ;
+      owl:someValuesFrom :TraderWebsite ;
+    ] ;
+.
+:DMZ
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:WiredNetwork ;
+.
+:ExternalSSHd
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:RemoteLogin ;
+.
+:ExternalServer
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:Host ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connects ;
+      owl:someValuesFrom :DMZ ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connects ;
+      owl:someValuesFrom :Internet ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:hosts ;
+      owl:someValuesFrom :ExternalSSHd ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:hosts ;
+      owl:someValuesFrom :TraderWebsite ;
+    ] ;
+.
+:ExternalServer-DMZ-Interface
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:Interface ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsFrom ;
+      owl:someValuesFrom :ExternalServer ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsTo ;
+      owl:someValuesFrom :DMZ ;
+    ] ;
+.
+:ExternalServer-Internet-Interface
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:Interface ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsFrom ;
+      owl:someValuesFrom :ExternalServer ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsTo ;
+      owl:someValuesFrom :Internet ;
+    ] ;
+.
+:InternalLAN
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:WiredNetwork ;
+.
+:Internet
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:WiredNetwork ;
+.
+:Pool_CustomerWebBrowser_TraderWebsite
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:ServicePool ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:contains ;
+      owl:someValuesFrom :TraderWebsite ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:supports ;
+      owl:someValuesFrom :CustomerWebBrowser ;
+    ] ;
+.
+:Pool_SysmanBrowser_RouterAdmin
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:ServicePool ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:contains ;
+      owl:someValuesFrom :RouterAdmin ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:supports ;
+      owl:someValuesFrom :SysmanBrowser ;
+    ] ;
+.
+:Pool_SysmanPuTTY_ExternalSSHd
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:ServicePool ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:contains ;
+      owl:someValuesFrom :ExternalSSHd ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:supports ;
+      owl:someValuesFrom :SysmanPuTTY ;
+    ] ;
+.
+:Pool_TraderBrowser_PublicWebsite
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:ServicePool ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:contains ;
+      owl:someValuesFrom :PublicWebsite ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:supports ;
+      owl:someValuesFrom :TraderBrowser ;
+    ] ;
+.
+:Pool_TraderBrowser_TraderWebsite
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:ServicePool ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:contains ;
+      owl:someValuesFrom :TraderWebsite ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:supports ;
+      owl:someValuesFrom :TraderBrowser ;
+    ] ;
+.
+:PublicWebHost
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:Host ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connects ;
+      owl:someValuesFrom :Internet ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:hosts ;
+      owl:someValuesFrom :PublicWebsite ;
+    ] ;
+.
+:PublicWebHost-Internet-Interface
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:Interface ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsFrom ;
+      owl:someValuesFrom :PublicWebHost ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsTo ;
+      owl:someValuesFrom :Internet ;
+    ] ;
+.
+:PublicWebsite
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:WebServer ;
+.
+:RouterAdmin
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:WebServer ;
+.
+:Sysman
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:Human ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:controls ;
+      owl:someValuesFrom :SysmanBrowser ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:controls ;
+      owl:someValuesFrom :SysmanPC ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:controls ;
+      owl:someValuesFrom :SysmanPuTTY ;
+    ] ;
+.
+:SysmanBrowser
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:LogicalAsset ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:selectsFrom ;
+      owl:someValuesFrom :Pool_SysmanBrowser_RouterAdmin ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:specifies ;
+      owl:someValuesFrom :Pool_SysmanBrowser_RouterAdmin ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:uses ;
+      owl:someValuesFrom :RouterAdmin ;
+    ] ;
+.
+:SysmanPC
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:Host ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connects ;
+      owl:someValuesFrom :DMZ ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connects ;
+      owl:someValuesFrom :InternalLAN ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connects ;
+      owl:someValuesFrom :Internet ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:hosts ;
+      owl:someValuesFrom :SysmanBrowser ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:hosts ;
+      owl:someValuesFrom :SysmanPuTTY ;
+    ] ;
+.
+:SysmanPC-DMZ-Interface
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:Interface ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsFrom ;
+      owl:someValuesFrom :SysmanPC ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsTo ;
+      owl:someValuesFrom :DMZ ;
+    ] ;
+.
+:SysmanPC-InternalLAN-Interface
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:Interface ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsFrom ;
+      owl:someValuesFrom :SysmanPC ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsTo ;
+      owl:someValuesFrom :InternalLAN ;
+    ] ;
+.
+:SysmanPC-Internet-Interface
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:Interface ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsFrom ;
+      owl:someValuesFrom :SysmanPC ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsTo ;
+      owl:someValuesFrom :Internet ;
+    ] ;
+.
+:SysmanPuTTY
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:LogicalAsset ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:selectsFrom ;
+      owl:someValuesFrom :Pool_SysmanPuTTY_ExternalSSHd ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:specifies ;
+      owl:someValuesFrom :Pool_SysmanPuTTY_ExternalSSHd ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:uses ;
+      owl:someValuesFrom :ExternalSSHd ;
+    ] ;
+.
+:Trader
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:Human ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:controls ;
+      owl:someValuesFrom :TraderBrowser ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:controls ;
+      owl:someValuesFrom :TraderPC ;
+    ] ;
+.
+:TraderBrowser
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:LogicalAsset ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:selectsFrom ;
+      owl:someValuesFrom :Pool_TraderBrowser_PublicWebsite ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:selectsFrom ;
+      owl:someValuesFrom :Pool_TraderBrowser_TraderWebsite ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:specifies ;
+      owl:someValuesFrom :Pool_TraderBrowser_PublicWebsite ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:specifies ;
+      owl:someValuesFrom :Pool_TraderBrowser_TraderWebsite ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:uses ;
+      owl:someValuesFrom :PublicWebsite ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:uses ;
+      owl:someValuesFrom :TraderWebsite ;
+    ] ;
+.
+:TraderPC
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:Host ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connects ;
+      owl:someValuesFrom :DMZ ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connects ;
+      owl:someValuesFrom :InternalLAN ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connects ;
+      owl:someValuesFrom :Internet ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:hosts ;
+      owl:someValuesFrom :TraderBrowser ;
+    ] ;
+.
+:TraderPC-DMZ-Interface
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:Interface ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsFrom ;
+      owl:someValuesFrom :TraderPC ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsTo ;
+      owl:someValuesFrom :DMZ ;
+    ] ;
+.
+:TraderPC-InternalLAN-Interface
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:Interface ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsFrom ;
+      owl:someValuesFrom :TraderPC ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsTo ;
+      owl:someValuesFrom :InternalLAN ;
+    ] ;
+.
+:TraderPC-Internet-Interface
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:Interface ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsFrom ;
+      owl:someValuesFrom :TraderPC ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsTo ;
+      owl:someValuesFrom :Internet ;
+    ] ;
+.
+:TraderRouter
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:WiredRouter ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connects ;
+      owl:someValuesFrom :DMZ ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connects ;
+      owl:someValuesFrom :InternalLAN ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connects ;
+      owl:someValuesFrom :Internet ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:hosts ;
+      owl:someValuesFrom :RouterAdmin ;
+    ] ;
+.
+:TraderRouter-DMZ-Interface
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:Interface ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsFrom ;
+      owl:someValuesFrom :TraderRouter ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsTo ;
+      owl:someValuesFrom :DMZ ;
+    ] ;
+.
+:TraderRouter-InternalLAN-Interface
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:Interface ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsFrom ;
+      owl:someValuesFrom :TraderRouter ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsTo ;
+      owl:someValuesFrom :InternalLAN ;
+    ] ;
+.
+:TraderRouter-Internet-Interface
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:Interface ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsFrom ;
+      owl:someValuesFrom :TraderRouter ;
+    ] ;
+  rdfs:subClassOf [
+      rdf:type owl:Restriction ;
+      owl:onProperty generic:connectsTo ;
+      owl:someValuesFrom :Internet ;
+    ] ;
+.
+:TraderWebsite
+  rdf:type owl:Class ;
+  rdfs:subClassOf generic:WebServer ;
+.

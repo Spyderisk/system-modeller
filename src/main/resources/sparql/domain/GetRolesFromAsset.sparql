@@ -1,0 +1,9 @@
+#Gets all roles that have the specified asset as their meta asset
+#Param 1 the asset that we are querying
+SELECT ?role
+WHERE{
+	BIND(<%s> as ?asset)
+	?asset rdfs:subClassOf* ?assetList .
+	?role core:metaLocatedAt ?assetList .
+	?role a core:Role .
+}

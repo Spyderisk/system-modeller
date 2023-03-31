@@ -1,0 +1,42 @@
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    font-family: "Arial", Helvetica, sans-serif;
+    background-color: #f9f9f9;
+}
+
+.content {
+    height: 100%;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.branding {
+    font-family: 'Rajdhani', sans-serif;
+}
+
+.welcome-page {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.welcome-page > h1 {
+    font-size: 6em;
+}
+
+.footer {
+    background-color: #000000;
+    height: 50px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}

@@ -1,0 +1,5 @@
+#A query to determine if a specified URI is found in the store
+#Param 1 the URI that is being queried
+ASK WHERE {
+	<%s> ?p ?o .
+}

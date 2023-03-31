@@ -1,0 +1,53 @@
+.model-item-closed {
+  display: block;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.model-item-open {
+  display: block;
+  margin-top: 6px;
+}
+
+.model-item-panel {
+  margin-bottom: 0px;
+  border-radius: 0px;
+  border-width: 1px 0px 0px 0px;
+  .model-item-row{
+    padding: 5px 0px;
+    cursor: pointer;
+    border-radius: 15px;
+  }
+  .model-item-row:hover {
+    background: #E0F1FF;
+    .icon-button-hidden {
+      display: block;
+    }  
+  }
+  .dropdown-menu>li>a {
+    padding: 5px 10px;
+  }
+}
+
+.icon-button-hidden {
+  display: none;
+}
+
+.model-item-btn-group{
+  float: right;
+  margin-right: 10px;
+}
+
+.icon-button {
+  padding: 6px;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+}
+
+.model-detail {
+  margin-top: 10px;
+  border-top: 1px solid #999;
+}

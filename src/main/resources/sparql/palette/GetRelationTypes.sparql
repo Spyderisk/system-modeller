@@ -1,0 +1,31 @@
+#Retrieve all relations and their domain and range
+PREFIX rdf:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#>
+PREFIX core:<http://it-innovation.soton.ac.uk/ontologies/trustworthiness/core#>
+PREFIX owl:<http://www.w3.org/2002/07/owl#>
+SELECT DISTINCT ?from ?prop ?label ?to WHERE {
+GRAPH <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain/> {
+	?prop a owl:ObjectProperty .
+	?prop rdfs:domain ?domain .
+	?prop rdfs:range ?range .
+	?prop rdfs:label ?label .
+	{
+		?dasset rdfs:subClassOf* core:Asset .
+		?domain rdfs:subClassOf* ?dasset .
+		?from rdfs:subClassOf* ?domain .
+	} UNION {
+		?domain owl:unionOf ?du .
+		?du (rdf:rest)*/rdf:first ?da .
+		?from rdfs:subClassOf* ?da .
+	}
+	{
+		?rasset rdfs:subClassOf* core:Asset .
+		?range rdfs:subClassOf* ?rasset .
+		?to rdfs:subClassOf* ?range .
+	} UNION {
+		?range owl:unionOf ?ru .
+		?ru (rdf:rest)*/rdf:first ?ra .
+		?to rdfs:subClassOf* ?ra .
+	}
+  }
+} ORDER BY ?prop ?from ?to

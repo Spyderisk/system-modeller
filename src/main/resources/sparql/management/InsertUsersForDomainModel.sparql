@@ -1,0 +1,10 @@
+INSERT {
+	GRAPH <%s>{
+		%s
+	}
+}
+WHERE{
+	GRAPH <%s>{
+		?domain dcterms:title "%s" . 
+	}
+}

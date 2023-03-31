@@ -1,0 +1,17 @@
+#Adds a triple to the given control strategy so that it treats the given threat
+#Param 1 the action the control strategy does to the threat (either blocks or mitigates)
+#Param 2 the control strategy that treats the threat
+#Param 3 the threat that is treated by the control strategy
+DELETE{
+	?cs ?o ?threat
+}
+INSERT{
+	?cs core:%s ?threat
+}
+WHERE{
+	BIND(<%s> AS ?cs)
+	BIND(<%s> AS ?threat)
+	OPTIONAL{
+		?cs ?o ?threat .
+	}
+}

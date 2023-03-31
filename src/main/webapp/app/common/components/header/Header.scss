@@ -1,0 +1,237 @@
+@import "../../styles/vars.scss";
+
+.ss-header {
+  background-color: $BLACK;
+  color: $WHITE;
+  display: flex;
+  flex-direction: row;
+
+  .branding {
+    margin-left: 10px;
+    margin-right: 20px;
+    float: left;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+
+    h3 {
+      margin: 0;
+      font-size: 2.8em;
+
+      .link {
+        color: $WHITE;
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 400;
+        text-decoration: none;
+
+        &:hover {
+          text-decoration: none;
+        }
+
+        b {
+          font-weight: 700
+        }
+      }
+    }
+  }
+
+  .left-block {
+    display: flex;
+    flex-direction: column;
+
+    .model-name {
+      h4 {
+        margin: 12px 12px 0px 12px;
+        font-size: 24px;
+        height: 26px;
+      }
+    }
+
+    .left-menu {
+      display: flex;
+      flex-direction: row;
+
+      .header-dropdown {
+        align-items: center;
+
+        .dropdown-toggle {
+          color: darken($WHITE, 20);
+          text-decoration: none;
+          font-size: 1.1em;
+          font-weight: 500;
+          background-color: transparent;
+          border: none;
+
+          &:active,
+          &:focus,
+          &:hover {
+            color: $WHITE;
+            background-color: transparent;
+            border: none;
+          }
+        }
+
+        ul {
+          z-index: 1090;
+        }
+      }
+    }
+  }
+
+  .right {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: row;
+    justify-content: flex-end;
+    height: 100%;
+    align-items: center;
+
+    .dropdown ul {
+      z-index: 1090;
+    }
+
+    > .link, > .dropdown .dropdown-toggle {
+      color: darken($WHITE, 20);
+      background-color: transparent;
+      border: none;
+      text-decoration: none;
+      font-size: 1.1em;
+      font-weight: 500;
+      margin-left: 10px;
+      padding: 0px;
+
+      &:active, &:focus, &:hover {
+        color: $WHITE;
+        background-color: transparent;
+        border: none;
+        text-decoration: none;
+      }
+
+      &:not(:last-child) {
+        margin-right: 10px;
+      }
+    }
+
+    .user {
+      color: darken($WHITE, 20);
+      text-decoration: none;
+      font-size: 1.2em;
+      font-weight: 600;
+      margin: 0 5px;
+
+      &:hover {
+        text-decoration: none;
+        color: $WHITE;
+        cursor: pointer;
+      }
+    }
+
+    #app-extension-container .side-app {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      background-color: transparent;
+      border: none;
+      padding: 0;
+
+      .controls {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        z-index: 1050;
+        justify-content: flex-start;
+        margin: 0 auto;
+        text-align: center;
+        height: 100%;
+        color: $PANEL_BACKGROUND_COLOUR;
+
+        .btn-toolbar {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          margin-left: 0px;
+
+          button {
+            font-size: 1.8em;
+            height: 50px;
+            padding-left: 10px;
+            padding-right: 10px;
+          }
+          > button {
+            margin-left: 10px;
+            padding-left: 14px;
+            padding-right: 14px;
+          }
+          .btn-group {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            margin-left: 10px;
+
+            button {
+              &:first-child {
+                border-right-color: transparent;
+              }
+              &:not(:first-child) {
+                border-left-color: transparent;
+                margin-left: 1px;
+              }
+            }
+          }
+        }
+
+        .zoom {
+          display: flex;
+          flex-direction: column;
+          align-content: center;
+          margin-left: 10px;
+
+          label {
+            margin-bottom: 6px;
+            cursor: pointer;
+          }
+
+          #set-zoom {
+            width: 50px;
+            display: none;
+            text-align: center;
+          }
+
+          .zoom-buttons {
+            display: flex;
+            flex-direction: row;
+            align-content: center;
+
+            button {
+              font-size: 1em;
+              width: 50%;
+              padding: 0px 3px;
+              margin: 0px 2px;
+              border-radius: 0;
+              outline: none;
+            }
+          }
+        }
+      }
+
+      .overview-panel {
+        background-color: $BLUE;
+        border-radius: 4px;
+        color: #eee;
+        font-size: 1em;
+        height: 50px;
+        padding: 5px 5px;
+        margin-left: 10px;
+        z-index: 1050;
+        cursor: default;
+
+        p {
+          margin: 0;
+          text-align: center;
+        }
+      }
+    }
+  }
+}

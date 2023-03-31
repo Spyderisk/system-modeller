@@ -1,0 +1,25 @@
+#A query to get the rdf:list of the specified class
+#Used by misbehaviours and controls
+#Param 1 is the uri of the class
+SELECT ?t
+WHERE{
+	BIND(<%s> as ?uri)
+	BIND(%s as ?super)
+	{
+		?uri rdf:type* ?super .
+	}UNION{
+		?uri rdfs:subClassOf* ?super .
+	}
+	?uri rdfs:subClassOf ?r .
+	?r a owl:Restriction .
+	?r owl:onProperty core:locatedAt .
+	?r owl:allValuesFrom ?target .
+	{
+		?target rdfs:subClassOf* core:Asset .
+		?t rdfs:subClassOf* ?target
+	}UNION{
+		?target owl:unionOf ?u .
+		?u rdf:rest*/rdf:first ?tar .
+		?t rdfs:subClassOf* ?tar
+	}
+}

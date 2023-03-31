@@ -1,0 +1,143 @@
+//@import url('https://fonts.googleapis.com/css?family=Open+Sans:400');
+@import "./vars.scss";
+
+html, body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  //font-family: "Open Sans", sans-serif;
+}
+
+#app {
+  height: 100%;
+  width: 100%;
+}
+
+.modal {
+  margin-top: 5%;
+  z-index: 1090;
+  display: flex !important;
+  align-items: flex-start;
+  .modal-dialog {
+    .modal-header {
+      border-top-left-radius: inherit;
+      border-top-right-radius: inherit;
+      color: $PANEL_BACKGROUND_COLOUR;
+      background-color: $DARK_BLUE;
+      padding-bottom: .6em;
+      .close {
+        color: $PANEL_BACKGROUND_COLOUR;
+        opacity: 0.75;
+      }
+    }
+  }
+}
+
+.label-tag {
+  align-items: center;
+  background-color: #fff;
+  border: 1px solid $BLACK;
+  border-radius: 33px;
+  color: $BLACK;
+  display: flex;
+  flex-direction: column;
+  font-size: .8em;
+  justify-content: center;
+  max-width: 8em;
+  overflow: hidden;
+  padding: .1em 1em;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.text-bold {
+  font-weight: 600;
+}
+
+.text-italic {
+  font-style: italic;
+}
+
+.panel-primary {
+  border-color: $DARK_BLUE;
+  cursor: default;
+  > .panel-heading {
+    background-color: $DARK_BLUE;
+    color: #fff;
+    a {
+      text-decoration: none;
+    }
+  }
+}
+
+.btn-primary, .label-primary {
+  background-color: $DARK_BLUE;
+}
+
+.panel-danger {
+  border-color: $RED;
+  cursor: default;
+  > .panel-heading {
+    background-color: $RED;
+    color: #fff;
+    a {
+      text-decoration: none;
+    }
+  }
+}
+
+.btn-danger, .label-danger {
+  background-color: $RED;
+}
+
+.panel-success {
+  border-color: $GREEN;
+  cursor: default;
+  > .panel-heading {
+    background-color: $GREEN;
+    color: #fff;
+    a {
+      text-decoration: none;
+    }
+  }
+}
+
+.btn-success, .label-success {
+  background-color: $GREEN;
+}
+
+.btn-warning, .label-warning {
+  background-color: $YELLOW;
+}
+
+.panel-warning {
+  border-color: $YELLOW;
+  cursor: default;
+  > .panel-heading {
+    background-color: $YELLOW;
+    color: #fff;
+    a:hover {
+      text-decoration: none;
+    }
+  }
+}
+
+.btn-info, .label-info {
+  background-color: lighten($BLUE, 15);
+}
+
+.panel-info {
+  border-color: lighten($BLUE, 15);
+  > .panel-heading {
+    background-color: lighten($BLUE, 15);
+    color: #fff;
+    a:hover {
+      text-decoration: none;
+    }
+  }
+}
+
+.invalid-cs {
+  color:#999;
+}

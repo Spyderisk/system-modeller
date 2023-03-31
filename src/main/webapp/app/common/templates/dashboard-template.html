@@ -1,0 +1,26 @@
+<!doctype html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="_userid"/>
+    <script type="application/javascript">
+        let userid = location.search.split('userId=')[1];
+        if (userid) {
+            document.querySelector('meta[name="_userid"]').setAttribute("content", userid);
+        }
+    </script>
+    <link href="/system-modeller/css/lib/bootstrap.min.css"
+          rel="stylesheet">
+    <link href="/system-modeller/css/lib/font-awesome.min.css"
+          rel="stylesheet">
+</head>
+<body>
+    <script>
+        window.env = {
+            API_PATH: "/system-modeller"
+        }
+    </script>
+<div id="app"></div>
+<script src="/system-modeller/js/lib/jquery-3.4.1.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+#Gets a list of all superclasses and superclasses of the superclasses of this class
+#Param 1 the uri of a given class
+SELECT ?super 
+WHERE{
+	BIND(<%s> AS ?sub)
+	?sub rdfs:subClassOf+ ?super .
+}

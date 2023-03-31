@@ -1,0 +1,81 @@
+# This file is automatically overlaid on the base `docker-compose.yml` file.
+# To use it, just do `docker-compose up`.
+# This docker-compose file is intended for developers and so leaves the source code on the host and adds various volume optimisations.
+# Port-mappings to the host are read by default from the `.env` file.
+
+version: '3.7'
+
+services:
+
+  ssm:
+    build:
+      target: ssm-dev
+    env_file:
+      # The .env.secrets file can contain Nexus credentials that will be put into the environment of the SSM container for use by Gradle
+      - .env.secrets
+    environment:
+      # For local development and testing with a web client, both the SSM and the web browser need to access keycloak on the same URL (as the SSM redirects the browser to keycloak).
+      # That means that the normal docker-networking cannot be used (can't just go to http://keycloak which would work from SSM container but not web browser).
+      # Instead we route from the SSM via the host and the host's port-mapping back to keycloak.
+
+      # Use the DOCKER_GATEWAY_HOST value (in `.env` file) if it is set (used in Linux), fall back on "host.docker.internal"
+      # See https://sthasantosh.com.np/2020/05/23/docker-tip-how-to-use-the-hosts-ip-address-inside-a-docker-container-on-macos-windows-and-linux/
+      KEYCLOAK_AUTH_SERVER_URL: http://${DOCKER_GATEWAY_HOST:-host.docker.internal}:${KEYCLOAK_PORT}/auth/
+    volumes:
+      # Volumes of type "bind" mount a folder from the host machine.
+
+      # Mount the host's folder as /code in the container (this gets the source code into the container)
+      - type: bind
+        source: ./
+        target: /code/
+
+      # Volumes of type "volume" reside within docker-managed storage (location depends on host).
+      # Those with a "source" refer to named volumes (also referenced at the top level of the file) 
+      # which can be shared across services and persist independently of containers.
+
+      # The gradle image we are using creates an anonymous volume for /home/gradle/.gradle which is where the jars end up by default.
+      # Here we make a named volume for the same location.
+      - type: volume
+        source: gradle
+        target: /home/gradle/.gradle
+      # Make a persistent volume for the node_modules folder (where the javascript libraries are stored for the front-end)
+      - type: volume
+        source: npm
+        target: /code/src/main/webapp/node_modules
+      # Make a persistent volume for the maven cache (used if you compile SSM dependencies)
+      - type: volume
+        source: maven
+        target: /code/.m2
+
+      # The following volumes are there to improve performance
+
+      # The two .gradle folders store build metadata
+      - type: volume
+        target: /code/.gradle
+      - type: volume
+        target: /code/src/main/webapp/.gradle
+      # Make a volume for the build artefacts
+      - type: volume
+        target: /code/build
+      # Make a volume for the logs
+      - type: volume
+        target: /code/logs
+      # Make a volume for the tmp folder (where system and domain model files are temporarily stored)
+      - type: volume
+        target: /tmp
+    ports:
+      # port 3000 is used by the NodeJS server when doing frontend development
+      - ${NODEJS_PORT}:3000
+      # port 8081 is used by Spring Boot for the backend
+      - ${TOMCAT_PORT}:8081
+      # port 5005 is used by the Java debugger
+      - ${JAVADEBUG_PORT}:5005
+
+  keycloak:
+    ports:
+      - ${KEYCLOAK_PORT}:8080
+
+volumes:
+  gradle:
+  npm:
+  maven:

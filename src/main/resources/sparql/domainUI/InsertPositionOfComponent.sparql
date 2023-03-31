@@ -1,0 +1,25 @@
+#Updates the x and y co ordinates of a specified component as is saved under a specified threat or pattern
+#Param 1, 4, 5, 6 the ui graph that is being stored into
+#Param 2 the X co-ordinate
+#Param 3 the Y co-ordinate
+#Param 7 the threat or pattern
+#Param 8 the component
+#Param 9 a unique URI for the setting
+INSERT{
+	GRAPH<%s>{
+		?parent core:hasDomainPatternUISetting ?setting .
+		?setting core:hasNode ?component .
+		?setting rdf:type core:DomainPatternUISetting .
+		?setting core:positionX "%s"^^xsd:double .
+		?setting core:positionY "%s"^^xsd:double .
+	}
+}
+USING <%s>
+USING NAMED <%s>
+WHERE{
+	GRAPH<%s>{
+		BIND(<%s> AS ?parent)
+		BIND(<%s> AS ?component)
+		BIND(<%s> AS ?setting)
+	}
+}

@@ -1,0 +1,7 @@
+#Gets all classes that directly subclass the given classes
+#Param 1 the given superclass
+SELECT ?sub
+WHERE{
+	BIND(<%s> AS ?super)
+	?sub rdfs:subClassOf ?super .
+}

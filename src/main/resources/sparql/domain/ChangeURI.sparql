@@ -1,0 +1,30 @@
+#Given two URIs, every triple that uses the old URI will be replaced with the same triple with the URI changed to the new one
+#Param 1, 2, 3, 4, 7
+#Param 5 The old URI
+#Param 6 
+#
+INSERT{
+	GRAPH<%s>{
+		?new ?a ?b .
+		?c ?d ?new .
+	}
+}DELETE{
+	GRAPH<%s>{
+		?old ?a ?b .
+		?c ?d ?old .
+	}
+}
+USING <%s>
+USING NAMED <%s>
+WHERE {
+	BIND(<%s> AS ?old)
+	BIND(<%s> AS ?new)
+	GRAPH<%s>{
+		OPTIONAL{
+			?old ?a ?b .
+		}
+		OPTIONAL{
+			?c ?d ?old .
+		}
+	}
+}

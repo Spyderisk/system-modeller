@@ -1,0 +1,12 @@
+DELETE{
+	GRAPH <%s>{
+		?l acl:accessTo ?domain .
+	}
+}WHERE{
+	GRAPH <%s>{
+		OPTIONAL{
+			?l acl:accessTo ?domain . 
+			?domain dcterms:title "%s" . 
+		}
+	}
+}

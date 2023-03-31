@@ -1,0 +1,15 @@
+#Retrieves a list of every class that is a subclass of a specified class and does not have subclasses itself
+#Param 1 the uri of the graph
+#Param 2 the class that is being queried
+SELECT ?m
+FROM <%s>
+FROM NAMED <%s>
+WHERE{
+	BIND(%s AS ?c)
+	?m rdfs:subClassOf* ?c .
+	#This line removes everything in the hierarchy of classes that isn't a leaf (removes everything with subclasses)
+	NOT EXISTS{
+		?o rdfs:subClassOf ?m .
+		?c ?a ?b .
+	}
+}

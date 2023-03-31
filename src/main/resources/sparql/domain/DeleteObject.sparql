@@ -1,0 +1,20 @@
+#Removes an object from the store by removing all triples linking to the uri
+#Param 1-3 the uri of the graph
+#Param 4 the uri of the object that is being deleted
+DELETE{
+	GRAPH<%s>{
+		?uri ?p ?o .
+		?a ?b ?uri .
+	}
+}
+USING <%s>
+USING NAMED <%s>
+WHERE{
+	BIND(<%s> AS ?uri)
+	OPTIONAL{
+		?uri ?p ?o .
+	}
+	OPTIONAL{
+		?a ?b ?uri .
+	}
+}

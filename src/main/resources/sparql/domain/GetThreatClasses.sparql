@@ -1,0 +1,10 @@
+#Returns a list of all of the non-leaf items that are subclasses of core:Threat
+#
+#
+SELECT ?class 
+WHERE{
+	?class rdfs:subClassOf* core:Threat .
+	#NOT EXIST{
+	#	?o rdfs:subClassOf ?class .
+	#}
+}

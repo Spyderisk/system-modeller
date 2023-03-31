@@ -1,0 +1,223 @@
+---
+- - :permit
+  - Apache 2.0
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Permissive licence
+    :versions: []
+    :when: 2021-03-12 14:56:48.430411700 Z
+- - :permit
+  - BSD License 3
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Permissive licence
+    :versions: []
+    :when: 2021-03-12 14:57:12.570822700 Z
+- - :permit
+  - Eclipse Public License v2.0
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Weak copyleft licence
+    :versions: []
+    :when: 2021-03-12 14:59:03.625408000 Z
+- - :permit
+  - MIT
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Permissive licence
+    :versions: []
+    :when: 2021-03-12 14:59:20.264558200 Z
+- - :permit
+  - Mozilla Public License 2.0
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Weak copyleft licence
+    :versions: []
+    :when: 2021-03-12 14:59:44.941830900 Z
+- - :permit
+  - Eclipse Public License 1.0
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Weak copyleft licence
+    :versions: []
+    :when: 2021-03-12 15:00:26.037742300 Z
+- - :permit
+  - BSD
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Permissive licence
+    :versions: []
+    :when: 2021-03-12 15:00:32.286887500 Z
+- - :permit
+  - Bouncy Castle Licence
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Permissive licence
+    :versions: []
+    :when: 2021-03-12 15:01:27.581517900 Z
+- - :permit
+  - Eclipse Distribution License - v 1.0
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Permissive licence
+    :versions: []
+    :when: 2021-03-12 15:02:24.287100200 Z
+- - :permit
+  - Revised BSD License
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Permissive licence
+    :versions: []
+    :when: 2021-03-12 15:05:27.851179400 Z
+- - :permit
+  - EDL 1.0
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Permissive licence
+    :versions: []
+    :when: 2021-03-12 15:05:42.314604400 Z
+- - :permit
+  - EPL 1.0
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Weak copyleft licence
+    :versions: []
+    :when: 2021-03-12 15:05:48.578536400 Z
+- - :permit
+  - EPL 2.0
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Weak copyleft licence
+    :versions: []
+    :when: 2021-03-12 15:05:52.146405400 Z
+- - :permit
+  - CC0
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: No Rights Reserved
+    :versions: []
+    :when: 2021-03-12 15:07:18.446123300 Z
+- - :permit
+  - New BSD
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Permissive licence
+    :versions: []
+    :when: 2021-03-12 15:37:17.070595600 Z
+- - :permit
+  - Simplified BSD
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Permissive licence
+    :versions: []
+    :when: 2021-03-12 15:37:46.095823800 Z
+- - :permit
+  - CC0-1.0
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: No Rights Reserved
+    :versions: []
+    :when: 2021-03-12 15:38:44.324884100 Z
+- - :permit
+  - CC-BY-3.0
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Only attribution required
+    :versions: []
+    :when: 2021-03-12 15:38:57.417222500 Z
+- - :permit
+  - "(MIT AND BSD-3-Clause)"
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Permissive licence
+    :versions: []
+    :when: 2021-03-12 15:39:13.385743200 Z
+- - :permit
+  - ISC
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Permissive licence
+    :versions: []
+    :when: 2021-03-12 15:39:43.953678800 Z
+- - :permit
+  - CC-BY-4.0
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Only attribution required
+    :versions: []
+    :when: 2021-03-12 15:40:17.152188800 Z
+- - :permit
+  - BSD Zero Clause License
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Permissive licence
+    :versions: []
+    :when: 2021-03-12 15:40:43.014199400 Z
+- - :permit
+  - "(MIT AND Zlib)"
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Permissive licence
+    :versions: []
+    :when: 2021-03-12 15:41:23.012391600 Z
+- - :permit
+  - MIT*
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Permissive licence
+    :versions: []
+    :when: 2021-03-12 15:42:30.654844300 Z
+- - :permit
+  - BSD*
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Permissive licence
+    :versions: []
+    :when: 2021-03-12 15:43:35.751664600 Z
+- - :approve
+  - fsevents
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: It is MIT
+    :versions: []
+    :when: 2021-03-12 15:53:01.594149700 Z
+- - :approve
+  - tweetnacl
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Public domain
+    :versions: []
+    :when: 2021-03-12 15:53:39.910527100 Z
+- - :approve
+  - MasterPom
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: It is our code
+    :versions: []
+    :when: 2021-03-12 16:10:49.622151300 Z
+- - :permit
+  - Common Development and Distribution License 1.0
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: Weak copyleft licence
+    :versions: []
+    :when: 2021-03-12 16:13:53.869853600 Z
+- - :permit
+  - CDDL + GPLv2 with classpath exception
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: CDDL is a weak copyleft licence
+    :versions: []
+    :when: 2021-03-12 16:14:37.984246800 Z
+- - :permit
+  - Dual license consisting of the CDDL v1.1 and GPL v2
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: CDDL is a weak copyleft licence
+    :versions: []
+    :when: 2021-03-12 16:14:52.385911000 Z
+- - :permit
+  - CDDL/GPLv2+CE
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: CDDL is a weak copyleft licence
+    :versions: []
+    :when: 2021-03-12 16:15:03.454434300 Z
+- - :permit
+  - Common Development And Distribution License 1.1
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: CDDL is a weak copyleft licence
+    :versions: []
+    :when: 2021-03-12 16:15:19.594107800 Z
+- - :permit
+  - CDDL or GPLv2 with exceptions
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: CDDL is a weak copyleft licence
+    :versions: []
+    :when: 2021-03-12 16:15:39.105789900 Z
+- - :approve
+  - DomainModel-FogProtect
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: It is our code
+    :versions: []
+    :when: 2021-03-12 16:16:00.832720200 Z
+- - :approve
+  - DomainModel-Network
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: It is our code
+    :versions: []
+    :when: 2021-03-12 16:16:08.114548200 Z
+- - :approve
+  - DomainModel-ProTego
+  - :who: Stephen Phillips (S.C.Phillips@soton.ac.uk)
+    :why: It is our code
+    :versions: []
+    :when: 2021-03-12 16:16:18.200408400 Z

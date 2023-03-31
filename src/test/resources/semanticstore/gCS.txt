@@ -1,0 +1,64 @@
+CONSTRUCT {
+	?uri a owl:Class .
+	?uri rdfs:subClassOf generic:CS .
+	?uri rdfs:label ?newlabel .
+	?ClientRole core:hasRole generic:ClientRole .
+	?ServiceRole core:hasRole generic:ServiceRole .
+	?uri rdfs:subClassOf _:b0 .
+	_:b0 a owl:Restriction .
+	_:b0 owl:onProperty core:hasNode .
+	_:b0 owl:someValuesFrom _:b1 .
+	_:b1 a owl:Class .
+	_:b1 owl:intersectionOf _:b2 .
+	_:b2 rdf:first _:b3 .
+	_:b3 a owl:Restriction .
+	_:b3 owl:hasValue generic:ClientRole .
+	_:b3 owl:onProperty core:hasRole .
+	_:b2 rdf:rest _:b4 .
+	_:b4 rdf:first _:b5 .
+	_:b5 a owl:Restriction .
+	_:b5 owl:someValuesFrom ?ClientRole .
+	_:b5 owl:onProperty core:hasAsset .
+	_:b4 rdf:rest rdf:nil .
+	?uri rdfs:subClassOf _:b6 .
+	_:b6 a owl:Restriction .
+	_:b6 owl:onProperty core:hasNode .
+	_:b6 owl:someValuesFrom _:b7 .
+	_:b7 a owl:Class .
+	_:b7 owl:intersectionOf _:b8 .
+	_:b8 rdf:first _:b9 .
+	_:b9 a owl:Restriction .
+	_:b9 owl:hasValue generic:ServiceRole .
+	_:b9 owl:onProperty core:hasRole .
+	_:b8 rdf:rest _:b10 .
+	_:b10 rdf:first _:b11 .
+	_:b11 a owl:Restriction .
+	_:b11 owl:someValuesFrom ?ServiceRole .
+	_:b11 owl:onProperty core:hasAsset .
+	_:b10 rdf:rest rdf:nil .
+} WHERE {
+	SELECT DISTINCT * WHERE {
+		GRAPH system: {
+				?ClientRole rdfs:subClassOf [
+					a owl:Restriction ;
+					owl:onProperty generic:uses ;
+					owl:someValuesFrom ?ServiceRole ;
+				] , ?crc.
+                                ?ServiceRole rdfs:subClassOf ?src.
+				OPTIONAL { ?ClientRole rdfs:label ?labelClientRole . } .
+				OPTIONAL { ?ServiceRole rdfs:label ?labelServiceRole . } .
+				FILTER(isURI(?crc) && isURI(?src))
+		}
+		?crc rdfs:subClassOf* generic:LogicalAsset.
+		?src rdfs:subClassOf* generic:LogicalAsset.
+		BIND (IF(BOUND(?labelClientRole), ?labelClientRole, STRAFTER(str(?ClientRole), "#")) AS ?lClientRole) .
+		BIND (IF(BOUND(?labelServiceRole), ?labelServiceRole, STRAFTER(str(?ServiceRole), "#")) AS ?lServiceRole) .
+		BIND (fn:concat(STRAFTER(str(generic:CS), "#"), "_", STRAFTER(str(?ClientRole), "#"), "_", STRAFTER(str(?ServiceRole), "#")) AS ?newclass) .
+		BIND (URI(fn:concat(STRBEFORE(str(?ClientRole), "#"), "#", ?newclass)) AS ?uri) .
+		BIND (fn:concat(STRAFTER(str(generic:CS), "#"), "_", ?lClientRole, "_", ?lServiceRole) AS ?newlabel) .
+		FILTER NOT EXISTS {
+			?auri a owl:Class .
+			FILTER(?uri = ?auri)
+        } .
+	}
+}

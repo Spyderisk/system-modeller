@@ -1,0 +1,6 @@
+#A query to retrieve a piece of data, with a given uri and property
+#Param 1 the uri of the class
+#Param 2 the property of the data
+SELECT DISTINCT ?o WHERE {
+	<%s> %s ?o .
+}

@@ -1,0 +1,133 @@
+insertModel:
+  comment: Template for query that adds a model into the system
+  sparql: |
+    INSERT DATA {
+      GRAPH <%s> {
+        <%s> a void:Dataset ;
+          dcterms:title "%s" ;
+          dcterms:modified "%s"^^xsd:date .
+      }
+    }
+
+selectModel:
+  comment: Template for selecting a model with the specified name
+  sparql: |
+    SELECT DISTINCT ?uri WHERE {
+      ?uri a void:Dataset ;
+        dcterms:title "%s" .
+    } LIMIT 1
+
+deleteSystemModel:
+  comment: Template for the deleting of all information associated with an entity
+  sparql: |
+    DELETE {
+      GRAPH <%s> {
+        ?m ?p ?o .
+      }
+    } WHERE {
+      BIND (<%s> AS ?m)
+      GRAPH <%s> {
+        ?m ?p ?o .
+      }
+    }
+
+askSystemModel:
+  comment: Template for asking if a system model with given graph URI exists
+  sparql: |
+    ASK WHERE {
+      <%s> a void:Dataset .
+    }
+
+insertSystemModel:
+  comment: Template for query that add a system model into the system
+  sparql: |
+    INSERT DATA {
+      GRAPH <%s> {
+        <%s> a void:Dataset ;
+          dcterms:title "%s" ;
+          dcterms:modified "%s"^^xsd:date ;
+          dcterms:creator [ rdfs:label "%s"] .
+      }
+    }
+
+getSystemModelsByUsername:
+  comment: Template for query that retrieve all system models created by a user
+  sparql: |
+    SELECT DISTINCT ?system WHERE {
+        ?system a void:Dataset ;
+                dcterms:creator [ rdfs:label "%s"] .
+    }
+
+getSystemModels:
+  comment: Template for query that retrieve all system models created by any user
+  sparql: |
+    SELECT DISTINCT ?system WHERE {
+        ?system a void:Dataset .
+        ?system dcterms:creator ?creator .
+    }
+
+addImport:
+  comment: assert a system model uses a domain model
+  sparql: |
+    INSERT DATA {
+      GRAPH <%s> {
+        <%s> core:domainGraph <%s> . 
+        <%s> a owl:Ontology .
+        <%s> owl:imports <%s> .
+      }
+    }
+
+deleteImport:
+  comment: remove an import from a model
+  sparql: |
+    DELETE DATA {
+      GRAPH <%s> {
+        <%s> core:domainGraph <%s> .
+        <%s> a owl:Ontology .
+        <%s> owl:imports <%s> .
+      }
+    }
+
+getImports:
+  comment: get all imports for a model
+  sparql: |
+    SELECT DISTINCT ?uri WHERE {
+      <%s> core:domainGraph ?uri
+    }
+
+getDomainModels:
+  comment: Get all domain models
+  sparql: |
+    SELECT DISTINCT * WHERE {
+      GRAPH ?g {
+        ?domain owl:imports <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/core> .
+        ?domain rdfs:label ?label .
+        ?domain rdfs:comment ?comment .
+        ?domain owl:versionInfo ?version .
+      }
+      GRAPH <http://it-innovation.soton.ac.uk/model-management> {
+        ?g dcterms:title ?title
+      }
+    }
+
+getDomainModelNames:
+  comment: Get all domain model names
+  sparql: |
+    SELECT DISTINCT * WHERE {
+      GRAPH <http://it-innovation.soton.ac.uk/model-management> {
+        ?g dcterms:title ?title
+      }
+    }
+
+changeSystemModelURI:
+  comment: change the URI of a system model. Needs to be used in conjunction with changing the graph name!
+  sparql: |
+    DELETE {
+      GRAPH <%s> { ?old ?prop ?obj }
+    } INSERT {
+      GRAPH <%s> { ?new ?prop ?obj }
+    } WHERE {
+      BIND (<%s> AS ?old)
+      BIND (<%s> AS ?new)
+      GRAPH <%s> { OPTIONAL { ?old ?prop ?obj }}
+    }

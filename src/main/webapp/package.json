@@ -1,0 +1,67 @@
+{
+  "name": "systemmodeller",
+  "version": "1.0.0",
+  "license": "UNLICENSED",
+  "description": "every project should have a readme describing what it does.",
+  "scripts": {
+    "bundle": "webpack --config ./webpack/webpack.test.config.js",
+    "bundleProd": "webpack --config ./webpack/webpack.prod.config.js",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.16.5",
+    "axios": "^0.21.3",
+    "classnames": "^2.2.6",
+    "es6-promise": "^4.2.4",
+    "immutable": "^4.0.0-rc.12",
+    "lodash": "^4.17.15",
+    "prop-types": "^15.6.2",
+    "react": "16.13.1",
+    "react-bootstrap": "^0.32.3",
+    "react-bootstrap-table-next": "^4.0.3",
+    "react-bootstrap-table2-filter": "^1.3.3",
+    "react-bootstrap-table2-paginator": "^2.1.2",
+    "react-contextmenu": "2.11.0",
+    "react-dom": "16.13.1",
+    "react-hot-loader": "4.13.1",
+    "react-portal": "4.1.5",
+    "react-redux": "5.0.7",
+    "react-rnd": "^10.3.4",
+    "react-test-renderer": "16.8.6",
+    "redux": "4.0.0",
+    "redux-thunk": "2.3.0"
+  },
+  "resolutions": {
+    "react-bootstrap-table-next/underscore": "^1.13.1"
+  },
+  "main": "webpack.prod.config.js",
+  "repository": {
+    "type": "git",
+    "url": "https://iglab.it-innovation.soton.ac.uk/Security/system-modeller.git"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.16.5",
+    "@babel/plugin-transform-runtime": "^7.16.5",
+    "@babel/preset-env": "^7.16.5",
+    "@babel/preset-react": "^7.16.5",
+    "@hot-loader/react-dom": "16.8.6",
+    "autoprefixer": "^10.4.0",
+    "babel-loader": "^8.2.3",
+    "connect-history-api-fallback": "^1.5.0",
+    "css-loader": "^6.5.1",
+    "express": "^4.17.2",
+    "file-loader": "^6.2.0",
+    "html-webpack-plugin": "^5.5.0",
+    "http-proxy-middleware": "^2.0.6",
+    "mini-css-extract-plugin": "^2.4.5",
+    "postcss": "^8.4.5",
+    "postcss-loader": "^6.2.1",
+    "sass": "^1.45.0",
+    "sass-loader": "^12.4.0",
+    "style-loader": "^3.3.1",
+    "webpack": "^5.65.0",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-middleware": "^5.3.0",
+    "webpack-hot-middleware": "^2.25.1"
+  }
+}

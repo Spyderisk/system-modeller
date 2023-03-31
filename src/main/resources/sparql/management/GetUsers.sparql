@@ -1,0 +1,5 @@
+SELECT * WHERE {
+	?uri rdfs:label ?user .
+	?uri v:email ?email .
+	?uri a core:user .
+} ORDER BY ?user

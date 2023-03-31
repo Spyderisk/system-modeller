@@ -1,0 +1,24 @@
+#Deletes all position settings for a specified pattern or threat
+#Param 1 - 4 the ui graph
+#Param 5 the threat or pattern
+DELETE{
+	GRAPH<%s>{
+		?parent core:hasDomainPatternUISetting ?setting .
+		?setting core:hasNode ?component .
+		?setting rdf:type core:DomainPatternUISetting .
+		?setting core:positionX ?x .
+		?setting core:positionY ?y .
+	}
+}
+USING <%s>
+USING NAMED <%s>
+WHERE{
+	GRAPH<%s>{
+		BIND(<%s> AS ?parent)
+		?parent core:hasDomainPatternUISetting ?setting .
+		?setting core:hasNode ?component .
+		?setting rdf:type core:DomainPatternUISetting .
+		?setting core:positionX ?x .
+		?setting core:positionY ?y .
+	}
+}

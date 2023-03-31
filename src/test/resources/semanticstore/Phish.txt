@@ -1,0 +1,164 @@
+CONSTRUCT {
+	?uri a owl:Class .
+	?uri rdfs:subClassOf <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#Phish> .
+	?uri rdfs:label ?newlabel .
+	?ClientHostRole core:hasRole <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#ClientHostRole> .
+	?HumanRole core:hasRole <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#HumanRole> .
+	?MailClientRole core:hasRole <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#MailClientRole> .
+	?WebBrowserRole core:hasRole <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#WebBrowserRole> .
+	?MailStoreRole core:hasRole <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#MailStoreRole> .
+	?ServiceRole core:hasRole <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#ServiceRole> .
+	?uri rdfs:subClassOf _:b0 .
+	_:b0 a owl:Restriction .
+	_:b0 owl:onProperty core:hasNode .
+	_:b0 owl:someValuesFrom _:b1 .
+	_:b1 a owl:Class .
+	_:b1 owl:intersectionOf _:b2 .
+	_:b2 rdf:first _:b3 .
+	_:b3 a owl:Restriction .
+	_:b3 owl:hasValue <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#ClientHostRole> .
+	_:b3 owl:onProperty core:hasRole .
+	_:b2 rdf:rest _:b4 .
+	_:b4 rdf:first _:b5 .
+	_:b5 a owl:Restriction .
+	_:b5 owl:someValuesFrom ?ClientHostRole .
+	_:b5 owl:onProperty core:hasAsset .
+	_:b4 rdf:rest rdf:nil .
+	?uri rdfs:subClassOf _:b6 .
+	_:b6 a owl:Restriction .
+	_:b6 owl:onProperty core:hasNode .
+	_:b6 owl:someValuesFrom _:b7 .
+	_:b7 a owl:Class .
+	_:b7 owl:intersectionOf _:b8 .
+	_:b8 rdf:first _:b9 .
+	_:b9 a owl:Restriction .
+	_:b9 owl:hasValue <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#HumanRole> .
+	_:b9 owl:onProperty core:hasRole .
+	_:b8 rdf:rest _:b10 .
+	_:b10 rdf:first _:b11 .
+	_:b11 a owl:Restriction .
+	_:b11 owl:someValuesFrom ?HumanRole .
+	_:b11 owl:onProperty core:hasAsset .
+	_:b10 rdf:rest rdf:nil .
+	?uri rdfs:subClassOf _:b12 .
+	_:b12 a owl:Restriction .
+	_:b12 owl:onProperty core:hasNode .
+	_:b12 owl:someValuesFrom _:b13 .
+	_:b13 a owl:Class .
+	_:b13 owl:intersectionOf _:b14 .
+	_:b14 rdf:first _:b15 .
+	_:b15 a owl:Restriction .
+	_:b15 owl:hasValue <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#MailClientRole> .
+	_:b15 owl:onProperty core:hasRole .
+	_:b14 rdf:rest _:b16 .
+	_:b16 rdf:first _:b17 .
+	_:b17 a owl:Restriction .
+	_:b17 owl:someValuesFrom ?MailClientRole .
+	_:b17 owl:onProperty core:hasAsset .
+	_:b16 rdf:rest rdf:nil .
+	?uri rdfs:subClassOf _:b18 .
+	_:b18 a owl:Restriction .
+	_:b18 owl:onProperty core:hasNode .
+	_:b18 owl:someValuesFrom _:b19 .
+	_:b19 a owl:Class .
+	_:b19 owl:intersectionOf _:b20 .
+	_:b20 rdf:first _:b21 .
+	_:b21 a owl:Restriction .
+	_:b21 owl:hasValue <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#WebBrowserRole> .
+	_:b21 owl:onProperty core:hasRole .
+	_:b20 rdf:rest _:b22 .
+	_:b22 rdf:first _:b23 .
+	_:b23 a owl:Restriction .
+	_:b23 owl:someValuesFrom ?WebBrowserRole .
+	_:b23 owl:onProperty core:hasAsset .
+	_:b22 rdf:rest rdf:nil .
+	?uri rdfs:subClassOf _:b24 .
+	_:b24 a owl:Restriction .
+	_:b24 owl:onProperty core:hasNode .
+	_:b24 owl:someValuesFrom _:b25 .
+	_:b25 a owl:Class .
+	_:b25 owl:intersectionOf _:b26 .
+	_:b26 rdf:first _:b27 .
+	_:b27 a owl:Restriction .
+	_:b27 owl:hasValue <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#MailStoreRole> .
+	_:b27 owl:onProperty core:hasRole .
+	_:b26 rdf:rest _:b28 .
+	_:b28 rdf:first _:b29 .
+	_:b29 a owl:Restriction .
+	_:b29 owl:someValuesFrom ?MailStoreRole .
+	_:b29 owl:onProperty core:hasAsset .
+	_:b28 rdf:rest rdf:nil .
+	?uri rdfs:subClassOf _:b30 .
+	_:b30 a owl:Restriction .
+	_:b30 owl:onProperty core:hasNode .
+	_:b30 owl:someValuesFrom _:b31 .
+	_:b31 a owl:Class .
+	_:b31 owl:intersectionOf _:b32 .
+	_:b32 rdf:first _:b33 .
+	_:b33 a owl:Restriction .
+	_:b33 owl:hasValue <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#ServiceRole> .
+	_:b33 owl:onProperty core:hasRole .
+	_:b32 rdf:rest _:b34 .
+	_:b34 rdf:first _:b35 .
+	_:b35 a owl:Restriction .
+	_:b35 owl:someValuesFrom ?ServiceRole .
+	_:b35 owl:onProperty core:hasAsset .
+	_:b34 rdf:rest rdf:nil .
+} WHERE {
+	SELECT DISTINCT * WHERE {
+		?ClientHostRole (rdfs:subClassOf)* <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#Host> .
+		FILTER (!STRSTARTS(str(?ClientHostRole), "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#")) .
+		OPTIONAL { ?ClientHostRole rdfs:label ?labelClientHostRole . } .
+		BIND (IF(BOUND(?labelClientHostRole), ?labelClientHostRole, STRAFTER(str(?ClientHostRole), "#")) AS ?lClientHostRole) .
+		?HumanRole (rdfs:subClassOf)* <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#Human> .
+		FILTER (!STRSTARTS(str(?HumanRole), "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#")) .
+		OPTIONAL { ?HumanRole rdfs:label ?labelHumanRole . } .
+		BIND (IF(BOUND(?labelHumanRole), ?labelHumanRole, STRAFTER(str(?HumanRole), "#")) AS ?lHumanRole) .
+		?MailClientRole (rdfs:subClassOf)* <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#LogicalAsset> .
+		FILTER (!STRSTARTS(str(?MailClientRole), "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#")) .
+		OPTIONAL { ?MailClientRole rdfs:label ?labelMailClientRole . } .
+		BIND (IF(BOUND(?labelMailClientRole), ?labelMailClientRole, STRAFTER(str(?MailClientRole), "#")) AS ?lMailClientRole) .
+		?WebBrowserRole (rdfs:subClassOf)* <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#LogicalAsset> .
+		FILTER (!STRSTARTS(str(?WebBrowserRole), "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#")) .
+		OPTIONAL { ?WebBrowserRole rdfs:label ?labelWebBrowserRole . } .
+		BIND (IF(BOUND(?labelWebBrowserRole), ?labelWebBrowserRole, STRAFTER(str(?WebBrowserRole), "#")) AS ?lWebBrowserRole) .
+		?MailStoreRole (rdfs:subClassOf)* <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#MailStore> .
+		FILTER (!STRSTARTS(str(?MailStoreRole), "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#")) .
+		OPTIONAL { ?MailStoreRole rdfs:label ?labelMailStoreRole . } .
+		BIND (IF(BOUND(?labelMailStoreRole), ?labelMailStoreRole, STRAFTER(str(?MailStoreRole), "#")) AS ?lMailStoreRole) .
+		?ServiceRole (rdfs:subClassOf)* <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#WebServer> .
+		FILTER (!STRSTARTS(str(?ServiceRole), "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#")) .
+		OPTIONAL { ?ServiceRole rdfs:label ?labelServiceRole . } .
+		BIND (IF(BOUND(?labelServiceRole), ?labelServiceRole, STRAFTER(str(?ServiceRole), "#")) AS ?lServiceRole) .
+		?ClientHostRole rdfs:subClassOf ?r36 .
+		?r36 a owl:Restriction .
+		?r36 owl:onProperty <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#hosts> .
+		?r36 owl:someValuesFrom ?MailClientRole .
+		?ClientHostRole rdfs:subClassOf ?r37 .
+		?r37 a owl:Restriction .
+		?r37 owl:onProperty <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#hosts> .
+		?r37 owl:someValuesFrom ?WebBrowserRole .
+		?HumanRole rdfs:subClassOf ?r38 .
+		?r38 a owl:Restriction .
+		?r38 owl:onProperty <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#controls> .
+		?r38 owl:someValuesFrom ?MailClientRole .
+		?HumanRole rdfs:subClassOf ?r39 .
+		?r39 a owl:Restriction .
+		?r39 owl:onProperty <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#controls> .
+		?r39 owl:someValuesFrom ?WebBrowserRole .
+		?MailClientRole rdfs:subClassOf ?r40 .
+		?r40 a owl:Restriction .
+		?r40 owl:onProperty <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#uses> .
+		?r40 owl:someValuesFrom ?MailStoreRole .
+		?WebBrowserRole rdfs:subClassOf ?r41 .
+		?r41 a owl:Restriction .
+		?r41 owl:onProperty <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#uses> .
+		?r41 owl:someValuesFrom ?ServiceRole .
+		FILTER NOT EXISTS {
+			?uri a owl:Class .
+		} .
+		BIND (fn:concat(STRAFTER(str(<http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#Phish>), "#"), "_", STRAFTER(str(?ClientHostRole), "#"), "_", STRAFTER(str(?HumanRole), "#"), "_", STRAFTER(str(?MailClientRole), "#"), "_", STRAFTER(str(?WebBrowserRole), "#"), "_", STRAFTER(str(?MailStoreRole), "#"), "_", STRAFTER(str(?ServiceRole), "#")) AS ?newclass) .
+		BIND (fn:concat(STRAFTER(str(<http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#Phish>), "#"), "_", ?lClientHostRole, "_", ?lHumanRole, "_", ?lMailClientRole, "_", ?lWebBrowserRole, "_", ?lMailStoreRole, "_", ?lServiceRole) AS ?newlabel) .
+		BIND (URI(fn:concat(STRBEFORE(str(?ClientHostRole), "#"), "#", ?newclass)) AS ?uri) .
+	}
+}

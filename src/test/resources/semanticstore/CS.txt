@@ -1,0 +1,60 @@
+CONSTRUCT {
+	?uri a owl:Class .
+	?uri rdfs:subClassOf <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#CS> .
+	?uri rdfs:label ?newlabel .
+	?ClientRole core:hasRole <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#ClientRole> .
+	?ServiceRole core:hasRole <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#ServiceRole> .
+	?uri rdfs:subClassOf _:b0 .
+	_:b0 a owl:Restriction .
+	_:b0 owl:onProperty core:hasNode .
+	_:b0 owl:someValuesFrom _:b1 .
+	_:b1 a owl:Class .
+	_:b1 owl:intersectionOf _:b2 .
+	_:b2 rdf:first _:b3 .
+	_:b3 a owl:Restriction .
+	_:b3 owl:hasValue <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#ClientRole> .
+	_:b3 owl:onProperty core:hasRole .
+	_:b2 rdf:rest _:b4 .
+	_:b4 rdf:first _:b5 .
+	_:b5 a owl:Restriction .
+	_:b5 owl:someValuesFrom ?ClientRole .
+	_:b5 owl:onProperty core:hasAsset .
+	_:b4 rdf:rest rdf:nil .
+	?uri rdfs:subClassOf _:b6 .
+	_:b6 a owl:Restriction .
+	_:b6 owl:onProperty core:hasNode .
+	_:b6 owl:someValuesFrom _:b7 .
+	_:b7 a owl:Class .
+	_:b7 owl:intersectionOf _:b8 .
+	_:b8 rdf:first _:b9 .
+	_:b9 a owl:Restriction .
+	_:b9 owl:hasValue <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#ServiceRole> .
+	_:b9 owl:onProperty core:hasRole .
+	_:b8 rdf:rest _:b10 .
+	_:b10 rdf:first _:b11 .
+	_:b11 a owl:Restriction .
+	_:b11 owl:someValuesFrom ?ServiceRole .
+	_:b11 owl:onProperty core:hasAsset .
+	_:b10 rdf:rest rdf:nil .
+} WHERE {
+	SELECT DISTINCT * WHERE {
+		?ClientRole rdfs:subClassOf* <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#LogicalAsset> .
+		FILTER (!STRSTARTS(str(?ClientRole), "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#")) .
+		OPTIONAL { ?ClientRole rdfs:label ?labelClientRole . } .
+		BIND (IF(BOUND(?labelClientRole), ?labelClientRole, STRAFTER(str(?ClientRole), "#")) AS ?lClientRole) .
+		?ServiceRole rdfs:subClassOf* <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#LogicalAsset> .
+		FILTER (!STRSTARTS(str(?ServiceRole), "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#")) .
+		OPTIONAL { ?ServiceRole rdfs:label ?labelServiceRole . } .
+		BIND (IF(BOUND(?labelServiceRole), ?labelServiceRole, STRAFTER(str(?ServiceRole), "#")) AS ?lServiceRole) .
+		?ClientRole rdfs:subClassOf ?r12 .
+		?r12 a owl:Restriction .
+		?r12 owl:onProperty <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#uses> .
+		?r12 owl:someValuesFrom ?ServiceRole .
+		FILTER NOT EXISTS {
+			?uri a owl:Class .
+		} .
+		BIND (fn:concat(STRAFTER(str(<http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#CS>), "#"), "_", STRAFTER(str(?ClientRole), "#"), "_", STRAFTER(str(?ServiceRole), "#")) AS ?newclass) .
+		BIND (fn:concat(STRAFTER(str(<http://it-innovation.soton.ac.uk/ontologies/trustworthiness/generic#CS>), "#"), "_", ?lClientRole, "_", ?lServiceRole) AS ?newlabel) .
+		BIND (URI(fn:concat(STRBEFORE(str(?ClientRole), "#"), "#", ?newclass)) AS ?uri) .
+	}
+}

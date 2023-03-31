@@ -1,0 +1,18 @@
+# This file is an overlay for the base `docker-compose.yml` file.
+# To use it, do `docker-compose -f docker-compose.yml -f docker-compose.test.yml up`.
+# This docker-compose file is used by the CI pipeline to execute the test.
+# The tests can be executed using e.g. `docker-compose exec -T ssm sh -c 'cd /system-modeller && gradle test'`
+
+version: '3.7'
+
+services:
+
+  ssm:
+    build:
+      target: ssm-build
+      cache_from:
+        - ${DOCKER_REGISTRY}/security/system-modeller/build:latest
+    environment:
+      # For testing, it is just the SSM that needs to contact Keycloak so we can go direct to the keycloak container via docker-networking.
+      # Port 8080 is the one exposed by keycloak by default and not related to any port-mapping.
+      KEYCLOAK_AUTH_SERVER_URL: http://keycloak:8080/auth/

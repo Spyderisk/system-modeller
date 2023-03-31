@@ -1,0 +1,22 @@
+#Sets the superclass of the given class
+#Param 1, 2, 4, 5 the graph uri
+#Param 3 the superclass
+#Param 6 the uri of the class
+DELETE{
+	#GRAPH<%s>{
+		?uri rdfs:subClassOf ?o .
+	#}
+}
+INSERT{
+	#GRAPH<%s>{
+		?uri rdfs:subClassOf <%s> .
+	#}
+}
+USING <%s>
+USING NAMED <%s>
+WHERE{
+	BIND(<%s> as ?uri)
+	FILTER ( isBlank(?o) = false )
+	?uri rdfs:subClassOf ?o .
+	#?o rdfs:subClassOf owl:Thing .
+}

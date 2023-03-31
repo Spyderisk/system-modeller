@@ -1,0 +1,22 @@
+#Removes the information about either the domain or the range from the property
+#Param 1, 2, 3, 4 the uri of the graph
+#Param 5 the uri of the property
+#Param 6 the property of the property that is being removed (domain or range)
+DELETE{
+	GRAPH<%s>{
+		?uri ?prop ?d .
+	}
+}
+USING <%s>
+USING NAMED <%s>
+WHERE{
+	GRAPH<%s>{
+		BIND(<%s> AS ?uri)
+		BIND(%s AS ?prop)
+		?uri rdf:type owl:ObjectProperty .
+		#?uri core:immutable ?i .
+		OPTIONAL{
+			?uri ?prop ?d .
+		}
+	}
+}

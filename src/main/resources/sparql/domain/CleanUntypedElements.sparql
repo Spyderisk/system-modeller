@@ -1,0 +1,17 @@
+#Cleans everything from the store that has not been given a type
+#Param 1-4, the graph uri
+DELETE{
+	GRAPH<%s>{
+		?s ?p ?o .
+	}
+}
+USING <%s>
+USING NAMED <%s>
+WHERE{
+	GRAPH<%s>{
+		?s ?p ?o .
+		FILTER NOT EXISTS {
+			?s rdf:type ?type .
+		}
+	}
+}

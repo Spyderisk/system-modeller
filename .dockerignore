@@ -1,0 +1,12 @@
+# Ignore the .gradle folder in webapp as it is not source code and can cause problems (build fails because cannot be deleted)
+src/main/webapp/.gradle
+# Ignore the node_modules folder in webapp as it is not source code
+src/main/webapp/node_modules
+
+bin
+build
+.git
+.gradle
+jena-tdb
+lib
+logs

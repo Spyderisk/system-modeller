@@ -1,0 +1,16 @@
+#A query to get a inferred node setting from the construction pattern that uses it and the role
+#that is part of the node that the setting is applied to
+#Param 1 the construction pattern
+#Param 2 the role of the node
+SELECT ?setting
+WHERE{
+	BIND(<%s> as ?cpattern)
+	BIND(<%s> as ?role)
+	?setting a core:InferredNodeSetting .
+	?setting core:hasInferredNode ?node .
+	?node a core:Node .
+	?node core:hasRole ?role .
+	?cpattern a core:ConstructionPattern .
+	?cpattern core:hasInferredNodeSetting ?setting .
+	?cpattern core:hasInferredNode ?node .
+}

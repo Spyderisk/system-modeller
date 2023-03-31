@@ -1,0 +1,17 @@
+#Adds a control strategy to a specifed threat with its treating type
+#Param 1-3 the graph uri
+#Param 4 the control strategy
+#Param 5 the treat type
+#Param 6 the threat
+INSERT{
+	GRAPH<%s>{
+		?cs ?t ?threat .
+	}
+}
+USING <%s>
+USING NAMED <%s>
+WHERE{
+	BIND(<%s> as ?cs)
+	BIND(%s as ?t)
+	BIND(<%s> as ?threat)
+}

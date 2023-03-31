@@ -1,0 +1,6 @@
+ASK {
+	GRAPH <%s>{
+		?uri rdfs:label "%s" . 
+		?uri acl:accessTo <%s> . 
+	}
+}

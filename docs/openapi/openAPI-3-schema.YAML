@@ -1,0 +1,3558 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v3.4.0
+  description: SPYDERISK System Modeller (SSM) REST API definitions for domain models, user system models and usage by other applications.
+  contact:
+    name: University of Southampton IT Innovation Centre
+    url: http://www.it-innovation.soton.ac.uk/contact-us
+    email: info@spyderisk.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - url: http://localhost:8081/system-modeller
+    description: Local server
+paths:
+  /models/{modelid}:
+    put:
+      tags:
+      - model-controller
+      description: Update a model given the model parameters and ID.
+      operationId: updateModel
+      parameters:
+      - name: modelid
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: the model to update in the persistence layer in the backend.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelDTO'
+        required: true
+      responses:
+        "200":
+          description: the persisted model object
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/UpdateModelResponse'
+    delete:
+      tags:
+      - model-controller
+      description: Delete the model given the ID.
+      operationId: deleteModel
+      parameters:
+      - name: modelid
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: an OK response
+          content:
+            '*/*':
+              schema:
+                type: string
+  /models/{modelId}/relations/{relationId}:
+    get:
+      tags:
+      - relation-controller
+      description: Get information about a relation.
+      operationId: getRelation
+      parameters:
+      - name: modelId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: relationId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: the relation contained in the model
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Relation'
+    put:
+      tags:
+      - relation-controller
+      description: Update information about a relation.
+      operationId: updateRelation
+      parameters:
+      - name: modelId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: relationId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Relation'
+        required: true
+      responses:
+        "200":
+          description: the updated relation contained in the model
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Relation'
+    delete:
+      tags:
+      - relation-controller
+      description: Delete a relation given the model and relation IDs.
+      operationId: deleteRelationInModel
+      parameters:
+      - name: modelId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: relationId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: a JSON object describing the RelationUi with the given relation
+            id
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DeleteRelationResponse'
+  /models/{modelId}/misbehaviours/{misbehaviourId}/impact:
+    put:
+      tags:
+      - threat-controller
+      description: Update impact information about a misbehaviour associated with
+        a threat.
+      operationId: updateMisbehaviourImpact
+      parameters:
+      - name: modelId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: misbehaviourId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MisbehaviourSet'
+        required: true
+      responses:
+        "200":
+          description: a JSON object describing updated misbehaviour impact
+          content:
+            '*/*':
+              schema:
+                type: string
+  /models/{modelId}/authz:
+    get:
+      tags:
+      - authz-controller
+      description: "REST method to GET the authzDTO for a model if user has owner\
+        \ permissions or is using an \n owner web key"
+      operationId: getAuthz
+      parameters:
+      - name: modelId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: an AuthzDTO object containing webkeys and access control lists
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AuthzDTO'
+    put:
+      tags:
+      - authz-controller
+      description: "REST method to PUT authzDTO object, saving it in MongoDB for a\
+        \ model \n if user has owner permissions or is using an owner web key"
+      operationId: updateAuthz
+      parameters:
+      - name: modelId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthzDTO'
+        required: true
+      responses:
+        "200":
+          description: status message response object
+          content:
+            '*/*':
+              schema:
+                type: string
+  /models/{modelId}/assets/{assetId}/type:
+    put:
+      tags:
+      - asset-controller
+      description: Update an asset type.
+      operationId: updateAssetType
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: assetId
+        in: path
+        description: ID of the asset
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: Asset (in the request body)
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Asset'
+        required: true
+      responses:
+        "200":
+          description: a JSON object describing the AssetUi with the given asset id
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UpdateAssetResponse'
+  /models/{modelId}/assets/{assetId}/twas:
+    get:
+      tags:
+      - asset-controller
+      description: Get TWAS for a given asset
+      operationId: getAssetTwas
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: assetId
+        in: path
+        description: ID of the asset
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: a map of the TWAS data
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/TrustworthinessAttributeSet'
+    put:
+      tags:
+      - asset-controller
+      description: Update Trustworthiness Assignment for an asset. Used mainly in
+        the Trustworthiness assignment operations.
+      operationId: updateTwasForAsset
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: assetId
+        in: path
+        description: ID of the asset
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: Trustworthiness Attribute Set object in the request body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrustworthinessAttributeSet'
+        required: true
+      responses:
+        "200":
+          description: updated TWAS
+          content:
+            '*/*':
+              schema:
+                type: string
+  /models/{modelId}/assets/{assetId}/population:
+    put:
+      tags:
+      - asset-controller
+      description: Update an asset population level.
+      operationId: updateAssetPopulation
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: assetId
+        in: path
+        description: ID of the asset
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: Asset (in the request body)
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Asset'
+        required: true
+      responses:
+        "200":
+          description: status message response object
+          content:
+            '*/*':
+              schema:
+                type: string
+  /models/{modelId}/assets/{assetId}/meta:
+    get:
+      tags:
+      - asset-controller
+      description: Get all metadata pairs associated with a single asset in a model.
+      operationId: getMetadataOnAsset
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: assetId
+        in: path
+        description: ID of the asset
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Request response with a body containing a list of metadata
+            pairs
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetadataPair'
+    put:
+      tags:
+      - asset-controller
+      description: Replace all metadata on an asset.
+      operationId: replaceMetadataOnAsset
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: assetId
+        in: path
+        description: ID of the asset
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: A list of metadata pairs (in the request body)
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/MetadataPair'
+        required: true
+      responses:
+        "200":
+          description: Request response with a body containing the resulting list
+            of metadata pairs on the asset
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetadataPair'
+    delete:
+      tags:
+      - asset-controller
+      description: Delete all metadata associated with a single asset.
+      operationId: deleteMetadataOnAsset
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: assetId
+        in: path
+        description: ID of the asset
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Request response with a body containing a list of assets
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetadataPair'
+    patch:
+      tags:
+      - asset-controller
+      description: Add metadata to an asset.
+      operationId: addMetadataOnAsset
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: assetId
+        in: path
+        description: ID of the asset
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: A list of metadata pairs (in the request body).
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/MetadataPair'
+        required: true
+      responses:
+        "200":
+          description: Request response with a body containing the resulting list
+            of metadata pairs on the asset
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MetadataPair'
+  /models/{modelId}/assets/{assetId}/location:
+    put:
+      tags:
+      - asset-controller
+      description: Update location for an asset.
+      operationId: updateAssetLocation
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: assetId
+        in: path
+        description: ID of the asset
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: Asset (in the request body)
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Asset'
+        required: true
+      responses:
+        "200":
+          description: status message response object
+          content:
+            '*/*':
+              schema:
+                type: string
+  /models/{modelId}/assets/{assetId}/label:
+    put:
+      tags:
+      - asset-controller
+      description: Update an asset label.
+      operationId: updateAssetLabel
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: assetId
+        in: path
+        description: ID of the asset
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: Asset (in the request body)
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Asset'
+        required: true
+      responses:
+        "200":
+          description: an UpdateAsset JSON object describing the updated Asset
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UpdateAsset'
+  /models/{modelId}/assets/{assetId}/control:
+    put:
+      tags:
+      - asset-controller
+      description: "Update a control for an asset. \n For population support, this\
+        \ automatically updates the associated min/max control sets"
+      operationId: updateControlForAsset
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: assetId
+        in: path
+        description: ID of the asset
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: ControlSet in the request body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ControlSet'
+        required: true
+      responses:
+        "200":
+          description: updated control URIs
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UpdateControlsResponse'
+  /models/{modelId}/assets/{assetId}/cardinality:
+    put:
+      tags:
+      - asset-controller
+      description: "Update an asset cardinality constraint (N.B. should not longer\
+        \ be required, as replaced by population)"
+      operationId: updateAssetInModel
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: assetId
+        in: path
+        description: ID of the asset
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: Asset (in the request body)
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Asset'
+        required: true
+      responses:
+        "200":
+          description: a JSON object describing the AssetUi with the given asset id
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UpdateAssetResponse'
+  /models/{modelId}/assets/updateLocations:
+    put:
+      tags:
+      - asset-controller
+      description: Update location for a set of assets. Used mainly by the Canvas
+        user operations.
+      operationId: updateAssetsLocations
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: AssetArrayDTO in request body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetArrayDTO'
+        required: true
+      responses:
+        "200":
+          description: status message response object
+          content:
+            '*/*':
+              schema:
+                type: string
+  /models/{modelId}/assets/controls:
+    put:
+      tags:
+      - asset-controller
+      description: Update multiple controls for assets. Used in the control strategy
+        operations and Control Explorer.
+      operationId: updateControls
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: UpdateControlsRequest object in the request body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateControlsRequest'
+        required: true
+      responses:
+        "200":
+          description: status message response object
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UpdateControlsResponse'
+  /models/{modelId}/assetGroups/{groupId}/size:
+    put:
+      tags:
+      - group-controller
+      description: Update an AssetGroup size on the canvas.
+      operationId: updateGroupSize
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: groupId
+        in: path
+        description: the id of the AssetGroup
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetGroupDTO'
+        required: true
+      responses:
+        "200":
+          description: the updated AssetGroupDTO instance
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AssetGroupDTO'
+  /models/{modelId}/assetGroups/{groupId}/location:
+    put:
+      tags:
+      - group-controller
+      description: Update an AssetGroup location on the canvas.
+      operationId: updateGroupLocation
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: groupId
+        in: path
+        description: the id of the AssetGroup
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetGroupDTO'
+        required: true
+      responses:
+        "200":
+          description: the updated AssetGroupDTO instance
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AssetGroupDTO'
+  /models/{modelId}/assetGroups/{groupId}/label:
+    put:
+      tags:
+      - group-controller
+      description: Update an AssetGroup label.
+      operationId: updateGroupLabel
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: groupId
+        in: path
+        description: the id of the AssetGroup
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetGroupDTO'
+        required: true
+      responses:
+        "200":
+          description: the updated AssetGroupDTO instance
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AssetGroupDTO'
+  /models/{modelId}/assetGroups/{groupId}/expanded:
+    put:
+      tags:
+      - group-controller
+      description: "Expand/contract an AssetGroup on the canvas, depending on the\
+        \ value of \"expanded\" field"
+      operationId: updateGroupExpanded
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: groupId
+        in: path
+        description: the id of the AssetGroup
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetGroupDTO'
+        required: true
+      responses:
+        "200":
+          description: the updated AssetGroupDTO instance
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AssetGroupDTO'
+  /models:
+    get:
+      tags:
+      - model-controller
+      description: Returns a list of models for the current user.
+      operationId: listModels
+      responses:
+        "200":
+          description: "a list of ModelSummary objects, for models owned by the user"
+          content:
+            '*/*':
+              schema:
+                uniqueItems: true
+                type: array
+                items:
+                  type: object
+    post:
+      tags:
+      - model-controller
+      description: Send a request to create a new blank model for the user
+      operationId: createModel
+      requestBody:
+        description: the initial model used to create a persistent model in the backend.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelDTO'
+        required: true
+      responses:
+        "200":
+          description: "the persisted model object (internal id set), as a ModelSummary"
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ModelDTO'
+  /models/{objid}/checkout:
+    post:
+      tags:
+      - model-controller
+      description: "This method forces a checkout even if another user is currently\
+        \ editing a model, as for example\n when a user chooses the option to take\
+        \ over editing of a model."
+      operationId: checkoutModel
+      parameters:
+      - name: objid
+        in: path
+        description: the String representation of the model object to check out
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "OK/not OK in header, body with the checked out model object"
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ModelDTO'
+  /models/{objid}/checkin:
+    post:
+      tags:
+      - model-controller
+      description: This method checks in a model if the user is the current editor
+        for that model
+      operationId: checkinModel
+      parameters:
+      - name: objid
+        in: path
+        description: the String representation of the model object to check in
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "OK/not OK in header, body with the checked in model object"
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ModelDTO'
+  /models/{modelWriteId}/clear_inferred_graph:
+    post:
+      tags:
+      - model-controller
+      description: Clear inferred graph for a given model.
+      operationId: clearInferredGraphForModel
+      parameters:
+      - name: modelWriteId
+        in: path
+        description: write id for the model
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+  /models/{modelId}/threats/{threatId}/accept:
+    post:
+      tags:
+      - threat-controller
+      description: Accept a particular threat
+      operationId: acceptThreat
+      parameters:
+      - name: modelId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: threatId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Threat'
+        required: true
+      responses:
+        "200":
+          description: a JSON object describing the updated controls and threats for
+            a given asset
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ThreatDTO'
+  /models/{modelId}/relations:
+    get:
+      tags:
+      - relation-controller
+      description: Get a list of Relation present in the model.
+      operationId: listModelRelations
+      parameters:
+      - name: modelId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: a list of relations contained in the model
+          content:
+            '*/*':
+              schema:
+                uniqueItems: true
+                type: array
+                items:
+                  $ref: '#/components/schemas/Relation'
+    post:
+      tags:
+      - relation-controller
+      description: Submit a new relation to be created.
+      operationId: createRelation
+      parameters:
+      - name: modelId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Relation'
+        required: true
+      responses:
+        "200":
+          description: "the persisted relation, error otherwise"
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/CreateRelationResponse'
+  /models/{modelId}/misbehaviours/{misbehaviourId}/revert-impact:
+    post:
+      tags:
+      - threat-controller
+      description: Revert asserted impact level for a misbehaviour
+      operationId: revertMisbehaviourImpact
+      parameters:
+      - name: modelId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: misbehaviourId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: Misbehaviour id/uri
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MisbehaviourSet'
+        required: true
+      responses:
+        "200":
+          description: updated misbehaviour containing reverted impact level
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MisbehaviourSet'
+  /models/{modelId}/copyModel:
+    post:
+      tags:
+      - model-controller
+      description: Copy a source model to a new copy of that model
+      operationId: copyModel
+      parameters:
+      - name: modelId
+        in: path
+        description: the webkey of the model to copy
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: the initial model used to create a persistent model in the backend
+          (just the name and description fields are used).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ModelDTO'
+        required: true
+      responses:
+        "200":
+          description: "the persisted model object (internal id set), as a ModelSummary"
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ModelDTO'
+  /models/{modelId}/assets/{assetId}/revert-twas:
+    post:
+      tags:
+      - asset-controller
+      description: Revert asserted TWAS for an asset
+      operationId: revertTwasForAsset
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: assetId
+        in: path
+        description: ID of the asset
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: Trustworthiness Attribute Set object in the request body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrustworthinessAttributeSet'
+        required: true
+      responses:
+        "200":
+          description: reverted TWAS
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/TrustworthinessAttributeSet'
+  /models/{modelId}/assets/{assetId}/revert-control-coverage:
+    post:
+      tags:
+      - asset-controller
+      description: Revert coverage level for control set on an asset.
+      operationId: revertCoverageForControl
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: assetId
+        in: path
+        description: ID of the asset
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: ControlSet in the request body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ControlSet'
+        required: true
+      responses:
+        "200":
+          description: updated ControlSet
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ControlSet'
+  /models/{modelId}/assets:
+    get:
+      tags:
+      - asset-controller
+      description: "/models/{modelId}/assets"
+      operationId: getAssets
+      parameters:
+      - name: modelId
+        in: path
+        description: Model ID that can be used to access the model. Found in ModelInfo
+          definition and any response that returns ModelInfo type.
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: a list of models' assets owned by the user
+          content:
+            '*/*':
+              schema:
+                uniqueItems: true
+                type: array
+                items:
+                  $ref: '#/components/schemas/Asset'
+    post:
+      tags:
+      - asset-controller
+      description: Add an Asset object to persist in the model.
+      operationId: addAssetToModel
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: Asset object that can be used with the request. Found in Relation
+          definition and any response that returns Relation type.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Asset'
+        required: true
+      responses:
+        "200":
+          description: the Asset instance
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/CreateAssetResponse'
+  /models/{modelId}/assetGroups/{groupId}/removeAsset/{assetId}:
+    post:
+      tags:
+      - group-controller
+      description: Remove an Asset from an AssetGroup object (placing back onto canvas)
+      operationId: removeAssetFromGroup
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: groupId
+        in: path
+        description: the id of the AssetGroup
+        required: true
+        schema:
+          type: string
+      - name: assetId
+        in: path
+        description: the id of the Asset to remove
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: "the Asset to remove, including new position on canvas"
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Asset'
+        required: true
+      responses:
+        "200":
+          description: the updated AssetGroupDTO instance
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AssetGroupDTO'
+  /models/{modelId}/assetGroups/{groupId}/moveAsset/{assetId}/toGroup/{targetGroupId}:
+    post:
+      tags:
+      - group-controller
+      description: Move an Asset from one AssetGroup to another
+      operationId: moveAssetGroup
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: groupId
+        in: path
+        description: the id of the source AssetGroup
+        required: true
+        schema:
+          type: string
+      - name: assetId
+        in: path
+        description: the id of the Asset to move
+        required: true
+        schema:
+          type: string
+      - name: targetGroupId
+        in: path
+        description: the id of the target AssetGroup
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: "the Asset to move, including its new position in target AssetGroup"
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Asset'
+        required: true
+      responses:
+        "200":
+          description: the updated AssetGroupDTO instance
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/AssetGroupDTO'
+  /models/{modelId}/assetGroups/{groupId}/addAsset/{assetId}:
+    post:
+      tags:
+      - group-controller
+      description: Add an Asset to an AssetGroup object.
+      operationId: addAssetToGroup
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: groupId
+        in: path
+        description: the id of the AssetGroup
+        required: true
+        schema:
+          type: string
+      - name: assetId
+        in: path
+        description: the id of the Asset to add
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: "the Asset to add, including updated location within group"
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Asset'
+        required: true
+      responses:
+        "200":
+          description: the updated AssetGroupDTO instance
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AssetGroupDTO'
+  /models/{modelId}/assetGroups:
+    get:
+      tags:
+      - group-controller
+      description: Get all AssetGroups
+      operationId: getAssetGroups
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: a list of model's AssetGroups
+          content:
+            '*/*':
+              schema:
+                uniqueItems: true
+                type: array
+                items:
+                  $ref: '#/components/schemas/AssetGroupDTO'
+    post:
+      tags:
+      - group-controller
+      description: Add an AssetGroup object to persist in the model.
+      operationId: addAssetGroupToModel
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: AssetGroup object to add.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetGroupDTO'
+        required: true
+      responses:
+        "200":
+          description: the AssetGroup instance
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/AssetGroupDTO'
+  /models/import:
+    post:
+      tags:
+      - model-controller
+      description: Import a model model in .nq.gz or .nq format. returns list of models
+        for the user
+      operationId: importModel
+      parameters:
+      - name: asserted
+        in: query
+        required: true
+        schema:
+          type: boolean
+      - name: overwrite
+        in: query
+        required: true
+        schema:
+          type: boolean
+      - name: newName
+        in: query
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+              - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: SUCCESS/ERROR
+          content:
+            '*/*':
+              schema:
+                uniqueItems: true
+                type: array
+                items:
+                  type: object
+  /domains/{domain}/users:
+    get:
+      tags:
+      - domain-model-controller
+      operationId: getDomainUsers
+      parameters:
+      - name: domain
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+    post:
+      tags:
+      - domain-model-controller
+      operationId: updateDomainUsers
+      parameters:
+      - name: domain
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: object
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /domains/{domain}/palette:
+    post:
+      tags:
+      - domain-model-controller
+      operationId: updatePalette
+      parameters:
+      - name: domain
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: object
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /domains/upload:
+    post:
+      tags:
+      - domain-model-controller
+      operationId: uploadNewDomainVersion
+      parameters:
+      - name: domainUri
+        in: query
+        required: false
+        schema:
+          type: string
+      - name: newDomain
+        in: query
+        required: false
+        schema:
+          type: boolean
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required:
+              - file
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                file2:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /usermodels/{userId}:
+    get:
+      tags:
+      - model-controller
+      description: Returns a list of models for a given user. (N.B. admin function
+        only)
+      operationId: listModelsForUser
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "a list of ModelSummary objects, for specified user (N.B. admin\
+            \ function only)"
+          content:
+            '*/*':
+              schema:
+                uniqueItems: true
+                type: array
+                items:
+                  type: object
+  /models/{objid}/palette:
+    get:
+      tags:
+      - model-controller
+      description: // TODO -- javadoc
+      operationId: getPalette
+      parameters:
+      - name: objid
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+  /models/{modelWriteId}/validated:
+    get:
+      tags:
+      - model-controller
+      description: Initiate a validation operation for the model given the ID of the
+        model.
+      operationId: validateModel
+      parameters:
+      - name: modelWriteId
+        in: path
+        description: write id for the validated model object to fetch
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: "the FullModel instance, including any added inferred assets,\
+            \ etc"
+          content:
+            '*/*':
+              schema:
+                type: string
+  /models/{modelWriteId}/calc_risks:
+    get:
+      tags:
+      - model-controller
+      description: "Initiate a risk calculation operation for the given model, as\
+        \ a background thread."
+      operationId: calculateRisks
+      parameters:
+      - name: modelWriteId
+        in: path
+        description: write id for the model
+        required: true
+        schema:
+          type: string
+      - name: mode
+        in: query
+        description: the risk calculation mode to use ("CURRENT" or "FUTURE")
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+  /models/{modelWriteId}/calc_risks_blocking:
+    get:
+      tags:
+      - model-controller
+      description: "Run a risk calculation for a model, as a blocking call, \n returning\
+        \ results in the response."
+      operationId: calculateRisksBlocking
+      parameters:
+      - name: modelWriteId
+        in: path
+        description: write id for the model
+        required: true
+        schema:
+          type: string
+      - name: mode
+        in: query
+        description: the risk calculation mode to use ("CURRENT" or "FUTURE")
+        required: true
+        schema:
+          type: string
+      - name: save
+        in: query
+        description: whether the results should be saved before returning
+        required: true
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: risk calculation results
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/RiskCalcResultsDB'
+  /models/{modelId}:
+    get:
+      tags:
+      - model-controller
+      description: Return the model info for the given ID.
+      operationId: getModel
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to fetch
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: the FullModel instance
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ModelDTO'
+  /models/{modelId}/{loadingID}/loadingprogress:
+    get:
+      tags:
+      - model-controller
+      description: Get an update on loading the model given the ID and loadingID of
+        the model.
+      operationId: getLoadingProgress
+      parameters:
+      - name: modelId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: loadingID
+        in: path
+        description: unique id of the model loading task
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: loading progress
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LoadingProgressResponse'
+  /models/{modelId}/validationprogress:
+    get:
+      tags:
+      - model-controller
+      description: Get an update on the validation operation running the model given
+        the ID of the model.
+      operationId: getValidationProgress
+      parameters:
+      - name: modelId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: validation progress
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Progress'
+  /models/{modelId}/threats:
+    get:
+      tags:
+      - threat-controller
+      description: Find the list of threats available for the model.
+      operationId: getThreats
+      parameters:
+      - name: modelId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: cached
+        in: query
+        description: boolean to optionally request for cached threats
+        required: false
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: a list of models' threats owned by the user
+          content:
+            '*/*':
+              schema:
+                uniqueItems: true
+                type: array
+                items:
+                  $ref: '#/components/schemas/ThreatDTO'
+  /models/{modelId}/threats/{threatId}:
+    get:
+      tags:
+      - threat-controller
+      description: Get info about a particular threat in a model
+      operationId: getThreatInModel
+      parameters:
+      - name: modelId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: threatId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: a JSON object describing the Threat with the given threat id
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ThreatDTO'
+  /models/{modelId}/riskvector:
+    get:
+      tags:
+      - model-controller
+      description: Get risk vector for model (breakdown of numbers of misbehaviours
+        at each risk level)
+      operationId: getModelRiskVector
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to fetch
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: the RiskVector instance (map of risk URI to RiskLevelCount
+            objects)
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/RiskLevelCount'
+  /models/{modelId}/risks:
+    get:
+      tags:
+      - model-controller
+      description: Gets the basic model details and risks data (only)
+      operationId: getModelAndRisks
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to fetch
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: the FullModel instance
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ModelDTO'
+  /models/{modelId}/riskcalcprogress:
+    get:
+      tags:
+      - model-controller
+      description: Get an update on the risk calculation operation running the model
+        given the ID of the model.
+      operationId: getRiskCalcProgress
+      parameters:
+      - name: modelId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: risk calculation progress
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Progress'
+  /models/{modelId}/report:
+    get:
+      tags:
+      - model-controller
+      description: This REST method generates a JSON report from the given model
+      operationId: generateReport
+      parameters:
+      - name: modelId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A JSON report
+          content:
+            '*/*':
+              schema:
+                type: object
+  /models/{modelId}/info:
+    get:
+      tags:
+      - model-controller
+      description: Gets the basic model details
+      operationId: getModelInfo
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to fetch
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: the FullModel instance
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ModelDTO'
+  /models/{modelId}/export:
+    get:
+      tags:
+      - model-controller
+      description: This REST method exports all graphs for a model as n-quads (.nq.gz
+        format)
+      operationId: export
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the validated model object to fetch
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: the serialised model
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+  /models/{modelId}/exportAsserted:
+    get:
+      tags:
+      - model-controller
+      description: This REST method exports all asserted graphs for a model as n-quads
+        (.nq.gz format)
+      operationId: exportAsserted
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the validated model object to fetch
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: the serialised model
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
+  /models/{modelId}/controls:
+    get:
+      tags:
+      - threat-controller
+      description: Find the list of controls for the model.
+      operationId: getControls
+      parameters:
+      - name: modelId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: a list of controls
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/Control'
+  /models/{modelId}/controlsets:
+    get:
+      tags:
+      - threat-controller
+      description: Find the control sets for the model.
+      operationId: getControlSets
+      parameters:
+      - name: modelId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: map of control sets
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/ControlSet'
+  /models/{modelId}/assets/{assetId}:
+    get:
+      tags:
+      - asset-controller
+      description: "Get extended information belonging to an asset, given its ID"
+      operationId: getAssetInModel
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: assetId
+        in: path
+        description: ID of the asset
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: an Asset object (as JSON) describing the asset
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Asset'
+    delete:
+      tags:
+      - asset-controller
+      description: Delete an asset from the model.
+      operationId: deleteAssetInModel
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: assetId
+        in: path
+        description: ID of the asset
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: a JSON object describing the Asset with the given asset ID
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DeleteAssetResponse'
+  /models/{modelId}/assets/{assetId}/controlsets:
+    get:
+      tags:
+      - asset-controller
+      description: Get control sets for a given asset
+      operationId: getAssetControlSets
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: assetId
+        in: path
+        description: ID of the asset
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A map of the control sets
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/ControlSet'
+  /models/{modelId}/assets/{assetId}/controls_and_threats:
+    get:
+      tags:
+      - asset-controller
+      description: Get all controls and threats for a single asset. Can be used for
+        more compact model information retrieval.
+      operationId: getControlsAndThreatsForAsset
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: assetId
+        in: path
+        description: ID of the asset
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: a JSON object describing the controls and threats for a given
+            asset
+          content: {}
+  /models/{modelId}/assets/meta:
+    get:
+      tags:
+      - asset-controller
+      description: Query assets by their metadata. The query is constructed from a
+        list of metadata pairs.
+      operationId: getAssetsByMetadata
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: metadataJson
+        in: query
+        description: "A JSON array, the request body, specifying a list of metadata\
+          \ pairs (e.g. \"[{\"key\":\"k1\", \"value\":\"v1\"}]\")"
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: Request response with a body containing a list of assets
+          content:
+            '*/*':
+              schema:
+                uniqueItems: true
+                type: array
+                items:
+                  $ref: '#/components/schemas/Asset'
+  /domains/:
+    get:
+      tags:
+      - domain-model-controller
+      operationId: getDomainModels
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  additionalProperties:
+                    type: object
+  /domains/{graphName}/export:
+    get:
+      tags:
+      - domain-model-controller
+      operationId: export_1
+      parameters:
+      - name: graphName
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /domains/users:
+    get:
+      tags:
+      - domain-model-controller
+      operationId: getAllUsers
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /domains/ontologies:
+    get:
+      tags:
+      - domain-model-controller
+      operationId: exportOntologies
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /auth/me:
+    get:
+      tags:
+      - user-controller
+      operationId: getCurrentUser
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /administration/users:
+    get:
+      tags:
+      - user-controller
+      operationId: getAllUsers_1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /administration/users/{userId}:
+    get:
+      tags:
+      - user-controller
+      operationId: getUser
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /models/{modelId}/assetGroups/{groupId}:
+    delete:
+      tags:
+      - group-controller
+      description: "Delete an AssetGroup, optionally deleting the grouped assets."
+      operationId: deleteGroupInModel
+      parameters:
+      - name: modelId
+        in: path
+        description: Webkey of the model
+        required: true
+        schema:
+          type: string
+      - name: groupId
+        in: path
+        description: the id of the AssetGroup
+        required: true
+        schema:
+          type: string
+      - name: deleteAssets
+        in: query
+        description: "flag to indicate whether grouped assets should also be deleted,\
+          \ or returned to the canvas"
+        required: false
+        schema:
+          type: boolean
+          default: false
+      responses:
+        "200":
+          description: "DeleteGroupResponse includes group id deleted and any assets,\
+            \ relations that were also deleted"
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/DeleteGroupResponse'
+  /domains/{domain}:
+    delete:
+      tags:
+      - domain-model-controller
+      operationId: deleteDomainModel
+      parameters:
+      - name: domain
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /error:
+    get:
+      tags:
+      - json-error-controller
+      operationId: error_5
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+      - json-error-controller
+      operationId: error_6
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+      - json-error-controller
+      operationId: error
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+      - json-error-controller
+      operationId: error_3
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    options:
+      tags:
+      - json-error-controller
+      operationId: error_2
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    head:
+      tags:
+      - json-error-controller
+      operationId: error_4
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      tags:
+      - json-error-controller
+      operationId: error_1
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    AssetDTO:
+      type: object
+      properties:
+        uri:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+        asserted:
+          type: boolean
+        visible:
+          type: boolean
+        iconX:
+          type: integer
+          format: int32
+        iconY:
+          type: integer
+          format: int32
+        minCardinality:
+          type: integer
+          format: int32
+        maxCardinality:
+          type: integer
+          format: int32
+        population:
+          type: string
+        controlSets:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ControlSet'
+        misbehaviourSets:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        inferredAssets:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        trustworthinessAttributeSets:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        id:
+          type: string
+    AssetGroupDTO:
+      type: object
+      properties:
+        uri:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        left:
+          type: string
+        top:
+          type: string
+        width:
+          type: integer
+          format: int32
+        height:
+          type: integer
+          format: int32
+        expanded:
+          type: boolean
+        assetIds:
+          type: array
+          items:
+            type: object
+        name:
+          type: string
+        id:
+          type: string
+    ComplianceSetDTO:
+      type: object
+      properties:
+        uri:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        systemThreats:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        compliant:
+          type: boolean
+        id:
+          type: string
+    ComplianceThreatDTO:
+      type: object
+      properties:
+        uri:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        pattern:
+          $ref: '#/components/schemas/Pattern'
+        threatensAssets:
+          type: string
+        type:
+          type: string
+        resolved:
+          type: boolean
+        acceptanceJustification:
+          type: string
+        controlStrategies:
+          type: object
+          additionalProperties:
+            type: string
+            enum:
+            - BLOCK
+            - MITIGATE
+            - TRIGGER
+        id:
+          type: string
+    ControlSet:
+      type: object
+      properties:
+        uri:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        parents:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        control:
+          type: string
+        assetUri:
+          type: string
+        assetId:
+          type: string
+        proposed:
+          type: boolean
+        assertable:
+          type: boolean
+        workInProgress:
+          type: boolean
+        coverageLevel:
+          type: string
+        coverageAsserted:
+          type: boolean
+        id:
+          type: string
+    ControlStrategyDTO:
+      type: object
+      properties:
+        uri:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        blockingEffect:
+          $ref: '#/components/schemas/Level'
+        enabled:
+          type: boolean
+        mandatoryControlSets:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        optionalControlSets:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        threatCsgTypes:
+          type: object
+          additionalProperties:
+            type: string
+            enum:
+            - BLOCK
+            - MITIGATE
+            - TRIGGER
+        id:
+          type: string
+    Level:
+      type: object
+      properties:
+        uri:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        parents:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        value:
+          type: integer
+          format: int32
+        id:
+          type: string
+    Link:
+      type: object
+      properties:
+        fromAsset:
+          type: string
+        fromAssetLabel:
+          type: string
+        fromRole:
+          type: string
+        fromRoleLabel:
+          type: string
+        toAsset:
+          type: string
+        toAssetLabel:
+          type: string
+        toRole:
+          type: string
+        toRoleLabel:
+          type: string
+        type:
+          type: string
+        typeLabel:
+          type: string
+    MisbehaviourSet:
+      type: object
+      properties:
+        uri:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        parents:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        misbehaviour:
+          type: string
+        misbehaviourLabel:
+          type: string
+        asset:
+          type: string
+        assetLabel:
+          type: string
+        visible:
+          type: boolean
+        impactLevel:
+          $ref: '#/components/schemas/Level'
+        likelihood:
+          $ref: '#/components/schemas/Level'
+        riskLevel:
+          $ref: '#/components/schemas/Level'
+        impactLevelAsserted:
+          type: boolean
+        directCauses:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        indirectCauses:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        rootCauses:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        directEffects:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        id:
+          type: string
+    ModelDTO:
+      type: object
+      properties:
+        name:
+          type: string
+        id:
+          type: string
+        description:
+          type: string
+        domainGraph:
+          type: string
+        domainVersion:
+          type: string
+        validatedDomainVersion:
+          type: string
+        valid:
+          type: boolean
+        riskLevelsValid:
+          type: boolean
+        calculatingRisks:
+          type: boolean
+        canBeEdited:
+          type: boolean
+        canBeShared:
+          type: boolean
+        risk:
+          $ref: '#/components/schemas/Level'
+        threats:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/ThreatDTO'
+        controlStrategies:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ControlStrategyDTO'
+        complianceThreats:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/ComplianceThreatDTO'
+        complianceSets:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/ComplianceSetDTO'
+        misbehaviourSets:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MisbehaviourSet'
+        twas:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/TrustworthinessAttributeSet'
+        controlSets:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/ControlSet'
+        userId:
+          type: string
+        editorId:
+          type: string
+        created:
+          type: string
+          format: int64
+        modified:
+          type: string
+          format: int64
+        modifiedBy:
+          type: string
+        levels:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              $ref: '#/components/schemas/Level'
+        riskVector:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/RiskLevelCount'
+        assets:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/AssetDTO'
+        relations:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/Relation'
+        groups:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/AssetGroupDTO'
+        loadingId:
+          type: string
+        validating:
+          type: boolean
+    Node:
+      type: object
+      properties:
+        uri:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        parents:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        asset:
+          type: string
+        role:
+          type: string
+        assetLabel:
+          type: string
+        roleLabel:
+          type: string
+        id:
+          type: string
+    Pattern:
+      type: object
+      properties:
+        uri:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        parents:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        parent:
+          type: string
+        parentLabel:
+          type: string
+        nodes:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/Node'
+        links:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
+        id:
+          type: string
+    Relation:
+      type: object
+      properties:
+        from:
+          type: string
+        fromID:
+          type: string
+        to:
+          type: string
+        toID:
+          type: string
+        type:
+          type: string
+        label:
+          type: string
+        sourceCardinality:
+          type: integer
+          format: int32
+        targetCardinality:
+          type: integer
+          format: int32
+        asserted:
+          type: boolean
+        visible:
+          type: boolean
+        immutable:
+          type: boolean
+        hidden:
+          type: boolean
+        inferredAssets:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        id:
+          type: string
+    RiskLevelCount:
+      type: object
+      properties:
+        level:
+          $ref: '#/components/schemas/Level'
+        count:
+          type: integer
+          format: int32
+    SemanticEntity:
+      type: object
+      properties:
+        uri:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        parents:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        id:
+          type: string
+    ThreatDTO:
+      type: object
+      properties:
+        uri:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        pattern:
+          $ref: '#/components/schemas/Pattern'
+        threatensAssets:
+          type: string
+        type:
+          type: string
+        resolved:
+          type: boolean
+        acceptanceJustification:
+          type: string
+        misbehaviours:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        indirectEffects:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        secondaryThreat:
+          type: boolean
+        secondaryEffectConditions:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        controlStrategies:
+          type: object
+          additionalProperties:
+            type: string
+            enum:
+            - BLOCK
+            - MITIGATE
+            - TRIGGER
+        entryPoints:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        likelihood:
+          $ref: '#/components/schemas/Level'
+        riskLevel:
+          $ref: '#/components/schemas/Level'
+        rootCause:
+          type: boolean
+        id:
+          type: string
+    TrustworthinessAttributeSet:
+      type: object
+      properties:
+        uri:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        parents:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        asset:
+          type: string
+        attribute:
+          $ref: '#/components/schemas/SemanticEntity'
+        causingMisbehaviourSet:
+          type: string
+        assertedTWLevel:
+          $ref: '#/components/schemas/Level'
+        inferredTWLevel:
+          $ref: '#/components/schemas/Level'
+        twLevelAsserted:
+          type: boolean
+        visible:
+          type: boolean
+        id:
+          type: string
+    UpdateModelResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        domainGraph:
+          type: string
+        created:
+          type: string
+          format: int64
+        modified:
+          type: string
+          format: int64
+    AuthzDTO:
+      type: object
+      properties:
+        readUsernames:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        writeUsernames:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        ownerUsernames:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        noRoleUrl:
+          type: string
+        readUrl:
+          type: string
+        writeUrl:
+          type: string
+        ownerUrl:
+          type: string
+    Asset:
+      type: object
+      properties:
+        uri:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        parents:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        type:
+          type: string
+        asserted:
+          type: boolean
+        visible:
+          type: boolean
+        iconX:
+          type: integer
+          format: int32
+        iconY:
+          type: integer
+          format: int32
+        minCardinality:
+          type: integer
+          format: int32
+        maxCardinality:
+          type: integer
+          format: int32
+        population:
+          type: string
+        controlSets:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ControlSet'
+        misbehaviourSets:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MisbehaviourSet'
+        inferredAssets:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        trustworthinessAttributeSets:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/TrustworthinessAttributeSet'
+        metadata:
+          type: array
+          items:
+            $ref: '#/components/schemas/MetadataPair'
+        id:
+          type: string
+    MetadataPair:
+      type: object
+      properties:
+        uri:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        parents:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        key:
+          type: string
+        value:
+          type: string
+        id:
+          type: string
+    UpdateAsset:
+      type: object
+      properties:
+        uri:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        id:
+          type: string
+    UpdateAssetResponse:
+      type: object
+      properties:
+        asset:
+          $ref: '#/components/schemas/UpdateAsset'
+        valid:
+          type: boolean
+    UpdateControlsResponse:
+      type: object
+      properties:
+        controls:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        proposed:
+          type: boolean
+        workInProgress:
+          type: boolean
+        coverageLevel:
+          type: string
+    AssetArrayDTO:
+      type: object
+      properties:
+        assets:
+          type: array
+          items:
+            $ref: '#/components/schemas/Asset'
+    UpdateControlsRequest:
+      type: object
+      properties:
+        controls:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        proposed:
+          type: boolean
+        workInProgress:
+          type: boolean
+    ControlStrategy:
+      type: object
+      properties:
+        uri:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        parents:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        blockingEffect:
+          $ref: '#/components/schemas/Level'
+        mandatoryControlSets:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ControlSet'
+        optionalControlSets:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ControlSet'
+        threatCsgTypes:
+          type: object
+          additionalProperties:
+            type: string
+            enum:
+            - BLOCK
+            - MITIGATE
+            - TRIGGER
+        enabled:
+          type: boolean
+        id:
+          type: string
+    Threat:
+      type: object
+      properties:
+        uri:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        parents:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        pattern:
+          $ref: '#/components/schemas/Pattern'
+        threatensAssets:
+          type: string
+        type:
+          type: string
+        acceptanceJustification:
+          type: string
+        controlStrategies:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ControlStrategy'
+        resolved:
+          type: boolean
+        misbehaviours:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MisbehaviourSet'
+        indirectEffects:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MisbehaviourSet'
+        secondaryThreat:
+          type: boolean
+        secondaryEffectConditions:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MisbehaviourSet'
+        entryPoints:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/TrustworthinessAttributeSet'
+        frequency:
+          $ref: '#/components/schemas/Level'
+        likelihood:
+          $ref: '#/components/schemas/Level'
+        riskLevel:
+          $ref: '#/components/schemas/Level'
+        rootCause:
+          type: boolean
+        id:
+          type: string
+    CreateRelationResponse:
+      type: object
+      properties:
+        relation:
+          $ref: '#/components/schemas/Relation'
+        model:
+          $ref: '#/components/schemas/ModelDTO'
+    CreateAssetResponse:
+      type: object
+      properties:
+        asset:
+          $ref: '#/components/schemas/AssetDTO'
+        valid:
+          type: boolean
+    ControlDB:
+      type: object
+      properties:
+        uri:
+          type: string
+        type:
+          type: string
+        id:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        metaLocatedAt:
+          type: array
+          items:
+            type: string
+        minOf:
+          type: string
+        maxOf:
+          type: string
+        hasMin:
+          type: string
+        hasMax:
+          type: string
+        visible:
+          type: boolean
+    ControlSetDB:
+      type: object
+      properties:
+        uri:
+          type: string
+        type:
+          type: string
+        id:
+          type: string
+        locatedAt:
+          type: string
+        control:
+          type: string
+        proposed:
+          type: boolean
+        coverageLevel:
+          type: string
+        minOf:
+          type: string
+        maxOf:
+          type: string
+        hasMin:
+          type: string
+        hasMax:
+          type: string
+    LevelDB:
+      type: object
+      properties:
+        uri:
+          type: string
+        type:
+          type: string
+        id:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        levelValue:
+          type: integer
+          format: int32
+    MisbehaviourDB:
+      type: object
+      properties:
+        uri:
+          type: string
+        type:
+          type: string
+        id:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        metaLocatedAt:
+          type: array
+          items:
+            type: string
+        minOf:
+          type: string
+        maxOf:
+          type: string
+        hasMin:
+          type: string
+        hasMax:
+          type: string
+        visible:
+          type: boolean
+    MisbehaviourSetDB:
+      type: object
+      properties:
+        uri:
+          type: string
+        type:
+          type: string
+        id:
+          type: string
+        misbehaviour:
+          type: string
+        locatedAt:
+          type: string
+        impactLevel:
+          type: string
+        defaultLevel:
+          type: string
+        prior:
+          type: string
+        risk:
+          type: string
+        externalCause:
+          type: boolean
+        normalOpEffect:
+          type: boolean
+        causedThreats:
+          type: array
+          items:
+            type: string
+        causedBy:
+          type: array
+          items:
+            type: string
+        minOf:
+          type: string
+        maxOf:
+          type: string
+        hasMin:
+          type: string
+        hasMax:
+          type: string
+    ModelDB:
+      type: object
+      properties:
+        uri:
+          type: string
+        type:
+          type: string
+        id:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        risk:
+          type: string
+        versionInfo:
+          type: string
+        domainVersion:
+          type: string
+        created:
+          type: string
+        modified:
+          type: string
+    RiskCalcResultsDB:
+      type: object
+      properties:
+        model:
+          $ref: '#/components/schemas/ModelDB'
+        threats:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ThreatDB'
+        misbehaviourSets:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MisbehaviourSetDB'
+        twas:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/TrustworthinessAttributeSetDB'
+        cs:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ControlSetDB'
+        levels:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              $ref: '#/components/schemas/LevelDB'
+        misbehaviours:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MisbehaviourDB'
+        controls:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/ControlDB'
+    ThreatDB:
+      type: object
+      properties:
+        uri:
+          type: string
+        type:
+          type: string
+        id:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        parent:
+          type: string
+        threatens:
+          type: string
+        appliesTo:
+          type: string
+        frequency:
+          type: string
+        entryPoints:
+          type: array
+          items:
+            type: string
+        secondaryEffectConditions:
+          type: array
+          items:
+            type: string
+        misbehaviours:
+          type: array
+          items:
+            type: string
+        blockedByCSG:
+          type: array
+          items:
+            type: string
+        mitigatedByCSG:
+          type: array
+          items:
+            type: string
+        triggeredByCSG:
+          type: array
+          items:
+            type: string
+        triggered:
+          type: boolean
+        minOf:
+          type: string
+        maxOf:
+          type: string
+        hasMin:
+          type: string
+        hasMax:
+          type: string
+        currentRisk:
+          type: boolean
+        futureRisk:
+          type: boolean
+        secondaryThreat:
+          type: boolean
+        normalOperation:
+          type: boolean
+        prior:
+          type: string
+        risk:
+          type: string
+        directMisbehaviours:
+          type: array
+          items:
+            type: string
+        indirectMisbehaviours:
+          type: array
+          items:
+            type: string
+        indirectThreats:
+          type: array
+          items:
+            type: string
+        causedBy:
+          type: array
+          items:
+            type: string
+        initialCause:
+          type: boolean
+        rootCause:
+          type: boolean
+    TrustworthinessAttributeSetDB:
+      type: object
+      properties:
+        uri:
+          type: string
+        type:
+          type: string
+        id:
+          type: string
+        trustworthinessAttribute:
+          type: string
+        locatedAt:
+          type: string
+        assertedLevel:
+          type: string
+        inferredLevel:
+          type: string
+        externalCause:
+          type: boolean
+        causedThreats:
+          type: array
+          items:
+            type: string
+        minOf:
+          type: string
+        maxOf:
+          type: string
+        hasMin:
+          type: string
+        hasMax:
+          type: string
+    LoadingProgressResponse:
+      type: object
+      properties:
+        progress:
+          type: number
+          format: double
+        message:
+          type: string
+        status:
+          type: string
+        error:
+          type: string
+        model:
+          $ref: '#/components/schemas/ModelDTO'
+    Progress:
+      type: object
+      properties:
+        modelId:
+          type: string
+        progress:
+          type: number
+          format: double
+        message:
+          type: string
+        status:
+          type: string
+        error:
+          type: string
+    Control:
+      type: object
+      properties:
+        uri:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        parents:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        metaLocatedAt:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        strength:
+          type: string
+        id:
+          type: string
+    DeleteRelationResponse:
+      type: object
+      properties:
+        relations:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        valid:
+          type: boolean
+        empty:
+          type: boolean
+    DeleteAssetResponse:
+      type: object
+      properties:
+        assets:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        relations:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        assetGroup:
+          type: string
+        valid:
+          type: boolean
+    DeleteGroupResponse:
+      type: object
+      properties:
+        assets:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        relations:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        valid:
+          type: boolean
+        assetGroup:
+          type: string
+        empty:
+          type: boolean
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: integer
+          format: int32
+        error:
+          type: string
+        message:
+          type: string
+        timeStamp:
+          type: string
+        trace:
+          type: string
+        path:
+          type: string

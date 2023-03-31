@@ -1,0 +1,92 @@
+@import '../../styles/vars';
+
+.ssm-sliding-panel-container {
+  display: flex;
+  flex-direction: row-reverse;
+  position: absolute;
+  &.left {
+  	width: 150px;
+    left: 0;
+    // special override for the asset palette title
+    .ssm-sliding-panel-title {
+      grid-template-columns: 1fr 25px;
+      .button {
+        align-self: center;
+      }
+    }
+  }
+  &.right {
+	  width: 310px;
+    right: 17px;
+  }
+  top: 0;
+  bottom: 17px;
+  .ssm-sliding-panel {
+    background-color: $PANEL_BACKGROUND_COLOUR;
+    border: 1px solid darken($DARK_BLUE, 20);
+    border-top: 0px;
+    box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.3);
+    z-index: 1049;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    &-title {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 100px;
+      background-color: $BACKGROUND_COLOUR;
+      padding: 8px 10px;
+      border-bottom: 1px solid #666;
+      .title {
+        grid-column: 1 / 2;
+        place-self: center start;
+        font-size: 1.2em;
+        text-align: center;
+        word-break: break-word;
+        font-weight: 600;
+        margin: 0px;
+      }
+      .button {
+        grid-column: 2 / 3;
+        place-self: start end;
+      }
+    }
+    & i.warning {
+      color: $DANGER_COLOUR;
+    }
+    .ssm-sliding-panel-content {
+      flex: 0 1 auto;
+      padding: 5px;
+      width: 100%;
+      box-sizing: border-box;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+  .ssm-sliding-panel-caret {
+    font-size: 1.3em;
+    padding: 1em;
+    $draggable_buffer: 2.6em;
+    &.left {
+      right: -$draggable_buffer;
+    }
+    &.right {
+      left: -$draggable_buffer;
+    }
+  }
+  .ssm-sliding-panel-handle {
+    width: 0;
+    padding: 0 0.5em;
+    &.left {
+      right: -0.9em;
+    }
+    &.right {
+      left: -0.9em;
+    }
+  }
+}

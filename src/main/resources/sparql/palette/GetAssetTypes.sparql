@@ -1,0 +1,20 @@
+#Retrieve Asset description in getSystemAssetClasses method
+PREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#>
+PREFIX core:<http://it-innovation.soton.ac.uk/ontologies/trustworthiness/core#>
+SELECT DISTINCT ?asset ?al (GROUP_CONCAT(?c;separator=",") AS ?type) ?category ?description ?a (STR(?minCardinality) AS ?min) (STR(?maxCardinality) AS ?max)
+WHERE {
+  GRAPH <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain/> {
+	?c rdfs:subClassOf+ core:Asset .
+	?asset rdfs:subClassOf* ?c .
+	?asset rdfs:label ?al .
+	?asset rdfs:subClassOf* ?category .
+	?category rdfs:subClassOf core:Asset .
+	OPTIONAL { ?asset rdfs:comment ?description }
+	OPTIONAL { ?asset core:isAssertable ?assertable }
+	OPTIONAL { ?asset core:minCardinality ?minCardinality }
+	OPTIONAL { ?asset core:maxCardinality ?maxCardinality }
+	BIND(IF(BOUND(?assertable),STR(?assertable),"false") AS ?a)
+  }
+  FILTER(!isBlank(?asset))
+  FILTER(!isBlank(?category))
+} GROUP BY ?asset ?al ?category ?description ?a ?minCardinality ?maxCardinality ORDER BY ?type ?asset

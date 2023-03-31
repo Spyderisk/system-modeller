@@ -1,0 +1,1192 @@
+<?xml version="1.0"?>
+<rdf:RDF
+  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns:domain="http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#"
+  xmlns:owl="http://www.w3.org/2002/07/owl#"
+  xmlns="http://it-innovation.soton.ac.uk/ontologies/trustworthiness/core#"
+  xmlns:sp="http://spinrdf.org/sp#"
+  xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+  xmlns:spin="http://spinrdf.org/spin#"
+  xmlns:fn="http://www.w3.org/2005/xpath-functions#"
+  xmlns:spl="http://spinrdf.org/spl#"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+  xml:base="http://it-innovation.soton.ac.uk/ontologies/trustworthiness/core">
+  <owl:Ontology rdf:about="">
+    <owl:versionInfo>9.7.0-SNAPSHOT</owl:versionInfo>
+  </owl:Ontology>
+  <owl:Class rdf:about="#ModelFeature">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#AtomicThing"/>
+    </rdfs:subClassOf>
+    <rdfs:label>ModelFeature</rdfs:label>
+    <rdfs:comment>A class the instances of which represent features of the domain model.</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:ID="MatchingPattern">
+    <rdfs:label>MatchingPattern</rdfs:label>
+    <rdfs:comment>A MatchingPattern is used to match patterns in a (domain- or system-) model. When a pattern is matched, it is used to identify which threats apply to it.</rdfs:comment>
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Pattern"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="TripletMember">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#AtomicThing"/>
+    </rdfs:subClassOf>
+    <rdfs:label>TripletMember</rdfs:label>
+    <rdfs:comment>This superclass acts as a container for concepts in this model that have likelihood or trustworthiness attributes and of which there are three varieties (representing average, highest and lowest likelihood/trustworthiness cases).</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:ID="SetMember">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#AtomicThing"/>
+    </rdfs:subClassOf>
+    <rdfs:label>SetMember</rdfs:label>
+    <rdfs:comment>This superclass acts as a container for concepts in this model, that resemble sets and their elements. They are not enumerations since the collection of members in a set is not necessarily exhaustive. However, all elements in a set are different.</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:ID="ConstructionPattern">
+    <rdfs:label>ConstructionPattern</rdfs:label>
+    <rdfs:comment>A ConstructionPattern is used to describe implicit assets or relationships that can be added (semi-) automatically. When the "normal" nodes and relationships of the pattern have been matched, the inferred and asserted nodes and relationships are used to either come into effect without (inferred) or with user input (asserted).</rdfs:comment>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Pattern"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="TrustworthinessAttribute">
+    <rdfs:comment>Trustworthiness Attribute Sets have an Attribute (Usage, Management, Implementation)</rdfs:comment>
+    <rdfs:label>TrustworthinessAttribute</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#SetMember"/>
+    <rdfs:subClassOf rdf:resource="#TripletMember"/>
+  </owl:Class>
+  <owl:Class rdf:ID="MitigationSet">
+    <rdfs:comment>Mitigation Sets
+ * have a Misbehaviour Set
+ * have a Control Set (for the same asset)
+ * have a Mitigation Level (Very Low up to Very High)</rdfs:comment>
+    <rdfs:label>MitigationSet</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="CompositeThing"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="RiskLevel">
+    <rdfs:comment>Risk levels describe the overall risk to a system and are calculated using impact and likelihood of threats in the system.</rdfs:comment>
+    <rdfs:label>RiskLevel</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="Level"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="TWAADefaultSetting">
+    <rdfs:comment>A helper construct to capture default values for TWAS based on the TWA and Asset type.</rdfs:comment>
+    <rdfs:label>TWASDefaultSetting</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Class rdf:ID="DefaultSetting"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Threat">
+    <rdfs:label>Threat</rdfs:label>
+    <rdfs:comment>A threat threatens an asset located in a pattern and can have 0 or more control strategies.</rdfs:comment>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#CompositeThing"/>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf rdf:resource="#TripletMember"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
+        >1</owl:cardinality>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:ID="appliesTo"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger"
+        >1</owl:cardinality>
+        <owl:onProperty>
+          <owl:ObjectProperty rdf:ID="threatens"/>
+        </owl:onProperty>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Link">
+    <rdfs:comment>A link describes a (directed) relationship between two nodes in a pattern. A link has a link type.</rdfs:comment>
+    <rdfs:label>Link</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#CompositeThing"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="#CompositeThing">
+    <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+    <rdfs:label>CompositeThing</rdfs:label>
+    <rdfs:comment>A CompositeThing combines two or more things (atomic or composite) from the core model. Historically, it's used to represent combinations of Controls/Misbehaviours and Assets/Roles but can be used for other, more complex compositions, such as compliance sets or Control Strategies.</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:ID="MisbehaviourSet">
+    <rdfs:comment>A control set is a combination of a misbehaviour and an asset or a role, meaning it describes the occurrence of the misbehaviour in the asset/role.</rdfs:comment>
+    <rdfs:label>MisbehaviourSet</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#CompositeThing"/>
+    <rdfs:subClassOf rdf:resource="#TripletMember"/>
+  </owl:Class>
+  <owl:Class rdf:ID="TrustworthinessLevel">
+    <rdfs:comment>We use the term ‘inverse’ to refer to the relationship between likelihood and trustworthiness, e.g. the likelihood of a threat is the inverse of the most trustworthy TWAS among its causes: Trustworthiness = Inverse(Likelihood) = N – Likelihood</rdfs:comment>
+    <rdfs:label>TrustworthinessLevel</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Level"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Setting">
+    <rdfs:comment>A helper class to capture settings for various compositions.</rdfs:comment>
+    <rdfs:label>DefaultSetting</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#CompositeThing"/>
+  </owl:Class>
+  <owl:Class rdf:ID="TrustworthinessImpactSet">
+    <rdfs:comment>Trustworthiness Impact Sets
+ * have a TrustworthinessAttributeSet
+ * have a MisbehaviourSet (for the same asset)
+ * the inferred Trustworthiness Level for the attribute is the inverse of the likelihood of the Misbehaviour, or the initial Level (whichever is lower)</rdfs:comment>
+    <rdfs:label>TrustworthinessImpactSet</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#CompositeThing"/>
+  </owl:Class>
+  <owl:Class rdf:ID="MisbehaviourInhibitionSet">
+    <rdfs:comment>MisbehaviourInhibitionSets
+ * have a ControlSet
+ * have a MisbehaviourSet (for the same asset)
+ * the effective likelihood of the Misbehaviour is limited by the coverage level of the Control</rdfs:comment>
+    <rdfs:label>MisbehaviourInhibitionSet</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#CompositeThing"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Control">
+    <rdfs:label>Control</rdfs:label>
+    <rdfs:comment>Controls are applied to assets to counteract threats.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="#TripletMember"/>
+    <rdfs:subClassOf rdf:resource="#SetMember"/>
+  </owl:Class>
+  <owl:Class rdf:ID="ControlInferencePattern">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Pattern"/>
+    </rdfs:subClassOf>
+    <rdfs:label>ControlInferencePattern</rdfs:label>
+    <rdfs:comment>A ControlInferencePattern describes the inference of controls based on other controls. Such controls are not assertable by the user but depend on (possibly a combination of) other controls. They can form part of control strategies.</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:ID="DistinctNodeGroup">
+    <rdfs:comment>This contains information about nodes in a pattern and whether they are forced, allowed (default) or disallowed to be the same.</rdfs:comment>
+    <rdfs:label>DistinctNodeGroup</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#CompositeThing"/>
+  </owl:Class>
+  <owl:Class rdf:ID="RoleLink">
+    <rdfs:subClassOf rdf:resource="#Link"/>
+    <rdfs:label>RoleLink</rdfs:label>
+    <rdfs:comment>A RoleLink defines a links between assets taking different Roles in a Pattern. It is used to define Patterns in the domain model, where concrete Asset types are yet unknown.</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:ID="PopulationLevel">
+    <rdfs:comment>Population levels are used to express the cardinality of non-singleton assets in a fuzzy way.</rdfs:comment>
+    <rdfs:label>PopulationLevel</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Level"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Likelihood">
+    <rdfs:comment>Threat likelihood depends on the trustworthiness of threat entry points, and the effect of control strategies. Likelihood is always the likelihood of something that leads to increased risk, i.e. threats or their effects (including secondary effects).</rdfs:comment>
+    <rdfs:label>Likelihood</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Level"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="ImpactLevel">
+    <rdfs:label>TrustworthinessImpactLevel</rdfs:label>
+    <rdfs:comment>Maximum trustworthiness of an asset experiencing a given misbehaviour.</rdfs:comment>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Level"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:about="#Pattern">
+    <rdfs:label>Pattern</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#CompositeThing"/>
+    <rdfs:comment>A pattern describes a (sub-)graph within a modelled system, comprising of nodes (assets) and edges (links) between these nodes.</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:ID="Misbehaviour">
+    <rdfs:subClassOf rdf:resource="#TripletMember"/>
+    <rdfs:subClassOf rdf:resource="#SetMember"/>
+    <rdfs:comment>A misbehaviour can occur in an asset and affects it.</rdfs:comment>
+    <rdfs:label>Misbehaviour</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:ID="ControlSet">
+    <rdfs:label>ControlSet</rdfs:label>
+    <rdfs:comment>A control set is a combination of a control and an asset or a role, meaning it describes the application of the control on the asset/role.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="#CompositeThing"/>
+    <rdfs:subClassOf rdf:resource="#TripletMember"/>
+  </owl:Class>
+  <owl:Class rdf:ID="MADefaultSetting">
+    <rdfs:comment>A helper construct to capture default values for Misbehaviour sets</rdfs:comment>
+    <rdfs:label>MADefaultSetting</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#DefaultSetting"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="Role">
+    <rdfs:label>Role</rdfs:label>
+    <rdfs:comment>A role is a function an asset has within a system. It is determined by its relations (incoming and outgoing) to other assets in the system. There are a number of roles that correspond to single asset classes. All roles are singletons.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="#SetMember"/>
+  </owl:Class>
+  <owl:Class rdf:ID="InferredNodeSetting">
+    <rdfs:comment>This contains information about an inferred node; each inferred node needs to have exactly one. If none is specified, the node will not be displayed. It describes:
+* where in a pattern should the inferred node be displayed?
+    It can either be displayed at a link or at a node. Each inferred node needs an inferred node display.
+* which other nodes in the related patterns (matching- and construction) should be used to generate the inferred node's name?
+    This has a direct impact on how nodes get inferred; it might mean the same implicit asset can be inferred by different patterns but will end up with the same URI and thus be the same inferred asset.</rdfs:comment>
+    <rdfs:label>InferredNodeSetting</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#Setting"/>
+  </owl:Class>
+  <owl:Class rdf:ID="TrustworthinessAttributeSet">
+    <rdfs:label>TrustworthinessAttributeSet</rdfs:label>
+    <rdfs:comment>Trustworthiness Attribute Sets
+ * have an Asset
+ * have a TrustworthinessAttribute
+ * have an inferred TrustworthinessLevel (based on the initial level plus the likelihood of certain misbehaviours)
+We can define defaults in the Domain Model, but allow users to override these in the system model.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="#CompositeThing"/>
+    <rdfs:subClassOf rdf:resource="#TripletMember"/>
+  </owl:Class>
+  <owl:Class rdf:ID="DomainPatternUISetting">
+    <rdfs:comment>This setting links coordinates to nodes in the context of a pattern. This means a pattern can define where on the Threat Modeller canvas the node is displayed.</rdfs:comment>
+    <rdfs:label>DomainPatternUISetting</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#Setting"/>
+  </owl:Class>
+  <owl:Class rdf:ID="MitigationLevel">
+    <rdfs:comment>Mitigation Sets have a Mitigation Level (Very Low up to Very High)</rdfs:comment>
+    <rdfs:label>MitigationLevel</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#Level"/>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="ValidationPattern">
+    <rdfs:label>ValidationPattern</rdfs:label>
+    <rdfs:comment>A ValidationPattern represents a requirement that a model within a particuar domain needs to fulfil before it can be declared valid. It consists of a MatchingPattern and a set of required relationships and assets.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="#Pattern"/>
+  </owl:Class>
+  <owl:Class rdf:ID="Asset">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#AtomicThing"/>
+    </rdfs:subClassOf>
+    <rdfs:comment>This class describes assets to the system.</rdfs:comment>
+    <rdfs:label>Asset</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:ID="ThreatCategory">
+    <rdfs:comment>A threat category is a label for a threat. They can be used to sort and categorise threats. Categories can represent a hierarchy, as they can be linked using the core:parent object property. A threat can belong to multiple threat categories.</rdfs:comment>
+    <rdfs:label>ThreatCategory</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#SetMember"/>
+  </owl:Class>
+  <owl:Class rdf:about="#Level">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#AtomicThing"/>
+    </rdfs:subClassOf>
+    <rdfs:label>Level</rdfs:label>
+    <rdfs:comment>A class the instances of which represent a scale, e.g. "Very Low to Very High". All instances need to have a value, which is a number. All of the numbers of one level superclass together, when normalised represent a spectrum ranging from 0 (not at all) to 1 (definitely).</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:ID="CASetting">
+    <rdfs:subClassOf rdf:resource="#Setting"/>
+    <rdfs:label>CASetting</rdfs:label>
+    <rdfs:comment>A control assertability setting for a "control set", that specifies which controls are assertable on which assets.</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:ID="Node">
+    <rdfs:label>Node</rdfs:label>
+    <rdfs:comment>A node is part of a pattern graph. It consists of an asset and a role (asset class) this asset has in the current pattern. Note that the node class has been used implicitly throughout the modelling process and is only included for completeness and potential future use.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="#CompositeThing"/>
+  </owl:Class>
+  <owl:Class rdf:ID="ComplianceSet">
+    <rdfs:label>ComplianceSet</rdfs:label>
+    <rdfs:comment>This represents a set of threats that - when addressed - mean the system is compliant with the regulation containing these threats.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="#CompositeThing"/>
+  </owl:Class>
+  <owl:Class rdf:ID="RootPattern">
+    <rdfs:subClassOf rdf:resource="#Pattern"/>
+    <rdfs:label>RootPattern</rdfs:label>
+    <rdfs:comment>This is a pattern that consists only of unique, mandatory nodes and the links between them. By dividing patterns into subpatterns, the actual matching should be sped up considerably.</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:about="#AtomicThing">
+    <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+    <rdfs:label>AtomicThing</rdfs:label>
+    <rdfs:comment>An AtomicThing describes a concept that is simple and does not "contain" any other things.</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:ID="ControlStrategy">
+    <rdfs:comment>A control strategy comprises of one or more control sets that either treats (i.e. blocks or mitigates) or triggers a threat.</rdfs:comment>
+    <rdfs:label>ControlStrategy</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#TripletMember"/>
+    <rdfs:subClassOf rdf:resource="#CompositeThing"/>
+  </owl:Class>
+  <owl:Class rdf:ID="CardinalityConstraint">
+    <rdfs:subClassOf rdf:resource="#Link"/>
+    <rdfs:label>CardinalityConstraint</rdfs:label>
+    <rdfs:comment>A CardinalityConstraint defines cardinalities for relationships between either generic classes in a domain model as defined by a security expert or system-specific classes in a design-time model as defined by a system designer. They link from assets to assets and might be (partially) inferred, depending on the domain model.</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:about="#DefaultSetting">
+    <rdfs:subClassOf rdf:resource="#Setting"/>
+    <rdfs:label>DefaultSetting</rdfs:label>
+    <rdfs:comment>A DefaultSetting gets set initially for a system model using values defined in the domain model. It can later be overridden by user-defined values.</rdfs:comment>
+  </owl:Class>
+  <owl:Class rdf:ID="MetadataPair">
+    <rdfs:label>MetadataPair</rdfs:label>
+    <rdfs:comment>An entity representing a key-value metadata pair. This may be associated with several entity types.</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="#CompositeThing"/>
+  </owl:Class>
+  <owl:Class rdf:ID="AssetGroup">
+    <rdfs:label>AssetGroup</rdfs:label>
+    <rdfs:comment>An entity representing a group of assets</rdfs:comment>
+    <rdfs:subClassOf rdf:resource="#CompositeThing"/>
+  </owl:Class>
+  <owl:ObjectProperty rdf:ID="hasMetadata">
+    <rdfs:label>hasMetadata</rdfs:label>
+    <rdfs:domain rdf:resource="#AtomicThing"/>
+    <rdfs:range rdf:resource="#MetadataPair"/>
+  </owl:ObjectProperty>
+  <owl:DatatypeProperty rdf:ID="hasKey">
+    <rdfs:label>hasKey</rdfs:label>
+    <rdfs:domain rdf:resource="#MetadataPair"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="hasValue">
+    <rdfs:label>hasValue</rdfs:label>
+    <rdfs:domain rdf:resource="#MetadataPair"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  </owl:DatatypeProperty>
+  <owl:ObjectProperty rdf:ID="hasMisbehaviour">
+    <rdfs:label>hasMisbehaviour</rdfs:label>
+    <rdfs:range rdf:resource="#Misbehaviour"/>
+    <rdfs:domain rdf:resource="#Asset"/>
+    <rdfs:domain rdf:resource="#MADefaultSetting"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="#appliesTo">
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:label>appliesTo</rdfs:label>
+    <rdfs:range rdf:resource="#MatchingPattern"/>
+    <rdfs:comment>A Threat exists if the MatchingPattern is found in the system</rdfs:comment>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="displayedAt">
+    <rdfs:comment>This property is required to be set for inferred nodes in construction patterns. It is used by the UI to render an inferred node either attached to a link or to a node (see the subproperties).</rdfs:comment>
+    <rdfs:label>displayedAt</rdfs:label>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="displayedAtRelationType">
+    <rdfs:range rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:label>displayedAtRelationFrom</rdfs:label>
+    <rdfs:comment>This property describes at which asset an inferred asset, created by an ConstructionPattern is displayed. Obviously this is only used if the inferred node is displayed anywhere at all, i.e. if the construction pattern has an inferred node display for this node and the inferred node display says it's displayed at a link instead of at a node. This property points to the property of the relation in question.</rdfs:comment>
+    <rdfs:subPropertyOf rdf:resource="#displayedAt"/>
+    <rdfs:domain rdf:resource="#Asset"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="metaProperty">
+    <rdfs:comment>A meta property is a property which corresponds to a "normal" property but can be used to link classes like instances would be linked, i.e. using just the meta property rather than a class restriction, saving several extra triples and blank nodes in the process.</rdfs:comment>
+    <rdfs:label>metaProperty</rdfs:label>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasProhibitedNode">
+    <rdfs:comment>An prohibited node is a node in a MatchingPattern that must not exist in the pattern. Really the property should be called "hasProhibitedAsset" but for consistency with the other properties the term Node is used. It does not make sense to exclude a Node because every Node has a Role but for excluded Assets, Roles are irrelevant.</rdfs:comment>
+    <rdfs:domain rdf:resource="#MatchingPattern"/>
+    <rdfs:label>hasProhibitedNode</rdfs:label>
+    <rdfs:subPropertyOf>
+      <owl:ObjectProperty rdf:ID="hasSecondaryNode"/>
+    </rdfs:subPropertyOf>
+    <rdfs:range rdf:resource="#Node"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="#hasSecondaryNode">
+    <rdfs:label>hasSecondaryNode</rdfs:label>
+    <rdfs:subPropertyOf>
+      <owl:ObjectProperty rdf:ID="hasNode"/>
+    </rdfs:subPropertyOf>
+    <rdfs:comment>A secondary node is a node in a MatchingPattern that does not form part of the RootPattern, meaning it's not necessarily unique.</rdfs:comment>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasDomainPatternUISetting">
+    <rdfs:range rdf:resource="#DomainPatternUISetting"/>
+    <rdfs:domain rdf:resource="#Pattern"/>
+    <rdfs:label>hasDomainPatternUISetting</rdfs:label>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="affectedBy">
+    <rdfs:label>affectedBy</rdfs:label>
+    <rdfs:domain rdf:resource="#TrustworthinessImpactSet"/>
+    <rdfs:range rdf:resource="#Misbehaviour"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasAssertedLink">
+    <rdfs:subPropertyOf>
+      <owl:ObjectProperty rdf:ID="hasLink"/>
+    </rdfs:subPropertyOf>
+    <rdfs:domain rdf:resource="#ValidationPattern"/>
+    <rdfs:label>hasAssertedLink</rdfs:label>
+    <rdfs:comment>Used in validation patterns to express that the Link needs to have been asserted by the user (so it needs to exist) for the model to be valid</rdfs:comment>
+    <rdfs:range rdf:resource="#Link"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasMin">
+    <rdfs:domain rdf:resource="#TripletMember"/>
+    <rdfs:range rdf:resource="#TripletMember"/>
+    <rdfs:label>hasMin</rdfs:label>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasMax">
+    <rdfs:domain rdf:resource="#TripletMember"/>
+    <rdfs:range rdf:resource="#TripletMember"/>
+    <rdfs:label>hasMax</rdfs:label>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="minOf">
+    <rdfs:domain rdf:resource="#TripletMember"/>
+    <rdfs:range rdf:resource="#TripletMember"/>
+    <rdfs:label>minOf</rdfs:label>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="maxOf">
+    <rdfs:domain rdf:resource="#TripletMember"/>
+    <rdfs:range rdf:resource="#TripletMember"/>
+    <rdfs:label>maxOf</rdfs:label>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="metaLocatedAt">
+    <rdfs:domain rdf:resource="#ControlSet"/>
+    <rdfs:label>metaLocatedAt</rdfs:label>
+    <rdfs:domain rdf:resource="#SetMember"/>
+    <rdfs:subPropertyOf rdf:resource="#metaProperty"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:domain rdf:resource="#Setting"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="metaHasAsset">
+    <rdfs:subPropertyOf rdf:resource="#metaProperty"/>
+    <rdfs:label>hasAsset</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:domain rdf:resource="#Node"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="displayedAtLink">
+    <rdfs:domain rdf:resource="#InferredNodeSetting"/>
+    <rdfs:label>displayedAtLink</rdfs:label>
+    <rdfs:subPropertyOf rdf:resource="#displayedAt"/>
+    <rdfs:range rdf:resource="#Link"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="linksTo">
+    <rdfs:domain rdf:resource="#Link"/>
+    <rdfs:label>linksTo</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:range rdf:resource="#Node"/>
+    <rdfs:range rdf:resource="#Role"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="#hasNode">
+    <rdfs:domain rdf:resource="#DomainPatternUISetting"/>
+    <rdfs:label>hasNode</rdfs:label>
+    <rdfs:comment>A Pattern or a DistinctNodeGroup can have a Node, meaning that the node is part of the pattern or group.</rdfs:comment>
+    <rdfs:range rdf:resource="#Node"/>
+    <rdfs:domain rdf:resource="#InferredNodeSetting"/>
+    <rdfs:domain rdf:resource="#DistinctNodeGroup"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasOptionalNode">
+    <rdfs:subPropertyOf rdf:resource="#hasSecondaryNode"/>
+    <rdfs:domain rdf:resource="#MatchingPattern"/>
+    <rdfs:label>hasOptionalNode</rdfs:label>
+    <rdfs:comment>An optional node is a node in a MatchingPattern that is not required for the pattern to be matched but if it exists should be associated with the pattern.</rdfs:comment>
+    <rdfs:range rdf:resource="#Node"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasControlSet">
+    <rdfs:domain rdf:resource="#MitigationSet"/>
+    <rdfs:range rdf:resource="#ControlSet"/>
+    <rdfs:label>hasControlSet</rdfs:label>
+    <rdfs:domain rdf:resource="#ControlStrategy"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasMandatoryCS">
+    <rdfs:domain rdf:resource="#MitigationSet"/>
+    <rdfs:range rdf:resource="#ControlSet"/>
+    <rdfs:label>hasMandatoryCS</rdfs:label>
+    <rdfs:subPropertyOf rdf:resource="#hasControlSet"/>
+    <rdfs:domain rdf:resource="#ControlStrategy"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasOptionalCS">
+    <rdfs:domain rdf:resource="#MitigationSet"/>
+    <rdfs:range rdf:resource="#ControlSet"/>
+    <rdfs:label>hasOptionalCS</rdfs:label>
+    <rdfs:subPropertyOf rdf:resource="#hasControlSet"/>
+    <rdfs:domain rdf:resource="#ControlStrategy"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="metaLinksTo">
+    <rdfs:domain rdf:resource="#Link"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:label>linksTo</rdfs:label>
+    <rdfs:subPropertyOf rdf:resource="#metaProperty"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="blockedBy">
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:range rdf:resource="#ControlStrategy"/>
+    <rdfs:label>blockedBy</rdfs:label>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="mitigatedBy">
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:range rdf:resource="#ControlStrategy"/>
+    <rdfs:label>mitigatedBy</rdfs:label>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="triggeredBy">
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:range rdf:resource="#ControlStrategy"/>
+    <rdfs:label>triggeredBy</rdfs:label>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="blocks">
+    <rdfs:range rdf:resource="#Threat"/>
+    <rdfs:domain rdf:resource="#ControlStrategy"/>
+    <rdfs:label>blocks</rdfs:label>
+    <rdfs:subPropertyOf>
+      <owl:ObjectProperty rdf:ID="treats"/>
+    </rdfs:subPropertyOf>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="createdByPattern">
+    <rdfs:domain rdf:resource="#Asset"/>
+    <rdfs:label>createdByPattern</rdfs:label>
+    <rdfs:comment>This property describes the connection between an implicit asset and the pattern (the ImplicitConstructionPattern's system-specific Matching Pattern) that created it. This is vital to later query for the display position of that asset in the UI.</rdfs:comment>
+    <rdfs:range rdf:resource="#Pattern"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="includesNodeInURI">
+    <rdfs:label>includesNodeInURI</rdfs:label>
+    <rdfs:subPropertyOf rdf:resource="#hasNode"/>
+    <rdfs:comment>All nodes referenced using this property will be included when generating the new URI and label for a node created by a construction pattern.</rdfs:comment>
+    <rdfs:domain rdf:resource="#InferredNodeSetting"/>
+    <rdfs:range rdf:resource="#Node"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="causesControl">
+    <rdfs:comment>A ControlInferencePattern causes a ControlSet to be proposed.</rdfs:comment>
+    <rdfs:domain rdf:resource="#ControlInferencePattern"/>
+    <rdfs:label>causesControl</rdfs:label>
+    <rdfs:range rdf:resource="#ControlSet"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasEffect">
+    <rdfs:range rdf:resource="#MitigationLevel"/>
+    <rdfs:label>hasEffect</rdfs:label>
+    <rdfs:domain rdf:resource="#ControlSet"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="strength">
+    <rdfs:label>strength</rdfs:label>
+    <rdfs:domain rdf:resource="#Control"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasProhibitedLink">
+    <rdfs:label>hasProhibitedLink</rdfs:label>
+    <rdfs:domain rdf:resource="#MatchingPattern"/>
+    <rdfs:subPropertyOf>
+      <owl:ObjectProperty rdf:about="#hasLink"/>
+    </rdfs:subPropertyOf>
+    <rdfs:range rdf:resource="#Link"/>
+    <rdfs:comment>Use in matching patterns to express that the link must not exist.</rdfs:comment>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasInferredNodeSetting">
+    <rdfs:label>hasInferredNodeSetting</rdfs:label>
+    <rdfs:range rdf:resource="#InferredNodeSetting"/>
+    <rdfs:domain rdf:resource="#ConstructionPattern"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasKeyNode">
+    <rdfs:subPropertyOf>
+      <owl:ObjectProperty rdf:ID="hasRootNode"/>
+    </rdfs:subPropertyOf>
+    <rdfs:label>hasKeyNode</rdfs:label>
+    <rdfs:domain rdf:resource="#RootPattern"/>
+    <rdfs:comment>A key node is a node in a root pattern that is used to create the pattern ID and label. Although all root nodes are unique and mandatory, using them all to generate an ID would mean including redundant information: if we include a node in a root pattern that we know was generated (e.g. by a construction pattern) and thus has a name made up of other asset IDs/labels that are most likely in the pattern themselves. For this reason a domain designer might choose to exclude them by not making them key nodes although they would still be mandatory and unique.</rdfs:comment>
+    <rdfs:range rdf:resource="#Node"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasRole">
+    <rdfs:range rdf:resource="#Role"/>
+    <rdfs:comment>This property specifies the role a system-specific asset subclass has within a pattern. This information is needed to determine which class is threatened in a system-specific threat subclass.</rdfs:comment>
+    <rdfs:label>hasRole</rdfs:label>
+    <rdfs:domain rdf:resource="#Asset"/>
+    <rdfs:domain rdf:resource="#Node"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasInferredLink">
+    <rdfs:domain rdf:resource="#ConstructionPattern"/>
+    <rdfs:label>hasInferredLink</rdfs:label>
+    <rdfs:subPropertyOf>
+      <owl:ObjectProperty rdf:about="#hasLink"/>
+    </rdfs:subPropertyOf>
+    <rdfs:range rdf:resource="#Link"/>
+    <rdfs:comment>Use in construction patterns to express that the given link will be inferred.</rdfs:comment>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="inhibitedBy">
+    <rdfs:label>inhibitedBy</rdfs:label>
+    <rdfs:domain rdf:resource="#MisbehaviourInhibitionSet"/>
+    <rdfs:range rdf:resource="#Control"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="inhibited">
+    <rdfs:label>inhibited</rdfs:label>
+    <rdfs:domain rdf:resource="#MisbehaviourInhibitionSet"/>
+    <rdfs:range rdf:resource="#Misbehaviour"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="affects">
+    <rdfs:label>affects</rdfs:label>
+    <rdfs:domain rdf:resource="#TrustworthinessImpactSet"/>
+    <rdfs:range rdf:resource="#TrustworthinessAttribute"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasDefaultLevel">
+    <rdfs:label>hasDefaultLevel</rdfs:label>
+    <rdfs:range rdf:resource="#TrustworthinessLevel"/>
+    <rdfs:subPropertyOf>
+      <owl:ObjectProperty rdf:ID="hasLevel"/>
+    </rdfs:subPropertyOf>
+    <rdfs:domain rdf:resource="#TrustworthinessImpactSet"/>
+    <rdfs:domain rdf:resource="#TrustworthinessAttributeSet"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasSecondaryEffectCondition">
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:label>hasSecondaryEffectCondition</rdfs:label>
+    <rdfs:range rdf:resource="#MisbehaviourSet"/>
+    <rdfs:comment>A Threat is a SecondaryEffect if it can be caused by a MisbehaviourSet on an Asset in its MatchingPattern</rdfs:comment>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasAsset">
+    <rdfs:label>hasAsset</rdfs:label>
+    <rdfs:domain rdf:resource="#Role"/>
+    <rdfs:domain rdf:resource="#AssetGroup"/>
+    <rdfs:range rdf:resource="#Asset"/>
+    <rdfs:domain rdf:resource="#Node"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="#treats">
+    <rdfs:domain rdf:resource="#ControlStrategy"/>
+    <rdfs:range rdf:resource="#Threat"/>
+    <rdfs:label>treats</rdfs:label>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="#triggers">
+    <rdfs:domain rdf:resource="#ControlStrategy"/>
+    <rdfs:range rdf:resource="#Threat"/>
+    <rdfs:label>triggers</rdfs:label>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasMatchingPattern">
+    <rdfs:range rdf:resource="#MatchingPattern"/>
+    <rdfs:label>hasMatchingPattern</rdfs:label>
+    <rdfs:domain rdf:resource="#ConstructionPattern"/>
+    <rdfs:domain rdf:resource="#ValidationPattern"/>
+    <rdfs:domain rdf:resource="#ControlInferencePattern"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasInferredNode">
+    <rdfs:domain rdf:resource="#ConstructionPattern"/>
+    <rdfs:label>hasInferredNode</rdfs:label>
+    <rdfs:subPropertyOf rdf:resource="#hasNode"/>
+    <rdfs:comment>An inferred node means that the ConstructionPattern will infer the node if the MatchingPattern is found.</rdfs:comment>
+    <rdfs:range rdf:resource="#Node"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasEntryPoint">
+    <rdfs:range rdf:resource="#TrustworthinessAttributeSet"/>
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:label>hasEntryPoint</rdfs:label>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasBlockingEffect">
+    <rdfs:domain rdf:resource="#ControlStrategy"/>
+    <rdfs:comment>Control Strategies have a Blocking Effect (Very Low up to Very High)</rdfs:comment>
+    <rdfs:label>hasBlockingEffect</rdfs:label>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="mitigates">
+    <rdfs:subPropertyOf rdf:resource="#treats"/>
+    <rdfs:domain rdf:resource="#ControlStrategy"/>
+    <rdfs:label>mitigates</rdfs:label>
+    <rdfs:range rdf:resource="#Threat"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="displayedAtAsset">
+    <rdfs:comment>This property describes at which asset an inferred asset, created by an ConstructionPattern is displayed. Obviously this is only used if the inferred node is displayed anywhere at all, i.e. if the construction pattern has an inferred node display for this node and the inferred node display says it's displayed at a node instead of at a link.</rdfs:comment>
+    <rdfs:label>displayedAtAsset</rdfs:label>
+    <rdfs:range rdf:resource="#Asset"/>
+    <rdfs:subPropertyOf rdf:resource="#displayedAt"/>
+    <rdfs:domain rdf:resource="#Asset"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasControl">
+    <rdfs:domain rdf:resource="#ControlSet"/>
+    <rdfs:label>hasControl</rdfs:label>
+    <rdfs:range rdf:resource="#Control"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="domainGraph">
+    <rdfs:comment>The graph in which the domain model is (supposedly) stored. This can be in a domain model or a system model, but in both cases there should only be one graph defined for a model.</rdfs:comment>
+    <rdfs:label>domainGraph</rdfs:label>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="linkType">
+    <rdfs:domain rdf:resource="#Link"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:label>linkType</rdfs:label>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="metaLinksFrom">
+    <rdfs:domain rdf:resource="#Link"/>
+    <rdfs:label>linksFrom</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:subPropertyOf rdf:resource="#metaProperty"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="parent">
+    <rdfs:label>parent</rdfs:label>
+    <rdfs:comment>This property expresses a is-a relationship between two individuals. Similar to rdf:type (instance to class) and rdfs:subClassOf (class to class) it implies, that the object of a triple with this property inherits from the subject but it may define its own properties and override its parent's properties.</rdfs:comment>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasCategory">
+    <rdfs:range rdf:resource="#ThreatCategory"/>
+    <rdfs:label>hasCategory</rdfs:label>
+    <rdfs:domain rdf:resource="#Threat"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="#threatens">
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:label>threatens</rdfs:label>
+    <rdfs:range rdf:resource="#Asset"/>
+    <rdfs:range rdf:resource="#Role"/>
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="displayedAtRelationTo">
+    <rdfs:comment>This property describes at which asset an inferred asset, created by an ConstructionPattern is displayed. Obviously this is only used if the inferred node is displayed anywhere at all, i.e. if the construction pattern has an inferred node display for this node and the inferred node display says it's displayed at a link instead of at a node. This property points to the object of the relation in question.</rdfs:comment>
+    <rdfs:label>displayedAtRelationTo</rdfs:label>
+    <rdfs:range rdf:resource="#Asset"/>
+    <rdfs:subPropertyOf rdf:resource="#displayedAt"/>
+    <rdfs:domain rdf:resource="#Asset"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasCascadingThreat">
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:label>hasCascadingThreat</rdfs:label>
+    <rdfs:comment>A Threat is linked to all (secondary) threats that can be caused by it.</rdfs:comment>
+    <rdfs:range rdf:resource="#Threat"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="#hasLink">
+    <rdfs:range rdf:resource="#Link"/>
+    <rdfs:label>hasLink</rdfs:label>
+    <rdfs:domain rdf:resource="#Pattern"/>
+    <rdfs:comment>A Pattern or can have a Node, meaning that the node is part of the pattern.</rdfs:comment>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasRisk">
+    <rdfs:range rdf:resource="#RiskLevel"/>
+    <rdfs:label>hasRisk</rdfs:label>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="population">
+    <rdfs:label>population</rdfs:label>
+    <rdfs:range rdf:resource="#PopulationLevel"/>
+    <rdfs:domain rdf:resource="#Asset"/>
+    <rdfs:domain rdf:resource="#MatchingPattern"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasPrior">
+    <rdfs:domain rdf:resource="#MisbehaviourSet"/>
+    <rdfs:label>hasPrior</rdfs:label>
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:range rdf:resource="#Likelihood"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasFrequency">
+    <rdfs:label>hasFrequency</rdfs:label>
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:range rdf:resource="#Likelihood"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasRootCause">
+    <rdfs:label>hasRootCause</rdfs:label>
+    <rdfs:domain rdf:resource="#MisbehaviourSet"/>
+    <rdfs:range rdf:resource="#Threat"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasAssertedNode">
+    <rdfs:subPropertyOf rdf:resource="#hasNode"/>
+    <rdfs:label>hasAssertedNode</rdfs:label>
+    <rdfs:domain rdf:resource="#ValidationPattern"/>
+    <rdfs:comment>An asserted node means that the ValidationPattern required the node to be asserted.</rdfs:comment>
+    <rdfs:range rdf:resource="#Node"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasInferredLevel">
+    <rdfs:label>hasInferredLevel</rdfs:label>
+    <rdfs:range rdf:resource="#TrustworthinessLevel"/>
+    <rdfs:subPropertyOf>
+      <owl:ObjectProperty rdf:about="#hasLevel"/>
+    </rdfs:subPropertyOf>
+    <rdfs:domain rdf:resource="#TrustworthinessAttributeSet"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="causedBy">
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:domain rdf:resource="#MisbehaviourSet"/>
+    <rdfs:comment>A Threat has likelihood high enough to account for that of a directly caused MisbehaviourSet.</rdfs:comment>
+    <rdfs:range rdf:resource="#Threat"/>
+    <rdfs:range rdf:resource="#MisbehaviourSet"/>
+    <rdfs:range rdf:resource="#TrustworthinessAttributeSet"/>
+    <rdfs:label>causedBy</rdfs:label>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="causesDirectMisbehaviour">
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:comment>A Threat has likelihood high enough to account for that of a directly caused MisbehaviourSet.</rdfs:comment>
+    <rdfs:range rdf:resource="#MisbehaviourSet"/>
+    <rdfs:label>causesDirectMisbehaviour</rdfs:label>
+    <rdfs:subPropertyOf>
+      <owl:ObjectProperty rdf:about="#causesMisbehaviour"/>
+    </rdfs:subPropertyOf>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="causesIndirectMisbehaviour">
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:comment>A Threat indirectly causes a MisbehaviourSet through a secondary effect cascade.</rdfs:comment>
+    <rdfs:range rdf:resource="#MisbehaviourSet"/>
+    <rdfs:label>causesIndirectMisbehaviour</rdfs:label>
+    <rdfs:subPropertyOf>
+      <owl:ObjectProperty rdf:about="#causesMisbehaviour"/>
+    </rdfs:subPropertyOf>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="requiresTreatmentOf">
+    <rdfs:domain rdf:resource="#ComplianceSet"/>
+    <rdfs:label>requiresTreatmentOf</rdfs:label>
+    <rdfs:range rdf:resource="#Threat"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="#hasLevel">
+    <rdfs:domain rdf:resource="#TWAADefaultSetting"/>
+    <rdfs:domain rdf:resource="#MADefaultSetting"/>
+    <rdfs:range rdf:resource="#Level"/>
+    <rdfs:domain rdf:resource="#TrustworthinessAttributeSet"/>
+    <rdfs:label>hasLevel</rdfs:label>
+    <rdfs:domain rdf:resource="#CompositeThing"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasRootPattern">
+    <rdfs:domain rdf:resource="#MatchingPattern"/>
+    <rdfs:range rdf:resource="#RootPattern"/>
+    <rdfs:label>hasRootPattern</rdfs:label>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasDistinctNodeGroup">
+    <rdfs:comment>This described a group of nodes within a matching pattern that are different from each other.</rdfs:comment>
+    <rdfs:domain rdf:resource="#MatchingPattern"/>
+    <rdfs:label>hasDistinctNodeGroup</rdfs:label>
+    <rdfs:range rdf:resource="#DistinctNodeGroup"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="importsGraph">
+    <rdfs:label>importsGraph</rdfs:label>
+    <rdfs:comment>A model contains information about its imports. Since owl:imports uses URIs rather than graphs, we needed a new property to express that all triples in the given graph should be imported by this model (for read-only use!).</rdfs:comment>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasMitigationLevel">
+    <rdfs:domain rdf:resource="#MitigationSet"/>
+    <rdfs:range rdf:resource="#MitigationLevel"/>
+    <rdfs:label>hasMitigationLevel</rdfs:label>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasMisbehaviourSet">
+    <rdfs:domain rdf:resource="#MitigationSet"/>
+    <rdfs:label>hasMisbehaviourSet</rdfs:label>
+    <rdfs:domain rdf:resource="#TrustworthinessImpactSet"/>
+    <rdfs:range rdf:resource="#MisbehaviourSet"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="linksFrom">
+    <rdfs:domain rdf:resource="#Link"/>
+    <rdfs:label>linksFrom</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+    <rdfs:range rdf:resource="#Role"/>
+    <rdfs:range rdf:resource="#Node"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasTrustworthinessAttribute">
+    <rdfs:domain rdf:resource="#TWAADefaultSetting"/>
+    <rdfs:domain rdf:resource="#TrustworthinessAttributeSet"/>
+    <rdfs:range rdf:resource="#TrustworthinessAttributeSet"/>
+    <rdfs:range rdf:resource="#TrustworthinessImpactSet"/>
+    <rdfs:label>hasTrustworthinessAttribute</rdfs:label>
+    <rdfs:range rdf:resource="#TrustworthinessAttribute"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasMandatoryNode">
+    <rdfs:subPropertyOf rdf:resource="#hasSecondaryNode"/>
+    <rdfs:domain rdf:resource="#MatchingPattern"/>
+    <rdfs:label>hasMandatoryNode</rdfs:label>
+    <rdfs:comment>A mandatory node is a node in a MatchingPattern that is required for the pattern to be matched.</rdfs:comment>
+    <rdfs:range rdf:resource="#Node"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasNecessaryNode">
+    <rdfs:subPropertyOf rdf:resource="#hasMandatoryNode"/>
+    <rdfs:domain rdf:resource="#MatchingPattern"/>
+    <rdfs:label>hasNecessaryNode</rdfs:label>
+    <rdfs:comment>A necessary node is a node in a MatchingPattern that must be matched for the pattern to be matched, and each matching asset must be involved in any related threats.</rdfs:comment>
+    <rdfs:range rdf:resource="#Node"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasSufficientNode">
+    <rdfs:subPropertyOf rdf:resource="#hasMandatoryNode"/>
+    <rdfs:domain rdf:resource="#MatchingPattern"/>
+    <rdfs:label>hasSufficientNode</rdfs:label>
+    <rdfs:comment>A sufficient node is a node in a MatchingPattern that must be matched for the pattern to be matched, but only one matching asset need be involved in any related threats.</rdfs:comment>
+    <rdfs:range rdf:resource="#Node"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="#hasRootNode">
+    <rdfs:subPropertyOf rdf:resource="#hasNode"/>
+    <rdfs:label>hasRootNode</rdfs:label>
+    <rdfs:domain rdf:resource="#RootPattern"/>
+    <rdfs:comment>A root node is a node in a root pattern. All root nodes are unique and mandatory.</rdfs:comment>
+    <rdfs:range rdf:resource="#Node"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="displayedAtRelationFrom">
+    <rdfs:comment>This property describes at which asset an inferred asset, created by an ConstructionPattern is displayed. Obviously this is only used if the inferred node is displayed anywhere at all, i.e. if the construction pattern has an inferred node display for this node and the inferred node display says it's displayed at a link instead of at a node. This property points to the subject of the relation in question.</rdfs:comment>
+    <rdfs:label>displayedAtRelationFrom</rdfs:label>
+    <rdfs:range rdf:resource="#Asset"/>
+    <rdfs:subPropertyOf rdf:resource="#displayedAt"/>
+    <rdfs:domain rdf:resource="#Asset"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:about="#causesMisbehaviour">
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:label>causesMisbehaviour</rdfs:label>
+    <rdfs:range rdf:resource="#MisbehaviourSet"/>
+    <rdfs:comment>A Threat causes a MisbehaviourSet when active.</rdfs:comment>
+  </owl:ObjectProperty>
+    <owl:ObjectProperty rdf:about="#causesThreat">
+    <rdfs:range rdf:resource="#MisbehaviourSet"/>
+    <rdfs:range rdf:resource="#TrustworthinessAttributeSet"/>
+    <rdfs:label>causesThreat</rdfs:label>
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:comment>A MisbehaviourSet causes a secondary Threat or (by eroding a TrustworthinessAttributeSet) a primary threat, or a TrustworthinessAttributeSet is an external cause of a threat.</rdfs:comment>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="locatedAt">
+    <rdfs:domain rdf:resource="#TrustworthinessAttributeSet"/>
+    <rdfs:domain rdf:resource="#Misbehaviour"/>
+    <rdfs:label>locatedAt</rdfs:label>
+    <rdfs:domain rdf:resource="#Control"/>
+    <rdfs:range rdf:resource="#Role"/>
+    <rdfs:range rdf:resource="#Asset"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </owl:ObjectProperty>
+    <owl:ObjectProperty rdf:ID="hasAssertedLevel">
+    <rdfs:label>hasAssertedLevel</rdfs:label>
+    <rdfs:range rdf:resource="#TrustworthinessLevel"/>
+    <rdfs:subPropertyOf rdf:resource="#hasLevel"/>
+    <rdfs:domain rdf:resource="#TrustworthinessAttributeSet"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasCoverageLevel">
+    <rdfs:label>hasCoverageLevel</rdfs:label>
+    <rdfs:range rdf:resource="#TrustworthinessLevel"/>
+    <rdfs:subPropertyOf rdf:resource="#hasLevel"/>
+    <rdfs:domain rdf:resource="#ControlSet"/>
+    <rdfs:domain rdf:resource="#ControlStrategy"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasControlCondition">
+    <rdfs:domain rdf:resource="#ControlInferencePattern"/>
+    <rdfs:range rdf:resource="#ControlSet"/>
+    <rdfs:label>hasControlCondition</rdfs:label>
+    <rdfs:comment>A ControlInferencePattern is triggered by the existence of the ControlSet on an Asset in its MatchingPattern</rdfs:comment>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="displayedAtNode">
+    <rdfs:domain rdf:resource="#InferredNodeSetting"/>
+    <rdfs:label>displayedAtNode</rdfs:label>
+    <rdfs:subPropertyOf rdf:resource="#displayedAt"/>
+    <rdfs:range rdf:resource="#Node"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasImpactLevel">
+    <rdfs:domain rdf:resource="#TrustworthinessImpactSet"/>
+    <rdfs:range rdf:resource="#ImpactLevel"/>
+    <rdfs:label>hasImpactLevel</rdfs:label>
+    <rdfs:domain rdf:resource="#MisbehaviourSet"/>
+    <rdfs:domain rdf:resource="#Threat"/>
+  </owl:ObjectProperty>
+  <owl:DatatypeProperty rdf:ID="levelValue">
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+    <rdfs:domain rdf:resource="#Level"/>
+    <rdfs:label>levelValue</rdfs:label>
+    <rdfs:comment>This is a number that can be used to sort level instances and perform calculations.</rdfs:comment>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="isValidating">
+    <rdfs:comment>Whether the validation for this model is currently running</rdfs:comment>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    <rdfs:label>isValidating</rdfs:label>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="positionX">
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+    <rdfs:label>hasPositionX</rdfs:label>
+    <rdfs:comment>The X coordinate of an asset in the UI</rdfs:comment>
+    <rdfs:domain rdf:resource="#Asset"/>
+    <rdfs:domain rdf:resource="#DomainPatternUISetting"/>
+    <rdfs:domain rdf:resource="#AssetGroup"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="isValid">
+    <rdfs:comment>Whether the model is valid</rdfs:comment>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    <rdfs:label>isValid</rdfs:label>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="positionY">
+    <rdfs:label>hasPositionY</rdfs:label>
+    <rdfs:comment>The Y coordinate of an asset in the UI</rdfs:comment>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+    <rdfs:domain rdf:resource="#Asset"/>
+    <rdfs:domain rdf:resource="#DomainPatternUISetting"/>
+    <rdfs:domain rdf:resource="#AssetGroup"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="width">
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+    <rdfs:label>hasWidth</rdfs:label>
+    <rdfs:comment>The width of an asset group in the UI</rdfs:comment>
+    <rdfs:domain rdf:resource="#AssetGroup"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="height">
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+    <rdfs:label>hasHeight</rdfs:label>
+    <rdfs:comment>The height of an asset group in the UI</rdfs:comment>
+    <rdfs:domain rdf:resource="#AssetGroup"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="isExpanded">
+    <rdfs:label>isExpanded</rdfs:label>
+    <rdfs:comment>Whether an asset group is expanded in the UI</rdfs:comment>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    <rdfs:domain rdf:resource="#AssetGroup"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="isAssertable">
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    <rdfs:label>isAssertable</rdfs:label>
+    <rdfs:domain rdf:resource="#Asset"/>
+    <rdfs:domain rdf:resource="#ControlSet"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="independentLevels">
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    <rdfs:label>independentLevels</rdfs:label>
+    <rdfs:domain rdf:resource="#TWAADefaultSetting"/>
+    <rdfs:domain rdf:resource="#CASetting"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="sourceCardinality">
+    <rdfs:domain rdf:resource="#CardinalityConstraint"/>
+    <rdfs:label>sourceCardinality</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+    <rdfs:comment>The cardinality for the link source ("from") imposing a cardinality constraint on the link</rdfs:comment>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="isActive">
+    <rdfs:label>isActive</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:domain rdf:resource="#MisbehaviourSet"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="hasID">
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdfs:domain rdf:resource="#Asset"/>
+    <rdfs:domain rdf:resource="#Node"/>
+    <rdfs:label>hasID</rdfs:label>
+    <rdfs:domain rdf:resource="#ControlSet"/>
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:domain rdf:resource="#ControlStrategy"/>
+    <rdfs:domain rdf:resource="#MisbehaviourSet"/>
+    <rdfs:comment>An ID is a (short - 8 characters) hexadecimal string used to identify an entity. It is generated from its URI but - unlike the URI - doesn't contain any special characters and can thus be used *in* a URI (e.g. for a REST API or a concatenated URI) while still being sufficiently unique. Considering applications should store systems in separate graphs, this should be unique enough within one (system) model.</rdfs:comment>
+    <rdfs:domain rdf:resource="#Pattern"/>
+    <rdfs:domain rdf:resource="#Link"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="isConstructionState">
+    <rdfs:comment>Whether an asset or relationship can be deleted after the construction phase</rdfs:comment>
+    <rdfs:label>isConstructionState</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="isVisible">
+    <rdfs:comment>Whether an entity is visible in the UI</rdfs:comment>
+    <rdfs:label>isVisible</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="targetCardinality">
+    <rdfs:domain rdf:resource="#CardinalityConstraint"/>
+    <rdfs:label>targetCardinality</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+    <rdfs:comment>The cardinality for the link target ("to") imposing a cardinality constraint on the link</rdfs:comment>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="isBlacklisted">
+    <rdfs:domain rdf:resource="#Asset"/>
+    <rdfs:label>isBlacklisted</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="risksValid">
+    <rdfs:comment>Whether the risk calculation for this model is valid</rdfs:comment>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    <rdfs:label>risksValid</rdfs:label>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="riskCalculationMode">
+    <rdfs:comment>Which mode (current or future) the risk calculation was ran with</rdfs:comment>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdfs:label>riskCalculationMode</rdfs:label>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="domainVersion">
+    <rdfs:comment>The version of the domain model for this system</rdfs:comment>
+    <rdfs:label>domainVersion</rdfs:label>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="acceptanceJustification">
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdfs:label>acceptanceJustification</rdfs:label>
+    <rdfs:comment>A threat can have this property which explains why the threat is accepted. If a threat has this, it means it is accepted.</rdfs:comment>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="hasAction">
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    <rdfs:label>hasAction</rdfs:label>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="immutable">
+    <rdfs:domain rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:label>immutable</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    <rdfs:comment>Whether a relation can be edited/deleted by a user. This applies mainly to inferred relations that should be visible to the user (i.e. not hidden) but that - upon deletion - would reappear after re-validation, causing confusion. </rdfs:comment>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="hidden">
+    <rdfs:domain rdf:resource="http://www.w3.org/2002/07/owl#ObjectProperty"/>
+    <rdfs:subPropertyOf rdf:resource="#immutable"/>
+    <rdfs:label>hidden</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    <rdfs:comment>Whether a relation is hidden from the UI entirely. This is different from being invisible: a relation is visible (on the canvas) iff both its source and target asset are visible. A hidden relation is *never* visible; neither on the canvas nor anywhere else. This normally applies to relations that are used internally by the validator. All hidden relations are also immutable (by the user).</rdfs:comment>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="triggered">
+    <rdfs:label>triggered</rdfs:label>
+    <rdfs:comment>Whether the threat is a triggered threat, where the presence of security controls is a pre-requisite.</rdfs:comment>
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="isCurrentRisk">
+    <rdfs:label>isCurrentRisk</rdfs:label>
+    <rdfs:comment>Whether the entity is relevant in current risk calculations</rdfs:comment>
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:domain rdf:resource="#ControlStrategy"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="isFutureRisk">
+    <rdfs:label>isFutureRisk</rdfs:label>
+    <rdfs:comment>Whether the entity is relevant in future risk calculations</rdfs:comment>
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:domain rdf:resource="#ControlStrategy"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="isCalculatingRisk">
+    <rdfs:comment>Whether the risk calculation for this model is currently running</rdfs:comment>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    <rdfs:label>isCalculatingRisk</rdfs:label>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="isProposed">
+    <rdfs:label>isProposed</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    <rdfs:domain rdf:resource="#ControlSet"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="isEnabled">
+    <rdfs:label>isEnabled</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    <rdfs:domain rdf:resource="#ControlStrategy"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="isWorkInProgress">
+    <rdfs:label>isWorkInProgress</rdfs:label>
+    <rdfs:domain rdf:resource="#ControlSet"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="isExternalCause">
+    <rdfs:comment>True for a TrustworthinessAttributeSet with lower than the maximum TWL where the reduced level is the assumed TWL and not caused by any threat</rdfs:comment>
+    <rdfs:label>isExternalCause</rdfs:label>
+    <rdfs:domain rdf:resource="#TrustworthinessAttributeSet"/>
+    <rdfs:domain rdf:resource="#MisbehaviourSetSet"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="isSecondaryThreat">
+    <rdfs:comment>True if the Threat represents an involuntary propagation of threat effects.</rdfs:comment>
+    <rdfs:label>isSecondaryThreat</rdfs:label>
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="isNormalOp">
+    <rdfs:comment>True if the Threat represents a normal operational process.</rdfs:comment>
+    <rdfs:label>isNormalOp</rdfs:label>
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="isNormalOpEffect">
+    <rdfs:comment>True if the MisbehaviourSet has non-zero likelihood caused by the effects of normal operation and secondary threats only</rdfs:comment>
+    <rdfs:label>isNormalOpEffect</rdfs:label>
+    <rdfs:domain rdf:resource="#MisbehaviourSet"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="isInitialCause">
+    <rdfs:comment>True if the threat depends only on external causes (those not caused by other threats)</rdfs:comment>
+    <rdfs:label>isInitialCause</rdfs:label>
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="isRootCause">
+    <rdfs:comment>True if the threat depends only on external causes and/or normal operational effects</rdfs:comment>
+    <rdfs:label>isRootCause</rdfs:label>
+    <rdfs:domain rdf:resource="#Threat"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="hasPriority">
+    <rdfs:label>hasPriority</rdfs:label>
+    <rdfs:domain rdf:resource="#ConstructionPattern"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="iterate">
+    <rdfs:label>iterate</rdfs:label>
+    <rdfs:domain rdf:resource="#ConstructionPattern"/>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="minCardinality">
+    <rdfs:label>hasMinCardinality</rdfs:label>
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+    <rdfs:comment>The minimum amount of this asset type that needs to be present in the system.</rdfs:comment>
+    <rdfs:domain rdf:resource="#Asset"/>
+    <rdfs:domain rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </owl:DatatypeProperty>
+  <owl:DatatypeProperty rdf:ID="maxCardinality">
+    <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+    <rdfs:label>hasMaxCardinality</rdfs:label>
+    <rdfs:comment>The maximum amount of this asset type that can be present in the system.</rdfs:comment>
+    <rdfs:domain rdf:resource="#Asset"/>
+    <rdfs:domain rdf:resource="http://www.w3.org/2002/07/owl#Class"/>
+  </owl:DatatypeProperty>
+</rdf:RDF>
+
+<!-- Created with TopBraid -->

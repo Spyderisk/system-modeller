@@ -1,0 +1,13 @@
+SELECT DISTINCT * WHERE {
+	GRAPH ?g {
+		?domain owl:imports <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/core> . 
+		?domain rdfs:label ?label . 
+		?domain rdfs:comment ?comment . 
+		?domain owl:versionInfo ?version . 
+	}
+	GRAPH <%s> {
+		?user rdfs:label "%s" . 
+		?user acl:accessTo ?g . 
+		?g dcterms:title ?title . 
+	}
+}

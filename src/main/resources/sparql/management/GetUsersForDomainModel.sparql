@@ -1,0 +1,5 @@
+SELECT DISTINCT ?user WHERE {
+	?uri acl:accessTo ?domain . 
+	?domain dcterms:title "%s" . 
+	?uri rdfs:label ?user . 
+}

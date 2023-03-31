@@ -1,0 +1,15 @@
+@import '../../styles/vars';
+
+.ssm-sliding-panel-caret {
+  display: flex;
+  align-items: center;
+  color: $BLUE;
+  height: 10%;
+  top: 40%;
+  position: absolute;
+  z-index: 1048;
+  &:hover {
+    cursor: pointer;
+    color: $DARK_BLUE;
+  }
+}

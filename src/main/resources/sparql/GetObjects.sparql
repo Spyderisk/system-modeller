@@ -1,0 +1,6 @@
+#A query to get all possible objects for a property/subject combination
+#Param 1 the property (local name)
+#Param 2 the URI of the subject
+SELECT DISTINCT ?o WHERE {
+	<%s> %s ?o .
+}

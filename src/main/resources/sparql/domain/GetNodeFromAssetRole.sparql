@@ -1,0 +1,11 @@
+#Returns the unique node that has the given asset and role
+#Param 1 the given asset
+#Param 2 the given node
+SELECT ?node
+WHERE{
+	BIND(<%s> AS ?asset)
+	BIND(<%s> AS ?role)
+	?node core:hasRole ?role .
+	?node core:metaHasAsset ?asset .
+	?node rdf:type core:Node .
+}

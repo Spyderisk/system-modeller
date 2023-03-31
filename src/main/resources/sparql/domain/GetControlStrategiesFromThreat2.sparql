@@ -1,0 +1,9 @@
+#A query to get the control strategies that either block or mitigate the given threat 
+#Param 1 is the uri of the threat
+SELECT ?cs
+WHERE{
+	BIND(<%s> AS ?threat)
+	OPTIONAL{
+		?cs core:mitigates ?threat .
+	}
+}

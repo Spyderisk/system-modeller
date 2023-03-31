@@ -1,0 +1,12 @@
+@import '../../styles/vars';
+
+.ssm-sliding-panel-handle {
+  position: absolute;
+  height: 100%;
+  user-select: none;
+  z-index: 1050;
+  opacity: 0.5;
+  &:hover {
+    cursor: ew-resize;
+  }
+}
