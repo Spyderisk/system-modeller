@@ -46,7 +46,7 @@ project.buildDir = "${project.projectDir}/build/build"
 
 def gitCommit = "git rev-parse HEAD".execute().text.trim()
 def systemModellerName = "system-modeller"
-def systemModellerVersion = "3.4.0"
+def systemModellerVersion = "3.5.0-SNAPSHOT"
 def javaVersion = 1.8
 
 // When building as a developer, the Maven credentials should be defined in environment variables (MAVEN_USER, MAVEN_PASS).
