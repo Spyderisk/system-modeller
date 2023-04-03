@@ -57,12 +57,9 @@ COPY src /system-modeller/src/
 COPY gradle /system-modeller/gradle/
 COPY gradlew build.gradle settings.gradle /system-modeller/
 
-# Debugging
-RUN env
-
 # Build the software
 # -P defines a "project property" available in build.gradle as a normal variable
-RUN cd /system-modeller && ./gradlew clean test -PmavenUser=${MAVEN_USER} -PmavenPass=${MAVEN_PASS}
+RUN cd /system-modeller && ./gradlew clean assemble -PmavenUser=${MAVEN_USER} -PmavenPass=${MAVEN_PASS}
 
 # Note: cannot do a test using just docker as mongo is also required
 
