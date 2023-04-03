@@ -38,6 +38,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -98,6 +99,7 @@ import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.ModelExc
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.ModelInvalidException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.NotAcceptableErrorException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.NotFoundErrorException;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.MisbehaviourSetInvalidException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.UserForbiddenFromDomainException;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.StoreModelManager;
@@ -110,8 +112,11 @@ import uk.ac.soton.itinnovation.security.modelquerier.JenaQuerierDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ModelExportDB;
 import uk.ac.soton.itinnovation.security.semanticstore.JenaTDBStoreWrapper;
 
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackPathAlgorithm;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.TreeJsonDoc;
+
 /**
- * Includes all operations of the Model Controller Service. 
+ * Includes all operations of the Model Controller Service.
  */
 @RestController
 public class ModelController {
@@ -1286,4 +1291,62 @@ public class ModelController {
 		String reportJson = reportGenerator.generate(modelObjectsHelper, model);
 		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(reportJson);
 	}
+
+	/**
+	 * This REST method generates a JSON representation of the shortest attack
+     * path for the given model and target URIs
+	 *
+	 * @param modelId the String representation of the model object to seacrh
+	 * @param allPaths flag indicating whether to calculate all paths
+	 * @param normalOperations flag indicationg whether to include normal operations
+	 * @param targetURIs list of target misbehaviour sets
+	 * @return A JSON report containing the attack tree
+     * @throws MisbehaviourSetInvalidException if an invalid target URIs set is provided
+     * @throws InternalServerErrorException   if an error occurs during report generation
+	 */
+	@RequestMapping(value = "/models/{modelId}/shortestpath", method = RequestMethod.GET)
+	public ResponseEntity<TreeJsonDoc> calculateShortestAttackPath(
+            @PathVariable String modelId,
+            @RequestParam(defaultValue = "true") boolean allPaths,
+            @RequestParam(defaultValue = "true") boolean normalOperations,
+            @RequestParam List<String> targetURIs) {
+
+        logger.info("Calculating shortest attack path for model {} with target URIs: {}, all-paths: {}, normal-operations: {}",
+                modelId, targetURIs, allPaths, normalOperations);
+
+        final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
+
+        AStoreWrapper store = storeModelManager.getStore();
+
+        try {
+            logger.info("Initialising JenaQuerierDB");
+
+            JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
+                    model.getModelStack(), false);
+
+            querierDB.init();
+
+            logger.info("Calculating attack tree");
+
+            AttackPathAlgorithm apa = new AttackPathAlgorithm(querierDB);
+
+            if (!apa.checkTargetUris(targetURIs)) {
+                logger.error("Invalid target URIs set");
+                throw new MisbehaviourSetInvalidException("Invalid misbehaviour set");
+            }
+
+            TreeJsonDoc treeDoc = apa.calculateAttackTreeDoc(targetURIs, allPaths, normalOperations);
+
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(treeDoc);
+
+        } catch (MisbehaviourSetInvalidException e) {
+            logger.error("Shortest path report failed due to invalid misbehaviour set", e);
+            throw e;
+        } catch (Exception e) {
+            logger.error("Shortest path report failed due to an error", e);
+            throw new InternalServerErrorException(
+                    "Shortest path report failed. Please contact support for further assistance.");
+        }
+    }
+
 }
