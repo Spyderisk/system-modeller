@@ -27,9 +27,9 @@ jobs:
       run: |
         docker-compose -f docker-compose.yml -f docker-compose.test.yml pull  # Force download of any newer dependency images
         docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d --build
-        docker-compose images  # Useful for debugging
-        docker-compose images -q | xargs docker inspect | grep -C3 RepoTags  # Useful for debugging
-        docker-compose exec -T ssm sh -c "cd /system-modeller && ./gradlew test"
+        docker-compose -f docker-compose.yml -f docker-compose.test.yml images  # Useful for debugging
+        docker-compose -f docker-compose.yml -f docker-compose.test.yml images -q | xargs docker inspect | grep -C3 RepoTags  # Useful for debugging
+        docker-compose -f docker-compose.yml -f docker-compose.test.yml exec -T ssm sh -c "cd /system-modeller && ./gradlew test"
       env:
         MAVEN_USER: ${{ github.actor }}
         MAVEN_PASS: ${{ secrets.PACKAGE_READ_SECRET }}
