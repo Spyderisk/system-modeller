@@ -23,7 +23,7 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
     - name: Run tests
-      uses: gradle/gradle-build-action@2.4.0
+      uses: gradle/gradle-build-action@v2.4.0
       with:
         gradle-version: 6.3
         arguments: assemble test
