@@ -11,8 +11,8 @@ services:
       dockerfile: Dockerfile
       args:
         # These are passed as "build arguments" to the Dockerfile by the CI (ARG in there, available only when building)
-        - NEXUS_USER=${NEXUS_USER}
-        - NEXUS_PASS=${NEXUS_PASS}
+        - MAVEN_USER
+        - MAVEN_PASS
     # The "init" config means the container responds to signals and exits cleanly
     init: true
     environment:

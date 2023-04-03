@@ -10,9 +10,6 @@ services:
   ssm:
     build:
       target: ssm-build
-      args:
-        - MAVEN_USER
-        - MAVEN_PASS
     environment:
       # For testing, it is just the SSM that needs to contact Keycloak so we can go direct to the keycloak container via docker-networking.
       # Port 8080 is the one exposed by keycloak by default and not related to any port-mapping.

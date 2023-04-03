@@ -55,7 +55,10 @@ ENV CI_COMMIT_SHA=${CI_COMMIT_SHA}
 # Copy in only the files needed for the build: it's cleanest and it means more cache hits
 COPY src /system-modeller/src/
 COPY gradle /system-modeller/gradle/
-COPY gradlew build.gradle gradle.properties settings.gradle /system-modeller/
+COPY gradlew build.gradle settings.gradle /system-modeller/
+
+# Debugging
+RUN env
 
 # Build the software
 # -P defines a "project property" available in build.gradle as a normal variable
