@@ -35,4 +35,7 @@ jobs:
         MAVEN_PASS: ${{ secrets.PACKAGE_READ_SECRET }}
 
     - name: Run tests
-      run: docker-compose -f docker-compose.yml -f docker-compose.test.yml exec -T ssm sh -c "cd /system-modeller && ./gradlew test -PmavenUser=${{ github.actor }} -PmavenPass=${{ secrets.PACKAGE_READ_SECRET }}"
+      run: |
+        docker-compose -f docker-compose.yml -f docker-compose.test.yml ps -a
+        docker ps
+        docker-compose -f docker-compose.yml -f docker-compose.test.yml exec -T ssm sh -c "cd /system-modeller && ./gradlew test -PmavenUser=${{ github.actor }} -PmavenPass=${{ secrets.PACKAGE_READ_SECRET }}"
