@@ -63,7 +63,7 @@ COPY gradlew build.gradle settings.gradle /system-modeller/
 # -P defines a "project property" available in build.gradle as a normal variable
 RUN cd /system-modeller && ./gradlew clean assemble -PmavenUser=${MAVEN_USER} -PmavenPass=${MAVEN_PASS}
 
-# Note: cannot do a test using just docker as mongo is also required
+# Note: it is tempting to execute the tests here but we cannot do that as mongo and keycloak services are required
 
 #
 # ssm-production

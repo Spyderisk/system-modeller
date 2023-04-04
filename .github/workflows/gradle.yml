@@ -13,7 +13,7 @@ permissions:
 jobs:
   test:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
     - uses: actions/checkout@v3
@@ -31,13 +31,17 @@ jobs:
         docker-compose -f docker-compose.yml -f docker-compose.test.yml images -q | xargs docker inspect | grep -C3 RepoTags  # Useful for debugging
       env:
         MAVEN_USER: ${{ github.actor }}
-        # this secret needs to be able to do package:read in the organisation scope (the permissions set within this file are scoped to just this repo)
+        # This secret needs to be able to do package:read in the organisation scope (the permissions set within this file are scoped to just this repo)
         MAVEN_PASS: ${{ secrets.PACKAGE_READ_SECRET }}
 
     - name: Run tests
+      # Here we execute a command inside the ssm container built in the previous step.
       run: |
-        docker-compose -f docker-compose.yml -f docker-compose.test.yml ps -a
-        docker ps
-        ls -la provisioning/keycloak
-        docker-compose -f docker-compose.yml -f docker-compose.test.yml logs
         docker-compose -f docker-compose.yml -f docker-compose.test.yml exec -T ssm sh -c "cd /system-modeller && ./gradlew test -PmavenUser=${{ github.actor }} -PmavenPass=${{ secrets.PACKAGE_READ_SECRET }}"
+        docker cp $(docker-compose ps -q ssm):/system-modeller/build/build/reports/tests/test/ test-artifacts
+
+    - name: Archive test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-artifacts
+        path: test-artifacts/
