@@ -37,11 +37,16 @@ jobs:
     - name: Run tests
       # Here we execute a command inside the ssm container built in the previous step.
       run: |
-        docker-compose -f docker-compose.yml -f docker-compose.test.yml exec -T ssm sh -c "cd /system-modeller && ./gradlew test -PmavenUser=${{ github.actor }} -PmavenPass=${{ secrets.PACKAGE_READ_SECRET }}"
+        FAIL=0
+        docker-compose -f docker-compose.yml -f docker-compose.test.yml exec -T ssm sh -c "cd /system-modeller && ./gradlew test -PmavenUser=${{ github.actor }} -PmavenPass=${{ secrets.PACKAGE_READ_SECRET }}" || FAIL=1
         docker cp $(docker-compose ps -q ssm):/system-modeller/build/build/reports/tests/test/ test-artifacts
+        echo "FAIL=${FAIL}" >> ${GITHUB_ENV}
 
     - name: Archive test results
       uses: actions/upload-artifact@v3
       with:
         name: test-artifacts
         path: test-artifacts/
+
+    - name: Return test success
+      run: test ${FAIL} -eq 0
