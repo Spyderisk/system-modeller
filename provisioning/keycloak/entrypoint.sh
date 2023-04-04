@@ -6,7 +6,7 @@
 
 # The `sed` command copies `ssm.template` to `ssm.json` while replacing the string "KEYCLOAK_CREDENTIALS_SECRET" with the value of the environment variable of the same name.
 # Then the `kc.sh` command is run with the following arguments:
-# --import-realm: causes Keycloak to import any JSON files found at /opt/keycloak/data/import (see bind mount below)
+# --import-realm: causes Keycloak to import any JSON files found at /opt/keycloak/data/import
 # --http-relative-path /auth: sets the Keycloak context path to be /auth (this was the default before Keycloak 17)
 
 mkdir -p /opt/keycloak/data/import/
