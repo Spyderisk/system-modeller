@@ -131,3 +131,6 @@ export const PRINT_MODEL_STATE = "PRINT_MODEL_STATE"
 
 // open graph window
 export const OPEN_GRAPH_WINDOW = "OPEN_GRAPH_WINDOW"
+
+// attack path
+export const GET_ATTACK_PATH = "GET_ATTACK_PATH"

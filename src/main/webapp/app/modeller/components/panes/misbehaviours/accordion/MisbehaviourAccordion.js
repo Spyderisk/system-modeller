@@ -1,8 +1,9 @@
 import React from "react";
 import PropTypes from "prop-types";
-import {OverlayTrigger, Panel, Tooltip} from "react-bootstrap";
+import {OverlayTrigger, Panel, Tooltip, Button, ButtonToolbar} from "react-bootstrap";
 import ThreatsPanel from "../../details/accordion/panels/ThreatsPanel";
 import * as Constants from "../../../../../common/constants.js";
+import {getShortestPathThreats} from "../../../../actions/ModellerActions";
 
 class MisbehaviourAccordion extends React.Component {
 
@@ -44,7 +45,7 @@ class MisbehaviourAccordion extends React.Component {
             return (
                 <div>
                     <p>There are no root causes because none of the threats that could directly cause this consqeuence have high enough likelihood.</p>
-                    {(this.props.twas && this.props.twas.assertedTWLevel.label !== "Safe") && 
+                    {(this.props.twas && this.props.twas.assertedTWLevel.label !== "Safe") &&
                         <p>However, threats may still be caused by low {this.props.renderTwasLink(this.props.twas)} at {this.props.renderAssetLink(this.props.asset)}, based on its assumed TW level.</p>
                     }
                 </div>
@@ -57,7 +58,7 @@ class MisbehaviourAccordion extends React.Component {
         let misbLabel = misbehaviour.misbehaviourLabel;
         return <p>
             Any secondary threats listed below are caused directly by {misbLabel} at {this.props.renderAssetLink(this.props.asset)}. 
-            {this.props.twas ? 
+            {this.props.twas ?
                 <span> Any primary threats are caused by low {this.props.renderTwasLink(this.props.twas)} at {this.props.renderAssetLink(this.props.asset)}, based on its calculated trustworthiness level which 
             may be reduced below the assumed trustworthiness level by {misbLabel} at {this.props.renderAssetLink(this.props.asset)}.</span> : null}
         </p>
@@ -148,6 +149,38 @@ class MisbehaviourAccordion extends React.Component {
                     <Panel.Collapse>
                         <Panel.Body>
                             {this.getDirectEffectsDesc()}
+                            {this.props.selectedMisbehaviour.loadingRootCauses ?
+                                <div className="container-fluid"><div className="row"><span className="col-md-12">Loading...</span></div></div>
+                                    :
+
+                                <ThreatsPanel dispatch={this.props.dispatch}
+                                              name={"direct-effects"}
+                                              context={this.props.selectedMisbehaviour.misbehaviour.uri}
+                                              model={this.props.model}
+                                              selectedAsset={null}
+                                              selectedThreat={this.props.selectedThreat}
+                                              displayRootThreats={true}
+                                              hoverThreat={this.props.hoverThreat}
+                                              getDirectThreats={this.getDirectEffectThreats}
+                                              threatFiltersActive={this.props.threatFiltersActive}
+                                              loading={this.props.loading}/>
+                            }
+                        </Panel.Body>
+                    </Panel.Collapse>
+                </Panel>
+                <Panel bsStyle="primary">
+                    <Panel.Heading>
+                        <Panel.Title toggle>
+                            {this.renderHeaderNumbers("Attack path threats", directlyCausesIcon, "Threats identified in the attack path of this consequence.", "directly-causes", treatedDirectEffectThreats.length, directEffectThreats.length)}
+                        </Panel.Title>
+                    </Panel.Heading>
+                    <Panel.Collapse>
+                        <Panel.Body>
+                            <ButtonToolbar>
+                                <Button className="btn btn-primary btn-xs"
+                                        onClick={() => {this.props.dispatch(
+                                                               getShortestPathThreats(this.props.model.id, this.props.selectedMisbehaviour.misbehaviour.uri));}}>Calculate Attack Path</Button>
+                            </ButtonToolbar>
                             {this.props.selectedMisbehaviour.loadingRootCauses ?
                                 <div className="container-fluid"><div className="row"><span className="col-md-12">Loading...</span></div></div>
                                     :

@@ -62,7 +62,9 @@ const modelState = {
     },
     selectedMisbehaviour: {
         misbehaviour: {},
-        loadingRootCauses: false
+        loadingRootCauses: false,
+        attackPathThreats: [],
+        loadingAttackPath: false,
     },
     expanded: {
         assetDetails: {
@@ -2226,6 +2228,21 @@ export default function modeller(state = modelState, action) {
     if (action.type === instr.OPEN_GRAPH_WINDOW) {
         console.log("modellerReducer: open graph window: ", action.payload);
         window.open(action.payload);
+    }
+
+    if (action.type === instr.GET_ATTACK_PATH) {
+        // short attack threats
+        const sortedAttackThreats = Array.from(new Map(Object.entries(action.payload)))
+            .sort((a,b) => a[1] - b[1]).map((pair) => pair[0]);
+        console.log("modellerReducer: sorted attack path threats found ", sortedAttackThreats.length);
+        // short attack threats
+        return {
+            ...state,
+            selectedMisbehaviour: {
+                ...state.selectedMisbehaviour,
+                attackPathThreats: sortedAttackThreats,
+            }
+        };
     }
 
     return state;
