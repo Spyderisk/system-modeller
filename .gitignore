@@ -25,6 +25,8 @@ src/main/webapp/app/dist/*.css
 *.zip
 *.iml
 
+!src/test/resources/domainmanager/*.zip
+
 scripts/*.png
 scripts/*.war
 
