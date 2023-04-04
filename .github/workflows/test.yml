@@ -2,9 +2,9 @@ name: Execute tests in docker-compose
 
 on:
   push:
-    branches: [ "dev", "4-add-ci-support-for-testing-and-building-docker-image" ]
+    branches: [ "dev", "main" ]
   pull_request:
-    branches: [ "dev", "4-add-ci-support-for-testing-and-building-docker-image" ]
+    branches: [ "dev", "main" ]
   workflow_dispatch:
 
 permissions:
