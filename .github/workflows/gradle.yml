@@ -39,7 +39,7 @@ jobs:
       run: |
         FAIL=0
         docker-compose -f docker-compose.yml -f docker-compose.test.yml exec -T ssm sh -c "cd /system-modeller && ./gradlew test -PmavenUser=${{ github.actor }} -PmavenPass=${{ secrets.PACKAGE_READ_SECRET }}" || FAIL=1
-        docker cp $(docker-compose ps -q ssm):/system-modeller/build/build/reports/tests/test/ test-artifacts
+        docker cp $(docker-compose -f docker-compose.yml -f docker-compose.test.yml ps -q ssm):/system-modeller/build/build/reports/tests/test/ test-artifacts
         echo "FAIL=${FAIL}" >> ${GITHUB_ENV}
 
     - name: Archive test results
