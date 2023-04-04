@@ -37,7 +37,9 @@ CMD ["tail", "-f", "/dev/null"]
 
 FROM ssm-dev AS ssm-build
 
-# The build arguments are set using `--build-arg` by the CI
+# The build arguments can be set using `--build-arg` in the docker command, or with "build:args" in docker-compose.
+# They are not stored in the image environment.
+
 # Maven credentials (e.g. GitHub username and a Github Personal Access Token able to read packages)
 ARG MAVEN_USER
 ARG MAVEN_PASS
