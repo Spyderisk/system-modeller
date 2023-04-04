@@ -11,7 +11,7 @@ services:
     build:
       target: ssm-dev
     env_file:
-      # The .env.secrets file can contain Nexus credentials that will be put into the environment of the SSM container for use by Gradle
+      # The .env.secrets file can contain Maven credentials that will be put into the environment of the SSM container for use by Gradle
       - .env.secrets
     environment:
       # For local development and testing with a web client, both the SSM and the web browser need to access keycloak on the same URL (as the SSM redirects the browser to keycloak).
