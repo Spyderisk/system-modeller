@@ -50,7 +50,8 @@ services:
     # Then the `kc.sh` command is run with the following arguments:
     # --import-realm: causes Keycloak to import any JSON files found at /opt/keycloak/data/import (see bind mount below)
     # --http-relative-path /auth: sets the Keycloak context path to be /auth (this was the default before Keycloak 17)
-    entrypoint: /opt/keycloak/data/import/entrypoint.sh
+    # entrypoint: /opt/keycloak/data/import/entrypoint.sh
+    entrypoint: /tmp/import/entrypoint.sh
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USERNAME}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
@@ -59,7 +60,7 @@ services:
     volumes:
       - type: bind
         source: ./provisioning/keycloak
-        target: /opt/keycloak/data/import
+        target: /tmp/import
 
 volumes:
   jena:
