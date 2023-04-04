@@ -36,6 +36,8 @@ jobs:
 
     - name: Run tests
       # Here we execute a command inside the ssm container built in the previous step.
+      # If the tests fail we still want to run the next step to archive the test results, so we set FAIL to 0 initially and to 1 on failure but in doing so ensure that the test command always succeeds.
+      # The value of ${FAIL} is written into ${GITHUB_ENV} for use in the next step.
       run: |
         FAIL=0
         docker-compose -f docker-compose.yml -f docker-compose.test.yml exec -T ssm sh -c "cd /system-modeller && ./gradlew test -PmavenUser=${{ github.actor }} -PmavenPass=${{ secrets.PACKAGE_READ_SECRET }}" || FAIL=1
@@ -49,4 +51,5 @@ jobs:
         path: test-artifacts/
 
     - name: Return test success
+      # If the tests failed then make the whole job fail
       run: test ${FAIL} -eq 0
