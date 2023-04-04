@@ -1,6 +1,7 @@
 #!/bin/sh
 
 whoami
+mkdir -p /opt/keycloak/data/import/
 ls -ld /opt/keycloak/data/import/
 ls -l /opt/keycloak/data/import/
 sed -e s/KEYCLOAK_CREDENTIALS_SECRET/${KEYCLOAK_CREDENTIALS_SECRET}/ /tmp/import/ssm.template > /opt/keycloak/data/import/ssm.json
