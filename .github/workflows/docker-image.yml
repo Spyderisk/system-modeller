@@ -1,0 +1,43 @@
+name: Docker Image CI
+
+on:
+  workflow_run:
+    workflows: ["Execute tests in docker-compose"]
+    types:
+      - completed
+  workflow_dispatch:
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-22.04
+
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        lfs: true
+
+    - name: LFS checkout
+      run: git lfs checkout
+
+    - name: Build the Docker image
+      # The metadata inside the image will include the final git commit SHA and the time of the final commit.
+      # The tag applied to the image will be like spyderisk/system-modeller:<branch-name>-<timestamp>
+      # e.g. spyderisk/system-modeller:dev-20230405T1012
+      # Where the timestamp is the time of the final commit in the build.
+      run: |
+        TIMESTAMP=$(git show -s --format=%cI ${GITHUB_SHA})
+        SHORT_TIME=$(echo ${TIMESTAMP} | sed 's/[-:]//g')
+        REF_END=$(echo ${GITHUB_REF} | sed 's/.*\///')
+        TAG=spyderisk/system-modeller:${REF_END}-${SHORT_TIME:0:13}
+        echo "TAG=${TAG}" >> ${GITHUB_ENV}
+        docker build --tag ${TAG} --build-arg CI_COMMIT_SHA=${GITHUB_SHA} --build-arg CI_COMMIT_TIMESTAMP=${TIMESTAMP} --build-arg MAVEN_USER=${{ github.actor }} --build-arg MAVEN_PASS=${{ secrets.PACKAGE_READ_SECRET }} --file Dockerfile --target ssm-production "."
+
+    - name: Push Docker image to registry
+      run: | 
+        docker login -u spyderisk -p ${{ secrets.DOCKER_HUB_RW_SECRET }}
+        docker push ${TAG}
