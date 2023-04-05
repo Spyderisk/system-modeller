@@ -27,9 +27,9 @@ jobs:
         TIMESTAMP=$(git show -s --format=%cI ${GITHUB_SHA})
         SHORT_TIME=$(echo $TIMESTAMP | sed 's/[-:]//g')
         TAG=spyderisk/system-modeller:$(echo ${GITHUB_REF} | sed 's/.*\///')-${SHORT_TIME:0:13}
-        docker build --tag $TAG --build-arg CI_COMMIT_SHA=${GITHUB_SHA} --build-arg CI_COMMIT_TIMESTAMP=${TIMESTAMP} --build-arg MAVEN_USER=${{ github.actor }} --build-arg MAVEN_PASS=${{ secrets.PACKAGE_READ_SECRET }} --file Dockerfile --target ssm-production "."
+        docker build --tag ${TAG} --build-arg CI_COMMIT_SHA=${GITHUB_SHA} --build-arg CI_COMMIT_TIMESTAMP=${TIMESTAMP} --build-arg MAVEN_USER=${{ github.actor }} --build-arg MAVEN_PASS=${{ secrets.PACKAGE_READ_SECRET }} --file Dockerfile --target ssm-production "."
 
     - name: Push Docker image to registry
       run: | 
         docker login -u spyderisk -p ${{ secrets.DOCKER_HUB_RW_SECRET }}
-        docker push 
+        docker push ${TAG}
