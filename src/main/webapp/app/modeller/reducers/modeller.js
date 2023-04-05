@@ -2251,7 +2251,7 @@ export default function modeller(state = modelState, action) {
 function getAttackPathThreatRefs(attackPathData) {
     const prefix = attackPathData.prefix;
     const sortedAttackThreats = Array.from(new Map(Object.entries(attackPathData.threats)))
-        .sort((a,b) => a[1] - b[1]).map((pair) => prefix + pair[0]);
+        .sort((a,b) => a[1] - b[1]).map((pair) => [prefix + pair[0], pair[1]]);
     console.log("modellerReducer: sorted attack path threats found ", sortedAttackThreats.length);
     return sortedAttackThreats;
 }
