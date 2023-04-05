@@ -2230,6 +2230,18 @@ export default function modeller(state = modelState, action) {
         window.open(action.payload);
     }
 
+    if (action.type === instr.LOADING_ATTACK_PATH) {
+        console.log("Loading attack path...");
+        return {
+            ...state,
+            selectedMisbehaviour: {
+                ...state.selectedMisbehaviour,
+                attackPathThreats: [],
+                loadingAttackPath: true
+            }
+        };
+    }
+
     if (action.type === instr.GET_ATTACK_PATH) {
         // sorted attack threat uris
         //const sortedAttackThreats = Array.from(new Map(Object.entries(action.payload)))
@@ -2241,6 +2253,7 @@ export default function modeller(state = modelState, action) {
             selectedMisbehaviour: {
                 ...state.selectedMisbehaviour,
                 attackPathThreats: getAttackPathThreatRefs(action.payload),
+                loadingAttackPath: false
             }
         };
     }
