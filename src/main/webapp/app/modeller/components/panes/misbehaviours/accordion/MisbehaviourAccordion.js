@@ -89,6 +89,8 @@ class MisbehaviourAccordion extends React.Component {
             return threat;
         });
 
+        let loadingAttackPath = this.props.selectedMisbehaviour.loadingAttackPath;
+
         return (
             <div className="panel-group accordion">
                 <Panel bsStyle="primary" defaultExpanded>
@@ -186,8 +188,9 @@ class MisbehaviourAccordion extends React.Component {
                                 <Button className="btn btn-primary btn-xs"
                                         onClick={() => {this.props.dispatch(
                                                                getShortestPathThreats(this.props.model.id, this.props.selectedMisbehaviour.misbehaviour.uri));}}>Calculate Attack Path</Button>
+                                {loadingAttackPath ? <i className="fa fa-spinner fa-pulse fa-lg fa-fw"/> : null}
                             </ButtonToolbar>
-                            <ThreatsPanel dispatch={this.props.dispatch}
+                            {!loadingAttackPath && <ThreatsPanel dispatch={this.props.dispatch}
                                           name={"attack-path-threats"}
                                           context={this.props.selectedMisbehaviour.misbehaviour.uri}
                                           model={this.props.model}
@@ -198,7 +201,7 @@ class MisbehaviourAccordion extends React.Component {
                                           hoverThreat={null}
                                           getDirectThreats={null}
                                           threatFiltersActive={null}
-                            />
+                            />}
                         </Panel.Body>
                     </Panel.Collapse>
                 </Panel>
