@@ -7,15 +7,16 @@ polyfill();
 
 export function getShortestPathThreats(modelId, msUri) {
     return function(dispatch) {
-        console.log("getShortestPath for MS: " + msUri);
         let shortUri = msUri.split("#")[1];
         //let uri = encodeURIComponent('/models/' + modelId + "/shortestpath?longPath=true&normalOperations=false&targetURIs=system#" + shortUri);
         let uri = '/models/' + modelId + "/shortestpath?longPath=true&normalOperations=false&targetURIs=system%23" + shortUri;
         axiosInstance.get(uri).then(response => {
-            console.log("DATA: ", response.data);
             dispatch({
                 type:instr.GET_ATTACK_PATH,
-                payload: response.data['graphs']["system#"+shortUri]['threats']
+                //payload: response.data['graphs']["system#"+shortUri]['threats']
+                payload: {"threats": response.data['graphs']["system#"+shortUri]['threats'],
+                           "prefix": response.data['uriPrefix']
+                         }
             })
         }).catch(error => {
             console.log("ERROR getting attack path:", error);

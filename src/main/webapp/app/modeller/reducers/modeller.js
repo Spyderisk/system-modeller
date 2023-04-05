@@ -2231,21 +2231,29 @@ export default function modeller(state = modelState, action) {
     }
 
     if (action.type === instr.GET_ATTACK_PATH) {
-        // short attack threats
-        const sortedAttackThreats = Array.from(new Map(Object.entries(action.payload)))
-            .sort((a,b) => a[1] - b[1]).map((pair) => pair[0]);
-        console.log("modellerReducer: sorted attack path threats found ", sortedAttackThreats.length);
+        // sorted attack threat uris
+        //const sortedAttackThreats = Array.from(new Map(Object.entries(action.payload)))
+        //    .sort((a,b) => a[1] - b[1]).map((pair) => pair[0]);
+        //console.log("modellerReducer: sorted attack path threats found ", sortedAttackThreats.length);
         // short attack threats
         return {
             ...state,
             selectedMisbehaviour: {
                 ...state.selectedMisbehaviour,
-                attackPathThreats: sortedAttackThreats,
+                attackPathThreats: getAttackPathThreatRefs(action.payload),
             }
         };
     }
 
     return state;
+}
+
+function getAttackPathThreatRefs(attackPathData) {
+    const prefix = attackPathData.prefix;
+    const sortedAttackThreats = Array.from(new Map(Object.entries(attackPathData.threats)))
+        .sort((a,b) => a[1] - b[1]).map((pair) => prefix + pair[0]);
+    console.log("modellerReducer: sorted attack path threats found ", sortedAttackThreats.length);
+    return sortedAttackThreats;
 }
 
 function updateControlStrategies(threats, controlStrategies, controlSets) {

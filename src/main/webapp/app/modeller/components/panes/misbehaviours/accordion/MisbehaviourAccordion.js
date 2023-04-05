@@ -83,6 +83,12 @@ class MisbehaviourAccordion extends React.Component {
         let directCausesIcon = <span style={{float:"right"}}><i className="fa fa-arrow-right"/> <i className="fa fa-crosshairs"/></span>;
         let directlyCausesIcon = <span style={{float:"right"}}><i className="fa fa-crosshairs"/> <i className="fa fa-arrow-right"/></span>;
 
+        // populate attack path threats
+        let attackPathThreats = this.props.selectedMisbehaviour.attackPathThreats.map((threatUri) => {
+            let threat = this.props.model.threats.find((threat) => threat["uri"] === threatUri);
+            return threat;
+        });
+
         return (
             <div className="panel-group accordion">
                 <Panel bsStyle="primary" defaultExpanded>
@@ -181,22 +187,18 @@ class MisbehaviourAccordion extends React.Component {
                                         onClick={() => {this.props.dispatch(
                                                                getShortestPathThreats(this.props.model.id, this.props.selectedMisbehaviour.misbehaviour.uri));}}>Calculate Attack Path</Button>
                             </ButtonToolbar>
-                            {this.props.selectedMisbehaviour.loadingRootCauses ?
-                                <div className="container-fluid"><div className="row"><span className="col-md-12">Loading...</span></div></div>
-                                    :
-
-                                <ThreatsPanel dispatch={this.props.dispatch}
-                                              name={"direct-effects"}
-                                              context={this.props.selectedMisbehaviour.misbehaviour.uri}
-                                              model={this.props.model}
-                                              selectedAsset={null}
-                                              selectedThreat={this.props.selectedThreat}
-                                              displayRootThreats={true}
-                                              hoverThreat={this.props.hoverThreat}
-                                              getDirectThreats={this.getDirectEffectThreats}
-                                              threatFiltersActive={this.props.threatFiltersActive}
-                                              loading={this.props.loading}/>
-                            }
+                            <ThreatsPanel dispatch={this.props.dispatch}
+                                          name={"attack-path-threats"}
+                                          context={this.props.selectedMisbehaviour.misbehaviour.uri}
+                                          model={this.props.model}
+                                          threats={attackPathThreats}
+                                          selectedAsset={null}
+                                          selectedThreat={null}
+                                          displayRootThreats={false}
+                                          hoverThreat={null}
+                                          getDirectThreats={null}
+                                          threatFiltersActive={null}
+                            />
                         </Panel.Body>
                     </Panel.Collapse>
                 </Panel>
