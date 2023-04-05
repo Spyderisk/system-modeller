@@ -2,9 +2,9 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "dev",  "9-add-ci-support-for-building-docker-image "]
+    branches: [ "dev",  "9-add-ci-support-for-building-docker-image" ]
   pull_request:
-    branches: [ "dev",  "9-add-ci-support-for-building-docker-image "]
+    branches: [ "dev",  "9-add-ci-support-for-building-docker-image" ]
   workflow_dispatch:
 
 jobs:
