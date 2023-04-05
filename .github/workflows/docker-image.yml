@@ -31,8 +31,9 @@ jobs:
       # Where the timestamp is the time of the final commit in the build.
       run: |
         TIMESTAMP=$(git show -s --format=%cI ${GITHUB_SHA})
-        SHORT_TIME=$(echo $TIMESTAMP | sed 's/[-:]//g')
-        TAG=spyderisk/system-modeller:$(echo ${GITHUB_REF} | sed 's/.*\///')-${SHORT_TIME:0:13}
+        SHORT_TIME=$(echo ${TIMESTAMP} | sed 's/[-:]//g')
+        REF_END=$(echo ${GITHUB_REF} | sed 's/.*\///')
+        TAG=spyderisk/system-modeller:${REF_END}-${SHORT_TIME:0:13}
         echo "TAG=${TAG}" >> ${GITHUB_ENV}
         docker build --tag ${TAG} --build-arg CI_COMMIT_SHA=${GITHUB_SHA} --build-arg CI_COMMIT_TIMESTAMP=${TIMESTAMP} --build-arg MAVEN_USER=${{ github.actor }} --build-arg MAVEN_PASS=${{ secrets.PACKAGE_READ_SECRET }} --file Dockerfile --target ssm-production "."
 
