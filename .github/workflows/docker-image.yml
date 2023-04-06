@@ -39,5 +39,5 @@ jobs:
 
     - name: Push Docker image to registry
       run: | 
-        docker login -u spyderisk -p ${{ secrets.DOCKER_HUB_RW_SECRET }}
+        docker login -u ${{ vars.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_RW_SECRET }}
         docker push ${TAG}
