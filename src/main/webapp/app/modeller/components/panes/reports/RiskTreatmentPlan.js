@@ -2,6 +2,7 @@ import React, {Component} from "react";
 import PropTypes from "prop-types";
 import {Button} from "react-bootstrap";
 import {controlReference, controlSetMapping} from "../../../../common/constants";
+import {getLevelColour, getThreatColor} from "../../util/Levels";
 
 let uniq = (arr) => [...new Set(arr)];
 
@@ -95,6 +96,12 @@ class RiskTreatmentPlan extends Component {
         }
     }
 
+    renderImpactLevel(ms, impactLevels) {
+        let impact = ms.impactLevel ? ms.impactLevel.label : "N/A";
+        let impact_colour = ms.impactLevel ? getLevelColour(impactLevels, ms.impactLevel, false) : "";
+        return <td style={{backgroundColor: impact_colour, whiteSpace: "nowrap"}}>{impact}</td>
+    }
+
     getTreatmentMethod(splitType) {
         return splitType === "accepted" ? "Accept" : splitType === "ignored" ? "Ignore" : "Mitigate";
     }
@@ -124,6 +131,7 @@ class RiskTreatmentPlan extends Component {
         let model = this.props.model;
         let assets = model.assets ? model.assets.filter(a => a.asserted) : [];
         let content = [];
+        let impactLevels = this.props.model.levels["ImpactLevel"];
 
         assets.sort(this.sortAssets).forEach(asset => {
             let rows = [];
@@ -154,15 +162,16 @@ class RiskTreatmentPlan extends Component {
 
                     let controlDescriptions = uniq(controls.map(c => (c.label + " at " + this.getAssetNameFromId(c.assetId, asset.label))));
 
-                    rows.push(<tr>
+                    rows.push(<tr key={"m-" + misbehaviour.id + "-" + category}>
                         <td>{misbehaviour.misbehaviourLabel}</td>
+                        {this.renderImpactLevel(misbehaviour, impactLevels)}
                         <td className="bullet-pt-list">
-                            <ul>{this.getThreatDescriptions(threats).map(v => <li>{v}</li>)}</ul>
+                            <ul>{this.getThreatDescriptions(threats).map((v, i) => <li key={i}>{v}</li>)}</ul>
                         </td>
                         <td>{this.getTreatmentMethod(category)}</td>
                         <td>{this.getStatus(category)}</td>
                         <td className="bullet-pt-list">
-                            <ul>{controlDescriptions.map(v => <li>{v}</li>)}</ul>
+                            <ul>{controlDescriptions.map((v, i) => <li key={i}>{v}</li>)}</ul>
                         </td>
                     </tr>);
                 });
@@ -171,19 +180,20 @@ class RiskTreatmentPlan extends Component {
             if (rows.length === 0)
                 return;
 
-            content.push(<div className="title">{asset.label}</div>);
+            content.push(<div key={asset.id} className="title">{asset.label}</div>);
 
-            content.push(<table>
+            content.push(<table key={"t-" + asset.id}>
                 <thead>
                 <tr>
                     <th className="col-1">Consequence</th>
-                    <th className="col-2">Threats</th>
-                    <th className="col-3">Treatment Method</th>
-                    <th className="col-4">Status</th>
+                    <th className="col-2">Impact</th>
+                    <th className="col-3">Threats</th>
+                    <th className="col-4">Treatment Method</th>
+                    <th className="col-5">Status</th>
                     <th className="col-6">Controls</th>
                 </tr>
                 </thead>
-                <tbody> {rows} </tbody>
+                <tbody>{rows}</tbody>
             </table>);
         });
 
