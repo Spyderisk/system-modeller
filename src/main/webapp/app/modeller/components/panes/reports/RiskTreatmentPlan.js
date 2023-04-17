@@ -161,7 +161,6 @@ class RiskTreatmentPlan extends Component {
                         </td>
                         <td>{this.getTreatmentMethod(category)}</td>
                         <td>{this.getStatus(category)}</td>
-                        <td>{this.getTargetDate(category)}</td>
                         <td className="bullet-pt-list">
                             <ul>{controlDescriptions.map(v => <li>{v}</li>)}</ul>
                         </td>
@@ -181,7 +180,6 @@ class RiskTreatmentPlan extends Component {
                     <th className="col-2">Threats</th>
                     <th className="col-3">Treatment Method</th>
                     <th className="col-4">Status</th>
-                    <th className="col-5">Target Date</th>
                     <th className="col-6">Controls</th>
                 </tr>
                 </thead>
