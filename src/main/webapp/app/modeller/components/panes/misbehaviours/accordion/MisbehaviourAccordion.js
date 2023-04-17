@@ -198,7 +198,7 @@ class MisbehaviourAccordion extends React.Component {
                                           selectedAsset={null}
                                           selectedThreat={null}
                                           displayRootThreats={false}
-                                          hoverThreat={null}
+                                          hoverThreat={this.props.hoverThreat}
                                           getDirectThreats={null}
                                           threatFiltersActive={null}
                             />}
