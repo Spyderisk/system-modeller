@@ -77,6 +77,8 @@ public class ThreatDTO extends SemanticEntityDTO {
 	//Map of control strategies to their type
 	private final Map<String, ControlStrategyType> controlStrategies;
 
+	private Map<String, ControlStrategy> csgs; //this is only used internally
+
 	private final Set<String> entryPoints;
 
 	private Level likelihood;
@@ -176,6 +178,8 @@ public class ThreatDTO extends SemanticEntityDTO {
 	}
 
 	private void extractControlStrategiesMap(Map<String, ControlStrategy> csgs) {
+		this.csgs = csgs;
+
 		String threatURI = this.getUri();
 
 		for (ControlStrategy csg : csgs.values()) {
@@ -240,22 +244,21 @@ public class ThreatDTO extends SemanticEntityDTO {
 	 *
 	 * @return a set of control set combinations
 	 */
-	/* KEM - does not appear to be used
 	public List<SortedSet<ControlSet>> getAllControlCombinations() {
 
 		//make sure the order of the CSGs is consistent. Use URI. We don't care what the order is.
 		SortedMap<String, ControlStrategy> csgsSorted = new TreeMap<>();
-		csgsSorted.putAll(controlStrategies);
+		csgsSorted.putAll(this.csgs);
 		List<SortedSet<ControlSet>> combinations = new ArrayList<>();
 		for (ControlStrategy csg: csgsSorted.values()) {
 			SortedSet<ControlSet> oneCombination = new TreeSet<>();
-			oneCombination.addAll(csg.getControlSets().values());
+			oneCombination.addAll(csg.getMandatoryControlSets().values());
+			oneCombination.addAll(csg.getOptionalControlSets().values());
 			combinations.add(oneCombination);
 		}
 
 		return combinations;
 	}
-	*/
 
 	public boolean getResolved() {
 		return resolved;
