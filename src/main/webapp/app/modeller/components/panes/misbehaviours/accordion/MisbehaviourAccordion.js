@@ -180,7 +180,7 @@ class MisbehaviourAccordion extends React.Component {
                 <Panel bsStyle="primary">
                     <Panel.Heading>
                         <Panel.Title toggle>
-                            {this.renderHeaderNumbers("Attack path threats", directlyCausesIcon, "Threats identified in the attack path of this consequence.", "directly-causes", treatedDirectEffectThreats.length, directEffectThreats.length)}
+                            {this.renderHeader("Attack path threats", null, "Threats identified in the attack path of this consequence.", "attack-path-threats")}
                         </Panel.Title>
                     </Panel.Heading>
                     <Panel.Collapse>
@@ -199,7 +199,7 @@ class MisbehaviourAccordion extends React.Component {
                                           selectedAsset={null}
                                           selectedThreat={null}
                                           displayRootThreats={false}
-                                          hoverThreat={null}
+                                          hoverThreat={this.props.hoverThreat}
                                           getDirectThreats={null}
                                           threatFiltersActive={null}
                             />}
