@@ -41,9 +41,10 @@ class ThreatsPanel extends React.Component {
             showUntriggeredThreats: false, //only used to filter compliance threats for now
             showFilters: false,
             sort: {
-                col: (props.name === "direct-effects") ? "likelihood" : "risk",
-                dir: "desc"
-            }
+                col: (props.name === "direct-effects") ? "likelihood" :
+                        (props.name === "attack-path-threats") ? "distance" : "risk",
+                dir: "desc"
+            }
         }
     }
 
@@ -808,7 +809,7 @@ class ThreatsPanel extends React.Component {
                                         overlay={
                                             <Tooltip id={`threats-panel-sort-distance-tooltip`}
                                                      className={"tooltip-overlay"}>
-                                                Sort by Target MS distance
+                                                Sort by Distance to Target
                                             </Tooltip>
                                         }>
                             <span onClick={() => this.sortByCol("distance")}>
