@@ -85,8 +85,8 @@ class MisbehaviourAccordion extends React.Component {
 
         // populate attack path threats
         let attackPathThreats = this.props.selectedMisbehaviour.attackPathThreats.map((threatUri) => {
-            console.log("threat pair:", threatUri);
             let threat = this.props.model.threats.find((threat) => threat["uri"] === threatUri[0]);
+            threat.distance = threatUri[1];
             return threat;
         });
 
