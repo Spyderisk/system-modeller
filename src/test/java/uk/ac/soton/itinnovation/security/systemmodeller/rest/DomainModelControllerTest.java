@@ -610,27 +610,4 @@ public class DomainModelControllerTest extends CommonTestSetup {
 			assertThat().statusCode(HttpStatus.SC_NOT_FOUND);
 	}
 
-	/**
-	 * Testing exporting ontologies.json
-	 * Asserts OK 200 status
-	 * Asserts domain-network, domain-network-testing ontologies returned only
-	 * test is dependent on static/data/ontologies.json
-	 */
-	@Test
-	public void testExportOntologies() {
-		String[] domainModels = {
-			"domain-network.nq"
-		};
-
-		given().
-			filter(adminSession).
-		when().
-			get("/domains/ontologies").
-		then().
-			assertThat().statusCode(HttpStatus.SC_OK).
-			and().
-			parser("text/plain", Parser.JSON).
-			and().
-			assertThat().body("ontology", contains(domainModels));
-	}
 }

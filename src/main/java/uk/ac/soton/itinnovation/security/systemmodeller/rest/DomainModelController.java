@@ -365,15 +365,6 @@ public class DomainModelController {
 		return ResponseEntity.status(HttpStatus.OK).headers(headers).contentType(MediaType.TEXT_PLAIN).body(resource);
 	}
 
-	@RequestMapping(value = "/ontologies", method = RequestMethod.GET)
-	public ResponseEntity<?> exportOntologies() throws UnexpectedException {
-
-		logger.info("Called REST method to GET serialised ontologies.json");
-		File f = new File(this.getClass().getResource("/static/data/ontologies.json").getPath());
-
-		return returnFile(Paths.get(f.getAbsolutePath()), f.getName());
-	}
-
 	private ResponseEntity<?> returnFile(Path p, String filename) {
 		
 		try {
