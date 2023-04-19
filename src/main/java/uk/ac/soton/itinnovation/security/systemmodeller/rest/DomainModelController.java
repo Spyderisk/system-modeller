@@ -109,7 +109,6 @@ public class DomainModelController {
 
 	@RequestMapping(value = "/upload", method = RequestMethod.POST)
 	public ResponseEntity<?> uploadNewDomainVersion(@RequestParam("file") MultipartFile file,
-						@RequestParam(value = "file2", required = false) MultipartFile ontologies,
 						@RequestParam(value = "domainUri", required = false) String domainUri,
 						@RequestParam(value = "newDomain", required = false) boolean newDomain
 						) throws IOException {
@@ -232,18 +231,7 @@ public class DomainModelController {
 			logger.debug("Loading icon mappings from file: {}", iconMappingFile.getAbsolutePath());
 			paletteCreated = PaletteGenerator.createPalette(domainUri, modelObjectsHelper, new FileInputStream(iconMappingFile));
 		}
-		//We check to replace ontologies.json first because the palette generator uses this file for icon matching
-		else if (ontologies != null) {
-			logger.debug("Updating ontologies.json");
-			File ontFile = new File(this.getClass().getResource("/static/data/ontologies.json").getPath());
-			try {
-				ontologies.transferTo(ontFile);
-			} catch (IOException e) {
-				 logger.error("Could not upload ontologies.json file", e);
-			}
-
-			paletteCreated = PaletteGenerator.createPalette(domainUri, modelObjectsHelper, new FileInputStream(ontFile));
-		} else {
+		else {
 			paletteCreated = PaletteGenerator.createPalette(domainUri, modelObjectsHelper);
 		}
 

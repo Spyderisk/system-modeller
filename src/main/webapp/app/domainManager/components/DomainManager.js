@@ -120,11 +120,6 @@ class DomainManager extends Component {
                                 <Col xs={6}><input placeholder="file" type="file" accept=".rdf,.rdf.gz,.nq,.nq.gz,.zip"
                                                    ref="file-upload"/></Col>
                             </Row>
-                            <Row>
-                                <Col xs={6}><span className="text-bold">New ontologies.json (optional): </span></Col>
-                                <Col xs={6}><input placeholder="file" type="file" accept=".json"
-                                                   ref="file2-upload"/></Col>
-                            </Row>
                         </Grid>
                         }
                         <hr/>
@@ -176,7 +171,6 @@ class DomainManager extends Component {
     handleDomainSubmit() {
         const data = new FormData();
         const file = ReactDOM.findDOMNode(this.refs["file-upload"]).files[0];
-        const file2 = this.state.uploadModal.newDomain ? undefined : ReactDOM.findDOMNode(this.refs["file2-upload"]).files[0];
 
         let domainUri = (this.state.uploadModal.domainUri !== undefined) ? 
             this.state.uploadModal.domainUri : "";
@@ -186,9 +180,6 @@ class DomainManager extends Component {
             data.append("file", file);
             data.append("domainUri", domainUri);
             data.append("newDomain", newDomain);
-            if (file2 !== undefined) {
-                data.append("file2", file2);
-            }
 
             this.props.dispatch(updateUploadProgress(10));
             this.props.dispatch(uploadDomain(data, true));
