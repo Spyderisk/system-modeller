@@ -3,7 +3,6 @@ import React, { Component } from "react";
 import { Button, Col, Grid, Modal, ProgressBar, Row } from "react-bootstrap";
 import ReactDOM from "react-dom";
 import { connect } from "react-redux";
-import { saveRestrictedDownload } from "../../common/actions/api";
 import Banner from "../../common/components/banner/Banner";
 import { getDomains, getUsers, toggleUploadModal, updateUploadProgress, uploadDomain } from "../actions/api";
 import "../styles/index.scss";
@@ -78,9 +77,6 @@ class DomainManager extends Component {
             <div className="content domain-manager">
                 <div className="domain-manager-container">
                     <Banner title="Knowledgebase Manager" options={[
-                        <a key="1" onClick={() => {
-                            this.props.dispatch(saveRestrictedDownload("./domains/ontologies"));
-                        }}>Download ontologies.json</a>
                     ]}/>
                     <div className="domains">
                             {domainUris.map((a, index) => {
