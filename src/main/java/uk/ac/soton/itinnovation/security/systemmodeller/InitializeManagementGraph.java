@@ -67,11 +67,12 @@ public class InitializeManagementGraph implements CommandLineRunner {
 	@Override
 	public void run(String... args) {
 
-		logger.info("Getting list of domain models from ontologies.json");
+		//logger.info("Getting list of domain models from ontologies.json");
 
 		ArrayList<String> ontologyNames = new ArrayList();
 		ArrayList<String> defaultUserOntologies = new ArrayList();
 
+		/*
 		try {
 			//open ontologies.json
 			JSONArray json = new JSONArray(IOUtils.toString(
@@ -99,6 +100,7 @@ public class InitializeManagementGraph implements CommandLineRunner {
 
 		//store the list of default user domain models
 		modelObjectsHelper.setDefaultUserDomainModels(defaultUserOntologies);
+		*/
 
 		if (resetOnStart || storeModelManager.storeIsEmpty()) {
 			logger.info("Running management graph initialisation");
@@ -123,8 +125,9 @@ public class InitializeManagementGraph implements CommandLineRunner {
 			logger.info("Added core model to the management graph");
 
 			//get resources dir in build folder
-			String resourcesDir = PaletteGenerator.class.getClassLoader().getResource("static/data").getPath();
+			//String resourcesDir = PaletteGenerator.class.getClassLoader().getResource("static/data").getPath();
 					
+			/*
 			for (String ontologyName : ontologyNames) {
 				String graph = "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/" + ontologyName;
 				String ontology = ontologyName + ".nq";
@@ -135,6 +138,7 @@ public class InitializeManagementGraph implements CommandLineRunner {
 
 				generatePaletteOrExit(ontologyName);
 			}
+			*/
 			
 			logger.debug("Domain models in management graph: {}", storeModelManager.getDomainModels());
 
@@ -148,6 +152,7 @@ public class InitializeManagementGraph implements CommandLineRunner {
 				userNames.add(u.getUsername());
 			}
 
+			/*
 			logger.info("Setting default user access for domain models");
 			for (String ontologyName : ontologyNames) {
 				if (defaultUserOntologies.contains(ontologyName)) {
@@ -155,6 +160,7 @@ public class InitializeManagementGraph implements CommandLineRunner {
 					logger.info(ontologyName + ": " + userNames);
 				}
 			}
+			*/
 		} else {
 			// Jena is not empty so we presume BOTH Jena and Mongo have been initialised.
 			// However, it is still possible that this is a new SSM container using
@@ -162,6 +168,7 @@ public class InitializeManagementGraph implements CommandLineRunner {
 			// as they reside within the container itself.
 			logger.info("Checking for palettes");
 
+			/*
 			for (String ontologyName : ontologyNames) {
 				String paletteFile = "/static/data/palette-" + ontologyName + ".json";
 
@@ -173,6 +180,7 @@ public class InitializeManagementGraph implements CommandLineRunner {
 					logger.info("Found {}", paletteFile);
 				}
 			}
+			*/
 		}
 
 		logger.info("Finished management graph initialisation");
