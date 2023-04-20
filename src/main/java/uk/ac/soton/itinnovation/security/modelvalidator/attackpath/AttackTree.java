@@ -282,22 +282,32 @@ public class AttackTree {
             currentPath = new ArrayList<String>();
         }
 
+        List<String> copyCP = new ArrayList<>();
+        copyCP.addAll(currentPath);
+
         // Using a tuple for current_path to ensure that when we change it we
         // make a copy so that the addition is undone when the recursion
         // unwinds
-        currentPath.add(uriRef);
+        //currentPath.add(uriRef);
+        copyCP.add(uriRef);
         AttackNode currentNode = this.nodeByUri.get(uriRef);
-        String targetUriRef = currentPath.get(0);
+        //String targetUriRef = currentPath.get(0);
+        String targetUriRef = copyCP.get(0);
 
         int currentDistance = currentNode.getMaxDistanceFromTargetByTarget(targetUriRef);
-        int maxDistance = Math.max(currentDistance, (currentPath.size() - 1));
+        //int maxDistance = Math.max(currentDistance, (currentPath.size() - 1));
+        int maxDistance = Math.max(currentDistance, (copyCP.size() - 1));
+        //logger.debug("Distance: {} -> {} {}", uriRef, currentDistance, (currentPath.size()-1));
+        logger.debug("Distance: {} -> {} {}", uriRef, currentDistance, (copyCP.size()-1));
         currentNode.setMaxDistanceFromTargetByTarget(targetUriRef, maxDistance);
 
         for(String causeUriRef : currentNode.getDirectCauseUris()) {
             // there can be loops int eh "tree" so have to make sure we don't
             // follow one
-            if (!currentPath.contains(causeUriRef)) {
-                this.addMaxDistanceFromTarget(causeUriRef, currentPath);
+            //if (!currentPath.contains(causeUriRef)) {
+            if (!copyCP.contains(causeUriRef)) {
+                //this.addMaxDistanceFromTarget(causeUriRef, currentPath);
+                this.addMaxDistanceFromTarget(causeUriRef, copyCP);
             }
         }
     }
