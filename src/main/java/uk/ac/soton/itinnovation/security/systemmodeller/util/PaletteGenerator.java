@@ -270,22 +270,37 @@ public class PaletteGenerator {
 					}
 				}
 			}
-			//logger.debug("Using icon {} for asset type {}", actualIcon, a.get("label"));
+
+			//logger.debug("Locating icon {} for asset type {}", actualIcon, asset.get("al"));
 
 			//First, try to locate image file in domain specific folder
 			URL resource = PaletteGenerator.class.getClassLoader().getResource("static/images/" + domainModelName + File.separator + actualIcon);
 
 			if (resource != null && (new File(resource.getPath()).isFile())) {
 				palettebuilder.key("icon").value(domainModelName + "/" + actualIcon);
-			} else {
-				//If not found, try the main images folder
-				resource = PaletteGenerator.class.getClassLoader().getResource("static/images/" + actualIcon);
+			}
+			else {
+				//If not found, try the FALLBACK_ICON in the domain specific folder
+				resource = PaletteGenerator.class.getClassLoader().getResource("static/images/" + domainModelName + File.separator + FALLBACK_ICON);
+
 				if (resource != null && (new File(resource.getPath()).isFile())) {
-					palettebuilder.key("icon").value(actualIcon);
-				} else {
-	
-					logger.warn("Could not find icon {} or fallback icon {}, skipping icon field for asset {}",
-						actualIcon, FALLBACK_ICON, asset.get("al"));
+					logger.warn("Could not find icon {} for asset {}: using fallback icon ({})",
+						actualIcon, asset.get("al"), domainModelName + File.separator + FALLBACK_ICON);
+					palettebuilder.key("icon").value(domainModelName + "/" + FALLBACK_ICON);
+				}
+				else {
+					//If not found, try the FALLBACK_ICON in the main images folder
+					resource = PaletteGenerator.class.getClassLoader().getResource("static/images/" + FALLBACK_ICON);
+
+					if (resource != null && (new File(resource.getPath()).isFile())) {
+						logger.warn("Could not find icon {} for asset {}: using fallback icon ({})",
+							actualIcon, asset.get("al"), FALLBACK_ICON);
+						palettebuilder.key("icon").value(FALLBACK_ICON);
+					}
+					else {
+						logger.warn("Could not find icon {} or fallback icon ({}), skipping icon field for asset {}",
+							actualIcon, FALLBACK_ICON, asset.get("al"));
+					}
 				}
 			}
 
