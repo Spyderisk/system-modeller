@@ -84,8 +84,8 @@ class MisbehaviourAccordion extends React.Component {
         let directlyCausesIcon = <span style={{float:"right"}}><i className="fa fa-crosshairs"/> <i className="fa fa-arrow-right"/></span>;
 
         // populate attack path threats
-        let attackPathThreats = this.props.selectedMisbehaviour.attackPathThreats ? 
-            this.props.selectedMisbehaviour.attackPathThreats.map((threatUriAndDist) => {
+        let attackPathThreats = this.props.attackPaths[this.props.selectedMisbehaviour.misbehaviour.uri] ? 
+            this.props.attackPaths[this.props.selectedMisbehaviour.misbehaviour.uri].map((threatUriAndDist) => {
                 let threat = this.props.model.threats.find((threat) => threat["uri"] === threatUriAndDist[0]);
                 threat.distance = threatUriAndDist[1];
                 return threat;
@@ -355,6 +355,7 @@ class MisbehaviourAccordion extends React.Component {
 MisbehaviourAccordion.propTypes = {
     model: PropTypes.object,
     selectedMisbehaviour: PropTypes.object,
+    attackPaths: PropTypes.object,
     selectedThreat: PropTypes.object,
     twas: PropTypes.object,
     asset: PropTypes.object,

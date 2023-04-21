@@ -60,10 +60,10 @@ const modelState = {
     selectedThreat: {
         id: ""
     },
+    attackPaths: {},
     selectedMisbehaviour: {
         misbehaviour: {},
         loadingRootCauses: false,
-        attackPathThreats: [],
         loadingAttackPath: false,
     },
     expanded: {
@@ -2236,25 +2236,22 @@ export default function modeller(state = modelState, action) {
             ...state,
             selectedMisbehaviour: {
                 ...state.selectedMisbehaviour,
-                attackPathThreats: [],
                 loadingAttackPath: true
             }
         };
     }
 
     if (action.type === instr.GET_ATTACK_PATH) {
-        // sorted attack threat uris
-        //const sortedAttackThreats = Array.from(new Map(Object.entries(action.payload)))
-        //    .sort((a,b) => a[1] - b[1]).map((pair) => pair[0]);
-        //console.log("modellerReducer: sorted attack path threats found ", sortedAttackThreats.length);
-        // short attack threats
+        let apt = getAttackPathThreatRefs(action.payload);
+        let updatedAttackPaths = {...state.attackPaths};
+        updatedAttackPaths[state.selectedMisbehaviour.misbehaviour.uri] = apt;
         return {
             ...state,
             selectedMisbehaviour: {
                 ...state.selectedMisbehaviour,
-                attackPathThreats: getAttackPathThreatRefs(action.payload),
                 loadingAttackPath: false
-            }
+            },
+            attackPaths: updatedAttackPaths
         };
     }
 
