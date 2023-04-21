@@ -188,6 +188,7 @@ class MisbehaviourAccordion extends React.Component {
                         <Panel.Body>
                             <ButtonToolbar>
                                 <Button className="btn btn-primary btn-xs"
+                                        disabled={attackPathThreats.length > 0}
                                         onClick={() => {this.props.dispatch(
                                                                getShortestPathThreats(this.props.model.id, this.props.selectedMisbehaviour.misbehaviour.uri));}}>Calculate Attack Path</Button>
                                 {loadingAttackPath ? <i className="fa fa-spinner fa-pulse fa-lg fa-fw"/> : null}
