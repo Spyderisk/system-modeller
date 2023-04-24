@@ -32,19 +32,14 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.rmi.UnexpectedException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipException;
-import net.lingala.zip4j.ZipFile;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,6 +62,7 @@ import uk.ac.soton.itinnovation.security.systemmodeller.auth.KeycloakAdminClient
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.Message;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.StoreModelManager;
+import uk.ac.soton.itinnovation.security.systemmodeller.util.DomainModelUtils;
 import uk.ac.soton.itinnovation.security.systemmodeller.util.PaletteGenerator;
 
 @RestController
@@ -113,24 +109,24 @@ public class DomainModelController {
 						@RequestParam(value = "newDomain", required = false) boolean newDomain
 						) throws IOException {
 
-		String domainFileName;
+		String domainModelName;
 
 		if (newDomain) {
 			logger.info("Uploading new domain model");
-			domainFileName = "newDomain"; //provisional name until we determine domain name from mapping file
+			domainModelName = "newDomain"; //provisional name until we determine domain name from mapping file
 		}
 		else {
 			logger.info("Uploading domain model with given domain URI: {}", domainUri);
-			domainFileName = domainUri.substring(domainUri.lastIndexOf('/') + 1);
+			domainModelName = domainUri.substring(domainUri.lastIndexOf('/') + 1);
 		}
 
-		logger.debug("domainFileName: {}", domainFileName);
+		logger.debug("domainModelName: {}", domainModelName);
 	
 		boolean rdf = file.getOriginalFilename().endsWith(".rdf") || file.getOriginalFilename().endsWith(".rdf.gz");
 		boolean gz = file.getOriginalFilename().endsWith(".gz");
 		boolean zip = file.getOriginalFilename().endsWith(".zip");
 	
-		File f = File.createTempFile(domainFileName, zip ? ".zip" : (rdf ? ".rdf" : ".nq"));
+		File f = File.createTempFile(domainModelName, zip ? ".zip" : (rdf ? ".rdf" : ".nq"));
 
 		logger.debug(f.getAbsolutePath());
 
@@ -158,71 +154,31 @@ public class DomainModelController {
 		File iconMappingFile = null;
 
 		if (zip) {
-			logger.info("Extracting zipfile: {}", f.getAbsolutePath());
+			DomainModelUtils domainModelUtils= new DomainModelUtils();
+			Map<String, String> result = domainModelUtils.extractDomainBundle(f, newDomain, domainUri, domainModelName);
 
-			String tmpdir = Files.createTempDirectory("domain").toFile().getAbsolutePath();
-			logger.info("Created tmp folder: {}", tmpdir);
-
-			String source = f.getAbsolutePath();
-			String destination = tmpdir;   
-			
-			ZipFile zipFile = new ZipFile(source);
-			zipFile.extractAll(destination);
-
-			String nqFilename = "domain.nq";
-			String nqFilepath = destination + File.separator + nqFilename;
-
-			//set domain model file (to be loaded later)
-			f = new File(nqFilepath);
-
-			//Check for domain model file
-			if (!f.exists()) throw new IOException("Cannot locate domain model file: " + nqFilename);
-			logger.debug("Located domain model file: {}", nqFilepath);
-
-			//Check for icon mapping file
-			String iconMappingFilename = "icon-mapping.json";
-			iconMappingFile = new File(destination + File.separator + iconMappingFilename);
-			if (!iconMappingFile.exists()) throw new IOException("Cannot locate icon mapping file: " + iconMappingFilename);
-			logger.debug("Located icon mapping file: {}", iconMappingFile.getAbsolutePath());
-
-			//Check for icons folder
-			String iconsFoldername = "icons";
-			File iconsFolder = new File(destination + File.separator + iconsFoldername);
-			if (!iconsFolder.exists() || !iconsFolder.isDirectory()) throw new IOException("Cannot locate icons folder");
-			logger.debug("Located icons folder: {}", iconsFolder.getAbsolutePath());
-
-			if (newDomain) {
-				//Determine domain URI from icons mapping file 
-				domainUri = PaletteGenerator.getDomainUri(new FileInputStream(iconMappingFile));
-				domainFileName = domainUri.substring(domainUri.lastIndexOf('/') + 1);
-				logger.debug("domainUri: {}", domainUri);
-				logger.debug("domainFileName: {}", domainFileName);
+			if (result.containsKey("domainUri")) {
+				domainUri = result.get("domainUri");
 			}
 
-			String imagesDir = this.getClass().getResource("/static/images/").getPath();
-			String domainImagesPath = imagesDir + domainFileName;
+			if (result.containsKey("domainModelName")) {
+				domainModelName = result.get("domainModelName");
+			}
 
-			//extract icons folder from zipfile into /images folder
-			zipFile.extractFile(iconsFoldername + "/", imagesDir);
-
-			//locate extracted icons folder
-			File iconsDir = new File(imagesDir + "icons");
-
-			//define domain images folder and delete if exists
-			File domainImagesDir = new File(domainImagesPath);
-			FileUtils.deleteDirectory(domainImagesDir);
-
-			//rename icons folder to domain images folder
-			iconsDir.renameTo(domainImagesDir);
-
-			if (!domainImagesDir.exists() || !domainImagesDir.isDirectory()) throw new IOException("Cannot locate icons folder: " +
-				domainImagesDir.getAbsolutePath());
-
-			logger.debug("Created domain icons folder: {}", domainImagesDir.getAbsolutePath());
+			if (result.containsKey("nqFilepath")) {
+				f = new File(result.get("nqFilepath"));
+			}
+			
+			if (result.containsKey("iconMappingFile")) {
+				iconMappingFile = new File(result.get("iconMappingFile"));
+			}
 		}
 
 		//storeModelManager.deleteModel(domainUri); //KEM loadModel handles the delete
-		storeModelManager.loadModel(domainFileName, domainUri, f.getAbsolutePath());
+		logger.debug("domainUri: {}", domainUri);
+		logger.info("domainModelName: {}", domainModelName);
+		logger.debug("domain model file: {}", f.getAbsolutePath());
+		storeModelManager.loadModel(domainModelName, domainUri, f.getAbsolutePath());
    
 		boolean paletteCreated = false;
 
