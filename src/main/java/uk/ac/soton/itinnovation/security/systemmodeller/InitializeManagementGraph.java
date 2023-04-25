@@ -139,13 +139,13 @@ public class InitializeManagementGraph implements CommandLineRunner {
 			}
 			*/
 			
-			logger.info("Checking for kbdata folder...");
+			logger.info("Checking for knowledgebases folder...");
 	
-			//List of identified zip files located in kbdata folder
+			//List of identified zip files located in knowledgebases folder
 			ArrayList<File> zipfiles = new ArrayList<>();
 	
 			try {
-				File kbDataDir = new File("/code/kbdata");
+				File kbDataDir = new File("/code/knowledgebases");
 				if (kbDataDir.isDirectory()) {
 					File[] fileList = kbDataDir.listFiles();
 					logger.info("Located .zip files: ");
