@@ -63,6 +63,9 @@ public class InitializeManagementGraph implements CommandLineRunner {
 	@Value("${reset.on.start}")
 	private boolean resetOnStart;
 	
+	@Value("${knowledgebases.folder}")
+	private String knowledgebaseFolder;
+
 	@Override
 	public void run(String... args) {
 
@@ -145,7 +148,7 @@ public class InitializeManagementGraph implements CommandLineRunner {
 			ArrayList<File> zipfiles = new ArrayList<>();
 	
 			try {
-				File kbDataDir = new File("/code/knowledgebases");
+				File kbDataDir = new File(knowledgebaseFolder);
 				if (kbDataDir.isDirectory()) {
 					File[] fileList = kbDataDir.listFiles();
 					logger.info("Located .zip files: ");
@@ -162,7 +165,8 @@ public class InitializeManagementGraph implements CommandLineRunner {
 					}
 				}
 				else {
-					logger.info("Folder is not a directory: ", kbDataDir);
+					logger.error("Cannot locate knowledgebases folder: {}", kbDataDir);
+					System.exit(1);
 				}
 	
 				DomainModelUtils domainModelUtils= new DomainModelUtils();
