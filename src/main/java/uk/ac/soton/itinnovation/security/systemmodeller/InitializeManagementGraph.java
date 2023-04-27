@@ -251,6 +251,8 @@ public class InitializeManagementGraph implements CommandLineRunner {
 			// as they reside within the container itself.
 			logger.info("Checking for palettes");
 
+			//TODO: rewrite this
+
 			/*
 			for (String ontologyName : ontologyNames) {
 				String paletteFile = "/static/data/palette-" + ontologyName + ".json";
@@ -274,7 +276,13 @@ public class InitializeManagementGraph implements CommandLineRunner {
 
 		String graph = "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/" + ontologyName;
 
-		boolean paletteCreated = PaletteGenerator.createPalette(graph, modelObjectsHelper);
+		boolean paletteCreated = false;
+
+		try {
+			paletteCreated = PaletteGenerator.createPalette(graph, modelObjectsHelper);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 		if (!paletteCreated) {
 			System.exit(1);

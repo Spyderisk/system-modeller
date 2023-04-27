@@ -90,7 +90,7 @@ function globalErrorHandler(error, responseOnForbidden) {
                 responseOnForbidden();
                 break;
             case vars.HTTPStatusCode.NOT_FOUND:
-                reportError(error, "Not found. Check with an administrator for further help.");
+                reportDetailedError(error, "Not found. Check with an administrator for further help.");
                 break;
             case vars.HTTPStatusCode.LOCKED:
                 restLockedModal();
@@ -107,12 +107,30 @@ function globalErrorHandler(error, responseOnForbidden) {
 
 // Put up an error alert with the a message for the user.
 function reportError(error, userMessage) {
-
     // It would be nice to augment the error message
     // with information from error. Unfortunately
     // there is no consistency in the information
     // provided.
     alert(userMessage);
+}
+
+// Put up an error alert. Attempt to extract error details, otherwise use default message for the user.
+function reportDetailedError(error, userMessage) {
+    let errorMessage = userMessage;
+
+    if (error.response) {
+        let data = error.response.data;
+        if (data) {
+            console.log("status:", data.status);
+            console.log("error:", data.error);
+            console.log("message:", data.message);
+            if (data.message) {
+                errorMessage = data.message + ". Check with an administrator for further help.";
+            }
+        }
+    }
+
+    alert(errorMessage);
 }
 
 function restLockedModal() {

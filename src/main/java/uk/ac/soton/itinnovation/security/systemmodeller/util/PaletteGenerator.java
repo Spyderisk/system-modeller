@@ -80,16 +80,22 @@ public class PaletteGenerator {
 	 * Creates a new palette generator object
 	 *
 	 * @param domainModel the path of the domain model ontology in the resources folder
+	 * @throws IOException
 	 */
-	public PaletteGenerator(String domainModelGraph, ModelObjectsHelper modelObjectsHelper) {
+	public PaletteGenerator(String domainModelGraph, ModelObjectsHelper modelObjectsHelper) throws IOException {
+		this(domainModelGraph, modelObjectsHelper, getIconMapInputStream("static/data/ontologies.json"));
+	}
 
-		this(domainModelGraph,  modelObjectsHelper,
-			PaletteGenerator.class.getClassLoader().getResourceAsStream("static/data/ontologies.json")
-		);
+	private static InputStream getIconMapInputStream(String ontologiesFile) throws IOException {
+		logger.info("Loading icon mapping from {}", ontologiesFile);
+		InputStream iconMap = PaletteGenerator.class.getClassLoader().getResourceAsStream(ontologiesFile);
+		if (iconMap == null) {
+			throw new IOException("Cannot load icon mapping file: " + ontologiesFile);
+		}
+		return iconMap;
 	}
 
 	public PaletteGenerator(String domainModelGraph, ModelObjectsHelper modelObjectsHelper, InputStream iconMap) {
-
 		this.modelObjectsHelper = modelObjectsHelper;
 		this.domainModelGraph = domainModelGraph;
 
@@ -469,7 +475,7 @@ public class PaletteGenerator {
 		return pg.createPalette(ontology);
 	}
 
-	public static boolean createPalette(String ontology, ModelObjectsHelper modelObjectsHelper) {
+	public static boolean createPalette(String ontology, ModelObjectsHelper modelObjectsHelper) throws IOException {
 		PaletteGenerator pg = new PaletteGenerator(ontology, modelObjectsHelper);
 
 		return pg.createPalette(ontology);
