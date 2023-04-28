@@ -5,46 +5,6 @@ import {addAsset, addRelation} from "./InterActions"
 
 polyfill();
 
-export function getShortestPathThreats(modelId, msUri) {
-    return function(dispatch) {
-        dispatch({
-            type:instr.LOADING_ATTACK_PATH,
-        });
-
-        let shortUri = msUri.split("#")[1];
-        //let uri = encodeURIComponent('/models/' + modelId + "/shortestpath?longPath=true&normalOperations=false&targetURIs=system#" + shortUri);
-        let uri = '/models/' + modelId + "/shortestpath?longPath=true&normalOperations=false&targetURIs=system%23" + shortUri;
-        axiosInstance.get(uri).then(response => {
-            dispatch({
-                type:instr.GET_ATTACK_PATH,
-                //payload: response.data['graphs']["system#"+shortUri]['threats']
-                payload: {"threats": response.data['graphs']["system#"+shortUri]['threats'],
-                           "prefix": response.data['uriPrefix']
-                         }
-            })
-        }).catch(error => {
-            console.log("ERROR getting attack path:", error);
-        });
-    };
-}
-
-export function getShortestPathPlot(modelId, riskMode) {
-    return function(dispatch) {
-        console.log("getShortestPathPlot with modelId: " + modelId);
-        axiosInstance.get("/models/" + modelId + "/authz").then(response => {
-            console.log("DATA: ", response.data.readUrl);
-            let readUrl = response.data.readUrl;
-            //let url = process.env.config.API_END_POINT + "/adaptor/api/v2/models/" + readUrl + "/path_plot?risk_mode=CURRENT&retain_cs_changes=false&export_format=svg";
-            let url = process.env.config.API_END_POINT + "/adaptor/api/v2/models/" + readUrl + "/path_plot?risk_mode=" + riskMode + "&retain_cs_changes=false&direct=true&export_format=svg";
-            console.log("openning new window for URL: " + url);
-            dispatch({
-                type:instr.OPEN_GRAPH_WINDOW,
-                payload: url
-            })
-        });
-    };
-}
-
 export function getModel(modelId) {
     return function (dispatch) {
         dispatch({
@@ -1620,6 +1580,44 @@ export function toggleDeveloperMode() {
         });
     };
 }
+
+export function getShortestPathThreats(modelId, msUri) {
+    return function(dispatch) {
+        dispatch({
+            type:instr.LOADING_ATTACK_PATH,
+        });
+
+        let shortUri = msUri.split("#")[1];
+        let uri = '/models/' + modelId + "/shortestpath?longPath=true&normalOperations=false&targetURIs=system%23" + shortUri;
+        axiosInstance.get(uri).then(response => {
+            dispatch({
+                type:instr.GET_ATTACK_PATH,
+                payload: {"threats": response.data['graphs']["system#"+shortUri]['threats'],
+                           "prefix": response.data['uriPrefix']
+                         }
+            })
+        }).catch(error => {
+            console.log("ERROR getting attack path:", error);
+        });
+    };
+}
+
+export function getShortestPathPlot(modelId, riskMode) {
+    return function(dispatch) {
+        console.log("getShortestPathPlot with modelId: " + modelId);
+        axiosInstance.get("/models/" + modelId + "/authz").then(response => {
+            console.log("DATA: ", response.data.readUrl);
+            let readUrl = response.data.readUrl;
+            let url = process.env.config.API_END_POINT + "/adaptor/api/v2/models/" + readUrl + "/path_plot?risk_mode=" + riskMode + "&retain_cs_changes=false&direct=true&export_format=svg";
+            console.log("openning new window for URL: " + url);
+            dispatch({
+                type:instr.OPEN_GRAPH_WINDOW,
+                payload: url
+            })
+        });
+    };
+}
+
 
 /*
  export function hoverThreat (show, threat) {

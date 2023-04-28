@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////
 //
-// © University of Southampton IT Innovation Centre, 2017
+// © University of Southampton IT Innovation Centre, 2023
 //
 // Copyright in this software belongs to University of Southampton
 // IT Innovation Centre of Gamma House, Enterprise Road,
@@ -17,9 +17,9 @@
 // PURPOSE, except where stated in the Licence Agreement supplied with
 // the software.
 //
-//      Created By :            Stefanie Cox
-//      Created Date :          2017-02-16
-//      Created for Project :   5G-ENSURE
+//      Created By :            Panos Melas
+//      Created Date :          2023-02-16
+//      Created for Project :   Cyberkit4SME
 //
 /////////////////////////////////////////////////////////////////////////
 

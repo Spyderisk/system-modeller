@@ -38,7 +38,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -54,7 +53,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.apache.jena.query.Dataset;
+//import org.apache.jena.query.Dataset;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

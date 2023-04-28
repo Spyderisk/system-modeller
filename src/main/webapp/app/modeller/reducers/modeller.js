@@ -64,7 +64,7 @@ const modelState = {
     selectedMisbehaviour: {
         misbehaviour: {},
         loadingRootCauses: false,
-        loadingAttackPath: false,
+        loadingAttackPath: false
     },
     expanded: {
         assetDetails: {
@@ -863,7 +863,7 @@ export default function modeller(state = modelState, action) {
                 error: "",
                 waitingForUpdate: false
             },
-            attackPaths: {},
+            attackPaths: {}
         };
     }
 
@@ -921,7 +921,7 @@ export default function modeller(state = modelState, action) {
             ...state,
             model: {
                 ...state.model,
-                calculatingRisks: true,
+                calculatingRisks: true
             },
             validationProgress: { //TODO: change to riskCalcProgress?
                 status: "starting",
@@ -930,7 +930,7 @@ export default function modeller(state = modelState, action) {
                 error: "",
                 waitingForUpdate: false
             },
-            attackPaths: {},
+            attackPaths: {}
         };
     }
 
