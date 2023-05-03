@@ -26,6 +26,10 @@ services:
       - type: volume
         source: jena
         target: /code/jena-tdb
+      # Persistent named volume for storage of knowledgebase data (domain model, images and palettes)
+      - type: volume
+        source: knowledgebases
+        target: /opt/spyderisk/knowledgebases
     depends_on:
       - mongo
       - keycloak
@@ -57,5 +61,6 @@ services:
 
 volumes:
   jena:
+  knowledgebases:
   mongo-db:
   mongo-configdb:
