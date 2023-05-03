@@ -160,6 +160,8 @@ public class DomainModelController {
 		if (zip) {
 			DomainModelUtils domainModelUtils= new DomainModelUtils();
 			Map<String, String> result = domainModelUtils.extractDomainBundle(kbInstallFolder, f, newDomain, domainUri, domainModelName);
+			logger.debug("Removing tmp zipfile: {}", f);
+			f.delete();
 
 			if (result.containsKey("domainUri")) {
 				domainUri = result.get("domainUri");
@@ -187,6 +189,7 @@ public class DomainModelController {
 		logger.info("domainModelName: {}", domainModelName);
 		logger.info("domainModelFolder: {}", domainModelFolder);
 		logger.debug("domain model file: {}", f.getAbsolutePath());
+		logger.debug("icon mapping file: {}", iconMappingFile.getAbsolutePath());
 		storeModelManager.loadModel(domainModelName, domainUri, f.getAbsolutePath());
    
 		boolean paletteCreated = false;
@@ -195,9 +198,6 @@ public class DomainModelController {
 		if (iconMappingFile != null) {
 			logger.debug("Loading icon mappings from file: {}", iconMappingFile.getAbsolutePath());
 			paletteCreated = PaletteGenerator.createPalette(domainModelFolder, domainUri, modelObjectsHelper, new FileInputStream(iconMappingFile));
-		}
-		else {
-			paletteCreated = PaletteGenerator.createPalette(domainModelFolder, domainUri, modelObjectsHelper);
 		}
 
 		if (!paletteCreated) {

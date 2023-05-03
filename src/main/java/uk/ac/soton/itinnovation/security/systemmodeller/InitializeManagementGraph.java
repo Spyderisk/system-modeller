@@ -174,8 +174,8 @@ public class InitializeManagementGraph implements CommandLineRunner {
 	
 				DomainModelUtils domainModelUtils= new DomainModelUtils();
 		
-				for (File file : zipfiles) {
-					Map<String, String> results = domainModelUtils.extractDomainBundle(kbInstallFolder, file, true, null, null);
+				for (File zipfile : zipfiles) {
+					Map<String, String> results = domainModelUtils.extractDomainBundle(kbInstallFolder, zipfile, true, null, null);
 
 					String domainUri = null;
 					String domainModelName = null;

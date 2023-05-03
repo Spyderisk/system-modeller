@@ -40,28 +40,28 @@ import net.lingala.zip4j.ZipFile;
 public class DomainModelUtils {
 	private final static Logger logger = LoggerFactory.getLogger(DomainModelUtils.class);	
     
-	public Map<String, String> extractDomainBundle(String kbInstallFolder, File f, boolean newDomain, String domainUri, String domainModelName) throws IOException {
-		logger.info("Extracting zipfile: {}", f.getAbsolutePath());
+	public Map<String, String> extractDomainBundle(String kbInstallFolder, File zipfile, boolean newDomain, String domainUri, String domainModelName) throws IOException {
+		logger.info("Extracting zipfile: {}", zipfile.getAbsolutePath());
 
 		String tmpdir = Files.createTempDirectory("domain").toFile().getAbsolutePath();
 		logger.debug("Created tmp folder: {}", tmpdir);
 
-		String source = f.getAbsolutePath();
+		String zipfilePath = zipfile.getAbsolutePath();
 		String destination = tmpdir;   
 		
-		ZipFile zipFile = new ZipFile(source);
+		ZipFile zipFile = new ZipFile(zipfilePath);
 		zipFile.extractAll(destination);
 		zipFile.close();
 
 		String nqFilename = "domain.nq";
-		String nqFilepath = destination + File.separator + nqFilename;
+		String nqTmpFilepath = destination + File.separator + nqFilename;
 
 		//set domain model file (to be loaded later)
-		f = new File(nqFilepath);
+		File domainTmpFile = new File(nqTmpFilepath);
 
 		//Check for domain model file
-		if (!f.exists()) throw new IOException("Cannot locate domain model file: " + nqFilename);
-		logger.debug("Located domain model file: {}", nqFilepath);
+		if (!domainTmpFile.exists()) throw new IOException("Cannot locate domain model file: " + nqFilename);
+		logger.debug("Located domain model file: {}", nqTmpFilepath);
 
 		//Check for icon mapping file
 		String iconMappingFilename = "icon-mapping.json";
@@ -92,10 +92,23 @@ public class DomainModelUtils {
 		FileUtils.deleteDirectory(domainModelFolder);
 		domainModelFolder.mkdirs();
 
-		String domainImagesPath = domainModelFolderPath + File.separator + iconsFoldername;
+		//extract domain model (domain.nq) from zipfile into domain model folder
+		zipFile.extractFile(nqFilename, domainModelFolderPath);
+
+		//extract icon mapping file from zipfile into domain model folder
+		zipFile.extractFile(iconMappingFilename, domainModelFolderPath);
 
 		//extract icons folder from zipfile into domain model folder
 		zipFile.extractFile(iconsFoldername + "/", domainModelFolderPath);
+		zipFile.close();
+
+		File domainFile = new File(domainModelFolderPath, nqFilename);
+		if (!domainFile.exists()) throw new IOException("Cannot locate domain model file: " + domainFile.getAbsolutePath());
+
+		iconMappingFile = new File(domainModelFolderPath, iconMappingFilename);
+		if (!iconMappingFile.exists()) throw new IOException("Cannot locate icon mapping file: " + iconMappingFile.getAbsolutePath());
+
+		String domainImagesPath = domainModelFolderPath + File.separator + iconsFoldername;
 
 		//define domain images folder
 		File domainImagesDir = new File(domainImagesPath);
@@ -105,11 +118,14 @@ public class DomainModelUtils {
 
 		logger.debug("Created domain icons folder: {}", domainImagesDir.getAbsolutePath());
 
+		logger.debug("Deleting tmp folder: {}", tmpdir);
+		FileUtils.deleteDirectory(new File(tmpdir));
+
 		HashMap<String, String> result = new HashMap<>();
 		result.put("domainUri", domainUri);
 		result.put("domainModelName", domainModelName);
 		result.put("domainModelFolder", domainModelFolderPath);
-		result.put("nqFilepath", f.getAbsolutePath());
+		result.put("nqFilepath", domainFile.getAbsolutePath());
 		result.put("iconMappingFile", iconMappingFile.getAbsolutePath());
 
 		return result;
