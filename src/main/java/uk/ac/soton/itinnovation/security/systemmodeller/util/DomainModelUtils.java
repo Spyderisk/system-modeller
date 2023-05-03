@@ -40,7 +40,7 @@ import net.lingala.zip4j.ZipFile;
 public class DomainModelUtils {
 	private final static Logger logger = LoggerFactory.getLogger(DomainModelUtils.class);	
     
-	public Map<String, String> extractDomainBundle(File f, boolean newDomain, String domainUri, String domainModelName) throws IOException {
+	public Map<String, String> extractDomainBundle(String kbInstallFolder, File f, boolean newDomain, String domainUri, String domainModelName) throws IOException {
 		logger.info("Extracting zipfile: {}", f.getAbsolutePath());
 
 		String tmpdir = Files.createTempDirectory("domain").toFile().getAbsolutePath();
@@ -83,21 +83,22 @@ public class DomainModelUtils {
 			logger.debug("domainModelName: {}", domainModelName);
 		}
 
-		String imagesDir = this.getClass().getResource("/static/images/").getPath();
-		String domainImagesPath = imagesDir + domainModelName;
+		//Define domain model folder path
+		String domainModelFolderPath = kbInstallFolder + File.separator + domainModelName;
+		logger.info("Installing knowledgebase to folder: {}", domainModelFolderPath);
 
-		//extract icons folder from zipfile into /images folder
-		zipFile.extractFile(iconsFoldername + "/", imagesDir);
+		//Create domain model folder and delete if exists
+		File domainModelFolder = new File(domainModelFolderPath);
+		FileUtils.deleteDirectory(domainModelFolder);
+		domainModelFolder.mkdirs();
 
-		//locate extracted icons folder
-		File iconsDir = new File(imagesDir + "icons");
+		String domainImagesPath = domainModelFolderPath + File.separator + iconsFoldername;
 
-		//define domain images folder and delete if exists
+		//extract icons folder from zipfile into domain model folder
+		zipFile.extractFile(iconsFoldername + "/", domainModelFolderPath);
+
+		//define domain images folder
 		File domainImagesDir = new File(domainImagesPath);
-		FileUtils.deleteDirectory(domainImagesDir);
-
-		//rename icons folder to domain images folder
-		iconsDir.renameTo(domainImagesDir);
 
 		if (!domainImagesDir.exists() || !domainImagesDir.isDirectory()) throw new IOException("Cannot locate icons folder: " +
 			domainImagesDir.getAbsolutePath());
@@ -107,6 +108,7 @@ public class DomainModelUtils {
 		HashMap<String, String> result = new HashMap<>();
 		result.put("domainUri", domainUri);
 		result.put("domainModelName", domainModelName);
+		result.put("domainModelFolder", domainModelFolderPath);
 		result.put("nqFilepath", f.getAbsolutePath());
 		result.put("iconMappingFile", iconMappingFile.getAbsolutePath());
 

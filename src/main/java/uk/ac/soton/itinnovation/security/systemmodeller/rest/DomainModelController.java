@@ -83,6 +83,9 @@ public class DomainModelController {
 	@Value("${admin-role}")
 	public String adminRole;
 
+	@Value("${knowledgebases.install.folder}")
+	private String kbInstallFolder;
+
 	@RequestMapping(value = "/", method = RequestMethod.GET)
 	public Map<String, Map<String, Object>> getDomainModels(){
 		String username = keycloakAdminClient.getCurrentUser().getUsername();
@@ -110,6 +113,7 @@ public class DomainModelController {
 						) throws IOException {
 
 		String domainModelName;
+		String domainModelFolder = null;
 
 		if (newDomain) {
 			logger.info("Uploading new domain model");
@@ -155,7 +159,7 @@ public class DomainModelController {
 
 		if (zip) {
 			DomainModelUtils domainModelUtils= new DomainModelUtils();
-			Map<String, String> result = domainModelUtils.extractDomainBundle(f, newDomain, domainUri, domainModelName);
+			Map<String, String> result = domainModelUtils.extractDomainBundle(kbInstallFolder, f, newDomain, domainUri, domainModelName);
 
 			if (result.containsKey("domainUri")) {
 				domainUri = result.get("domainUri");
@@ -165,6 +169,10 @@ public class DomainModelController {
 				domainModelName = result.get("domainModelName");
 			}
 
+			if (result.containsKey("domainModelFolder")) {
+				domainModelFolder = result.get("domainModelFolder");
+			}
+		
 			if (result.containsKey("nqFilepath")) {
 				f = new File(result.get("nqFilepath"));
 			}
@@ -177,6 +185,7 @@ public class DomainModelController {
 		//storeModelManager.deleteModel(domainUri); //KEM loadModel handles the delete
 		logger.debug("domainUri: {}", domainUri);
 		logger.info("domainModelName: {}", domainModelName);
+		logger.info("domainModelFolder: {}", domainModelFolder);
 		logger.debug("domain model file: {}", f.getAbsolutePath());
 		storeModelManager.loadModel(domainModelName, domainUri, f.getAbsolutePath());
    
@@ -185,10 +194,10 @@ public class DomainModelController {
 		//First, use icon mapping file, if available (specific for this domain model)
 		if (iconMappingFile != null) {
 			logger.debug("Loading icon mappings from file: {}", iconMappingFile.getAbsolutePath());
-			paletteCreated = PaletteGenerator.createPalette(domainUri, modelObjectsHelper, new FileInputStream(iconMappingFile));
+			paletteCreated = PaletteGenerator.createPalette(domainModelFolder, domainUri, modelObjectsHelper, new FileInputStream(iconMappingFile));
 		}
 		else {
-			paletteCreated = PaletteGenerator.createPalette(domainUri, modelObjectsHelper);
+			paletteCreated = PaletteGenerator.createPalette(domainModelFolder, domainUri, modelObjectsHelper);
 		}
 
 		if (!paletteCreated) {

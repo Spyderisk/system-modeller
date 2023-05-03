@@ -63,8 +63,11 @@ public class InitializeManagementGraph implements CommandLineRunner {
 	@Value("${reset.on.start}")
 	private boolean resetOnStart;
 	
-	@Value("${knowledgebases.folder}")
-	private String knowledgebaseFolder;
+	@Value("${knowledgebases.source.folder}")
+	private String kbSourceFolder;
+
+	@Value("${knowledgebases.install.folder}")
+	private String kbInstallFolder;
 
 	@Override
 	public void run(String... args) {
@@ -142,13 +145,13 @@ public class InitializeManagementGraph implements CommandLineRunner {
 			}
 			*/
 			
-			logger.info("Checking for knowledgebases folder...");
+			logger.info("Checking for knowledgebases source folder...");
 	
-			//List of identified zip files located in knowledgebases folder
+			//List of identified zip files located in knowledgebases source folder
 			ArrayList<File> zipfiles = new ArrayList<>();
 	
 			try {
-				File kbDataDir = new File(knowledgebaseFolder);
+				File kbDataDir = new File(kbSourceFolder);
 				if (kbDataDir.isDirectory()) {
 					File[] fileList = kbDataDir.listFiles();
 					logger.info("Located .zip files: ");
@@ -165,17 +168,18 @@ public class InitializeManagementGraph implements CommandLineRunner {
 					}
 				}
 				else {
-					logger.error("Cannot locate knowledgebases folder: {}", kbDataDir);
+					logger.error("Cannot locate knowledgebases source folder: {}", kbDataDir);
 					System.exit(1);
 				}
 	
 				DomainModelUtils domainModelUtils= new DomainModelUtils();
 		
 				for (File file : zipfiles) {
-					Map<String, String> results = domainModelUtils.extractDomainBundle(file, true, null, null);
+					Map<String, String> results = domainModelUtils.extractDomainBundle(kbInstallFolder, file, true, null, null);
 
 					String domainUri = null;
 					String domainModelName = null;
+					String domainModelFolder = null;
 					File iconMappingFile = null;
 					String nqFilepath = null;
 
@@ -185,6 +189,10 @@ public class InitializeManagementGraph implements CommandLineRunner {
 		
 					if (results.containsKey("domainModelName")) {
 						domainModelName = results.get("domainModelName");
+					}
+
+					if (results.containsKey("domainModelFolder")) {
+						domainModelFolder = results.get("domainModelFolder");
 					}
 		
 					if (results.containsKey("nqFilepath")) {
@@ -208,7 +216,8 @@ public class InitializeManagementGraph implements CommandLineRunner {
 
 					if (iconMappingFile != null) {
 						logger.debug("Loading icon mappings from file: {}", iconMappingFile.getAbsolutePath());
-						paletteCreated = PaletteGenerator.createPalette(domainUri, modelObjectsHelper, new FileInputStream(iconMappingFile));
+						logger.info("Creating palette for {}", domainUri);
+						paletteCreated = PaletteGenerator.createPalette(domainModelFolder, domainUri, modelObjectsHelper, new FileInputStream(iconMappingFile));
 					}
 
 					if (!paletteCreated) {
@@ -275,11 +284,12 @@ public class InitializeManagementGraph implements CommandLineRunner {
 		logger.info("Generating palette for {}", ontologyName);
 
 		String graph = "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/" + ontologyName;
+		String domainModelFolder = kbInstallFolder + File.separator + ontologyName;
 
 		boolean paletteCreated = false;
 
 		try {
-			paletteCreated = PaletteGenerator.createPalette(graph, modelObjectsHelper);
+			paletteCreated = PaletteGenerator.createPalette(domainModelFolder, graph, modelObjectsHelper);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
