@@ -33,6 +33,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.rmi.UnexpectedException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -197,8 +198,24 @@ public class DomainModelController {
 		//First, use icon mapping file, if available (specific for this domain model)
 		if (iconMappingFile != null) {
 			logger.debug("Loading icon mappings from file: {}", iconMappingFile.getAbsolutePath());
-			paletteCreated = PaletteGenerator.createPalette(domainModelFolder, domainUri, modelObjectsHelper, new FileInputStream(iconMappingFile));
-		}
+			logger.info("Creating palette for {}", domainUri);
+			PaletteGenerator pg = PaletteGenerator.createPalette(domainModelFolder, domainUri, modelObjectsHelper, new FileInputStream(iconMappingFile));
+			paletteCreated = pg.isPaletteCreated();
+			if (paletteCreated) {
+				logger.info("Added domain model: {}", domainModelName);
+
+				boolean defaultUserAccess = pg.isDefaultUserAccess();
+				if (defaultUserAccess) {
+					logger.info("Adding default user access for {}", domainModelName);
+					List<String> defaultUserOntologies = modelObjectsHelper.getDefaultUserDomainModels();
+					if (defaultUserOntologies == null) {
+						defaultUserOntologies = new ArrayList<>();
+					}
+					defaultUserOntologies.add(domainModelName);
+					modelObjectsHelper.setDefaultUserDomainModels(defaultUserOntologies);
+				}
+			}
+}
 
 		if (!paletteCreated) {
 			logger.error("Palette not generated for: " + domainUri);

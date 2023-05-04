@@ -72,40 +72,8 @@ public class InitializeManagementGraph implements CommandLineRunner {
 	@Override
 	public void run(String... args) {
 
-		//logger.info("Getting list of domain models from ontologies.json");
-
 		ArrayList<String> ontologyNames = new ArrayList<>();
 		ArrayList<String> defaultUserOntologies = new ArrayList<>();
-
-		/*
-		try {
-			//open ontologies.json
-			JSONArray json = new JSONArray(IOUtils.toString(
-				PaletteGenerator.class.getClassLoader().getResourceAsStream("static/data/ontologies.json")
-			));
-
-			//for each ontology:
-			for (int i = 0; i < json.length(); i++) {
-				//parse the JSON file to get the ontology name
-				JSONObject ont = (JSONObject) json.get(i);
-				String ontology = ont.getString("ontology");
-				String ontologyName = ontology.replace(".rdf", "").replace(".nq", "");
-				ontologyNames.add(ontologyName);
-
-				boolean defaultUserAccess = ont.getBoolean("defaultUserAccess");
-				logger.info("Found {}: default user access = {}", ontology, defaultUserAccess);
-				if (defaultUserAccess) {
-					defaultUserOntologies.add(ontologyName);
-				}
-			}
-		} catch (IOException ex) {
-			logger.error("Could not load ontologies from ontologies.json", ex);
-			System.exit(1);
-		}
-
-		//store the list of default user domain models
-		modelObjectsHelper.setDefaultUserDomainModels(defaultUserOntologies);
-		*/
 
 		if (resetOnStart || storeModelManager.storeIsEmpty()) {
 			logger.info("Running management graph initialisation");
@@ -129,22 +97,6 @@ public class InitializeManagementGraph implements CommandLineRunner {
 			storeModelManager.loadModelFromResource(coreModelName, coreModelGraph, resourcePath);
 			logger.info("Added core model to the management graph");
 
-			//get resources dir in build folder
-			//String resourcesDir = PaletteGenerator.class.getClassLoader().getResource("static/data").getPath();
-					
-			/*
-			for (String ontologyName : ontologyNames) {
-				String graph = "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/" + ontologyName;
-				String ontology = ontologyName + ".nq";
-				logger.info("Adding domain model {} to the management graph", ontology);
-
-				String ontologyResourcePath = "/" + ontology;
-				storeModelManager.loadModelFromResource(ontologyName, graph, ontologyResourcePath);
-
-				generatePaletteOrExit(ontologyName);
-			}
-			*/
-			
 			logger.info("Checking for knowledgebases source folder...");
 	
 			//List of identified zip files located in knowledgebases source folder
@@ -217,13 +169,26 @@ public class InitializeManagementGraph implements CommandLineRunner {
 					if (iconMappingFile != null) {
 						logger.debug("Loading icon mappings from file: {}", iconMappingFile.getAbsolutePath());
 						logger.info("Creating palette for {}", domainUri);
-						paletteCreated = PaletteGenerator.createPalette(domainModelFolder, domainUri, modelObjectsHelper, new FileInputStream(iconMappingFile));
+						PaletteGenerator pg = PaletteGenerator.createPalette(domainModelFolder, domainUri, modelObjectsHelper, new FileInputStream(iconMappingFile));
+						paletteCreated = pg.isPaletteCreated();
+						if (paletteCreated) {
+							ontologyNames.add(domainModelName);
+							logger.info("Added domain model: {}", domainModelName);
+
+							boolean defaultUserAccess = pg.isDefaultUserAccess();
+							if (defaultUserAccess) {
+								logger.info("Adding default user access for {}", domainModelName);
+								defaultUserOntologies.add(domainModelName);
+							}
+						}
 					}
 
 					if (!paletteCreated) {
 						logger.error("Palette not generated for: " + domainUri);
 					}
-					
+
+					//store the list of default user domain models
+					modelObjectsHelper.setDefaultUserDomainModels(defaultUserOntologies);				
 				}
 	
 			}
@@ -244,7 +209,6 @@ public class InitializeManagementGraph implements CommandLineRunner {
 				userNames.add(u.getUsername());
 			}
 
-			/*
 			logger.info("Setting default user access for domain models");
 			for (String ontologyName : ontologyNames) {
 				if (defaultUserOntologies.contains(ontologyName)) {
@@ -252,50 +216,51 @@ public class InitializeManagementGraph implements CommandLineRunner {
 					logger.info(ontologyName + ": " + userNames);
 				}
 			}
-			*/
-		} else {
-			// Jena is not empty so we presume BOTH Jena and Mongo have been initialised.
-			// However, it is still possible that this is a new SSM container using
-			// previously created DB volumes. So we must check that the palettes exist
-			// as they reside within the container itself.
-			logger.info("Checking for palettes");
+		}
 
-			//TODO: rewrite this
+		//Final check of installed domain models and palettes
+		Map<String, Map<String, Object>> domainModels = storeModelManager.getDomainModels();
+		//logger.debug("Domain models in management graph: {}", domainModels);
 
-			/*
-			for (String ontologyName : ontologyNames) {
-				String paletteFile = "/static/data/palette-" + ontologyName + ".json";
+		logger.info("Checking domain models and palettes...");
+		logger.info("");
 
-				if (this.getClass().getResource(paletteFile) == null) {
-					logger.info("Palette does not exist: {}. Regenerating...", paletteFile);
-					generatePaletteOrExit(ontologyName);
-				}
-				else {
-					logger.info("Found {}", paletteFile);
-				}
+		boolean palettesExist = true;
+
+		for (String domainModelUri : domainModels.keySet()) {
+			Map<String, Object> domainModel = domainModels.get(domainModelUri);
+			String title = (String) domainModel.get("title");
+			String label = (String) domainModel.get("label");
+			String version = (String) domainModel.get("version");
+
+			logger.info("URI: {}", domainModelUri);
+			logger.info("title: {}", title);
+			logger.info("label: {}", label);
+			logger.info("version: {}", version);
+
+			String domainModelName = title;
+			String domainModelFolderPath = kbInstallFolder + File.separator + domainModelName;
+			String palettePath = domainModelFolderPath + File.separator + "palette.json";
+			File paletteFile = new File(palettePath);
+
+			if (paletteFile.exists()) {
+				logger.info("palette: {}", paletteFile.getAbsolutePath());
 			}
-			*/
+			else {
+				logger.error("palette: {}", paletteFile.getAbsolutePath() + " (missing)");
+				palettesExist = false;
+			}
+
+			logger.info("");
+		}
+
+		if (!palettesExist) {
+			logger.error("One or more palettes are missing (see details above)");
+			System.exit(1);
 		}
 
 		logger.info("Finished management graph initialisation");
+		logger.info("Spyderisk startup complete!");
 	}
 
-	private void generatePaletteOrExit(String ontologyName) {
-		logger.info("Generating palette for {}", ontologyName);
-
-		String graph = "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/" + ontologyName;
-		String domainModelFolder = kbInstallFolder + File.separator + ontologyName;
-
-		boolean paletteCreated = false;
-
-		try {
-			paletteCreated = PaletteGenerator.createPalette(domainModelFolder, graph, modelObjectsHelper);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		if (!paletteCreated) {
-			System.exit(1);
-		}
-	}
 }
