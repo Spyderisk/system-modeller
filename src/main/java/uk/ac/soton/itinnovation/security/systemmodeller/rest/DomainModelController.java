@@ -238,24 +238,6 @@ public class DomainModelController {
 		return ResponseEntity.ok(getDomainModels());
 	}
 						
-	@RequestMapping(value = "/{domain}/palette", method = RequestMethod.POST)
-	public ResponseEntity<?> updatePalette(@PathVariable String domain, @RequestBody Map<?, ?> body) {
-
-		String rdfName = domain.substring(domain.lastIndexOf('/') + 1);
-		File f = new File(this.getClass().getResource("/static/data/palette-"+rdfName+".json").getPath());
-		if(!f.exists()){
-		    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Could not identify this domain's palette", 1));
-		}
-		ObjectMapper objectMapper = new ObjectMapper();
-
-		try {
-		    objectMapper.writerWithDefaultPrettyPrinter().writeValue(f, body);
-		} catch (IOException e) {
-		    logger.error(e.getMessage());
-		}
-		return ResponseEntity.ok().body(body);
-	}
-
 	@RequestMapping(value = "/{domain}/users", method = RequestMethod.GET)
 	public ResponseEntity<?> getDomainUsers(@PathVariable String domain) {
 
@@ -280,23 +262,6 @@ public class DomainModelController {
 
 	@RequestMapping(value = "/{domain}/users", method = RequestMethod.POST)
 	public ResponseEntity<?> updateDomainUsers(@PathVariable String domain, @RequestBody Map<?, ?> body) {
-
-//        String rdfName = domain.substring(domain.lastIndexOf('/') + 1);
-//        File f = new File(this.getClass().getResource("/static/data/users-" + rdfName + ".rdf.json").getPath());
-//        if(!f.exists()){
-//            try {
-//                f.createNewFile();
-//            } catch (IOException e) {
-//                logger.error("Error creating file {}", rdfName, e);
-//            }
-//        }
-//        ObjectMapper objectMapper = new ObjectMapper();
-//
-//        try {
-//            objectMapper.writerWithDefaultPrettyPrinter().writeValue(f, body);
-//        } catch (IOException e) {
-//            logger.error(e.getMessage());
-//        }
 		logger.debug("{}", body);
 		modelObjectsHelper.setUsersForDomainModel(domain, (List<String>) body.get("users"));
 
