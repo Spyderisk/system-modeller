@@ -106,13 +106,11 @@ public class InitializeManagementGraph implements CommandLineRunner {
 				File kbDataDir = new File(kbSourceFolder);
 				if (kbDataDir.isDirectory()) {
 					File[] fileList = kbDataDir.listFiles();
-					logger.info("Located .zip files: ");
 					if (fileList != null) {
 						for (File file : fileList) {
 							if (!file.isDirectory()) {
 								String filename = file.getName();
 								if (filename.endsWith(".zip")) {
-									logger.info(filename);
 									zipfiles.add(file);
 								}
 							}
@@ -125,78 +123,85 @@ public class InitializeManagementGraph implements CommandLineRunner {
 				}
 	
 				DomainModelUtils domainModelUtils= new DomainModelUtils();
-		
-				for (File zipfile : zipfiles) {
-					Map<String, String> results = domainModelUtils.extractDomainBundle(kbInstallFolder, zipfile, true, null, null);
 
-					String domainUri = null;
-					String domainModelName = null;
-					String domainModelFolder = null;
-					File iconMappingFile = null;
-					String nqFilepath = null;
+				logger.info("Located .zip files: {}", zipfiles.size());
 
-					if (results.containsKey("domainUri")) {
-						domainUri = results.get("domainUri");
-					}
-		
-					if (results.containsKey("domainModelName")) {
-						domainModelName = results.get("domainModelName");
-					}
+				if (zipfiles.size() > 0) {
+					for (File zipfile : zipfiles) {
+						logger.info(zipfile.getName());
+						Map<String, String> results = domainModelUtils.extractDomainBundle(kbInstallFolder, zipfile, true, null, null);
 
-					if (results.containsKey("domainModelFolder")) {
-						domainModelFolder = results.get("domainModelFolder");
-					}
-		
-					if (results.containsKey("nqFilepath")) {
-						File f = new File(results.get("nqFilepath"));
-						nqFilepath = f.getAbsolutePath();
-					}
-					
-					if (results.containsKey("iconMappingFile")) {
-						iconMappingFile = new File(results.get("iconMappingFile"));
-					}
-		
-					logger.debug("domainUri: {}", domainUri);
-					logger.info("domainModelName: {}", domainModelName);
-					logger.debug("domain model file: {}", nqFilepath);
+						String domainUri = null;
+						String domainModelName = null;
+						String domainModelFolder = null;
+						File iconMappingFile = null;
+						String nqFilepath = null;
 
-					logger.info("Adding domain model {} to the management graph", domainModelName);
-					storeModelManager.loadModel(domainModelName, domainUri, nqFilepath);
+						if (results.containsKey("domainUri")) {
+							domainUri = results.get("domainUri");
+						}
+			
+						if (results.containsKey("domainModelName")) {
+							domainModelName = results.get("domainModelName");
+						}
 
-					//Create palette using icon mappings file
-					boolean paletteCreated = false;
+						if (results.containsKey("domainModelFolder")) {
+							domainModelFolder = results.get("domainModelFolder");
+						}
+			
+						if (results.containsKey("nqFilepath")) {
+							File f = new File(results.get("nqFilepath"));
+							nqFilepath = f.getAbsolutePath();
+						}
+						
+						if (results.containsKey("iconMappingFile")) {
+							iconMappingFile = new File(results.get("iconMappingFile"));
+						}
+			
+						logger.debug("domainUri: {}", domainUri);
+						logger.info("domainModelName: {}", domainModelName);
+						logger.debug("domain model file: {}", nqFilepath);
 
-					if (iconMappingFile != null) {
-						logger.debug("Loading icon mappings from file: {}", iconMappingFile.getAbsolutePath());
-						logger.info("Creating palette for {}", domainUri);
-						PaletteGenerator pg = PaletteGenerator.createPalette(domainModelFolder, domainUri, modelObjectsHelper, new FileInputStream(iconMappingFile));
-						paletteCreated = pg.isPaletteCreated();
-						if (paletteCreated) {
-							ontologyNames.add(domainModelName);
-							logger.info("Added domain model: {}", domainModelName);
+						logger.info("Adding domain model {} to the management graph", domainModelName);
+						storeModelManager.loadModel(domainModelName, domainUri, nqFilepath);
 
-							boolean defaultUserAccess = pg.isDefaultUserAccess();
-							if (defaultUserAccess) {
-								logger.info("Adding default user access for {}", domainModelName);
-								defaultUserOntologies.add(domainModelName);
+						//Create palette using icon mappings file
+						boolean paletteCreated = false;
+
+						if (iconMappingFile != null) {
+							logger.debug("Loading icon mappings from file: {}", iconMappingFile.getAbsolutePath());
+							logger.info("Creating palette for {}", domainUri);
+							PaletteGenerator pg = PaletteGenerator.createPalette(domainModelFolder, domainUri, modelObjectsHelper, new FileInputStream(iconMappingFile));
+							paletteCreated = pg.isPaletteCreated();
+							if (paletteCreated) {
+								ontologyNames.add(domainModelName);
+								logger.info("Added domain model: {}", domainModelName);
+
+								boolean defaultUserAccess = pg.isDefaultUserAccess();
+								if (defaultUserAccess) {
+									logger.info("Adding default user access for {}", domainModelName);
+									defaultUserOntologies.add(domainModelName);
+								}
 							}
 						}
-					}
 
-					if (!paletteCreated) {
-						logger.error("Palette not generated for: " + domainUri);
+						if (!paletteCreated) {
+							logger.error("Palette not generated for: " + domainUri);
+						}
 					}
-
-					//store the list of default user domain models
-					modelObjectsHelper.setDefaultUserDomainModels(defaultUserOntologies);				
 				}
-	
+				else {
+					logger.warn("No domain model bundles found in source folder: {}", kbSourceFolder);
+				}
 			}
 			catch (IOException ex) {
 				logger.error("Could not load domain models", ex);
 				System.exit(1);
 			}
 			
+			//store the list of default user domain models
+			modelObjectsHelper.setDefaultUserDomainModels(defaultUserOntologies);
+
 			logger.debug("Domain models in management graph: {}", storeModelManager.getDomainModels());
 
 			logger.info("Putting all users in the management graph");
@@ -225,38 +230,45 @@ public class InitializeManagementGraph implements CommandLineRunner {
 		logger.info("Checking domain models and palettes...");
 		logger.info("");
 
-		boolean palettesExist = true;
+		if (domainModels.keySet().size() > 0) {
+			boolean palettesExist = true;
 
-		for (String domainModelUri : domainModels.keySet()) {
-			Map<String, Object> domainModel = domainModels.get(domainModelUri);
-			String title = (String) domainModel.get("title");
-			String label = (String) domainModel.get("label");
-			String version = (String) domainModel.get("version");
+			for (String domainModelUri : domainModels.keySet()) {
+				Map<String, Object> domainModel = domainModels.get(domainModelUri);
+				String title = (String) domainModel.get("title");
+				String label = (String) domainModel.get("label");
+				String version = (String) domainModel.get("version");
 
-			logger.info("URI: {}", domainModelUri);
-			logger.info("title: {}", title);
-			logger.info("label: {}", label);
-			logger.info("version: {}", version);
+				logger.info("URI: {}", domainModelUri);
+				logger.info("title: {}", title);
+				logger.info("label: {}", label);
+				logger.info("version: {}", version);
 
-			String domainModelName = title;
-			String domainModelFolderPath = kbInstallFolder + File.separator + domainModelName;
-			String palettePath = domainModelFolderPath + File.separator + "palette.json";
-			File paletteFile = new File(palettePath);
+				String domainModelName = title;
+				String domainModelFolderPath = kbInstallFolder + File.separator + domainModelName;
+				String palettePath = domainModelFolderPath + File.separator + "palette.json";
+				File paletteFile = new File(palettePath);
 
-			if (paletteFile.exists()) {
-				logger.info("palette: {}", paletteFile.getAbsolutePath());
+				if (paletteFile.exists()) {
+					logger.info("palette: {}", paletteFile.getAbsolutePath());
+				}
+				else {
+					logger.error("palette: {}", paletteFile.getAbsolutePath() + " (missing)");
+					palettesExist = false;
+				}
+
+				logger.info("");
 			}
-			else {
-				logger.error("palette: {}", paletteFile.getAbsolutePath() + " (missing)");
-				palettesExist = false;
-			}
 
-			logger.info("");
+			if (!palettesExist) {
+				logger.error("One or more palettes are missing (see details above)");
+				System.exit(1);
+			}
 		}
-
-		if (!palettesExist) {
-			logger.error("One or more palettes are missing (see details above)");
-			System.exit(1);
+		else {
+			logger.warn("No domain models currently installed! Options include:");
+			logger.warn("1) Copy required domain model zip bundles into {} then restart Spyderisk (ensure reset.on.start=true in application properties)", kbSourceFolder);
+			logger.warn("2) Manually install each required domain model (knowledgebase) via the Spyderisk Knowledgebase Manager page");
 		}
 
 		logger.info("Finished management graph initialisation");
