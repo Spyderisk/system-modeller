@@ -98,6 +98,10 @@ public class DomainModelControllerTest extends CommonTestSetup {
 	@Rule
 	public TestName name = new TestName();
 
+	//Knowledgebases installation folder
+	@Value("${knowledgebases.install.folder}")
+	private String kbInstallFolder;
+
 	//Test domain models
 	private String NETWORK_TESTING_NAME = "domain-network-testing";
 	private String NETWORK_TESTING_URI  = "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network-testing";
@@ -400,8 +404,7 @@ public class DomainModelControllerTest extends CommonTestSetup {
 
 		assertEquals(1, storeManager.getDomainModels().size());
 
-		String imagesDir = this.getClass().getResource("/static/images/").getPath();
-		String domainImagesPath = imagesDir + NETWORK_TESTING_NAME;
+		String domainImagesPath = kbInstallFolder + File.separator + NETWORK_TESTING_NAME + File.separator + "icons";
 		logger.info("Checking images folder: {}", domainImagesPath);
 
 		File domainImagesDir = new File(domainImagesPath);
@@ -461,8 +464,7 @@ public class DomainModelControllerTest extends CommonTestSetup {
 		//Assert that domain model has the correct URI
 		assertEquals(domainModels.keySet().iterator().next(), NETWORK_TESTING_NEW_URI);
 
-		String imagesDir = this.getClass().getResource("/static/images/").getPath();
-		String domainImagesPath = imagesDir + NETWORK_TESTING_NEW_NAME;
+		String domainImagesPath = kbInstallFolder + File.separator + NETWORK_TESTING_NEW_NAME + File.separator + "icons";
 		logger.info("Checking images folder: {}", domainImagesPath);
 
 		File domainImagesDir = new File(domainImagesPath);
