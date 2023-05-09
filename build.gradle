@@ -49,11 +49,6 @@ def systemModellerName = "system-modeller"
 def systemModellerVersion = "3.5.0-SNAPSHOT"
 def javaVersion = 1.8
 
-// When building as a developer, the Maven credentials should be defined in environment variables (MAVEN_USER, MAVEN_PASS).
-// When the build is from the CI, the credentials should be passed in as Gradle properties (mavenUser, mavenPass) to avoid persisting them in the image.
-def mavenUsername = System.getenv('MAVEN_USER') ?: mavenUser
-def mavenPassword = System.getenv('MAVEN_PASS') ?: mavenPass
-
 version = systemModellerVersion  // picked up by sonarqube
 
 // configure plugins //////////////////////////////////////////////////////////////////////////////

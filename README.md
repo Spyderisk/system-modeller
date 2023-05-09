@@ -36,18 +36,11 @@ You will need `git`, `git-lfs`, `docker` and `docker-compose`. See below for mor
 Assuming you have the pre-requisites working and have cloned the repository:
 
 1. `$ cd system-modeller`
-2. Create a file `.env.secrets` containing your GitHub username and a GitHub Personal Access Token that provides package read-access:
-
-```
-MAVEN_USER=<your gitHub username>
-MAVEN_PASS=<your access token>
-```
-
-4. `$ docker-compose up -d`
-5. `$ docker-compose exec ssm bash`
-6. `$ ./gradlew assemble bootTest`
-7. Go to http://localhost:8081 in your browser.
-8. Login in using `testuser` or `testadmin` with password `password`.
+2. `$ docker-compose up -d`
+3. `$ docker-compose exec ssm bash`
+4. `$ ./gradlew assemble bootTest`
+5. Go to http://localhost:8081 in your browser.
+6. Login in using `testuser` or `testadmin` with password `password`.
 
 N.B. Links in the user interface to documentation, the attack graph image, and Keycloak account management functions do not currently work in the development environment. Keycloak links can be corrected by editing the port in the URL to be 8080.
 
@@ -200,19 +193,6 @@ Cloning the `system-modeller` repository makes a copy of all the files (and thei
 git clone git@iglab.it-innovation.soton.ac.uk:Security/system-modeller.git
 cd system-modeller
 ```
-
-### Define Maven Authentication Credentials
-
-The software build needs access to GitHub to download Maven dependencies. Although the required package is in a public repository, GitHub still requires user authnetication to read the package. The simplest way to get your GitHub credentials into the `ssm` Docker container (where the build takes place) is to create a file `.env.secrets` containing e.g.:
-
-```shell
-MAVEN_USER=yourUsername
-MAVEN_PASS=yourCredential
-```
-
-Alternatively you can set the same environment variables by hand once inside the `ssm` container.
-
-It is recommended that for `MAVEN_PASS` you use a Personal Access Token with just the authorisation to read packages. This is set up in your GitHub account settings.
 
 ### Starting the Containers
 
@@ -479,9 +459,7 @@ Sometimes, to test something you need to build a "production" image of the sort 
 
 To build a production image use something like:
 
-`docker build --tag my-ssm-image --build-arg BUILDKIT_INLINE_CACHE=1 --build-arg MAVEN_USER=${MAVEN_USER} --build-arg MAVEN_PASS=${MAVEN_PASS} --file Dockerfile --target ssm-production .`
-
-Ensure the `MAVEN_USER` and `MAVEN_PASS` environment variables are set and run the command from the host machine (not from within the `ssm` container).
+`docker build --tag my-ssm-image --build-arg BUILDKIT_INLINE_CACHE=1 --file Dockerfile --target ssm-production .`
 
 If you need to test the image in the `system-modeller-deployment` project then just edit the `docker-compose.yml` file in that project to reference `my-ssm-image` instead of the image held remotely, e.g.:
 

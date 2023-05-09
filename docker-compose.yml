@@ -9,11 +9,6 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
-      args:
-        # These are passed as "build arguments" to the Dockerfile (referenced as "ARG" in there, available only when building).
-        # They are set to the value of the environment variable of the same name.
-        - MAVEN_USER
-        - MAVEN_PASS
     # The "init" config means the container responds to signals and exits cleanly
     init: true
     environment:
