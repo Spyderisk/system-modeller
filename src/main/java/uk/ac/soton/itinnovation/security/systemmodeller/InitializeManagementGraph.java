@@ -96,13 +96,12 @@ public class InitializeManagementGraph implements CommandLineRunner {
 			String resourcePath = "/core.rdf";
 			storeModelManager.loadModelFromResource(coreModelName, coreModelGraph, resourcePath);
 			logger.info("Added core model to the management graph");
-
-			logger.info("Checking for knowledgebases source folder...");
 	
 			//List of identified zip files located in knowledgebases source folder
 			ArrayList<File> zipfiles = new ArrayList<>();
 	
 			try {
+				logger.info("Checking for knowledgebases source folder: {}", kbSourceFolder);
 				File kbDataDir = new File(kbSourceFolder);
 				if (kbDataDir.isDirectory()) {
 					File[] fileList = kbDataDir.listFiles();
@@ -266,8 +265,16 @@ public class InitializeManagementGraph implements CommandLineRunner {
 			}
 		}
 		else {
+			boolean production = true;
+			String profile = System.getProperty("spring.profiles.active");
+			if ((profile != null) && (profile.equals("test") || profile.equals("dev"))) {
+				production = false;
+			}
 			logger.warn("No domain models currently installed! Options include:");
-			logger.warn("1) Copy required domain model zip bundles into {} then restart Spyderisk (ensure reset.on.start=true in application properties)", kbSourceFolder);
+			String restartMsg = production ? "restart Spyderisk (docker-compose down -v; docker-compose up -d)" 
+										   : "restart Spyderisk (ensure reset.on.start=true in application properties)";
+
+			logger.warn("1) Copy required domain model zip bundles into {} then " + restartMsg, kbSourceFolder);
 			logger.warn("2) Manually install each required domain model (knowledgebase) via the Spyderisk Knowledgebase Manager page");
 		}
 
