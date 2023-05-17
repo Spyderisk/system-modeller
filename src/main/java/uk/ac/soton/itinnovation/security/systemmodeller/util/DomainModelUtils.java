@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,6 +40,7 @@ import net.lingala.zip4j.ZipFile;
 
 public class DomainModelUtils {
 	private final static Logger logger = LoggerFactory.getLogger(DomainModelUtils.class);	
+	private final static String DEFAULT_DOMAIN_FILE = "domain.nq";
     
 	public Map<String, String> extractDomainBundle(String kbInstallFolder, File zipfile, boolean newDomain, String domainUri, String domainModelName) throws IOException {
 		logger.info("");
@@ -54,7 +56,45 @@ public class DomainModelUtils {
 		zipFile.extractAll(destination);
 		zipFile.close();
 
-		String nqFilename = "domain.nq";
+		//List of domain model (.nq) files extracted from zipfile
+		ArrayList<String> nqFiles = new ArrayList<>();
+
+		File destinationDir = new File(destination);
+		File[] fileList = destinationDir.listFiles();
+		if (fileList != null) {
+			logger.info("Located nq files:");
+			for (File file : fileList) {
+				if (!file.isDirectory()) {
+					String filename = file.getName();
+					if (filename.endsWith(".nq")) {
+						logger.info(filename);
+						nqFiles.add(filename);
+					}
+				}
+			}
+		}
+
+		if (nqFiles.size() == 0) {
+			throw new IOException("No domain files (*.nq) located in zipfile: " + zipfilePath);
+		}
+
+		String nqFilename;
+
+		//Check for "domain.nq" first, otherwise use first available .nq file
+		if (nqFiles.contains(DEFAULT_DOMAIN_FILE)) {
+			logger.info("Using default domain file: {}", DEFAULT_DOMAIN_FILE);
+			nqFilename = DEFAULT_DOMAIN_FILE;
+		}
+		else {
+			nqFilename = nqFiles.get(0);
+			if (nqFiles.size() > 1) {
+				logger.warn("Multiple domain nq files found. Using first: {}", nqFilename);
+			}
+			else {
+				logger.info("Using domain file: {}", nqFilename);
+			}
+		}
+
 		String nqTmpFilepath = destination + File.separator + nqFilename;
 
 		//set domain model file (to be loaded later)
