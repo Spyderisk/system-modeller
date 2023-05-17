@@ -41,6 +41,7 @@ public class DomainModelUtils {
 	private final static Logger logger = LoggerFactory.getLogger(DomainModelUtils.class);	
     
 	public Map<String, String> extractDomainBundle(String kbInstallFolder, File zipfile, boolean newDomain, String domainUri, String domainModelName) throws IOException {
+		logger.info("");
 		logger.info("Extracting zipfile: {}", zipfile.getAbsolutePath());
 
 		String tmpdir = Files.createTempDirectory("domain").toFile().getAbsolutePath();

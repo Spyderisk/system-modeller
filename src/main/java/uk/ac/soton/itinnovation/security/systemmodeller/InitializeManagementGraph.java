@@ -28,6 +28,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.keycloak.representations.idm.UserRepresentation;
@@ -74,6 +76,8 @@ public class InitializeManagementGraph implements CommandLineRunner {
 
 		ArrayList<String> ontologyNames = new ArrayList<>();
 		ArrayList<String> defaultUserOntologies = new ArrayList<>();
+		HashSet<String> domainGraphs = new HashSet<>(); //all loaded domain model URIs loaded via zip bundles
+		HashSet<String> duplicatedDomainGraphs = new HashSet<>(); //domain graphs that have been loaded more than once
 
 		if (resetOnStart || storeModelManager.storeIsEmpty()) {
 			logger.info("Running management graph initialisation");
@@ -98,7 +102,7 @@ public class InitializeManagementGraph implements CommandLineRunner {
 			logger.info("Added core model to the management graph");
 	
 			//List of identified zip files located in knowledgebases source folder
-			ArrayList<File> zipfiles = new ArrayList<>();
+			ArrayList<File> zipfilesList = new ArrayList<>();
 	
 			try {
 				logger.info("Checking for knowledgebases source folder: {}", kbSourceFolder);
@@ -110,7 +114,7 @@ public class InitializeManagementGraph implements CommandLineRunner {
 							if (!file.isDirectory()) {
 								String filename = file.getName();
 								if (filename.endsWith(".zip")) {
-									zipfiles.add(file);
+									zipfilesList.add(file);
 								}
 							}
 						}
@@ -123,11 +127,20 @@ public class InitializeManagementGraph implements CommandLineRunner {
 	
 				DomainModelUtils domainModelUtils= new DomainModelUtils();
 
-				logger.info("Located .zip files: {}", zipfiles.size());
+				logger.info("Located .zip files: {}", zipfilesList.size());
 
-				if (zipfiles.size() > 0) {
+				//Get zipfiles array
+				File[] zipfiles = zipfilesList.toArray(new File[zipfilesList.size()]);
+
+				//Sort files into alphabetical order
+				Arrays.sort(zipfiles);
+
+				for (File zipfile : zipfiles) {
+					logger.info(zipfile.getName());
+				}
+
+				if (zipfiles.length > 0) {
 					for (File zipfile : zipfiles) {
-						logger.info(zipfile.getName());
 						Map<String, String> results = domainModelUtils.extractDomainBundle(kbInstallFolder, zipfile, true, null, null);
 
 						String domainUri = null;
@@ -161,9 +174,26 @@ public class InitializeManagementGraph implements CommandLineRunner {
 						logger.info("domainModelName: {}", domainModelName);
 						logger.debug("domain model file: {}", nqFilepath);
 
+						if (domainGraphs.contains(domainUri)) {
+							logger.warn("Domain model exists and will be overwritten: {}", domainUri);
+							duplicatedDomainGraphs.add(domainUri);
+						}
+
 						logger.info("Adding domain model {} to the management graph", domainModelName);
 						storeModelManager.loadModel(domainModelName, domainUri, nqFilepath);
 
+						domainGraphs.add(domainUri);
+
+						Map<String, Object> domainModel = storeModelManager.getDomainModel(domainUri);
+						String title = (String) domainModel.get("title");
+						String label = (String) domainModel.get("label");
+						String version = (String) domainModel.get("version");
+		
+						logger.info("URI: {}", domainUri);
+						logger.info("title: {}", title);
+						logger.info("label: {}", label);
+						logger.info("version: {}", version);
+		
 						//Create palette using icon mappings file
 						boolean paletteCreated = false;
 
@@ -224,7 +254,6 @@ public class InitializeManagementGraph implements CommandLineRunner {
 
 		//Final check of installed domain models and palettes
 		Map<String, Map<String, Object>> domainModels = storeModelManager.getDomainModels();
-		//logger.debug("Domain models in management graph: {}", domainModels);
 
 		logger.info("Checking domain models and palettes...");
 		logger.info("");
@@ -262,6 +291,14 @@ public class InitializeManagementGraph implements CommandLineRunner {
 			if (!palettesExist) {
 				logger.error("One or more palettes are missing (see details above)");
 				System.exit(1);
+			}
+
+			if (duplicatedDomainGraphs.size() > 0) {
+				logger.warn("Multiple zipfiles were found for the following domain graphs:");
+				for (String graphUri : duplicatedDomainGraphs) {
+					logger.warn(graphUri);
+				}
+				logger.info("");
 			}
 		}
 		else {
