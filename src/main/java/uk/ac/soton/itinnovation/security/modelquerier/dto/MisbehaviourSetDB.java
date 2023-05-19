@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -58,6 +59,7 @@ public class MisbehaviourSetDB extends EntityDB {
 
 	// Properties set during risk calculation
 	@SerializedName("hasPrior")
+    @JsonProperty("likelihood")
 	private String prior;								// Synonym for 'likelihood'
 	@SerializedName("hasRisk")
 	private String risk;								// Risk level, calculated from the MisbehaviourSet likleihood and impact level
