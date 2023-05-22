@@ -92,7 +92,7 @@ At this point you have a functional Linux system. Please skip to the Linux sub-s
 
 #### Without WSL2
 
-If you are not using WSL2, you will have to permit Docker Desktop to access the location on your disk where you have the system-modeller cloned. Either (in advance) add a file-share for "C:\" in the Docker Desktop UI or be more specific to the area of the disc where the system-modeller is checked out. Alternatively, wait for Docker Desktop to pop up a request for file sharing when you execute the compose file.
+If you are not using WSL2, you will have to permit Docker Desktop to access the location on your disk where you have the system-modeller cloned. Either (in advance) add a file-share for "C:\" in the Docker Desktop UI or be more specific to the area of the disk where the system-modeller is checked out. Alternatively, wait for Docker Desktop to pop up a request for file sharing when you execute the compose file.
 
 You must also configure resource usage in the Docker Desktop UI. Configure it to:
 
@@ -120,7 +120,7 @@ Commands:
 
 ### Containers
 
-Containers are running instances of images. They can be paused, unpaused, stopped and started once created or just destroyed and recreated. The state of a container changes as it runs with processes writing to disc and updating memory. Writing to disc creates a new layer in the image by default or changes a persistent "volume" if it is defined (see below). If a container is paused then all the processes are paused (with `SIGSTOP`) and can be resumed but if a container is stopped (`SIGTERM` then `SIGKILL`) then the memory state is lost.
+Containers are running instances of images. They can be paused, unpaused, stopped and started once created or just destroyed and recreated. The state of a container changes as it runs with processes writing to disk and updating memory. Writing to disk creates a new layer in the image by default or changes a persistent "volume" if it is defined (see below). If a container is paused then all the processes are paused (with `SIGSTOP`) and can be resumed but if a container is stopped (`SIGTERM` then `SIGKILL`) then the memory state is lost.
 
 Commands:
 
@@ -150,7 +150,7 @@ Commands:
 
 * List all volumes with `docker volume ls`
 * Remove a volume with `docker volume rm <volume ID>`
-* Remove all volumes that are not used by a container (running or not) with `docker volume prune` (it is sensible to do this periodically to save disc space)
+* Remove all volumes that are not used by a container (running or not) with `docker volume prune` (it is sensible to do this periodically to save disk space)
 
 ### Networks
 
@@ -470,7 +470,9 @@ The `docker-compose down` command stops the containers, removes them and removes
 docker-compose down
 ```
 
-In all these cases, the (Docker disc) volumes are persisted and named volumes will be reattached to new containers.
+In all these cases, the (Docker disk) volumes are persisted and named volumes will be reattached to new containers. Importantly, this means that any knowledgebases (domain models), system models, palettes, etc will be persisted after restarting the containers.
+
+Note that this also means that simply replacing a knowledgebase .zip file in the knowledgebases folder and restarting the containers will not automatically update the knowledgebase. To change the default knowledgebase therefore requires you to use `docker-compose down -v`, which removes the volumes and all persisted data. This should be used with caution, however, as this will also remove any current system models in Spyderisk. An alternative is to use the Knowledgebase Manager (GUI) to update any knowledgebases manually.
 
 ### Building a SPYDERISK System Modeller Image
 
