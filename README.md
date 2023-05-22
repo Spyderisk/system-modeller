@@ -2,7 +2,9 @@
 
 The SPYDERISK System Modeller (SSM) provides a thorough risk assessment of complex systems making use of context and connectivity to take into account the web of attack paths and secondary threat cascades in a system.
 
-SPYDERISK assists the user in following the risk assessment process defined in ISO 27005 and thus supports the Information Security Management System defined in ISO 27001. The SPYDERISK System Modeller is a generic risk assessment tool and must be configured with a model of a domain ("knowledgebase"), containing the available asset types and relations, descriptions of the threats, the possible security controls, and more. The software comes bundled with a knowledgebase for complex networked information systems.
+SPYDERISK assists the user in following the risk assessment process defined in ISO 27005 and thus supports the Information Security Management System defined in ISO 27001. The SPYDERISK System Modeller is a generic risk assessment tool and must be configured with a model of a domain ("knowledgebase"), containing the available asset types and relations, descriptions of the threats, the possible security controls, and more. 
+
+The SPYDERISK software does not come bundled with any particular knowledgebase; this is configurable at build/deploy time, by putting one or more zip bundles into the "knowledgebases" folder (described in more detail later). An example knowledgebase has been developed for complex networked information systems, which is available here: https://github.com/SPYDERISK/domain-network/packages/1826148
 
 The web-based graphical user interface guides the user through the following steps:
 
@@ -33,7 +35,14 @@ You will need `git`, `git-lfs`, `docker` and `docker-compose`. See below for mor
 
 ## Quick Start
 
-Assuming you have the pre-requisites working and have cloned the repository:
+The following instructions assume that you have the pre-requisites installed and working, and have cloned the repository.
+
+N.B. Prior to running the following commands, you should also ensure that you have one or more knowledgebases (domain models) available for installation. These are available as zip file "bundles", containing the domain model itself, along with the icons and mapping file needed for generating a UI palette of visual assets.
+
+An example knowledgebase is available at: https://github.com/SPYDERISK/domain-network/packages/1826148
+Here, you will find the latest .zip bundle, at the bottom of the "Assets" list. This file should be downloaded and copied into the system-modeller/knowledgebases folder. Once Spyderisk has been started up (see instructions below), these zip files will be automatically extracted and loaded into Spyderisk.
+
+Of course, you may choose not to install a default knowledgebase, however, when the Spyderisk GUI first loads in your browser, you will be directed to load in a new knowledgebase manually.
 
 1. `$ cd system-modeller`
 2. `$ docker-compose up -d`
@@ -193,6 +202,16 @@ Cloning the `system-modeller` repository makes a copy of all the files (and thei
 git clone git@iglab.it-innovation.soton.ac.uk:Security/system-modeller.git
 cd system-modeller
 ```
+
+### Download and Install default Knowledgebase(s)
+
+Syderisk requires one or more knowledgebase (domain model) to be installed, prior to being able to develop system models in the GUI. These are available as zip file "bundles", containing the domain model itself, along with the icons and mapping file needed for generating a UI palette of visual assets.
+
+An example knowledgebase is available at: https://github.com/SPYDERISK/domain-network/packages/1826148
+Here, you will find the latest .zip bundle, at the bottom of the "Assets" list. This file should be downloaded and copied into the system-modeller/knowledgebases folder. Once Spyderisk has been started up (i.e. via starting the containers), these zip files will be automatically extracted and loaded into Spyderisk.
+
+Of course, you may choose not to install a default knowledgebase, however, when the Spyderisk GUI first loads in your browser, you will be directed to load in a new knowledgebase manually.
+
 
 ### Starting the Containers
 
