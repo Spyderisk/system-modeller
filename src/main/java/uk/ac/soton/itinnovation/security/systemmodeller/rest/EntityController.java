@@ -268,16 +268,16 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @param threatURI threat URI
+	 * @param uri threat URI
 	 * @return A JSON representation of a threat object
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/system/threats/{systemThreatURI}", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/system/threats/{uri}", method = RequestMethod.GET)
 	public ResponseEntity<ThreatDB> getEntitySystemThreat(
             @PathVariable String modelId,
-            @PathVariable String systemThreatURI) {
+            @PathVariable String uri) {
 
-        logger.error("get system threat for model {} with URI: {}", modelId, systemThreatURI);
+        logger.info("get system threat for model {} with URI: {}", modelId, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -293,7 +293,7 @@ public class EntityController {
 
             logger.info("getting threat");
 
-            ThreatDB threat = querierDB.getThreat(systemThreatURI, "system-inf");
+            ThreatDB threat = querierDB.getThreat(uri, "system-inf");
 
             if (threat == null) {
                 return ResponseEntity.notFound().build();
@@ -312,14 +312,14 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @return A JSON representation of a threat object
+	 * @return A JSON representation of threat objects map
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
 	@RequestMapping(value = "/models/{modelId}/entity/system/threats", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, ThreatDB>> getEntitySystemThreats(
             @PathVariable String modelId) {
 
-        logger.error("get system threats for model {}", modelId);
+        logger.info("get system threats for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -350,16 +350,16 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @param consequenceURI consequence URI
-	 * @return A JSON representation of a threat object
+	 * @param uri consequence URI
+	 * @return A JSON representation of a consequence object
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/system/consequences/{consequenceURI}", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/system/consequences/{uri}", method = RequestMethod.GET)
 	public ResponseEntity<MisbehaviourSetDB> getEntitySystemMisbehaviourSet(
             @PathVariable String modelId,
-            @PathVariable String consequenceURI) {
+            @PathVariable String uri) {
 
-        logger.error("get system misbihaviour for model {} with URI: {}", modelId, consequenceURI);
+        logger.info("get system misbihaviour for model {} with URI: {}", modelId, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -375,7 +375,7 @@ public class EntityController {
 
             logger.info("getting misbehaviour");
 
-            MisbehaviourSetDB ms = querierDB.getMisbehaviourSet(consequenceURI, "system-inf");
+            MisbehaviourSetDB ms = querierDB.getMisbehaviourSet(uri, "system-inf");
 
             if (ms == null) {
                 return ResponseEntity.notFound().build();
@@ -394,14 +394,14 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @return A JSON representation of a threat object
+	 * @return A JSON representation of a consequece objects map
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
 	@RequestMapping(value = "/models/{modelId}/entity/system/consequences", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, MisbehaviourSetDB>> getEntitySystemMisbehaviourSets(
             @PathVariable String modelId) {
 
-        logger.error("get system misbihaviours for model {}", modelId);
+        logger.info("get system misbihaviours for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -432,16 +432,16 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @param controlstrategyURI control strategy URI
-	 * @return A JSON representation of a threat object
+	 * @param uri control strategy URI
+	 * @return A JSON representation of a control strategey object
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/system/controlstrategies/{controlstrategyURI}", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/system/controlstrategies/{uri}", method = RequestMethod.GET)
 	public ResponseEntity<ControlStrategyDB> getEntitySystemControlStrategy(
             @PathVariable String modelId,
-            @PathVariable String controlstrategyURI) {
+            @PathVariable String uri) {
 
-        logger.error("get system ControlStrategy for model {} with URI: {}", modelId, controlstrategyURI);
+        logger.info("get system ControlStrategy for model {} with URI: {}", modelId, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -457,7 +457,7 @@ public class EntityController {
 
             logger.info("getting control strategy");
 
-            ControlStrategyDB csg = querierDB.getControlStrategy(controlstrategyURI, "system-inf");
+            ControlStrategyDB csg = querierDB.getControlStrategy(uri, "system-inf");
 
             if (csg == null) {
                 return ResponseEntity.notFound().build();
@@ -476,14 +476,14 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @return A JSON representation of a threat object
+	 * @return A JSON representation of a control strategey object map 
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
 	@RequestMapping(value = "/models/{modelId}/entity/system/controlstrategies", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, ControlStrategyDB>> getEntitySystemControlStrategies(
             @PathVariable String modelId) {
 
-        logger.error("get system ControlStrategies for model {}", modelId);
+        logger.info("get system ControlStrategies for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -514,16 +514,16 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @param controlsetURI control strategy URI
-	 * @return A JSON representation of a threat object
+	 * @param uri control strategy URI
+	 * @return A JSON representation of a control set object
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/system/controlsets/{controlsetURI}", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/system/controlsets/{uri}", method = RequestMethod.GET)
 	public ResponseEntity<ControlSetDB> getEntitySystemControlSet(
             @PathVariable String modelId,
-            @PathVariable String controlsetURI) {
+            @PathVariable String uri) {
 
-        logger.error("get system ControlSet for model {} with URI: {}", modelId, controlsetURI);
+        logger.info("get system ControlSet for model {} with URI: {}", modelId, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -539,7 +539,7 @@ public class EntityController {
 
             logger.info("getting control set");
 
-            ControlSetDB cs = querierDB.getControlSet(controlsetURI, "system-inf");
+            ControlSetDB cs = querierDB.getControlSet(uri, "system-inf");
 
             if (cs == null) {
                 return ResponseEntity.notFound().build();
@@ -560,14 +560,14 @@ public class EntityController {
 	 *
 	 * @param modelId the String representation of the model object to seacrh
 	 * @param controlsetURI control strategy URI
-	 * @return A JSON representation of a threat object
+	 * @return A JSON representation of a control set object map
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
 	@RequestMapping(value = "/models/{modelId}/entity/system/controlsets", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, ControlSetDB>> getEntitySystemControlSets(
             @PathVariable String modelId) {
 
-        logger.error("get system ControlSet for model {}", modelId);
+        logger.info("get system ControlSet for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -598,16 +598,16 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @param assetURI asset URI
-	 * @return A JSON representation of a threat object
+	 * @param uri asset URI
+	 * @return A JSON representation of an asset object
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/system/assets/{assetURI}", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/system/assets/{uri}", method = RequestMethod.GET)
 	public ResponseEntity<AssetDB> getEntitySystemAsset(
             @PathVariable String modelId,
-            @PathVariable String assetURI) {
+            @PathVariable String uri) {
 
-        logger.error("get system Asset for model {} with URI: {}", modelId, assetURI);
+        logger.info("get system Asset for model {} with URI: {}", modelId, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -623,7 +623,7 @@ public class EntityController {
 
             logger.info("getting asset");
 
-            AssetDB asset = querierDB.getAsset(assetURI, "system-inf");
+            AssetDB asset = querierDB.getAsset(uri, "system-inf");
 
             if (asset == null) {
                 return ResponseEntity.notFound().build();
@@ -642,14 +642,14 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @return A JSON representation of a threat object
+	 * @return A JSON representation of an asset object map
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
 	@RequestMapping(value = "/models/{modelId}/entity/system/assets", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, AssetDB>> getEntitySystemAssets(
             @PathVariable String modelId) {
 
-        logger.error("get system Assets for model {}", modelId);
+        logger.info("get system Assets for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -680,16 +680,16 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @param twaURI trustworthiness attribute set URI
-	 * @return A JSON representation of a threat object
+	 * @param uri trustworthiness attribute set URI
+	 * @return A JSON representation of a trustworthiness attribute object
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/system/trustworthiness/{twaURI}", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/system/trustworthiness/{uri}", method = RequestMethod.GET)
 	public ResponseEntity<TrustworthinessAttributeSetDB> getEntitySystemTWA(
             @PathVariable String modelId,
-            @PathVariable String twaURI) {
+            @PathVariable String uri) {
 
-        logger.error("get system TWA for model {} with URI: {}", modelId, twaURI);
+        logger.info("get system TWA for model {} with URI: {}", modelId, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -705,7 +705,7 @@ public class EntityController {
 
             logger.info("getting TWA");
 
-            TrustworthinessAttributeSetDB twa = querierDB.getTrustworthinessAttributeSet(twaURI, "system-inf");
+            TrustworthinessAttributeSetDB twa = querierDB.getTrustworthinessAttributeSet(uri, "system-inf");
 
             if (twa == null) {
                 return ResponseEntity.notFound().build();
@@ -724,14 +724,14 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @return A JSON representation of a threat object
+	 * @return A JSON representation of a trustworthiness attribute object map
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
 	@RequestMapping(value = "/models/{modelId}/entity/system/trustworthiness", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, TrustworthinessAttributeSetDB>> getEntitySystemTWAs(
             @PathVariable String modelId) {
 
-        logger.error("get system TWA for model {}", modelId);
+        logger.info("get system TWA for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -762,16 +762,16 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @param controlURI control strategy URI
-	 * @return A JSON representation of a threat object
+	 * @param uri control strategy URI
+	 * @return A JSON representation of a control object
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/domain/controls/{controlURI}", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/domain/controls/{uri}", method = RequestMethod.GET)
 	public ResponseEntity<ControlDB> getEntityDomainControl(
             @PathVariable String modelId,
-            @PathVariable String controlURI) {
+            @PathVariable String uri) {
 
-        logger.error("get domain Control for model {} with URI: {}", modelId, controlURI);
+        logger.info("get domain Control for model {} with URI: {}", modelId, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -787,7 +787,7 @@ public class EntityController {
 
             logger.info("getting control");
 
-            ControlDB control = querierDB.getControl(controlURI, "domain");
+            ControlDB control = querierDB.getControl(uri, "domain");
 
             if (control == null) {
                 return ResponseEntity.notFound().build();
@@ -806,14 +806,14 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @return A JSON representation of a threat object
+	 * @return A JSON representation of a control object map
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
 	@RequestMapping(value = "/models/{modelId}/entity/domain/controls", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, ControlDB>> getEntityDomainControls(
             @PathVariable String modelId) {
 
-        logger.error("get domain Control for model {}", modelId);
+        logger.info("get domain Control for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -844,16 +844,16 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @param consequenceURI consequence URI
-	 * @return A JSON representation of a threat object
+	 * @param uri consequence URI
+	 * @return A JSON representation of a consequence object
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/domain/consequences/{consequenceURI}", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/domain/consequences/{uri}", method = RequestMethod.GET)
 	public ResponseEntity<MisbehaviourDB> getEntityDomainMisbehaviour(
             @PathVariable String modelId,
-            @PathVariable String consequenceURI) {
+            @PathVariable String uri) {
 
-        logger.error("get domain Misbehaviour for model {} with URI: {}", modelId, consequenceURI);
+        logger.info("get domain Misbehaviour for model {} with URI: {}", modelId, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -869,7 +869,7 @@ public class EntityController {
 
             logger.info("getting misbehaviour set");
 
-            MisbehaviourDB misbehaviour = querierDB.getMisbehaviour(consequenceURI, "domain");
+            MisbehaviourDB misbehaviour = querierDB.getMisbehaviour(uri, "domain");
 
             if (misbehaviour == null) {
                 return ResponseEntity.notFound().build();
@@ -888,14 +888,14 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @return A JSON representation of a threat object
+	 * @return A JSON representation of a consequence object map
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
 	@RequestMapping(value = "/models/{modelId}/entity/domain/consequences", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, MisbehaviourDB>> getEntityDomainMisbehaviours(
             @PathVariable String modelId) {
 
-        logger.error("get domain Misbehaviour for model {}", modelId);
+        logger.info("get domain Misbehaviour for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -926,100 +926,18 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @param impactLevelURI impact level URI
-	 * @return A JSON representation of a threat object
-     * @throws InternalServerErrorException   if an error occurs during report generation
-     * /
-	@RequestMapping(value = "/models/{modelId}/entity/domain/impactlevels/{impactLevelURI}", method = RequestMethod.GET)
-	public ResponseEntity<LevelDB> getEntityDomainImpactLevel(
-            @PathVariable String modelId,
-            @PathVariable String impactLevelURI) {
-
-        logger.error("get domain impact level for model {} with URI: {}", modelId, impactLevelURI);
-
-        final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
-
-        AStoreWrapper store = storeModelManager.getStore();
-
-        try {
-            logger.info("Initialising JenaQuerierDB");
-
-            JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
-                    model.getModelStack(), false);
-
-            querierDB.init();
-
-            logger.info("getting impact level");
-
-            LevelDB iLevel = querierDB.getImpactLevel(impactLevelURI);
-
-            if (iLevel == null) {
-                return ResponseEntity.notFound().build();
-            }
-
-            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(iLevel);
-
-        } catch (Exception e) {
-            logger.error("Simple API get impact level failed due to an error", e);
-            throw new InternalServerErrorException(
-                    "Impact level fetch failed. Please contact support for further assistance.");
-        }
-    }
-    */
-
-   	/**
-	 * This REST method ...
-	 *
-	 * @param modelId the String representation of the model object to seacrh
-	 * @return A JSON representation of a threat object
-     * @throws InternalServerErrorException   if an error occurs during report generation
-     * /
-	@RequestMapping(value = "/models/{modelId}/entity/domain/impactlevels", method = RequestMethod.GET)
-	public ResponseEntity<Map<String, LevelDB>> getEntityDomainImpactLevels(
-            @PathVariable String modelId) {
-
-        logger.error("get domain impact levels for model {}", modelId);
-
-        final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
-
-        AStoreWrapper store = storeModelManager.getStore();
-
-        try {
-            logger.info("Initialising JenaQuerierDB");
-
-            JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
-                    model.getModelStack(), false);
-
-            querierDB.init();
-
-            logger.info("getting impact level");
-
-            Map<String, LevelDB> levels = querierDB.getImpactLevels();
-
-            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(levels);
-
-        } catch (Exception e) {
-            logger.error("Simple API get impact levels failed due to an error", e);
-            throw new InternalServerErrorException(
-                    "Impact levels fetch failed. Please contact support for further assistance.");
-        }
-    }
-    */
-
-   	/**
-	 * This REST method ...
-	 *
-	 * @param modelId the String representation of the model object to seacrh
-	 * @return A JSON representation of a threat object
+	 * @param metric metric name
+	 * @param uri level URI
+	 * @return A JSON representation of a level object
      * @throws InternalServerErrorException   if an error occurs during report generation
      */
-	@RequestMapping(value = "/models/{modelId}/entity/domain/{metric}/{levelURI}", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/domain/{metric}/{uri}", method = RequestMethod.GET)
 	public ResponseEntity<LevelDB> getEntityDomainLevel(
             @PathVariable String modelId,
             @PathVariable String metric,
-            @PathVariable String levelURI) {
+            @PathVariable String uri) {
 
-        logger.error("get domain impact level for metric: {}, uri: {}", metric, levelURI);
+        logger.info("get domain impact level for metric: {}, uri: {}", metric, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -1039,22 +957,22 @@ public class EntityController {
 
             switch (metric) {
                 case "impact":
-                    level = querierDB.getImpactLevel(levelURI);
+                    level = querierDB.getImpactLevel(uri);
                     break;
                 case "population":
-                    level = querierDB.getPopulationLevel(levelURI);
+                    level = querierDB.getPopulationLevel(uri);
                     break;
                 case "likelihood":
-                    level = querierDB.getLikelihoodLevel(levelURI);
+                    level = querierDB.getLikelihoodLevel(uri);
                     break;
                 case "trustworthiness":
-                    level = querierDB.getTrustworthinessLevel(levelURI);
+                    level = querierDB.getTrustworthinessLevel(uri);
                     break;
                 case "risk":
-                    level = querierDB.getRiskLevel(levelURI);
+                    level = querierDB.getRiskLevel(uri);
                     break;
                 default:
-                    logger.error("Cannot understand metric: {}, level {}", metric, levelURI);
+                    logger.error("Cannot understand metric: {}, level {}", metric, uri);
                     return ResponseEntity.notFound().build();
             }
 
@@ -1075,7 +993,8 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @return A JSON representation of a threat object
+	 * @param metric metric name
+	 * @return A JSON representation of a level object map
      * @throws InternalServerErrorException   if an error occurs during report generation
      */
 	@RequestMapping(value = "/models/{modelId}/entity/domain/{metric}", method = RequestMethod.GET)
@@ -1083,7 +1002,7 @@ public class EntityController {
             @PathVariable String modelId,
             @PathVariable String metric) {
 
-        logger.error("get domain impact levels for model {}, metric: {}", modelId, metric);
+        logger.info("get domain impact levels for model {}, metric: {}", modelId, metric);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
