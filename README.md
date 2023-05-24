@@ -53,6 +53,8 @@ Of course, you may choose not to install a default knowledgebase, however, when 
 
 N.B. Links in the user interface to documentation, the attack graph image, and Keycloak account management functions do not currently work in the development environment. Keycloak links can be corrected by editing the port in the URL to be 8080.
 
+Please also note that the default setup is to recreate all databases on initial start-up. In order to persist any installed knowledgebases and created system models, you should ensure that `reset.on.start=false` in your `application.properties` file, prior to re-running `./gradlew assemble bootTest`.
+
 ## Installing Docker
 
 Please see the [Docker website](https://www.docker.com/) for details.
@@ -470,9 +472,24 @@ The `docker-compose down` command stops the containers, removes them and removes
 docker-compose down
 ```
 
-In all these cases, the (Docker disk) volumes are persisted and named volumes will be reattached to new containers. Importantly, this means that any knowledgebases (domain models), system models, palettes, etc will be persisted after restarting the containers.
+In all these cases, the (Docker disk) volumes are persisted and named volumes will be reattached to new containers, during restart. Assuming that you have `reset.on.start=false` in your `application.properties` file, this also means that any knowledgebases (domain models), system models, palettes, etc will be persisted after restarting the containers.
 
-Note that this also means that simply replacing a knowledgebase .zip file in the knowledgebases folder and restarting the containers will not automatically update the knowledgebase. To change the default knowledgebase therefore requires you to use `docker-compose down -v`, which removes the volumes and all persisted data. This should be used with caution, however, as this will also remove any current system models in Spyderisk. An alternative is to use the Knowledgebase Manager (GUI) to update any knowledgebases manually.
+If the intention is to recreate the databases or reinstall the default knowledgebases, this may be done in the following ways:
+
+a) Use `docker-compose down -v`, then restart containers and Spyderisk as normal, e.g.
+```shell
+docker-compose down -v
+docker-compose up -d
+docker-compose exec ssm bash
+./gradlew assemble bootTest
+```
+
+b) Leave containers running, but set `reset.on.start=true` in your `application.properties` file, then restart Spyderisk, e.g.  
+```shell
+docker-compose exec ssm bash
+./gradlew assemble bootTest
+```
+
 
 ### Building a SPYDERISK System Modeller Image
 
