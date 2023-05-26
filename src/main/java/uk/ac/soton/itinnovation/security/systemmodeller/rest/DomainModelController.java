@@ -130,6 +130,12 @@ public class DomainModelController {
 		boolean rdf = file.getOriginalFilename().endsWith(".rdf") || file.getOriginalFilename().endsWith(".rdf.gz");
 		boolean gz = file.getOriginalFilename().endsWith(".gz");
 		boolean zip = file.getOriginalFilename().endsWith(".zip");
+
+		//N.B. It is likely that we will remove support for uploading domain models as .nq files, etc (without the corresponding icons, etc)
+		//so for now we throw an exception if the uploaded file is not a .zip bundle
+		if (!zip) {
+			throw new IOException("Only domain .zip bundles may be uploaded!");
+		}
 	
 		File f = File.createTempFile(domainModelName, zip ? ".zip" : (rdf ? ".rdf" : ".nq"));
 

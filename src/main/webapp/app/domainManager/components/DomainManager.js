@@ -105,23 +105,13 @@ class DomainManager extends Component {
                         <Modal.Title>{modalTitle}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        {this.state.uploadModal.newDomain ?
                         <Grid fluid>
                             <Row>
-                                <Col xs={6}><span className="text-bold">New Domain bundle (*.zip): </span></Col>
+                                <Col xs={6}><span className="text-bold">Domain bundle (*.zip): </span></Col>
                                 <Col xs={6}><input placeholder="file" type="file" accept=".zip"
                                                    ref="file-upload"/></Col>
                             </Row>
                         </Grid>
-                        :
-                        <Grid fluid>
-                            <Row>
-                                <Col xs={6}><span className="text-bold">New Domain file/bundle (*.rdf, *.rdf.gz, *.nq, *.nq.gz, *.zip): </span></Col>
-                                <Col xs={6}><input placeholder="file" type="file" accept=".rdf,.rdf.gz,.nq,.nq.gz,.zip"
-                                                   ref="file-upload"/></Col>
-                            </Row>
-                        </Grid>
-                        }
                         <hr/>
                         <ProgressBar active now={this.props.upload.progress}/>
                         {this.props.upload.progress === 100 || this.props.upload.completed ?
