@@ -123,6 +123,18 @@ public class DomainModelUtils {
 			logger.debug("domainUri: {}", domainUri);
 			logger.debug("domainModelName: {}", domainModelName);
 		}
+		else {
+			//Check that domain URI in icons mapping file matches the requested domainUri to be updated
+			logger.debug("Checking domain model details in icon mapping file...");
+			String tmpDomainUri = PaletteGenerator.getDomainUri(new FileInputStream(iconMappingFile));
+			String tmpDomainModelName = tmpDomainUri.substring(tmpDomainUri.lastIndexOf('/') + 1);
+			logger.debug("domainUri: {}", tmpDomainUri);
+			logger.debug("domainModelName: {}", tmpDomainModelName);
+
+			if (!tmpDomainUri.equals(domainUri)) {
+				throw new IOException("Uploaded knowledgebase has wrong graph URI: " + tmpDomainUri);
+			}
+		}
 
 		//Define domain model folder path
 		String domainModelFolderPath = kbInstallFolder + File.separator + domainModelName;
@@ -130,6 +142,12 @@ public class DomainModelUtils {
 
 		//Create domain model folder and delete if exists
 		File domainModelFolder = new File(domainModelFolderPath);
+
+		//If we are uploading a new domain model, check that it does not already exist!
+		if (newDomain && domainModelFolder.isDirectory()) {
+			throw new IOException("Knowledgebase already exists: " + domainModelName);
+		}
+
 		FileUtils.deleteDirectory(domainModelFolder);
 		domainModelFolder.mkdirs();
 
