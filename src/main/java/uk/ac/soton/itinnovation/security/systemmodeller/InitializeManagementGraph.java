@@ -71,6 +71,9 @@ public class InitializeManagementGraph implements CommandLineRunner {
 	@Value("${knowledgebases.install.folder}")
 	private String kbInstallFolder;
 
+	@Value("${check.installed.knowledgebases}")
+	private boolean checkDomainModelsAndPalettes;
+
 	@Override
 	public void run(String... args) {
 
@@ -252,67 +255,69 @@ public class InitializeManagementGraph implements CommandLineRunner {
 			}
 		}
 
-		//Final check of installed domain models and palettes
-		Map<String, Map<String, Object>> domainModels = storeModelManager.getDomainModels();
+		if (checkDomainModelsAndPalettes) {
+			//Final check of installed domain models and palettes
+			Map<String, Map<String, Object>> domainModels = storeModelManager.getDomainModels();
 
-		logger.info("Checking domain models and palettes...");
-		logger.info("");
+			logger.info("Checking domain models and palettes...");
+			logger.info("");
 
-		if (domainModels.keySet().size() > 0) {
-			boolean palettesExist = true;
+			if (domainModels.keySet().size() > 0) {
+				boolean palettesExist = true;
 
-			for (String domainModelUri : domainModels.keySet()) {
-				Map<String, Object> domainModel = domainModels.get(domainModelUri);
-				String title = (String) domainModel.get("title");
-				String label = (String) domainModel.get("label");
-				String version = (String) domainModel.get("version");
+				for (String domainModelUri : domainModels.keySet()) {
+					Map<String, Object> domainModel = domainModels.get(domainModelUri);
+					String title = (String) domainModel.get("title");
+					String label = (String) domainModel.get("label");
+					String version = (String) domainModel.get("version");
 
-				logger.info("URI: {}", domainModelUri);
-				logger.info("title: {}", title);
-				logger.info("label: {}", label);
-				logger.info("version: {}", version);
+					logger.info("URI: {}", domainModelUri);
+					logger.info("title: {}", title);
+					logger.info("label: {}", label);
+					logger.info("version: {}", version);
 
-				String domainModelName = title;
-				String domainModelFolderPath = kbInstallFolder + File.separator + domainModelName;
-				String palettePath = domainModelFolderPath + File.separator + "palette.json";
-				File paletteFile = new File(palettePath);
+					String domainModelName = title;
+					String domainModelFolderPath = kbInstallFolder + File.separator + domainModelName;
+					String palettePath = domainModelFolderPath + File.separator + "palette.json";
+					File paletteFile = new File(palettePath);
 
-				if (paletteFile.exists()) {
-					logger.info("palette: {}", paletteFile.getAbsolutePath());
+					if (paletteFile.exists()) {
+						logger.info("palette: {}", paletteFile.getAbsolutePath());
+					}
+					else {
+						logger.error("palette: {}", paletteFile.getAbsolutePath() + " (missing)");
+						palettesExist = false;
+					}
+
+					logger.info("");
 				}
-				else {
-					logger.error("palette: {}", paletteFile.getAbsolutePath() + " (missing)");
-					palettesExist = false;
+
+				if (!palettesExist) {
+					logger.error("One or more palettes are missing (see details above)");
+					System.exit(1);
 				}
 
-				logger.info("");
-			}
-
-			if (!palettesExist) {
-				logger.error("One or more palettes are missing (see details above)");
-				System.exit(1);
-			}
-
-			if (duplicatedDomainGraphs.size() > 0) {
-				logger.warn("Multiple zipfiles were found for the following domain graphs:");
-				for (String graphUri : duplicatedDomainGraphs) {
-					logger.warn(graphUri);
+				if (duplicatedDomainGraphs.size() > 0) {
+					logger.warn("Multiple zipfiles were found for the following domain graphs:");
+					for (String graphUri : duplicatedDomainGraphs) {
+						logger.warn(graphUri);
+					}
+					logger.info("");
 				}
-				logger.info("");
 			}
-		}
-		else {
-			boolean production = true;
-			String profile = System.getProperty("spring.profiles.active");
-			if ((profile != null) && (profile.equals("test") || profile.equals("dev"))) {
-				production = false;
-			}
-			logger.warn("No domain models currently installed! Options include:");
-			String restartMsg = production ? "restart Spyderisk (docker-compose down -v; docker-compose up -d)" 
-										   : "restart Spyderisk (ensure reset.on.start=true in application properties)";
+			else {
+				boolean production = true;
+				String profile = System.getProperty("spring.profiles.active");
+				if ((profile != null) && (profile.equals("test") || profile.equals("dev"))) {
+					production = false;
+				}
+				logger.warn("No domain models currently installed! Options include:");
+				String restartMsg = production ? "restart Spyderisk (docker-compose down -v; docker-compose up -d)" 
+											: "restart Spyderisk (ensure reset.on.start=true in application properties)";
 
-			logger.warn("1) Copy required domain model zip bundles into {} then " + restartMsg, kbSourceFolder);
-			logger.warn("2) Manually install each required domain model (knowledgebase) via the Spyderisk Knowledgebase Manager page");
+				logger.warn("1) Copy required domain model zip bundles into {} then " + restartMsg, kbSourceFolder);
+				logger.warn("2) Manually install each required domain model (knowledgebase) via the Spyderisk Knowledgebase Manager page");
+			}
 		}
 
 		logger.info("Finished management graph initialisation");

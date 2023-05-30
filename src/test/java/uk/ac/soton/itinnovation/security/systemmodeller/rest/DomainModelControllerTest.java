@@ -48,7 +48,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -113,9 +115,17 @@ public class DomainModelControllerTest extends CommonTestSetup {
 	private String NETWORK_TESTING_NEW_ZIP_PATH = "domainmanager/domain-network-testing-new.zip";
 
 	@Before
-	public void init() {
+	public void init() throws IOException {
 		logger.info("Executing {}", name.getMethodName());
 		initAuth(contextPath, port);
+		logger.info("Initialising knowledgebases installation folder: {}", kbInstallFolder);
+		FileUtils.deleteDirectory(new File(kbInstallFolder));
+	}
+
+	@After
+	public void cleanup() throws IOException {
+		logger.info("Removing knowledgebases installation folder: {}", kbInstallFolder);
+		FileUtils.deleteDirectory(new File(kbInstallFolder));
 	}
 
 	//Utilities

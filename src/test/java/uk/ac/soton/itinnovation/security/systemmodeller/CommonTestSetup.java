@@ -50,7 +50,11 @@ import uk.ac.soton.itinnovation.security.systemmodeller.semantics.StoreModelMana
 /**
  * Represents common setup for the REST controller tests.
  */
-@TestPropertySource(properties = {"spring.data.mongodb.database=${test.spring.data.mongodb.database}", "reset.on.start=false"})
+@TestPropertySource(properties = {"spring.data.mongodb.database=${test.spring.data.mongodb.database}",
+                                    "reset.on.start=false",
+                                    "knowledgebases.install.folder=/opt/spyderisk/knowledgebases-test",
+                                    "check.installed.knowledgebases=false"
+})
 public abstract class CommonTestSetup {
 
     protected final Logger logger = LoggerFactory.getLogger(CommonTestSetup.class);
