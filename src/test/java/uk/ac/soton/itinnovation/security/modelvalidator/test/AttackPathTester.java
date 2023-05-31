@@ -3,8 +3,7 @@
 // © University of Southampton IT Innovation Centre, 2023
 //
 // Copyright in this software belongs to University of Southampton
-// IT Innovation Centre of Gamma House, Enterprise Road,
-// Chilworth Science Park, Southampton, SO16 7NS, UK.
+// IT Innovation Centre, Highfield Campus, SO17 1BJ, UK.
 //
 // This software may not be used, sold, licensed, transferred, copied
 // or reproduced in whole or in part in any manner or form or in or
@@ -108,29 +107,6 @@ public class AttackPathTester extends TestCase {
 		IQuerierDB querierDB = new JenaQuerierDB(dataset, tester.getModel(), true);
 		querierDB.init();
 
-        /*
-		try {
-			logger.info("Validating the model - ensures no dependence on bugs in older SSM validators");
-			Validator validator = new Validator(querierDB);
-			validator.validate(new Progress(tester.getGraph("system")));
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception thrown by validator preparing attack path test case");
-			return;
-		}
-
-		try {
-			logger.info("Calculating risks and generating attack graph");
-			RiskCalculator rc = new RiskCalculator(querierDB);
-			rc.calculateRiskLevels(RiskCalculationMode.CURRENT, true,
-                  new Progress(tester.getGraph("system"))); //save results, as queried below
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception thrown by risk level calculator");
-			return;
-		}
-        */
-
 		try {
 			logger.info("Gathering datasets for the attack graph");
 
@@ -138,7 +114,6 @@ public class AttackPathTester extends TestCase {
 
             List<String> targetUris = new ArrayList<>();
             targetUris.add("system#MS-LossOfAuthenticity-a40e98cc");
-            //targetUris.add("system#MS-LossOfConfidentiality-a40e98cc");
 
             Assert.assertTrue(apa.checkTargetUris(targetUris));
 
