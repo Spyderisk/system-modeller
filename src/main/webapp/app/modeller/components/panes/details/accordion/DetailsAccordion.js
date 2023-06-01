@@ -359,7 +359,7 @@ class DetailsAccordion extends React.Component {
                         <Panel.Title toggle>
                             <div className={"doc-help"}>
                                 <span><i className="fa fa-sitemap" />Consequences and their Impact at <i>{asset["label"]}</i> {" (" + displayedMisbehaviours.length + ")"}</span>
-                                <button onClick={e => openDocumentation(e, "redirect/asset-misbehaviours")} className={"doc-help-button"}><i className="fa fa-question" /></button>
+                                <button onClick={e => openDocumentation(e, "redirect/asset-consequences-and-impact")} className={"doc-help-button"}><i className="fa fa-question" /></button>
                             </div>
                         </Panel.Title>
                     </Panel.Heading>
