@@ -38,6 +38,8 @@ import lombok.ToString;
 @ToString(callSuper=true)
 public class AssetDB extends EntityDB {
 	public AssetDB() {
+		minCardinality = 0;
+		maxCardinality = 0;
 	}
 
 	/*

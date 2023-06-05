@@ -2255,7 +2255,20 @@ public class Validator {
         // if the domain model doesn't have one, we use a default scale based on the asset's max
         // cardinality.
         String sourcePopulation = fromAsset.getPopulation();
+        if(sourcePopulation == null) {
+            logger.info("Found null population for asset {}", fromAsset.getUri());
+        }
+        if(poLevels.get(sourcePopulation) == null) {
+            logger.info("Found bad population {} for asset {}", sourcePopulation, fromAsset.getUri());
+        }
         String targetPopulation = toAsset.getPopulation();
+        if(targetPopulation == null) {
+            logger.info("Found null population for asset {}", toAsset.getUri());            
+        }
+        if(poLevels.get(targetPopulation) == null) {
+            logger.info("Found bad population {} for asset {}", targetPopulation, toAsset.getUri());
+        }
+
 
         int sourcePopulationLevel = poLevels.get(sourcePopulation).getLevelValue();
         int targetPopulationLevel = poLevels.get(targetPopulation).getLevelValue();
