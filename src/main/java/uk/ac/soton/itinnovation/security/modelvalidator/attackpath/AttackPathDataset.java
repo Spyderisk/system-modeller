@@ -17,8 +17,8 @@
 // PURPOSE, except where stated in the Licence Agreement supplied with
 // the software.
 //
-//      Created By:				Panos Melas
-//      Created Date:			2023-01-24
+//      Created By:             Panos Melas
+//      Created Date:           2023-01-24
 //      Created for Project :   Cyberkit4SME
 //
 /////////////////////////////////////////////////////////////////////////
@@ -50,12 +50,10 @@ import java.util.Set;
 
 import java.util.stream.Collectors;
 
-//public class AttackPathDataset extends RiskCalculator {
 public class AttackPathDataset {
     private static final Logger logger = LoggerFactory.getLogger(AttackPathDataset.class);
 
     protected IQuerierDB querier;
-
 
     protected Map<String, LevelDB> poLevels = new HashMap<>();                // Map of domain model population levels indexed by URI
     protected Map<String, LevelDB> liLevels = new HashMap<>();                // Map of domain model likelihood levels indexed by URI
@@ -146,12 +144,9 @@ public class AttackPathDataset {
         logger.info("AttackPathDataset.CreateMaps(): execution time {} ms", endTime - startTime);
     }
 
-    //public boolean calculateAttackPath(Progress progress)  throws RuntimeException {
     public boolean calculateAttackPath()  throws RuntimeException {
         try {
-            //progress.updateProgress(0.1, "Creating maps");
             createMaps();
-            //printAttackPathDataset();
             return true;
         } catch (Exception e) {
             logger.error("calculating attack path dataset failed", e);
@@ -173,7 +168,6 @@ public class AttackPathDataset {
             Collection<String> csgsBlocked = threat.getBlockedByCSG();
             if(csgsBlocked.size()>0){
                 for(String csg : csgsBlocked){
-                    //List<String> css = this.controlStrategies.get(csg).getControlSets();
                     List<String> css = this.controlStrategies.get(csg).getMandatoryCS();
                     logger.debug("      CSG blocked: {}, cs: {}", csg, css.size());
                     for(String cs : css){
@@ -185,9 +179,7 @@ public class AttackPathDataset {
 
         logger.debug("Control Strategies");
         for(ControlStrategyDB csg : controlStrategies.values()) {
-            //logger.debug("CSG: {} cs: {}", csg.getUri(), csg.getControlSets().size());
             logger.debug("CSG: {} cs: {}", csg.getUri(), csg.getMandatoryCS().size());
-            //for(String cs : csg.getControlSets()) {
             for(String cs : csg.getMandatoryCS()) {
                 logger.debug("      cs: {}", cs);
             }
@@ -228,7 +220,6 @@ public class AttackPathDataset {
             MisbehaviourSetDB ms = misbehaviourSets.get(misbUri);
             return new ArrayList<>(ms.getCausedBy());
         } catch (Exception e) {
-            //throw new RuntimeException(e);
             return new ArrayList<String>();
         }
     }
@@ -244,7 +235,6 @@ public class AttackPathDataset {
             ThreatDB threat = threats.get(threatUri);
             return new ArrayList<>(threat.getCausedBy());
         } catch (Exception e) {
-            //throw new RuntimeException(e);
             return new ArrayList<String>();
         }
     }
@@ -335,7 +325,6 @@ public class AttackPathDataset {
             if (future) {
                 csgURIs.addAll(threat.getMitigatedByCSG());
             }
-            //logger.debug("therat {} CSGs: {}", threatUri, csgURIs.size());
             for(String csgURI : csgURIs) {
                 ControlStrategyDB csg = querier.getControlStrategy(csgURI, "system-inf");
                 if (csg.isCurrentRisk()) {
@@ -345,7 +334,6 @@ public class AttackPathDataset {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        //logger.debug("therat {} CSGs to consider: {}", threatUri, csgToConsider.size());
         return csgToConsider;
     }
 
@@ -358,9 +346,6 @@ public class AttackPathDataset {
     public List<String> getCsgControlSetsUris(String csgUri)   throws RuntimeException {
         try {
             List<String> csList = new ArrayList<>();
-            // if isinstanc(csg_uri, MyControlStrategy):
-            //    csg_uri =  csg_uri.original_uriref
-            //for (String csUri : controlStrategies.get(csgUri).getControlSets()) {
             for (String csUri : controlStrategies.get(csgUri).getMandatoryCS()) {
                 csList.add(csUri);
             }
@@ -379,9 +364,6 @@ public class AttackPathDataset {
     public List<ControlSetDB> getCsgControlSets(String csgUri)   throws RuntimeException {
         try {
             List<ControlSetDB> csList = new ArrayList<ControlSetDB>();
-            // if isinstanc(csg_uri, MyControlStrategy):
-            //    csg_uri =  csg_uri.original_uriref
-            //for (String csUri : controlStrategies.get(csgUri).getControlSets()) {
             for (String csUri : controlStrategies.get(csgUri).getMandatoryCS()) {
                 csList.add(controlSets.get(csgUri));
             }
@@ -400,27 +382,15 @@ public class AttackPathDataset {
     public List<String> getCsgInactiveControlSets(String csgUri)   throws RuntimeException {
 
         try {
-            //logger.debug("   Scanning CSG {}, cs-> {}", csgUri, this.controlStrategies.get(csgUri).getControlSets());
             List<String> csList = new ArrayList<>();
-            //for (String csUri : this.controlStrategies.get(csgUri).getControlSets()) {
             for (String csUri : this.controlStrategies.get(csgUri).getMandatoryCS()) {
-                ControlSetDB csObj = controlSets.get(csUri);
-                if(csObj != null){
-                    //logger.debug("CS object found for {}", csUri, csObj.isProposed());
-                } else {
-                    //logger.error("NULL CS object found for {}", csUri);
-                }
                 //TODO needs revisiting, CS object should be accessed directly
                 for (ControlSetDB cs : controlSets.values()){
-                    if(cs.getUri().equals(csUri)) {
-                        //logger.debug("      CS: {}, proposed: {}", cs.getUri(), cs.isProposed());
-                        if(!cs.isProposed()) {
-                            csList.add(csUri);
-                        }
+                    if(cs.getUri().equals(csUri) && (!cs.isProposed())) {
+                        csList.add(csUri);
                     }
                 }
             }
-            //logger.debug("csList for {} has {} CS",csgUri, csList.size());
             return csList;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -435,15 +405,12 @@ public class AttackPathDataset {
      */
     public List<String> getThreatInactiveCSGs(String threatUri, boolean future)  throws RuntimeException {
         try {
-            //logger.debug("getThreatInactiveCSGs {} {}", threatUri, future);
             List<String> csgUriList = new ArrayList<String>();
             for (String csgUri : getThreatControlStrategyUris(threatUri, future)) {
-                //logger.debug("   CSG: {}", csgUri);
                 if (!getCsgInactiveControlSets(csgUri).isEmpty()) {
                     csgUriList.add(csgUri);
                 }
             }
-            //logger.debug("SUM: {}", csgUriList);
             return csgUriList;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -490,7 +457,6 @@ public class AttackPathDataset {
         }
 
         return msUris;
-        //return msUris.subList(0, Math.min(msUris.size(), 1));
     }
 
     public boolean isExternalCause(String uri){
@@ -523,7 +489,6 @@ public class AttackPathDataset {
 
         // check if we have to deal with a threat URI
         if (this.threats.containsKey(uri)) {
-            //retVal = this.querier.getThreat(uri, "system-inf").isNormalOperation();
             ThreatDB threat = this.querier.getThreat(uri, "system-inf");
             if (threat != null) {
                 retVal = threat.isNormalOperation();
@@ -594,17 +559,15 @@ public class AttackPathDataset {
     }
 
     public boolean isSecondaryThreat(String uri){
-        if(threats.keySet().contains(uri)){
-            if(threats.get(uri).getSecondaryEffectConditions().size() > 0){
+        if(threats.keySet().contains(uri) && 
+                (threats.get(uri).getSecondaryEffectConditions().size() > 0)) {
                 return true;
-            }
         }
         return false;
     }
 
     public boolean isRootCause(String uri) {
         if(threats.keySet().contains(uri)){
-            //return threats.get(uri).isRootCause();
             ThreatDB threat = this.querier.getThreat(uri, "system-inf");
             if (threat != null){
                 return threat.isRootCause();
@@ -635,99 +598,6 @@ public class AttackPathDataset {
         return retVal;
     }
 
-    /**
-     * get comment for threat/misbehaviour
-     *
-     * @param uri
-     * @return
-     */
-    /*
-    public String getComment(String uri){
-        String comment = "";
-
-        // check if we have to deal with a threat URI
-        if (this.threats.containsKey(uri)) {
-            //retVal = this.querier.getThreat(uri, "system-inf").isNormalOperation();
-            ThreatDB threat = this.querier.getThreat(uri, "system-inf");
-            if (threat != null) {
-                comment = threat.getDescription();
-            }
-        } else if (misbehaviourSets.containsKey(uri)) {
-            MisbehaviourSetDB ms = querier.getMisbehaviourSet(uri, "system-inf");
-            if (ms != null) {
-                String likelihood = this.liLevels.get(ms.getPrior()).getLabel();
-                String assetLabel = this.assets.get(ms.getLocatedAt()).getLabel();
-                String[] commentParts = this.dmisbehaviours.get(ms.getMisbehaviour()).getLabel().split("-");
-                String consequence;
-                if (commentParts.length > 2) {
-                    consequence = commentParts[1];
-                } else {
-                    consequence = commentParts[0];
-                }
-                if (consequence.contains("LossOf") || consequence.contains("Not")) {
-                    //TODO uncamel aspect!
-                    String aspect = consequence.substring(6);
-                    if (consequence.contains("LossOf")){
-                        consequence = "loses";
-                    } else {
-                        consequence = "is not";
-                    }
-                    return String.format("%s likelihood that \"%s\" %s %s",
-                            likelihood, assetLabel, consequence, aspect).replace("\\", "");
-                } else {
-                    //TODO uncamel this!
-                    comment = commentParts[0];
-                    return String.format("{} likelihood of \"{}\" {}",
-                            likelihood, assetLabel, comment).replace("\\", "");
-                }
-
-                comment = "TODO MS description";
-            }
-
-        } else if (trustworthinessAttributeSets.containsKey(uri)) {
-            TrustworthinessAttributeSetDB twa = trustworthinessAttributeSets.get(uri);
-            if(twa != null) {
-                comment = "TODO TWA description";
-            }
-        } else {
-            logger.warn("Not sure how to get comment from this: {}", uri);
-            comment = "no comment";
-        }
-
-        /*
-        } else {
-            // MS get the label from DM misbehaviour...
-            MisbehaviourSetDB ms = this.misbehaviourSets.get(uri);
-            String likelihood = this.liLevels.get(ms.getPrior()).getLabel();
-            String assetLabel = this.assets.get(ms.getLocatedAt()).getLabel();
-            String[] commentParts = this.dmisbehaviours.get(ms.getMisbehaviour()).getLabel().split("-");
-            String consequence;
-            if (commentParts.length > 2) {
-                consequence = commentParts[1];
-            } else {
-                consequence = commentParts[0];
-            }
-            if (consequence.contains("LossOf") || consequence.contains("Not")) {
-                //TODO uncamel aspect!
-                String aspect = consequence.substring(6);
-                if (consequence.contains("LossOf")){
-                    consequence = "loses";
-                } else {
-                    consequence = "is not";
-                }
-                return String.format("%s likelihood that \"%s\" %s %s",
-                        likelihood, assetLabel, consequence, aspect).replace("\\", "");
-            } else {
-                //TODO uncamel this!
-                comment = commentParts[0];
-                return String.format("{} likelihood of \"{}\" {}",
-                        likelihood, assetLabel, comment).replace("\\", "");
-            }
-        }
-        * /
-        return comment.replace("\\", "");
-    }
-    */
 
     /**
      * capitilise string
@@ -738,26 +608,6 @@ public class AttackPathDataset {
     private String capitaliseString(String str) {
             return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
-
-    /**
-     * get threat/misbehaviour description
-     *
-     * @param uri
-     * @return
-     */
-    /*
-    public String getDescription(String uri) {
-        String description;
-        if(this.isThreat(uri)) {
-            description = this.threats.get(uri).getDescription();
-            //return description.replace("\\", "");
-            return capitaliseString(description).replace("\\", "");
-        } else {
-            MisbehaviourSetDB ms = this.misbehaviourSets.get(uri);
-            return this.dmisbehaviours.get(ms.getMisbehaviour()).getDescription().replace("\\", "");
-        }
-    }
-    */
 
 }
 

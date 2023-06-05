@@ -17,8 +17,8 @@
 // PURPOSE, except where stated in the Licence Agreement supplied with
 // the software.
 //
-//      Created By:				Panos Melas
-//      Created Date:			2023-01-24
+//      Created By:             Panos Melas
+//      Created Date:           2023-01-24
 //      Created for Project :   Cyberkit4SME
 //
 /////////////////////////////////////////////////////////////////////////
@@ -37,16 +37,12 @@ public class AttackPathAlgorithm {
     private static final Logger logger = LoggerFactory.getLogger(AttackPathAlgorithm.class);
 
     private AttackPathDataset apd;
-    private IQuerierDB querier;
 
     public AttackPathAlgorithm(IQuerierDB querier) {
 
         final long startTime = System.currentTimeMillis();
 
         logger.debug("STARTING Shortest Path Attack algortithm ...");
-
-        // Save the querier reference for use in other methods
-        this.querier = querier;
 
         apd = new AttackPathDataset(querier);
 
@@ -74,7 +70,7 @@ public class AttackPathAlgorithm {
 
         AttackTree attackTree;
 
-		try {
+        try {
             final long startTime = System.currentTimeMillis();
 
             // calculate attack tree, allPath dictates one or two backtrace
@@ -83,9 +79,9 @@ public class AttackPathAlgorithm {
             final long endTime = System.currentTimeMillis();
             logger.info("AttackPathAlgorithm.calculateAttackTree: execution time {} ms", endTime - startTime);
 
-		} catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
-		}
+        }
 
         return attackTree;
     }
@@ -99,7 +95,7 @@ public class AttackPathAlgorithm {
         logger.debug("target URIs: {}", targetUris);
 
         TreeJsonDoc doc = null;
-		try {
+        try {
             final long startTime = System.currentTimeMillis();
 
             // calculate attack tree, allPath dictates one or two backtrace
@@ -114,9 +110,9 @@ public class AttackPathAlgorithm {
             final long endTime = System.currentTimeMillis();
             logger.info("AttackPathAlgorithm.calculateAttackTreeDoc: execution time {} ms", endTime - startTime);
 
-		} catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
-		}
+        }
 
         return doc;
     }
@@ -132,31 +128,7 @@ public class AttackPathAlgorithm {
 
             Graph graph = tree.getGraphs().get(targetMS);
 
-            /*
-            int nodeCounter = 0;
-
-            for (String uri : graph.getThreats().keySet()) {
-                logger.debug("Node: {} -> {}", uri, graph.getThreats().get(uri));
-                nodeCounter++;
-            }
-
-            for (String uri : graph.getMisbehaviours().keySet()) {
-                logger.debug("Node: {} -> {}", uri, graph.getMisbehaviours().get(uri));
-                nodeCounter++;
-            }
-
-            for (String uri : graph.getTwas().keySet()) {
-                logger.debug("Node: {} -> {}", uri, graph.getTwas().get(uri));
-                nodeCounter++;
-            }
-
-            for (List<String> link : graph.getLinks()) {
-                logger.debug("Link: {}", link);
-            }
-            */
-
             logger.debug("GRAPH SUMMARY for {}", targetMS.substring(7));
-            //logger.debug("  nodes........: {}", nodeCounter);
             logger.debug("   ├──> threats......: {}", graph.getThreats().size());
             logger.debug("   ├──> misbehaviours: {}", graph.getMisbehaviours().size());
             logger.debug("   ├──> twas.........: {}", graph.getTwas().size());

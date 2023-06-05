@@ -17,8 +17,8 @@
 // PURPOSE, except where stated in the Licence Agreement supplied with
 // the software.
 //
-//      Created By:				Panos Melas
-//      Created Date:			2023-01-24
+//      Created By:             Panos Melas
+//      Created Date:           2023-01-24
 //      Created for Project :   Cyberkit4SME
 //
 /////////////////////////////////////////////////////////////////////////
@@ -93,7 +93,6 @@ public class AttackTree {
         this.apd = apDataset;
 
         this.targetUris = targetUris;
-        //this.targetUris = targetUris.subList(0, 1);
 
         this.isFutureRisk = futureRisk;
 
@@ -115,14 +114,12 @@ public class AttackTree {
 
             this.backtrace(false);
 
-            //this.printTreeSummary("FIRST PASS");
-
             this.boundingUriRefs =  new HashSet<String>();
             for(AttackNode node : this.shortestPathNodes()) {
                 this.boundingUriRefs.add(node.getUri());
             }
 
-            this.nodeByUri = new HashMap<String, AttackNode>();
+            this.nodeByUri = new HashMap<>();
             this.nodeCounter = 0;
 
             logger.info("***********************");
@@ -131,8 +128,6 @@ public class AttackTree {
 
             this.backtrace(true);
         }
-
-        //logger.debug("filter MS: {}", this.apd.filterMisbehaviours());
 
         logger.info("Adding distance for each node from each target MS");
         for(String targetMSUri : this.targetUris) {
@@ -288,25 +283,18 @@ public class AttackTree {
         // Using a tuple for current_path to ensure that when we change it we
         // make a copy so that the addition is undone when the recursion
         // unwinds
-        //currentPath.add(uriRef);
         copyCP.add(uriRef);
         AttackNode currentNode = this.nodeByUri.get(uriRef);
-        //String targetUriRef = currentPath.get(0);
         String targetUriRef = copyCP.get(0);
 
         int currentDistance = currentNode.getMaxDistanceFromTargetByTarget(targetUriRef);
-        //int maxDistance = Math.max(currentDistance, (currentPath.size() - 1));
         int maxDistance = Math.max(currentDistance, (copyCP.size() - 1));
-        //logger.debug("Distance: {} -> {} {}", uriRef, currentDistance, (currentPath.size()-1));
-        logger.debug("Distance: {} -> {} {}", uriRef, currentDistance, (copyCP.size()-1));
         currentNode.setMaxDistanceFromTargetByTarget(targetUriRef, maxDistance);
 
         for(String causeUriRef : currentNode.getDirectCauseUris()) {
             // there can be loops int eh "tree" so have to make sure we don't
             // follow one
-            //if (!currentPath.contains(causeUriRef)) {
             if (!copyCP.contains(causeUriRef)) {
-                //this.addMaxDistanceFromTarget(causeUriRef, currentPath);
                 this.addMaxDistanceFromTarget(causeUriRef, copyCP);
             }
         }
@@ -384,7 +372,6 @@ public class AttackTree {
         }
         cPath.add(uri);
         AttackNode cNode = this.nodeByUri.get(uri);
-        String targetUri = cPath.get(0);
         pathNodes.put(uri, cNode.maxDistanceFromTarget());
         for (String causeUri : cNode.getDirectCauseUris()) {
             if (!cPath.contains(causeUri)) {
@@ -421,7 +408,7 @@ public class AttackTree {
         List<List<String>> treeLinks = new ArrayList<>();
 
         // create nodes lists
-        for(String nodeUri : fNodes.keySet()){
+        for (String nodeUri : fNodes.keySet()){
             AttackNode node = this.nodeByUri.get(nodeUri);
             if (node.isThreat()) {
                 threats.put(nodeUri, fNodes.get(nodeUri));
@@ -445,7 +432,6 @@ public class AttackTree {
             }
         }
 
-        //Graph graph = new Graph(threats, misbehaviours, twas, treeLinks);
         Graph graph = new Graph(this.sortedMap(threats), this.sortedMap(misbehaviours),
                 this.sortedMap(twas), treeLinks);
 
@@ -466,9 +452,7 @@ public class AttackTree {
         Set<AttackNode> nodes = null;
 
         if (allPaths) {
-            //nodes = this.nodeByUri.values().stream().collect(Collectors.toSet());
             nodes = this.nodes().stream().collect(Collectors.toSet());
-            //nodes = this.findAttackTreeNodes();
         } else {
             nodes = this.shortestPathNodes();
         }
@@ -493,7 +477,6 @@ public class AttackTree {
         Map<String, Graph> graphs = new HashMap<>();
 
         for(String targetMS : this.targetUris) {
-            Map<String, Integer> pathNodes = new HashMap<>();
             Graph graph = this.createGraphDoc(this.pathNodes.get(targetMS), links);
             graphs.put(targetMS, graph);
         }
@@ -522,7 +505,6 @@ public class AttackTree {
 
     private Set<InnerLink> createLinks(Set<AttackNode> nodes) {
         Set<InnerLink> links = new HashSet<>();
-        //for (AttackNode node : this.nodes()) {
         for (AttackNode node : nodes) {
             for (String effectUri : node.getDirectEffectUris()) {
                 AttackNode effectNode = this.nodeByUri.get(effectUri);
@@ -575,7 +557,6 @@ public class AttackTree {
         for (AttackNode an : this.shortestPathNodes()) {
             if (an.isThreat()) {
                 spnCounter += 1;
-                //for (String csgUri : this.apd.threatToCsg.get(an.getUri())) {
                 for (String csgUri : this.apd.getThreatControlStrategyUris(an.getUri(), true)) {
                     csgs.add(csgUri);
                     for (String csUri : this.apd.getCsgControlSetsUris(csgUri)){

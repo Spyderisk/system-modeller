@@ -17,8 +17,8 @@
 // PURPOSE, except where stated in the Licence Agreement supplied with
 // the software.
 //
-//      Created By:				Panos Melas
-//      Created Date:			2023-01-24
+//      Created By:             Panos Melas
+//      Created Date:           2023-01-24
 //      Created for Project :   Cyberkit4SME
 //
 /////////////////////////////////////////////////////////////////////////
@@ -80,9 +80,6 @@ public class AttackNode {
     private int causeVisits = 0;
     private int cacheHitVisits = 0;
 
-    private Set<String> currentPath = new HashSet<>();
-
-
     // LogicalExpressions to record the tree data:
     private LogicalExpression attackTreeMitigationCS = null;
     private LogicalExpression threatTreeMitigationCS = null;
@@ -91,7 +88,14 @@ public class AttackNode {
     private LogicalExpression attackTree = null;
     private LogicalExpression threatTree = null;
 
-
+    private static final String ROOT_CAUSE = "root_cause";
+    private static final String THREAT_MITIGATION_CS = "threat_mitigation_cs";
+    private static final String THREAT_MITIGATION_CSG = "threat_mitigation_csg";
+    private static final String THREAT_TREE = "threat_tree";
+    private static final String ATTACK_TREE = "attack_tree";
+    private static final String ATTACK_MITIGATION_CS = "attack_mitigation_cs";
+    private static final String ATTACK_MITIGATION_CSG = "attack_mitigation_csg";
+    
     private class InnerResult {
         Set<String> loopbackNodeUris = new HashSet<>();
         Set<String> allCauseUris = new HashSet<>();
@@ -132,9 +136,7 @@ public class AttackNode {
     };
 
     public AttackNode(String uri, AttackPathDataset apd, AttackTree nodes, int id) {
-
-        //final long startTime = System.currentTimeMillis();
-
+        
         this.apd = apd;
         this.uri = uri;
         this.nodes = nodes;
@@ -154,9 +156,6 @@ public class AttackNode {
         this.controlStrategies = this.getControlStrategies();
         this.controls = this.getControls();
         this.uriSymbol = this.makeSymbol(uri);
-
-        //final long endTime = System.currentTimeMillis();
-        //logger.info("AttackNode.AttackNode(): execution time {} ms", endTime - startTime);
     }
 
     @Override
@@ -198,9 +197,6 @@ public class AttackNode {
         return this.visits;
     }
 
-    //public void addDistanceFromTarget(String uri, int distance) {
-    //    this.distanceFromTarget.put(uri, distance);
-    //}
 
     public String getVisitsStats() {
         StringBuffer sb = new StringBuffer();
@@ -251,10 +247,10 @@ public class AttackNode {
             return null;
         }
 
-        List<String> controlStrategies = this.apd.getThreatInactiveCSGs(this.uri, this.nodes.getIsFutureRisk());
+        List<String> csgs = this.apd.getThreatInactiveCSGs(this.uri, this.nodes.getIsFutureRisk());
 
         List<Object> csgSymbols = new ArrayList<>();
-        for (String csgUri : controlStrategies) {
+        for (String csgUri : csgs) {
             csgSymbols.add(this.makeSymbol(csgUri));
         }
 
@@ -281,17 +277,17 @@ public class AttackNode {
 
         Set<String> csgUris = this.apd.getThreatControlStrategyUris(this.uri, this.nodes.getIsFutureRisk());
 
-        List<LogicalExpression> controlStrategies = new ArrayList<>();
+        List<LogicalExpression> leCSGs = new ArrayList<>();
 
-        for (String uri : csgUris) {
-            List<String> csUris = this.apd.getCsgInactiveControlSets(uri);
+        for (String csgUri : csgUris) {
+            List<String> csUris = this.apd.getCsgInactiveControlSets(csgUri);
             List<Object> csSymbols = new ArrayList<>();
             for (String csUri : csUris) {
                 csSymbols.add(this.makeSymbol(csUri));
             }
-            controlStrategies.add(new LogicalExpression(this.apd, csSymbols, true));
+            leCSGs.add(new LogicalExpression(this.apd, csSymbols, true));
         }
-        return new LogicalExpression(this.apd, new ArrayList<Object>(controlStrategies), false);
+        return new LogicalExpression(this.apd, new ArrayList<Object>(leCSGs), false);
     }
 
     public int getId() {
@@ -438,8 +434,8 @@ public class AttackNode {
         LogicalExpression threatMitigatedByCS = null;
         LogicalExpression attackMitigatedByCSG = null;
         LogicalExpression threatMitigatedByCSG = null;
-        LogicalExpression attackTree = null;
-        LogicalExpression threatTree = null;
+        LogicalExpression bsAttackTree = null;
+        LogicalExpression bsThreatTree = null;
 
         boolean outerSuccess = true; // need this for try->except->ELSE* python equivalent
         try {
@@ -475,8 +471,8 @@ public class AttackNode {
                     threatMitigatedByCS = null;
                     attackMitigatedByCSG = null;
                     threatMitigatedByCSG = null;
-                    attackTree = null;
-                    threatTree = null;
+                    bsAttackTree = null;
+                    bsThreatTree = null;
                 }
 
             } else if (this.isThreat()) {
@@ -532,17 +528,17 @@ public class AttackNode {
                         if (Objects.equals(this.isNormalOp(), parent.isNormalOp()) && !parent.isExternalCause()) {
                             parentMinDistancesFromRoot.add(pResult.getMinDistance());
                             parentMaxDistancesFromRoot.add(pResult.getMaxDistance());
-                            parentRootCauses.add(pResult.getData("root_cause"));
+                            parentRootCauses.add(pResult.getData(ROOT_CAUSE));
                         }
 
                         if (computeLogic) {
-                            parentThreatMitigationsCS.add(pResult.getData("threat_mitigation_cs"));  // Entire path
-                            parentThreatMitigationsCSG.add(pResult.getData("threat_mitigation_csg"));  // Entire path
-                            parentThreatTrees.add(pResult.getData("threat_tree"));
+                            parentThreatMitigationsCS.add(pResult.getData(THREAT_MITIGATION_CS));  // Entire path
+                            parentThreatMitigationsCSG.add(pResult.getData(THREAT_MITIGATION_CSG));  // Entire path
+                            parentThreatTrees.add(pResult.getData(THREAT_TREE));
                             if (!parent.isNormalOp() && !parent.isExternalCause()){
-                                parentAttackMitigationsCS.add(pResult.getData("attack_mitigation_cs"));
-                                parentAttackMitigationsCSG.add(pResult.getData("attack_mitigation_csg"));
-                                parentAttackTrees.add(pResult.getData("attack_tree"));
+                                parentAttackMitigationsCS.add(pResult.getData(THREAT_MITIGATION_CS));
+                                parentAttackMitigationsCSG.add(pResult.getData(THREAT_MITIGATION_CSG));
+                                parentAttackTrees.add(pResult.getData(ATTACK_TREE));
                             }
                         }
                     }
@@ -585,7 +581,7 @@ public class AttackNode {
                         parentAttackTrees.add(this.uriSymbol);
                     }
 
-                    attackTree = new LogicalExpression(this.apd, parentAttackTrees, true);
+                    bsAttackTree = new LogicalExpression(this.apd, parentAttackTrees, true);
 
                     // All threats are on the threat path
                     parentThreatTrees.add(this.uriSymbol);
@@ -648,16 +644,16 @@ public class AttackNode {
                         allCauseUris.addAll(pResult.getAllCauseUris());
                         parentMinDistancesFromRoot.add(pResult.getMinDistance());
                         parentMaxDistancesFromRoot.add(pResult.getMaxDistance());
-                        parentRootCauses.add(pResult.getData("root_cause"));
+                        parentRootCauses.add(pResult.getData(ROOT_CAUSE));
 
                         if (computeLogic) {
-                            parentThreatMitigationsCS.add(pResult.getData("threat_mitigation_cs"));  // Entire path
-                            parentThreatMitigationsCSG.add(pResult.getData("threat_mitigation_csg"));  // Entire path
-                            parentThreatTrees.add(pResult.getData("threat_tree"));
+                            parentThreatMitigationsCS.add(pResult.getData(THREAT_MITIGATION_CS));  // Entire path
+                            parentThreatMitigationsCSG.add(pResult.getData(THREAT_MITIGATION_CSG));  // Entire path
+                            parentThreatTrees.add(pResult.getData(THREAT_TREE));
                             if (!parent.isNormalOp()){
-                                parentAttackMitigationsCS.add(pResult.getData("attack_mitigation_cs"));
-                                parentAttackMitigationsCSG.add(pResult.getData("attack_mitigation_csg"));
-                                parentAttackTrees.add(pResult.getData("attack_tree"));
+                                parentAttackMitigationsCS.add(pResult.getData(THREAT_MITIGATION_CS));
+                                parentAttackMitigationsCSG.add(pResult.getData(THREAT_MITIGATION_CSG));
+                                parentAttackTrees.add(pResult.getData(ATTACK_TREE));
                             }
                         }
                     }
@@ -685,8 +681,8 @@ public class AttackNode {
                 //        tmpMinDistanceFromRoot + " " + tmpMaxDistanceFromRoot);
 
                 if(computeLogic) {
-                    attackTree = new LogicalExpression(this.apd, parentAttackTrees, false);
-                    threatTree = new LogicalExpression(this.apd, parentThreatTrees, false);
+                    bsAttackTree = new LogicalExpression(this.apd, parentAttackTrees, false);
+                    bsThreatTree = new LogicalExpression(this.apd, parentThreatTrees, false);
 
                     // Misbehaviours can be miticated by
                     // AND(
@@ -751,13 +747,6 @@ public class AttackNode {
              * logic is reversed.
              */
 
-            // TODO: why are we taking the max, not the min? Perhasp to spreat
-            // it out for display purposes, but how does that affect the
-            // shortest path?
-            //this.distanceFromRoot = Math.max(this.distanceFromRoot, tmpDistanceFromRoot);
-            //TODO we might actually need to save the different distances in a
-            //list
-
             List<Object> tmpObjList = new ArrayList<>(Arrays.asList(this.rootCause, tmpRootCause));
             this.rootCause = new LogicalExpression(this.apd, tmpObjList, false);
 
@@ -793,11 +782,11 @@ public class AttackNode {
                 this.threatTreeMitigationCSG = new LogicalExpression(this.apd, new ArrayList<Object>(tCsgList), true);
 
                 List<LogicalExpression> atList = new ArrayList<>(
-                        Arrays.asList(this.attackTree, attackTree));
+                        Arrays.asList(this.attackTree, bsAttackTree));
                 this.attackTree = new LogicalExpression(this.apd, new ArrayList<Object>(atList), false);
 
                 List<LogicalExpression> ttList = new ArrayList<>(
-                        Arrays.asList(this.threatTree, threatTree));
+                        Arrays.asList(this.threatTree, bsThreatTree));
                 this.threatTree = new LogicalExpression(this.apd, new ArrayList<Object>(ttList), false);
             }
 
@@ -807,15 +796,15 @@ public class AttackNode {
             iResult.setAllCauseUris(allCauseUris);
             iResult.setMinDistance(tmpMinDistanceFromRoot);
             iResult.setMaxDistance(tmpMaxDistanceFromRoot);
-            iResult.putData("root_cause", rootCause);
+            iResult.putData(ROOT_CAUSE, rootCause);
 
             if (computeLogic) {
-                iResult.putData("attack_mitigation_cs", attackMitigatedByCS);
-                iResult.putData("attack_mitigation_csg", attackMitigatedByCSG);
-                iResult.putData("threat_mitigation_cs", threatMitigatedByCS);
-                iResult.putData("threat_mitigation_csg", threatMitigatedByCSG);
-                iResult.putData("attack_tree", attackTree);
-                iResult.putData("threat_tree", threatTree);
+                iResult.putData(ATTACK_MITIGATION_CS, attackMitigatedByCS);
+                iResult.putData(ATTACK_MITIGATION_CSG, attackMitigatedByCSG);
+                iResult.putData(THREAT_MITIGATION_CS, threatMitigatedByCS);
+                iResult.putData(THREAT_MITIGATION_CSG, threatMitigatedByCSG);
+                iResult.putData(ATTACK_TREE, bsAttackTree);
+                iResult.putData(ATTACK_TREE, bsThreatTree);
             }
 
             this.causeResults.add(iResult);
@@ -873,7 +862,7 @@ public class AttackNode {
     public boolean isRootCause(){
         return apd.isRootCause(this.uri);
     }
-    private Expression<String> uriSymbol(){
+    public Expression<String> uriSymbol(){
         return this.makeSymbol(this.uri);
     }
 

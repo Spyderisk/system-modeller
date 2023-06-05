@@ -17,8 +17,8 @@
 // PURPOSE, except where stated in the Licence Agreement supplied with
 // the software.
 //
-//      Created By:				Panos Melas
-//      Created Date:			2023-01-24
+//      Created By:             Panos Melas
+//      Created Date:           2023-01-24
 //      Created for Project :   Cyberkit4SME
 //
 /////////////////////////////////////////////////////////////////////////
@@ -45,8 +45,6 @@ import com.bpodgursky.jbool_expressions.rules.RuleSet;
 public class LogicalExpression {
     private static final Logger logger = LoggerFactory.getLogger(AttackNode.class);
 
-    private AttackPathDataset apd;
-    private List<Object> causeList;
     private boolean allRequired;
 
     private List<Expression<String>> allCauses = new ArrayList<>();
@@ -54,10 +52,6 @@ public class LogicalExpression {
 
     public LogicalExpression(AttackPathDataset ds, List<Object> cList, boolean ar) {
 
-        //final long startTime = System.currentTimeMillis();
-
-        this.apd = ds;
-        this.causeList = cList;
         this.allRequired = ar;
 
         List<Expression<String>> allCausesAux = new ArrayList<>();
@@ -77,8 +71,7 @@ public class LogicalExpression {
                 allCauses.add(cc);
             }
         }
-        //logger.debug("LE: all causes {}", allCauses.size());
-
+        
         if (allCauses.size() == 0){
             this.cause = null;
         } else if(allCauses.size() == 1) {
@@ -92,12 +85,7 @@ public class LogicalExpression {
                 this.cause = RuleSet.simplify(ors);
             }
         }
-        /* 
-        if(allCauses.size() > 0) {
-            logger.debug("LE: causes: {}", this.cause.toString());
-            logger.debug("   symbols: {}", this.uris());
-         }
-        */ 
+        
     }
 
     public String toString() {
@@ -124,7 +112,6 @@ public class LogicalExpression {
         } else {
             return RuleSet.simplify(this.cause);
         }
-        //return this.cause;
     }
 
     public void applyDNF(int maxComplexity){

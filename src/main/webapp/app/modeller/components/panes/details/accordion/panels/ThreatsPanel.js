@@ -41,9 +41,8 @@ class ThreatsPanel extends React.Component {
             showUntriggeredThreats: false, //only used to filter compliance threats for now
             showFilters: false,
             sort: {
-                col: (props.name === "direct-effects") ? "likelihood" :
-                        (props.name === "attack-path-threats") ? "distance" : "risk",
-                dir: "desc"
+                col: (props.name === "direct-effects") ? "likelihood" : (props.name === "attack-path-threats") ? "distance" : "risk",
+                dir: "desc"
             }
         }
     }

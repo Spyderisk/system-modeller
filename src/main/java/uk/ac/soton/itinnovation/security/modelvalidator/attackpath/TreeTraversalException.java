@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.HashSet;
 
 class TreeTraversalException extends Exception {
-    private Set<String> loopbackNodeUris;
+    private final Set<String> loopbackNodeUris;
 
     TreeTraversalException(Set<String> loopbackNodeUris) {
         if (loopbackNodeUris.isEmpty()) {
