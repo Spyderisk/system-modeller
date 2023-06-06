@@ -133,14 +133,17 @@ public class Validator {
 
         querier.store(systemModel, "system-inf");
 
-        // Now get the model assets and relationships as a graph
-        this.missingAssetLinksFrom = new HashMap<>();
-        this.missingAssetLinksTo = new HashMap<>();
-        this.graphNodeMap = getGraphNodeMap();
-
         final long endTime = System.currentTimeMillis();
         logger.info("Validator.Validator(): execution time {} ms", endTime - startTime);        
 
+    }
+
+    /* Gets the asserted graph (assets and relationships) after any repairs
+     */
+    public void getAssertedGraph(){
+        this.missingAssetLinksFrom = new HashMap<>();
+        this.missingAssetLinksTo = new HashMap<>();
+        this.graphNodeMap = getGraphNodeMap();
     }
 
     /** Perform a full validation and persist results to the database. This method is not
@@ -148,29 +151,37 @@ public class Validator {
      */
     public void validate(Progress progress) {
         progress.updateProgress(0.0, "Repairing asserted system model");
+        logger.info("Repairing asserted system model");
         repairAssertedSystemModel();
+        getAssertedGraph();
 
         progress.updateProgress(0.1, "Loading knowledge base");
+        logger.info("Loading knowledge base");
         createDomainModelMaps();
 
         progress.updateProgress(0.2, "Generating implicit assets/relationships");
+        logger.info("Generating implicit assets/relationships");
         calculateAssertedCardinalityConstraints();
         executeConstructionPatterns();
         deleteConstructionState();
 
         progress.updateProgress(0.4, "Generating asset trustworthiness attributes, behaviours and controls");
+        logger.info("Generating asset trustworthiness attributes, behaviours and controls");
         createControlSets();
         createMisbehaviourSets();
         createTrustworthinessAttributeSets();
         createTrustworthinessImpactSets();
 
         progress.updateProgress(0.5, "Generating threats");
+        logger.info("Generating threats");
         createThreats();
 
         progress.updateProgress(0.7, "Generating control strategies");
+        logger.info("Generating control strategies");
         createControlStrategies();
 
         progress.updateProgress(0.9, "Persisting model to database");
+        logger.info("Persisting model to database");
         querier.sync("system-inf");
 
     }
@@ -178,11 +189,17 @@ public class Validator {
     /** Method to repair the asserted graph before starting to validate the model.
      */
     public void repairAssertedSystemModel(){
+        final long startTime = System.currentTimeMillis();
+
         // Insert population levels for assets that don't have them
         querier.repairAssertedAssetPopulations();
 
         // Clear out old asset and relationship cardinality constraints
         querier.repairCardinalityConstraints();
+
+        final long endTime = System.currentTimeMillis();
+        logger.info("Validator.repairAssertedSystemModel(): execution time {} ms", endTime - startTime);        
+
     }
 
     /** Loads the domain model and generates maps used elsewhere.

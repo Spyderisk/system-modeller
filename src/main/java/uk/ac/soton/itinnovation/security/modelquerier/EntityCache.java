@@ -228,7 +228,7 @@ public class EntityCache {
      * Deletion is only permitted on system model entities, and must be done across all the
      * system model graphs.
      */
-    public <T extends EntityDB> void deleteEntity(T entity, String typeKey) {
+    public <T extends EntityDB> void deleteEntity(T entity, String typeKey, Boolean skipDelete) {
         // Get the URI
         String uri = entity.getUri();
         
@@ -250,12 +250,18 @@ public class EntityCache {
             }
         }
 
-        // Add it to the staging area for entities to be deleted, so we know to delete it 
-        Map<String, EntityDB> deletions = deleteByType.computeIfAbsent(typeKey, k -> new HashMap<>());
-        deletions.put(entity.getUri(), entity);
+        if(!skipDelete){
+            // Add it to the staging area for entities to be deleted, so we know to delete it 
+            Map<String, EntityDB> deletions = deleteByType.computeIfAbsent(typeKey, k -> new HashMap<>());
+            deletions.put(entity.getUri(), entity);    
+        }
 
         // Do not remove it from the list of valid cached entities - deleted means a null response is valid
 
+    }
+
+    public <T extends EntityDB> void deleteEntity(T entity, String typeKey){
+        deleteEntity(entity, typeKey, false);
     }
 
     /* Gets all entities of a given type from the cache for a specified list of graphs.
