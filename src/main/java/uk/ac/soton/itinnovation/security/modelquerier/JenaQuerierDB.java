@@ -50,6 +50,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.sparql.function.library.max;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.slf4j.Logger;
@@ -3108,7 +3109,7 @@ public class JenaQuerierDB implements IQuerierDB {
         // Repair assets that have no populations
         for(AssetDB asset : assets.values()){
             String popURI = asset.getPopulation();
-            if(popURI == null) {
+            if((popURI == null) || (poLevels.get(popURI) == null)) {
                 int maxCardinality = asset.getMaxCardinality();
                 if(maxCardinality == 1) {
                     // Means cardinality is set to 'singleton'

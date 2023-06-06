@@ -2257,6 +2257,7 @@ public class Validator {
         String sourcePopulation = fromAsset.getPopulation();
         String targetPopulation = toAsset.getPopulation();
 
+
         int sourcePopulationLevel = poLevels.get(sourcePopulation).getLevelValue();
         int targetPopulationLevel = poLevels.get(targetPopulation).getLevelValue();
 
