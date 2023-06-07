@@ -211,8 +211,9 @@ class ModelSummary extends Component {
                                         title="Open Report"
                                     >
                                         <MenuItem onClick={() => this.openReport("technicalReport")}>Technical Report</MenuItem>
-                                        <MenuItem divider />
-                                        <MenuItem onClick={() => this.openReport("riskTreatmentPlan")}>Risk Treatment Plan</MenuItem>
+                                        {/* Risk treatment plan option is currently disabled until it can either be fixed, or replaced by something better */}
+                                        {/* <MenuItem divider />
+                                        <MenuItem onClick={() => this.openReport("riskTreatmentPlan")}>Risk Treatment Plan</MenuItem> */}
                                     </DropdownButton>
                                 </ButtonToolbar>
                             </Panel.Body>
