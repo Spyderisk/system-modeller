@@ -3260,13 +3260,17 @@ public class JenaQuerierDB implements IQuerierDB {
          }
     }
     private void fixCardinalityConstraintURI(Map<String, CardinalityConstraintDB> ccs, Map<String, AssetDB> assets, Model datasetModel) {
+        // If the cache is enabled, temporarily disable it
+        boolean cacheDisabled = cacheEnabled;
+        cacheEnabled = false;
+
+        // Get the cache type key for this type of entity
         String cacheTypeKey = getCacheTypeName("CardinalityConstraintDB");
 
-        Map<String, CardinalityConstraintDB> oldccs = new HashMap<>();
-        Map<String, CardinalityConstraintDB> newccs = new HashMap<>();
-
+        // Check and repair the cardinality constraint (link) entities
         for(CardinalityConstraintDB oldcc : ccs.values()){
             // Get the relationship entity properties
+            String oldURI = oldcc.getUri();
             String linkFromURI = oldcc.getLinksFrom();
             String linkToURI = oldcc.getLinksTo();
             String linkType = oldcc.getLinkType();
@@ -3275,8 +3279,34 @@ public class JenaQuerierDB implements IQuerierDB {
             AssetDB fromAsset = assets.get(linkFromURI);
             AssetDB toAsset = assets.get(linkToURI);
 
-            // Get the relationship entity URI and the URI it should be at
-            String oldURI = oldcc.getUri();
+            /* There is a problem here if the model includes 'dangling' links. In principle, they can arise if either:
+             * 
+             * - an older, buggier version of SSM failed to remove an asserted link to or
+             *   from an asset when the asset was deleted, leaving a null asset URI
+             * - a user added a link to or from an inferred asset, and the asset hasn't
+             *   yet been regenerated.
+             * 
+             * In the former case, we should just ignore the link entity.
+             */
+            if(linkFromURI == null || linkToURI == null || linkType == null) {
+                // Bad link with a missing property, so remove it from the graph
+                logger.warn("Link {} has a null source, target or type property - ignoring URI check", oldURI);
+                continue;
+            }
+
+            /* In the latter case must retain the link entity but will need to create a fake asset entity from which
+             * to get a hashed ID reference for use in creating the correct link URI.
+             */
+            if(fromAsset == null) {
+                fromAsset = new AssetDB();
+                fromAsset.setUri(linkFromURI);
+            }
+            if(toAsset == null) {
+                toAsset = new AssetDB();
+                toAsset.setUri(linkToURI);
+            }
+
+            // Get the correct relationship entity URI
             String newURI = "system#" + fromAsset.getId() + "-" + linkType.replace("domain#", "") + "-" + toAsset.getId();
 
             if(!oldURI.equals(newURI)) {
@@ -3290,25 +3320,21 @@ public class JenaQuerierDB implements IQuerierDB {
                 newcc.setLinksTo(toAsset.getUri());
                 newcc.setLinkType(oldcc.getLinkType());
 
-                // If the cache is enabled, temporarily disable it
-                boolean cacheDisabled = cacheEnabled;
-                cacheEnabled = false;
-
                 // Remove the old CC and replace it by the new one
                 delete(oldcc, false);
                 store(newcc, "system");
 
-                // If the cache was temporarily disabled, enable it again
-                cacheEnabled = cacheDisabled;
-
-                // If the cache is now enabled, update the cache separately
-                if(cacheEnabled){
+                // If the cache was enabled, update the cache separately
+                if(cacheDisabled){
                     cache.deleteEntity(oldcc, cacheTypeKey, true);
                     cache.storeEntity(newcc, cacheTypeKey, "system");
                 }
             }
 
         }
+
+        // If the cache was temporarily disabled, enable it again
+        cacheEnabled = cacheDisabled;
 
     }
 
