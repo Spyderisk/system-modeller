@@ -44,7 +44,6 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
-import uk.ac.soton.itinnovation.security.systemmodeller.semantics.StoreModelManager;
 
 /**
  * This class can generate a palette using a domain model ontology as its input
@@ -67,8 +66,6 @@ public class PaletteGenerator {
 
 	private final HashMap<String, HashMap<String, ArrayList<String>>> incoming = new HashMap<>();
 	private final HashMap<String, HashMap<String, ArrayList<String>>> outgoing = new HashMap<>();
-
-	private StoreModelManager storeModelManager;
 
 	private ModelObjectsHelper modelObjectsHelper;
 
@@ -123,67 +120,6 @@ public class PaletteGenerator {
 				this.icons = new JSONObject();
 			}
 		}
-	}
-
-	/**
-	 * Do it! Generate the palette for all ontologies found in the resources
-	 *
-	 * @param args not used
-	 */
-	public static void main(String[] args) {
-		/* TODO: rewite this, if required, as ontologies.json is no longer available
-		try {
-			logger.info("Running palette generation");
-
-			//open ontologies.json
-			JSONArray json = new JSONArray(IOUtils.toString(
-				PaletteGenerator.class.getClassLoader().getResourceAsStream("static/data/ontologies.json")
-			));
-
-			//get resources dir in build folder
-			String resourcesDir = PaletteGenerator.class.getClassLoader().getResource("static/data").getPath();
-
-			//for each ontology:
-			for (int i=0; i<json.length(); i++) {
-
-				//parse the JSON file to get the ontology label
-				JSONObject ont = (JSONObject) json.get(i);
-				String ontology = ont.getString("graph").substring(ont.getString("graph").lastIndexOf('/'));
-
-				//generate the palette
-				logger.info("Generating palette for {}", ontology);
-				boolean paletteCreated = PaletteGenerator.createPalette(ontology, null);
-
-				if (!paletteCreated) {
-					System.exit(1);
-				}
-
-				if(!(new File(resourcesDir + File.separator + "users-" + ontology + ".json").exists())) {
-					JsonBuilder userBuilder = new JsonBuilder();
-					userBuilder.startObject();
-
-					userBuilder.key("users");
-					userBuilder.startArray();
-					userBuilder.value("admin");
-					//userBuilder.value("trustbuilder");
-					userBuilder.value("test");
-					userBuilder.value("testuser");
-					userBuilder.finishArray();
-					userBuilder.finishObject();
-					String users = userBuilder.build().toString();
-
-					try (PrintWriter out = new PrintWriter(resourcesDir + File.separator + "users-" + ontology + ".json")) {
-						out.println(users);
-					}
-				}
-			}
-
-			logger.info("Finished generating palettes");
-		} catch (IOException ex) {
-			logger.error("Could not load ontologies from ontologies.json", ex);
-			System.exit(1);
-		}
-		*/
 	}
 
 	/**
