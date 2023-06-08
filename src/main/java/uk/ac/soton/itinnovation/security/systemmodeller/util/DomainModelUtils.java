@@ -29,6 +29,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -95,10 +97,10 @@ public class DomainModelUtils {
 			}
 		}
 
-		String nqTmpFilepath = destination + File.separator + nqFilename;
+		Path nqTmpFilepath = Paths.get(destination, nqFilename);
 
 		//set domain model file (to be loaded later)
-		File domainTmpFile = new File(nqTmpFilepath);
+		File domainTmpFile = nqTmpFilepath.toFile();
 
 		//Check for domain model file
 		if (!domainTmpFile.exists()) throw new IOException("Cannot locate domain model file: " + nqFilename);
@@ -106,13 +108,13 @@ public class DomainModelUtils {
 
 		//Check for icon mapping file
 		String iconMappingFilename = "icon-mapping.json";
-		File iconMappingFile = new File(destination + File.separator + iconMappingFilename);
+		File iconMappingFile = Paths.get(destination, iconMappingFilename).toFile();
 		if (!iconMappingFile.exists()) throw new IOException("Cannot locate icon mapping file: " + iconMappingFilename);
 		logger.debug("Located icon mapping file: {}", iconMappingFile.getAbsolutePath());
 
 		//Check for icons folder
 		String iconsFoldername = "icons";
-		File iconsFolder = new File(destination + File.separator + iconsFoldername);
+		File iconsFolder = Paths.get(destination, iconsFoldername).toFile();
 		if (!iconsFolder.exists() || !iconsFolder.isDirectory()) throw new IOException("Cannot locate icons folder");
 		logger.debug("Located icons folder: {}", iconsFolder.getAbsolutePath());
 
@@ -137,11 +139,11 @@ public class DomainModelUtils {
 		}
 
 		//Define domain model folder path
-		String domainModelFolderPath = kbInstallFolder + File.separator + domainModelName;
+		Path domainModelFolderPath = Paths.get(kbInstallFolder, domainModelName);
 		logger.info("Installing knowledgebase to folder: {}", domainModelFolderPath);
 
 		//Create domain model folder and delete if exists
-		File domainModelFolder = new File(domainModelFolderPath);
+		File domainModelFolder = domainModelFolderPath.toFile();
 
 		//If we are uploading a new domain model, check that it does not already exist!
 		if (newDomain && domainModelFolder.isDirectory()) {
@@ -152,25 +154,25 @@ public class DomainModelUtils {
 		domainModelFolder.mkdirs();
 
 		//extract domain model (domain.nq) from zipfile into domain model folder
-		zipFile.extractFile(nqFilename, domainModelFolderPath);
+		zipFile.extractFile(nqFilename, domainModelFolderPath.toString());
 
 		//extract icon mapping file from zipfile into domain model folder
-		zipFile.extractFile(iconMappingFilename, domainModelFolderPath);
+		zipFile.extractFile(iconMappingFilename, domainModelFolderPath.toString());
 
 		//extract icons folder from zipfile into domain model folder
-		zipFile.extractFile(iconsFoldername + "/", domainModelFolderPath);
+		zipFile.extractFile(iconsFoldername + "/", domainModelFolderPath.toString());
 		zipFile.close();
 
-		File domainFile = new File(domainModelFolderPath, nqFilename);
+		File domainFile = domainModelFolderPath.resolve(nqFilename).toFile();
 		if (!domainFile.exists()) throw new IOException("Cannot locate domain model file: " + domainFile.getAbsolutePath());
 
-		iconMappingFile = new File(domainModelFolderPath, iconMappingFilename);
+		iconMappingFile = domainModelFolderPath.resolve(iconMappingFilename).toFile();
 		if (!iconMappingFile.exists()) throw new IOException("Cannot locate icon mapping file: " + iconMappingFile.getAbsolutePath());
 
-		String domainImagesPath = domainModelFolderPath + File.separator + iconsFoldername;
+		Path domainImagesPath = domainModelFolderPath.resolve(iconsFoldername);
 
 		//define domain images folder
-		File domainImagesDir = new File(domainImagesPath);
+		File domainImagesDir = domainImagesPath.toFile();
 
 		if (!domainImagesDir.exists() || !domainImagesDir.isDirectory()) throw new IOException("Cannot locate icons folder: " +
 			domainImagesDir.getAbsolutePath());
@@ -183,7 +185,7 @@ public class DomainModelUtils {
 		HashMap<String, String> result = new HashMap<>();
 		result.put("domainUri", domainUri);
 		result.put("domainModelName", domainModelName);
-		result.put("domainModelFolder", domainModelFolderPath);
+		result.put("domainModelFolder", domainModelFolderPath.toString());
 		result.put("nqFilepath", domainFile.getAbsolutePath());
 		result.put("iconMappingFile", iconMappingFile.getAbsolutePath());
 

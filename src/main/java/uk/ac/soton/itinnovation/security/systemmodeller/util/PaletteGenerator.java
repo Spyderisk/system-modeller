@@ -32,6 +32,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.atlas.json.JsonBuilder;
@@ -190,8 +192,9 @@ public class PaletteGenerator {
 	private void getAssets() {
         String[] parts = domainModelGraph.split("/");
         String domainModelName = parts[parts.length - 1];
-		String domainIconsFolderPath = this.domainModelFolder + File.separator + "icons";
 		logger.debug("Getting assets for domain: {}", domainModelName);
+
+		Path domainIconsFolderPath = Paths.get(this.domainModelFolder, "icons");
 
 		List<Map<String, String>> assets = modelObjectsHelper.getPaletteAssets(domainModelGraph);
 
@@ -266,16 +269,16 @@ public class PaletteGenerator {
 			//First, try to locate image file in domain specific folder
 			URL resource = null;
 
-			String iconPath = domainIconsFolderPath + File.separator + actualIcon;
+			Path iconPath = domainIconsFolderPath.resolve(actualIcon);
 
-			if (new File(iconPath).isFile()) {
+			if (iconPath.toFile().isFile()) {
 				palettebuilder.key("icon").value(domainModelName + "/" + actualIcon);
 			}
 			else {
 				//If not found, try the FALLBACK_ICON in the domain specific folder
-				iconPath = domainIconsFolderPath + File.separator + FALLBACK_ICON;
+				iconPath = domainIconsFolderPath.resolve(FALLBACK_ICON);
 
-				if ((new File(iconPath).isFile())) {
+				if ((iconPath.toFile().isFile())) {
 					logger.warn("Could not find icon {} for asset {}: using fallback icon ({})",
 						actualIcon, asset.get("al"), domainModelName + File.separator + FALLBACK_ICON);
 					palettebuilder.key("icon").value(domainModelName + "/" + FALLBACK_ICON);
@@ -437,9 +440,9 @@ public class PaletteGenerator {
 		logger.info("createPalette: calling build()");
 		JsonValue j = build();
 		String palette = j.toString();
-		String filename = this.domainModelFolder + File.separator + "palette.json";
+		Path filePath = Paths.get(this.domainModelFolder, "palette.json");
 
-		try (PrintWriter out = new PrintWriter(filename)) {
+		try (PrintWriter out = new PrintWriter(filePath.toFile())) {
 			out.println(palette);
 		} catch (FileNotFoundException ex) {
 			logger.error("Could not create palette for ontology: " + ontology, ex);
@@ -447,7 +450,7 @@ public class PaletteGenerator {
 		}
 
 		logger.info("Created palette for domain: {}", ontology);
-		logger.info("Location: {}", filename);
+		logger.info("Location: {}", filePath);
 
 		this.paletteCreated = true;
 

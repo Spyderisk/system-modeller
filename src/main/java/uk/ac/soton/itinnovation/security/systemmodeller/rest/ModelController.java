@@ -34,6 +34,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.rmi.UnexpectedException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -508,10 +509,11 @@ public class ModelController {
 		String ontology = model.getDomainGraph().substring(model.getDomainGraph().lastIndexOf("/")+1);
 		
 		try {
-			String domainModelFolderPath = kbInstallFolder + File.separator + ontology;
 			String paletteFile = "palette.json";
-			File palette = new File(domainModelFolderPath, paletteFile);
+			Path palettePath = Paths.get(kbInstallFolder, ontology, paletteFile);
+			File palette = palettePath.toFile();
 			logger.info("Loading palette file: {}", palette.getAbsolutePath());
+
 			map = objectMapper.readValue(palette, Map.class);
 		} catch (IOException e) {
 			logger.error("Could not read palette", e);
@@ -522,12 +524,11 @@ public class ModelController {
 
 	@RequestMapping(value = "/images/{domainModel}/{image}" , method = RequestMethod.GET) 
     public ResponseEntity<FileSystemResource> getImage(@PathVariable String domainModel, @PathVariable String image) throws IOException {
-		String imageFile = kbInstallFolder + File.separator + domainModel + File.separator + "icons" + File.separator + image;
-		Path path = new File(imageFile).toPath();
-		FileSystemResource resource = new FileSystemResource(path);
+		Path imagePath = Paths.get(kbInstallFolder, domainModel, "icons", image);
+		FileSystemResource resource = new FileSystemResource(imagePath);
 
 		return ResponseEntity.ok()
-		.contentType(MediaType.parseMediaType(Files.probeContentType(path)))
+		.contentType(MediaType.parseMediaType(Files.probeContentType(imagePath)))
 		.body(resource);
     }
 

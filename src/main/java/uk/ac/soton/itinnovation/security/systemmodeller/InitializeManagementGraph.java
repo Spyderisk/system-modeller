@@ -27,6 +27,8 @@ package uk.ac.soton.itinnovation.security.systemmodeller;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -277,9 +279,8 @@ public class InitializeManagementGraph implements CommandLineRunner {
 					logger.info("version: {}", version);
 
 					String domainModelName = title;
-					String domainModelFolderPath = kbInstallFolder + File.separator + domainModelName;
-					String palettePath = domainModelFolderPath + File.separator + "palette.json";
-					File paletteFile = new File(palettePath);
+					Path palettePath = Paths.get(kbInstallFolder, domainModelName, "palette.json");
+					File paletteFile = palettePath.toFile();
 
 					if (paletteFile.exists()) {
 						logger.info("palette: {}", paletteFile.getAbsolutePath());

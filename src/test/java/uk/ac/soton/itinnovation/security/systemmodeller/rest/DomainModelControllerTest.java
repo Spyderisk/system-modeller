@@ -414,17 +414,17 @@ public class DomainModelControllerTest extends CommonTestSetup {
 
 		assertEquals(1, storeManager.getDomainModels().size());
 
-		String domainImagesPath = kbInstallFolder + File.separator + NETWORK_TESTING_NAME + File.separator + "icons";
+		Path domainImagesPath = Paths.get(kbInstallFolder, NETWORK_TESTING_NAME, "icons");
 		logger.info("Checking images folder: {}", domainImagesPath);
 
-		File domainImagesDir = new File(domainImagesPath);
+		File domainImagesDir = domainImagesPath.toFile();
 
 		//icons folder must exist
 		assertTrue(domainImagesDir.exists() && domainImagesDir.isDirectory());
 
 		try {
 			//Get list of filenames in folder
-			List<String> files = java.nio.file.Files.list(Paths.get(domainImagesPath))
+			List<String> files = java.nio.file.Files.list(domainImagesPath)
 				.map(Path::toFile)
 				.filter(File::isFile)
 				.map(File::getName)
@@ -474,17 +474,17 @@ public class DomainModelControllerTest extends CommonTestSetup {
 		//Assert that domain model has the correct URI
 		assertEquals(domainModels.keySet().iterator().next(), NETWORK_TESTING_NEW_URI);
 
-		String domainImagesPath = kbInstallFolder + File.separator + NETWORK_TESTING_NEW_NAME + File.separator + "icons";
+		Path domainImagesPath = Paths.get(kbInstallFolder, NETWORK_TESTING_NEW_NAME, "icons");
 		logger.info("Checking images folder: {}", domainImagesPath);
 
-		File domainImagesDir = new File(domainImagesPath);
+		File domainImagesDir = domainImagesPath.toFile();
 
 		//icons folder must exist
 		assertTrue(domainImagesDir.exists() && domainImagesDir.isDirectory());
 
 		try {
 			//Get list of filenames in folder
-			List<String> files = java.nio.file.Files.list(Paths.get(domainImagesPath))
+			List<String> files = java.nio.file.Files.list(domainImagesPath)
 				.map(Path::toFile)
 				.filter(File::isFile)
 				.map(File::getName)
