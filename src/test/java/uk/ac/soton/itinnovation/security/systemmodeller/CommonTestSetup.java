@@ -29,7 +29,6 @@ import java.util.Map;
 import io.restassured.RestAssured;
 import io.restassured.config.RedirectConfig;
 import io.restassured.filter.session.SessionFilter;
-import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.junit.After;
@@ -41,7 +40,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.TestPropertySource;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertTrue;
 
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
