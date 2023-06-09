@@ -34,6 +34,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.io.FileUtils;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,6 +87,30 @@ public class InitializeManagementGraph implements CommandLineRunner {
 		HashSet<String> duplicatedDomainGraphs = new HashSet<>(); //domain graphs that have been loaded more than once
 
 		if (resetOnStart || storeModelManager.storeIsEmpty()) {
+			logger.info("Removing installed knowledgebases:");
+			try {
+				File kbInstallDir = new File(kbInstallFolder);
+				if (kbInstallDir.isDirectory()) {
+					File[] kbList = kbInstallDir.listFiles();
+					if (kbList != null) {
+						for (File kb : kbList) {
+							if (kb.isDirectory()) {
+								logger.info(kb.getAbsolutePath());
+								FileUtils.deleteDirectory(kb);
+							}
+						}
+					}
+				}
+				else {
+					logger.error("Cannot locate knowledgebases install folder: {}", kbInstallDir);
+					System.exit(1);
+				}
+			}
+			catch (IOException ex) {
+				logger.error("Could not remove installed knowledgebases", ex);
+				System.exit(1);
+			}
+
 			logger.info("Running management graph initialisation");
 
 			//clear all graphs - this will include orphaned models
