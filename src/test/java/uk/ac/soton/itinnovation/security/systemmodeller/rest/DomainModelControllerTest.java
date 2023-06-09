@@ -28,6 +28,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
@@ -69,7 +70,6 @@ import com.google.common.io.Files;
 
 import io.restassured.builder.MultiPartSpecBuilder;
 import io.restassured.http.ContentType;
-import io.restassured.parsing.Parser;
 import io.restassured.specification.MultiPartSpecification;
 import uk.ac.soton.itinnovation.security.systemmodeller.CommonTestSetup;
 import uk.ac.soton.itinnovation.security.systemmodeller.SystemModellerApplication;
@@ -320,12 +320,11 @@ public class DomainModelControllerTest extends CommonTestSetup {
 
 	/**
 	 * Testing uploading a new domain model version from .nq file
-	 * Asserts OK 200 status
-	 * Asserts 1 domain model in store post REST
-	 * N.B. Not currently working as PaletteGenerator assumes that it should read ontologies.json
+	 * Asserts 500 status (as upload of .nq.gz no longer supported)
+	 * Asserts the expected error message
+	 * Asserts number of domain models unchanged post REST
 	 */
 	@Test
-	@Ignore
 	public void testUploadNewNetworkDomainVersion() {
 		assertEquals(0, storeManager.getDomainModels().size());
 
@@ -336,20 +335,23 @@ public class DomainModelControllerTest extends CommonTestSetup {
 		when().
 			post("/domains/upload").
 		then().
-			assertThat().statusCode(HttpStatus.SC_OK);
+			assertThat().statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR).
+			and().
+			assertThat().body("message", is("Only domain .zip bundles may be uploaded!"));
 
-		assertEquals(1, storeManager.getDomainModels().size());
+		//number of domain models should be unchanged
+		assertEquals(0, storeManager.getDomainModels().size());
 	}
 
 	/**
 	 * Testing uploading a new network-testing domain version when one already exists
 	 * Asserts 1 model in store pre REST
-	 * Asserts OK 200 status
+	 * Asserts 500 status (as upload of .nq.gz no longer supported)
+	 * Asserts the expected error message
 	 * Asserts 1 model in store post REST
-	 * N.B. Not currently working as PaletteGenerator assumes that it should read ontologies.json
+	 * TODO: maybe rework this test to use zip bundle instead, to test originally intended behaviour
 	 */
 	@Test
-	@Ignore
 	public void testUploadNewNetworkDomainVersionDomainExists() {
 		addNetworkTestingDomainModel();
 
@@ -362,19 +364,21 @@ public class DomainModelControllerTest extends CommonTestSetup {
 		when().
 			post("/domains/upload").
 		then().
-			assertThat().statusCode(HttpStatus.SC_OK);
+			assertThat().statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR).
+			and().
+			assertThat().body("message", is("Only domain .zip bundles may be uploaded!"));
 
+		//number of domain models should be unchanged
 		assertEquals(1, storeManager.getDomainModels().size());
 	}
 
 	/**
 	 * Testing uploading a new domain model version from .nq.gz file
-	 * Asserts OK 200 status
-	 * Asserts 1 domain model in store post REST
-	 * N.B. Not currently working as PaletteGenerator assumes that it should read ontologies.json
+	 * Asserts 500 status (as upload of .nq.gz no longer supported)
+	 * Asserts the expected error message
+	 * Asserts number of domain models unchanged post REST
 	 */
 	@Test
-	@Ignore
 	public void testUploadNewDomainVersionGzipFile() {
 		assertEquals(0, storeManager.getDomainModels().size());
 
@@ -385,9 +389,12 @@ public class DomainModelControllerTest extends CommonTestSetup {
 		when().
 			post("/domains/upload").
 		then().
-			assertThat().statusCode(HttpStatus.SC_OK);
+			assertThat().statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR).
+			and().
+			assertThat().body("message", is("Only domain .zip bundles may be uploaded!"));
 
-		assertEquals(1, storeManager.getDomainModels().size());
+		//number of domain models should be unchanged
+		assertEquals(0, storeManager.getDomainModels().size());
 	}
 
 	/**
