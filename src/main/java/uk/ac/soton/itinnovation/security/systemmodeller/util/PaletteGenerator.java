@@ -26,32 +26,24 @@
 
 package uk.ac.soton.itinnovation.security.systemmodeller.util;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.jena.atlas.json.JsonBuilder;
 import org.apache.jena.atlas.json.JsonValue;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionFactory;
-import org.apache.jena.query.QueryFactory;
-import org.apache.jena.query.ResultSet;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
-import uk.ac.soton.itinnovation.security.systemmodeller.semantics.StoreModelManager;
 
 /**
  * This class can generate a palette using a domain model ontology as its input
@@ -64,34 +56,25 @@ public class PaletteGenerator {
 
 	public static Logger logger = LoggerFactory.getLogger(PaletteGenerator.class);
 
+
 	private final String domainModelGraph;
 	private JSONObject icons;
+	private boolean defaultUserAccess;
+	private boolean paletteCreated = false;
 
 	private final JsonBuilder palettebuilder = new JsonBuilder();
 
 	private final HashMap<String, HashMap<String, ArrayList<String>>> incoming = new HashMap<>();
 	private final HashMap<String, HashMap<String, ArrayList<String>>> outgoing = new HashMap<>();
 
-	private StoreModelManager storeModelManager;
-
 	private ModelObjectsHelper modelObjectsHelper;
 
-	/**
-	 * Creates a new palette generator object
-	 *
-	 * @param domainModel the path of the domain model ontology in the resources folder
-	 */
-	public PaletteGenerator(String domainModelGraph, ModelObjectsHelper modelObjectsHelper) {
+	private String domainModelFolder;
 
-		this(domainModelGraph,  modelObjectsHelper,
-			PaletteGenerator.class.getClassLoader().getResourceAsStream("static/data/ontologies.json")
-		);
-	}
-
-	public PaletteGenerator(String domainModelGraph, ModelObjectsHelper modelObjectsHelper, InputStream iconMap) {
-
+	public PaletteGenerator(String domainModelFolder, String domainModelGraph, ModelObjectsHelper modelObjectsHelper, InputStream iconMap) {
 		this.modelObjectsHelper = modelObjectsHelper;
 		this.domainModelGraph = domainModelGraph;
+		this.domainModelFolder = domainModelFolder;
 
 		//Ensures the InputStream is closed when this method returns
 		try (InputStream input = iconMap) {
@@ -107,7 +90,7 @@ public class PaletteGenerator {
 				json.put(jsonObj);
 			}
 
-			//find this ontology in the config file
+			//find this ontology in the icon mapping file
 			for (int i=0; i<json.length(); i++) {
 
 				//parse the JSON file to get the ontology label
@@ -117,81 +100,25 @@ public class PaletteGenerator {
 				//get icons
 				if (graph.equals(domainModelGraph)) {
 					logger.debug("Getting icons for {}", graph);
-					icons = (JSONObject) ont.get("icons");
+					this.icons = (JSONObject) ont.get("icons");
 				}
+
+				boolean defaultUserAccess = ont.getBoolean("defaultUserAccess");
+				this.defaultUserAccess = defaultUserAccess;
+				logger.debug("Setting defaultUserAccess = {}", this.defaultUserAccess);
 			}
 
-			if (icons == null) {
-				logger.warn("Could not find domain model definition in ontologies.json for: {}", domainModelGraph);
+			if (this.icons == null) {
+				logger.warn("Could not find domain model definition in icon mapping for: {}", domainModelGraph);
 			}
 
 		} catch (IOException ex) {
-			logger.warn("Could not load icon definitions from ontologies.json", ex);
+			logger.warn("Could not load icon definitions from icon mapping file", ex);
 		}
 		finally {
-			if (icons == null) {
-				icons = new JSONObject();
+			if (this.icons == null) {
+				this.icons = new JSONObject();
 			}
-		}
-	}
-
-	/**
-	 * Do it! Generate the palette for all ontologies found in the resources
-	 *
-	 * @param args not used
-	 */
-	public static void main(String[] args) {
-
-		try {
-			logger.info("Running palette generation");
-
-			//open ontologies.json
-			JSONArray json = new JSONArray(IOUtils.toString(
-				PaletteGenerator.class.getClassLoader().getResourceAsStream("static/data/ontologies.json")
-			));
-
-			//get resources dir in build folder
-			String resourcesDir = PaletteGenerator.class.getClassLoader().getResource("static/data").getPath();
-
-			//for each ontology:
-			for (int i=0; i<json.length(); i++) {
-
-				//parse the JSON file to get the ontology label
-				JSONObject ont = (JSONObject) json.get(i);
-				String ontology = ont.getString("graph").substring(ont.getString("graph").lastIndexOf('/'));
-
-				//generate the palette
-				logger.info("Generating palette for {}", ontology);
-				boolean paletteCreated = PaletteGenerator.createPalette(ontology, null);
-
-				if (!paletteCreated) {
-					System.exit(1);
-				}
-
-				if(!(new File(resourcesDir + File.separator + "users-" + ontology + ".json").exists())) {
-					JsonBuilder userBuilder = new JsonBuilder();
-					userBuilder.startObject();
-
-					userBuilder.key("users");
-					userBuilder.startArray();
-					userBuilder.value("admin");
-					//userBuilder.value("trustbuilder");
-					userBuilder.value("test");
-					userBuilder.value("testuser");
-					userBuilder.finishArray();
-					userBuilder.finishObject();
-					String users = userBuilder.build().toString();
-
-					try (PrintWriter out = new PrintWriter(resourcesDir + File.separator + "users-" + ontology + ".json")) {
-						out.println(users);
-					}
-				}
-			}
-
-			logger.info("Finished generating palettes");
-		} catch (IOException ex) {
-			logger.error("Could not load ontologies from ontologies.json", ex);
-			System.exit(1);
 		}
 	}
 
@@ -202,6 +129,8 @@ public class PaletteGenerator {
         String[] parts = domainModelGraph.split("/");
         String domainModelName = parts[parts.length - 1];
 		logger.debug("Getting assets for domain: {}", domainModelName);
+
+		Path domainIconsFolderPath = Paths.get(this.domainModelFolder, "icons");
 
 		List<Map<String, String>> assets = modelObjectsHelper.getPaletteAssets(domainModelGraph);
 
@@ -270,22 +199,39 @@ public class PaletteGenerator {
 					}
 				}
 			}
-			//logger.debug("Using icon {} for asset type {}", actualIcon, a.get("label"));
+
+			//logger.debug("Locating icon {} for asset type {}", actualIcon, asset.get("al"));
 
 			//First, try to locate image file in domain specific folder
-			URL resource = PaletteGenerator.class.getClassLoader().getResource("static/images/" + domainModelName + File.separator + actualIcon);
+			URL resource = null;
 
-			if (resource != null && (new File(resource.getPath()).isFile())) {
+			Path iconPath = domainIconsFolderPath.resolve(actualIcon);
+
+			if (iconPath.toFile().isFile()) {
 				palettebuilder.key("icon").value(domainModelName + "/" + actualIcon);
-			} else {
-				//If not found, try the main images folder
-				resource = PaletteGenerator.class.getClassLoader().getResource("static/images/" + actualIcon);
-				if (resource != null && (new File(resource.getPath()).isFile())) {
-					palettebuilder.key("icon").value(actualIcon);
-				} else {
-	
-					logger.warn("Could not find icon {} or fallback icon {}, skipping icon field for asset {}",
-						actualIcon, FALLBACK_ICON, asset.get("al"));
+			}
+			else {
+				//If not found, try the FALLBACK_ICON in the domain specific folder
+				iconPath = domainIconsFolderPath.resolve(FALLBACK_ICON);
+
+				if ((iconPath.toFile().isFile())) {
+					logger.warn("Could not find icon {} for asset {}: using fallback icon ({})",
+						actualIcon, asset.get("al"), domainModelName + File.separator + FALLBACK_ICON);
+					palettebuilder.key("icon").value(domainModelName + "/" + FALLBACK_ICON);
+				}
+				else {
+					//If not found, try the FALLBACK_ICON in the main images folder
+					resource = PaletteGenerator.class.getClassLoader().getResource("static/images/" + FALLBACK_ICON);
+
+					if (resource != null && (new File(resource.getPath()).isFile())) {
+						logger.warn("Could not find icon {} for asset {}: using fallback icon ({})",
+							actualIcon, asset.get("al"), "static/images/" + FALLBACK_ICON);
+						palettebuilder.key("icon").value(FALLBACK_ICON);
+					}
+					else {
+						logger.warn("Could not find icon {} or fallback icon ({}), skipping icon field for asset {}",
+							actualIcon, FALLBACK_ICON, asset.get("al"));
+					}
 				}
 			}
 
@@ -430,12 +376,9 @@ public class PaletteGenerator {
 		logger.info("createPalette: calling build()");
 		JsonValue j = build();
 		String palette = j.toString();
+		Path filePath = Paths.get(this.domainModelFolder, "palette.json");
 
-		String resourcesDir = PaletteGenerator.class.getClassLoader().getResource("static/data").getPath();
-
-		//save ontology - no need to delete file, it's overwritten automatically
-		String filename = resourcesDir + File.separator + "palette-" + ontology.substring(ontology.lastIndexOf("/") + 1) + ".json";
-		try (PrintWriter out = new PrintWriter(filename)) {
+		try (PrintWriter out = new PrintWriter(filePath.toFile())) {
 			out.println(palette);
 		} catch (FileNotFoundException ex) {
 			logger.error("Could not create palette for ontology: " + ontology, ex);
@@ -443,21 +386,17 @@ public class PaletteGenerator {
 		}
 
 		logger.info("Created palette for domain: {}", ontology);
-		logger.info("Location: {}", filename);
+		logger.info("Location: {}", filePath);
 
-		return true;
+		this.paletteCreated = true;
+
+		return this.paletteCreated;
 	}
 
-	public static boolean createPalette(String ontology, ModelObjectsHelper modelObjectsHelper, InputStream iconMap) {
-		PaletteGenerator pg = new PaletteGenerator(ontology, modelObjectsHelper, iconMap);
-
-		return pg.createPalette(ontology);
-	}
-
-	public static boolean createPalette(String ontology, ModelObjectsHelper modelObjectsHelper) {
-		PaletteGenerator pg = new PaletteGenerator(ontology, modelObjectsHelper);
-
-		return pg.createPalette(ontology);
+	public static PaletteGenerator createPalette(String domainModelFolder, String ontology, ModelObjectsHelper modelObjectsHelper, InputStream iconMap) {
+		PaletteGenerator pg = new PaletteGenerator(domainModelFolder, ontology, modelObjectsHelper, iconMap);
+		pg.createPalette(ontology);
+		return pg;
 	}
 
 	//Determine domain/graph URI from icon map
@@ -466,6 +405,14 @@ public class PaletteGenerator {
 		String graph = json.getString("graph");
 		logger.info("Domain graph: " + graph);
 		return graph;
+	}
+
+	public boolean isDefaultUserAccess() {
+		return defaultUserAccess;
+	}
+
+	public boolean isPaletteCreated() {
+		return paletteCreated;
 	}
 
 }
