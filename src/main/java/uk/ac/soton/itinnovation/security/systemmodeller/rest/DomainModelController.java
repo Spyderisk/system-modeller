@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.rmi.UnexpectedException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,8 +40,8 @@ import java.util.List;
 import java.util.Map;
 
 import java.util.zip.GZIPInputStream;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +61,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import uk.ac.soton.itinnovation.security.semanticstore.IStoreWrapper;
 import uk.ac.soton.itinnovation.security.systemmodeller.auth.KeycloakAdminClient;
-import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.Message;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.StoreModelManager;
 import uk.ac.soton.itinnovation.security.systemmodeller.util.DomainModelUtils;
@@ -239,6 +239,21 @@ public class DomainModelController {
 
 		if (! storeModelManager.deleteModel(modelGraph)) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Unknown domain model: " + domain);
+		}
+
+		logger.info("Domain model deleted from triplestore: {}", domain);
+
+		//Determine domain model installation folder path
+		Path domainModelFolderPath = Paths.get(kbInstallFolder, domain);
+		File domainModelFolder = domainModelFolderPath.toFile();
+
+		//Delete domain model folder, if it exists
+		if (domainModelFolder.isDirectory()) {
+			logger.info("Deleting installation folder: {}", domainModelFolderPath);
+			FileUtils.deleteDirectory(domainModelFolder);
+		}
+		else {
+			logger.warn("Installation folder does not exist: {}", domainModelFolderPath);
 		}
 
 		return ResponseEntity.ok(getDomainModels());
