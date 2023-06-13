@@ -56,7 +56,21 @@ class ImportModelModal extends React.Component {
         //console.log(this.props);
     }
 
+    getErrorMsg(status) {
+        let error = "unknown";
+
+        //"reason" may be an object or a simple string
+        if (status && status.reason) {
+            error = status.reason.message ? status.reason.message : status.reason;
+        }
+
+        return "ERROR: " + error;
+    }
+
     render() {
+        let uploadFailed = this.props.upload.status !== undefined && this.props.upload.status.failed;
+        let errorMsg = uploadFailed ? this.getErrorMsg(this.props.upload.status) : "";
+
         return (
             <div className={"import-model-dialog"}>
             <Modal show={this.props.show} onHide={this.onHideModal} backdrop={true} onEnter={this.onModalShown}
@@ -134,9 +148,9 @@ class ImportModelModal extends React.Component {
                         :
                         null
                     }
-                    {this.props.upload.status !== undefined && this.props.upload.status.failed ?
+                    {uploadFailed ?
                         <div>
-                            <span className="text-danger" style={{fontWeight: "bold"}}>{this.props.upload.status.reason}</span>
+                            <span className="text-danger" style={{fontWeight: "bold"}}>{errorMsg}</span>
                         </div>
                         :
                         null
