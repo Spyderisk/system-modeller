@@ -99,6 +99,7 @@ import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.ModelExc
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.ModelInvalidException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.NotAcceptableErrorException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.NotFoundErrorException;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.UnprocessableEntityException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.UserForbiddenFromDomainException;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.StoreModelManager;
@@ -1094,18 +1095,28 @@ public class ModelController {
 						}
 					}
 					
-					if(!validDomain && line.contains("<http://it-innovation.soton.ac.uk/ontologies/trustworthiness/core#domainGraph>")){
+					if (!validDomain && line.contains("<http://it-innovation.soton.ac.uk/ontologies/trustworthiness/core#domainGraph>")) {
 						String domainURI = line.substring(0, line.lastIndexOf("<")-1);
 						domainURI = domainURI.substring(domainURI.lastIndexOf("<") + 1, domainURI.lastIndexOf(">"));
-						logger.debug(domainURI);
-						if(!canAccessAllDomains && !modelObjectsHelper.canUserAccessDomain(domainURI, user.getUsername())){
+						logger.debug("Model domain: {}", domainURI);
+
+						boolean domainModelExists = storeModelManager.domainModelExists(domainURI);
+
+						if (!domainModelExists) {
+							logger.error("System model attempted to use non-existent domain: {}", domainURI);
+							throw new UnprocessableEntityException("System model uses non-existent domain model: " + domainURI);
+						}
+
+						if (!canAccessAllDomains && !modelObjectsHelper.canUserAccessDomain(domainURI, user.getUsername())) {
 							logger.info("User: {} blocked from importing model with domain {}", user.getUsername(), domainURI);
 							throw new UserForbiddenFromDomainException();
 						}
+
 						validDomain = true;
 						domainGraph = domainURI;
 					}
-					if(oldGraphURI!=null && validDomain){
+
+					if (oldGraphURI!=null && validDomain){
 						break;
 					}
 				} while ((line = bufferedReader.readLine()) != null);
