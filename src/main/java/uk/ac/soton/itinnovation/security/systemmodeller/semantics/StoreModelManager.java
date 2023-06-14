@@ -212,7 +212,17 @@ public class StoreModelManager {
 		//logger.debug("Loaded model {} into graph <{}>: {}", modelName, modelGraph, insertDataSetQuery);
 		return modelGraph;
 	}
-	
+
+	/**
+	 * Check that a domain model exists
+	 *
+	 * @param modelGraph URI string to uniquely identify the domain model within the store
+	 * @return flag to indicate if the domain model exists
+	 */
+	public boolean domainModelExists(String modelGraph) {
+		return store.graphExists(modelGraph);
+	}
+
 	public File exportModelResourceToFile(String resourcePath) throws IOException {
 		String sm = getSerialisedModel(resourcePath);
 		
