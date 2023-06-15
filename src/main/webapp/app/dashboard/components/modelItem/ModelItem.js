@@ -187,7 +187,22 @@ class ModelItem extends Component {
                                 this.state.open ?
                                     <span className="model-item-open">{domain}</span>
                                 :
-                                    <span className="model-item-closed">{domain}</span>
+                                    <OverlayTrigger
+                                        delayShow={Constants.TOOLTIP_DELAY}
+                                        placement="right"
+                                        overlay={
+                                            <Popover
+                                                id="model-title-popover"
+                                                className={"tooltip-overlay"}
+                                            >
+                                                <span>{domain}</span>
+                                            </Popover>
+                                        }
+                                    >
+                                        <span className="model-item-closed">
+                                            {domain}
+                                        </span>
+                                    </OverlayTrigger>
                             }
                         </Col>
                         <Col className="version" xs={2} md={2} >
