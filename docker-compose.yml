@@ -47,6 +47,7 @@ services:
       # https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-external-config
       SPRING_DATA_MONGODB_HOST: mongo
       KEYCLOAK_CREDENTIALS_SECRET: ${KEYCLOAK_CREDENTIALS_SECRET}
+      RESET_ON_START: ${RESET_ON_START:-true}
     volumes:
       # Persistent named volume for the jena-tdb storage
       - type: volume
