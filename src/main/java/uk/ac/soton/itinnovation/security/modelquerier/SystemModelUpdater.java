@@ -522,8 +522,15 @@ public class SystemModelUpdater {
 		 * be updated by the validator as necessary. This means the client/user should not be able to set
 		 * relationship cardinality at all. Hence those properties are not updated by this query.
 		 */
+
+		String typeUri = relation.getType();
+		String[] uriFrags = typeUri.split("#");
+		String relationType = uriFrags[1];
+
 		String cc = "<" + SparqlHelper.escapeLiteral(model.getNS("system")) +
-				relation.getFromID() + "-" + relation.getLabel() + "-" + relation.getToID() + ">";
+				relation.getFromID() + "-" + relationType + "-" + relation.getToID() + ">";
+		
+		logger.debug("cc = {}", cc);
 
 		String sparql = "INSERT DATA {\n" +
 		"	GRAPH <" + model.getGraph("system") + "> {\n" +

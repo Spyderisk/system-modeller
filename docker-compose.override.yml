@@ -10,9 +10,6 @@ services:
   ssm:
     build:
       target: ssm-dev
-    env_file:
-      # The .env.secrets file can contain Maven credentials that will be put into the environment of the SSM container for use by Gradle
-      - .env.secrets
     environment:
       # For local development and testing with a web client, both the SSM and the web browser need to access keycloak on the same URL (as the SSM redirects the browser to keycloak).
       # That means that the normal docker-networking cannot be used (can't just go to http://keycloak which would work from SSM container but not web browser).

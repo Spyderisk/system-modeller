@@ -32,7 +32,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.rmi.UnexpectedException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -53,13 +55,13 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.apache.jena.query.Dataset;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -80,7 +82,6 @@ import uk.ac.soton.itinnovation.security.model.system.RiskVector;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.RiskCalcResultsDB;
 import uk.ac.soton.itinnovation.security.modelvalidator.ModelValidator;
 import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
-import uk.ac.soton.itinnovation.security.semanticstore.AStoreWrapper;
 import uk.ac.soton.itinnovation.security.semanticstore.IStoreWrapper;
 import uk.ac.soton.itinnovation.security.semanticstore.util.SparqlHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.auth.KeycloakAdminClient;
@@ -101,14 +102,8 @@ import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.NotFound
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.UserForbiddenFromDomainException;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.StoreModelManager;
-import uk.ac.soton.itinnovation.security.systemmodeller.util.PaletteGenerator;
 import uk.ac.soton.itinnovation.security.systemmodeller.util.ReportGenerator;
 import uk.ac.soton.itinnovation.security.systemmodeller.util.SecureUrlHelper;
-
-import uk.ac.soton.itinnovation.security.modelquerier.util.ModelStack;
-import uk.ac.soton.itinnovation.security.modelquerier.JenaQuerierDB;
-import uk.ac.soton.itinnovation.security.modelquerier.dto.ModelExportDB;
-import uk.ac.soton.itinnovation.security.semanticstore.JenaTDBStoreWrapper;
 
 /**
  * Includes all operations of the Model Controller Service. 
@@ -138,6 +133,9 @@ public class ModelController {
 
 	@Value("${admin-role}")
 	public String adminRole;
+
+	@Value("${knowledgebases.install.folder}")
+	private String kbInstallFolder;
 
 	/**
 	 * Take the user IDs of the model owner, editor and modifier and look up the current username for them
@@ -511,29 +509,28 @@ public class ModelController {
 		String ontology = model.getDomainGraph().substring(model.getDomainGraph().lastIndexOf("/")+1);
 		
 		try {
-			String paletteFile = "/static/data/palette-" + ontology + ".json";
-			URL paletteResource = this.getClass().getResource(paletteFile);
-			if (paletteResource == null) {
-				logger.warn("Palette missing: {}", paletteFile);
-				logger.warn("Creating now..");
-				boolean paletteCreated = PaletteGenerator.createPalette(model.getDomainGraph(), modelObjectsHelper);
+			String paletteFile = "palette.json";
+			Path palettePath = Paths.get(kbInstallFolder, ontology, paletteFile);
+			File palette = palettePath.toFile();
+			logger.info("Loading palette file: {}", palette.getAbsolutePath());
 
-				if (paletteCreated) {
-					//try to load resource again
-					paletteResource = this.getClass().getResource(paletteFile);
-				}
-
-				if (!paletteCreated || paletteResource == null) {
-					throw new NotFoundErrorException("Could not create new palette");
-				}
-			}
-			map = objectMapper.readValue(new File(paletteResource.getPath()), Map.class);
+			map = objectMapper.readValue(palette, Map.class);
 		} catch (IOException e) {
 			logger.error("Could not read palette", e);
 			throw new NotFoundErrorException("Could not load palette");
 		}
 		return ResponseEntity.ok().body(map);
 	}
+
+	@RequestMapping(value = "/images/{domainModel}/{image}" , method = RequestMethod.GET) 
+    public ResponseEntity<FileSystemResource> getImage(@PathVariable String domainModel, @PathVariable String image) throws IOException {
+		Path imagePath = Paths.get(kbInstallFolder, domainModel, "icons", image);
+		FileSystemResource resource = new FileSystemResource(imagePath);
+
+		return ResponseEntity.ok()
+		.contentType(MediaType.parseMediaType(Files.probeContentType(imagePath)))
+		.body(resource);
+    }
 
 	/**
 	 * This method forces a checkout even if another user is currently editing a model, as for example

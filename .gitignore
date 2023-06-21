@@ -40,4 +40,3 @@ jena-tdb/
 \.vscode/
 \.classpath
 \.settings/
-\.env.secrets
