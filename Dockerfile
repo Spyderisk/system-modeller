@@ -23,9 +23,6 @@ LABEL org.opencontainers.image.title="SPYDERISK System Modeller development imag
 # Need gradle v6, java v8, python3 and python3-lxml (needed for jacoco2cobertura), killall (from psmisc)
 RUN apt-get update && apt-get -y install python3 python3-lxml psmisc
 
-# Install jacoco2cobertura which is needed in the CI test stage to convert test coverage reports
-RUN cd /tmp && wget https://gitlab.com/haynes/jacoco2cobertura/-/archive/main/jacoco2cobertura-main.tar.gz -O - | tar xvfz - && mv jacoco2cobertura-main/*.py /usr/local/bin
-
 WORKDIR /code
 
 # This command ensures that the container continues running when started
@@ -37,31 +34,25 @@ CMD ["tail", "-f", "/dev/null"]
 
 FROM ssm-dev AS ssm-build
 
-# The build arguments are set using `--build-arg` by the CI
+# The build arguments can be set using `--build-arg` in the docker command, or with "build:args" in docker-compose.
+# They are not stored in the image environment.
+
 # Maven credentials (e.g. GitHub username and a Github Personal Access Token able to read packages)
 ARG MAVEN_USER
 ARG MAVEN_PASS
-# Build metadata
-ARG CI_COMMIT_SHA
-ARG CI_COMMIT_TIMESTAMP
 
 LABEL org.opencontainers.image.title="SPYDERISK System Modeller build image"
-LABEL org.opencontainers.image.revision=${CI_COMMIT_SHA}
-LABEL org.opencontainers.image.created=${CI_COMMIT_TIMESTAMP}
-
-# Save the software version into an environment variable that will be present when image is built and instantiated:
-ENV CI_COMMIT_SHA=${CI_COMMIT_SHA}
 
 # Copy in only the files needed for the build: it's cleanest and it means more cache hits
 COPY src /system-modeller/src/
 COPY gradle /system-modeller/gradle/
-COPY gradlew build.gradle gradle.properties settings.gradle /system-modeller/
+COPY gradlew build.gradle settings.gradle /system-modeller/
 
 # Build the software
 # -P defines a "project property" available in build.gradle as a normal variable
 RUN cd /system-modeller && ./gradlew clean assemble -PmavenUser=${MAVEN_USER} -PmavenPass=${MAVEN_PASS}
 
-# Note: cannot do a test using just docker as mongo is also required
+# Note: it is tempting to execute the tests here but we cannot do that as mongo and keycloak services are required
 
 #
 # ssm-production
