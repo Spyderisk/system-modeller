@@ -74,7 +74,8 @@ public class AttackPathAlgorithm {
             final long startTime = System.currentTimeMillis();
 
             // calculate attack tree, allPath dictates one or two backtrace
-            attackTree = new AttackTree(targetUris, false, !allPaths, apd);
+            // AttackTree is initialised with FUTURE risk mode enabled
+            attackTree = new AttackTree(targetUris, true, !allPaths, apd);
 
             final long endTime = System.currentTimeMillis();
             logger.info("AttackPathAlgorithm.calculateAttackTree: execution time {} ms", endTime - startTime);
@@ -99,7 +100,8 @@ public class AttackPathAlgorithm {
             final long startTime = System.currentTimeMillis();
 
             // calculate attack tree, allPath dictates one or two backtrace
-            AttackTree attackTree = new AttackTree(targetUris, false, !allPaths, apd);
+            // AttackTree is initialised with FUTURE risk mode enabled
+            AttackTree attackTree = new AttackTree(targetUris, true, !allPaths, apd);
 
             doc = attackTree.calculateTreeJsonDoc(allPaths, normalOperations);
 
