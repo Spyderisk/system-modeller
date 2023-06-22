@@ -1,0 +1,51 @@
+name: Execute tests in docker-compose
+
+on:
+  push:
+    branches: [ "dev", "main" ]
+  pull_request:
+    branches: [ "dev", "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        lfs: true
+
+    - name: Checkout LFS objects
+      run: git lfs checkout
+
+    - name: Build software
+      run: |
+        docker-compose -f docker-compose.yml -f docker-compose.test.yml pull  # Force download of any newer dependency images
+        docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d --build
+        docker-compose -f docker-compose.yml -f docker-compose.test.yml images  # Useful for debugging
+        docker-compose -f docker-compose.yml -f docker-compose.test.yml images -q | xargs docker inspect | grep -C3 RepoTags  # Useful for debugging
+
+    - name: Run tests
+      # Here we execute a command inside the ssm container built in the previous step.
+      # If the tests fail we still want to run the next step to archive the test results, so we set FAIL to 0 initially and to 1 on failure but in doing so ensure that the test command always succeeds.
+      # The value of ${FAIL} is written into ${GITHUB_ENV} for use in the next step.
+      run: |
+        FAIL=0
+        docker-compose -f docker-compose.yml -f docker-compose.test.yml exec -T ssm sh -c "cd /system-modeller && ./gradlew test" || FAIL=1
+        docker cp $(docker-compose -f docker-compose.yml -f docker-compose.test.yml ps -q ssm):/system-modeller/build/build/reports/tests/test/ test-artifacts
+        echo "FAIL=${FAIL}" >> ${GITHUB_ENV}
+
+    - name: Archive test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-artifacts
+        path: test-artifacts/
+
+    - name: Return test success
+      # If the tests failed then make the whole job fail
+      run: test ${FAIL} -eq 0

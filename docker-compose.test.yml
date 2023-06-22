@@ -10,9 +10,8 @@ services:
   ssm:
     build:
       target: ssm-build
-      cache_from:
-        - ${DOCKER_REGISTRY}/security/system-modeller/build:latest
     environment:
       # For testing, it is just the SSM that needs to contact Keycloak so we can go direct to the keycloak container via docker-networking.
       # Port 8080 is the one exposed by keycloak by default and not related to any port-mapping.
+      # Environment variables are not available at build time (only at runtime).
       KEYCLOAK_AUTH_SERVER_URL: http://keycloak:8080/auth/

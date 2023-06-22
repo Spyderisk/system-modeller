@@ -2,7 +2,9 @@
 
 The SPYDERISK System Modeller (SSM) provides a thorough risk assessment of complex systems making use of context and connectivity to take into account the web of attack paths and secondary threat cascades in a system.
 
-SPYDERISK assists the user in following the risk assessment process defined in ISO 27005 and thus supports the Information Security Management System defined in ISO 27001. The SPYDERISK System Modeller is a generic risk assessment tool and must be configured with a model of a domain ("knowledgebase"), containing the available asset types and relations, descriptions of the threats, the possible security controls, and more. The software comes bundled with a knowledgebase for complex networked information systems.
+SPYDERISK assists the user in following the risk assessment process defined in ISO 27005 and thus supports the Information Security Management System defined in ISO 27001. The SPYDERISK System Modeller is a generic risk assessment tool and must be configured with a model of a domain ("knowledgebase"), containing the available asset types and relations, descriptions of the threats, the possible security controls, and more. 
+
+The SPYDERISK software does not come bundled with any particular knowledgebase; this is configurable at build/deploy time, by putting one or more zip bundles into the "knowledgebases" folder (described in more detail later). An example knowledgebase has been developed for complex networked information systems, which is available here: https://github.com/SPYDERISK/domain-network/packages/1826148
 
 The web-based graphical user interface guides the user through the following steps:
 
@@ -33,23 +35,25 @@ You will need `git`, `git-lfs`, `docker` and `docker-compose`. See below for mor
 
 ## Quick Start
 
-Assuming you have the pre-requisites working and have cloned the repository:
+The following instructions assume that you have the pre-requisites installed and working, and have cloned the repository.
+
+N.B. Prior to running the following commands, you should also ensure that you have one or more knowledgebases (domain models) available for installation. These are available as zip file "bundles", containing the domain model itself, along with the icons and mapping file needed for generating a UI palette of visual assets.
+
+An example knowledgebase is available at: https://github.com/SPYDERISK/domain-network/packages/1826148
+Here, you will find the latest .zip bundle, at the bottom of the "Assets" list. This file should be downloaded and copied into the system-modeller/knowledgebases folder. Once Spyderisk has been started up (see instructions below), these zip files will be automatically extracted and loaded into Spyderisk.
+
+Of course, you may choose not to install a default knowledgebase, however, when the Spyderisk GUI first loads in your browser, you will be directed to load in a new knowledgebase manually.
 
 1. `$ cd system-modeller`
-2. Create a file `.env.secrets` containing your GitHub username and a GitHub Personal Access Token that provides package read-access:
-
-```
-MAVEN_USER=<your gitHub username>
-MAVEN_PASS=<your access token>
-```
-
-4. `$ docker-compose up -d`
-5. `$ docker-compose exec ssm bash`
-6. `$ ./gradlew assemble bootTest`
-7. Go to http://localhost:8081 in your browser.
-8. Login in using `testuser` or `testadmin` with password `password`.
+2. `$ docker-compose up -d`
+3. `$ docker-compose exec ssm bash`
+4. `$ ./gradlew assemble bootTest`
+5. Go to http://localhost:8081 in your browser.
+6. Login in using `testuser` or `testadmin` with password `password`.
 
 N.B. Links in the user interface to documentation, the attack graph image, and Keycloak account management functions do not currently work in the development environment. Keycloak links can be corrected by editing the port in the URL to be 8080.
+
+Please also note that the default setup is to recreate all databases on initial start-up. In order to persist any installed knowledgebases and created system models, you should ensure that `reset.on.start=false` in your `application.properties` file, prior to re-running `./gradlew assemble bootTest`.
 
 ## Installing Docker
 
@@ -90,7 +94,7 @@ At this point you have a functional Linux system. Please skip to the Linux sub-s
 
 #### Without WSL2
 
-If you are not using WSL2, you will have to permit Docker Desktop to access the location on your disk where you have the system-modeller cloned. Either (in advance) add a file-share for "C:\" in the Docker Desktop UI or be more specific to the area of the disc where the system-modeller is checked out. Alternatively, wait for Docker Desktop to pop up a request for file sharing when you execute the compose file.
+If you are not using WSL2, you will have to permit Docker Desktop to access the location on your disk where you have the system-modeller cloned. Either (in advance) add a file-share for "C:\" in the Docker Desktop UI or be more specific to the area of the disk where the system-modeller is checked out. Alternatively, wait for Docker Desktop to pop up a request for file sharing when you execute the compose file.
 
 You must also configure resource usage in the Docker Desktop UI. Configure it to:
 
@@ -118,7 +122,7 @@ Commands:
 
 ### Containers
 
-Containers are running instances of images. They can be paused, unpaused, stopped and started once created or just destroyed and recreated. The state of a container changes as it runs with processes writing to disc and updating memory. Writing to disc creates a new layer in the image by default or changes a persistent "volume" if it is defined (see below). If a container is paused then all the processes are paused (with `SIGSTOP`) and can be resumed but if a container is stopped (`SIGTERM` then `SIGKILL`) then the memory state is lost.
+Containers are running instances of images. They can be paused, unpaused, stopped and started once created or just destroyed and recreated. The state of a container changes as it runs with processes writing to disk and updating memory. Writing to disk creates a new layer in the image by default or changes a persistent "volume" if it is defined (see below). If a container is paused then all the processes are paused (with `SIGSTOP`) and can be resumed but if a container is stopped (`SIGTERM` then `SIGKILL`) then the memory state is lost.
 
 Commands:
 
@@ -148,7 +152,7 @@ Commands:
 
 * List all volumes with `docker volume ls`
 * Remove a volume with `docker volume rm <volume ID>`
-* Remove all volumes that are not used by a container (running or not) with `docker volume prune` (it is sensible to do this periodically to save disc space)
+* Remove all volumes that are not used by a container (running or not) with `docker volume prune` (it is sensible to do this periodically to save disk space)
 
 ### Networks
 
@@ -201,18 +205,15 @@ git clone git@iglab.it-innovation.soton.ac.uk:Security/system-modeller.git
 cd system-modeller
 ```
 
-### Define Maven Authentication Credentials
+### Download and Install default Knowledgebase(s)
 
-The software build needs access to GitHub to download Maven dependencies. Although the required package is in a public repository, GitHub still requires user authnetication to read the package. The simplest way to get your GitHub credentials into the `ssm` Docker container (where the build takes place) is to create a file `.env.secrets` containing e.g.:
+Syderisk requires one or more knowledgebase (domain model) to be installed, prior to being able to develop system models in the GUI. These are available as zip file "bundles", containing the domain model itself, along with the icons and mapping file needed for generating a UI palette of visual assets.
 
-```shell
-MAVEN_USER=yourUsername
-MAVEN_PASS=yourCredential
-```
+An example knowledgebase is available at: https://github.com/SPYDERISK/domain-network/packages/1826148
+Here, you will find the latest .zip bundle, at the bottom of the "Assets" list. This file should be downloaded and copied into the system-modeller/knowledgebases folder. Once Spyderisk has been started up (i.e. via starting the containers), these zip files will be automatically extracted and loaded into Spyderisk.
 
-Alternatively you can set the same environment variables by hand once inside the `ssm` container.
+Of course, you may choose not to install a default knowledgebase, however, when the Spyderisk GUI first loads in your browser, you will be directed to load in a new knowledgebase manually.
 
-It is recommended that for `MAVEN_PASS` you use a Personal Access Token with just the authorisation to read packages. This is set up in your GitHub account settings.
 
 ### Starting the Containers
 
@@ -471,7 +472,24 @@ The `docker-compose down` command stops the containers, removes them and removes
 docker-compose down
 ```
 
-In all these cases, the (Docker disc) volumes are persisted and named volumes will be reattached to new containers.
+In all these cases, the (Docker disk) volumes are persisted and named volumes will be reattached to new containers, during restart. Assuming that you have `reset.on.start=false` in your `application.properties` file, this also means that any knowledgebases (domain models), system models, palettes, etc will be persisted after restarting the containers.
+
+If the intention is to recreate the databases or reinstall the default knowledgebases, this may be done in the following ways:
+
+a) Use `docker-compose down -v`, then restart containers and Spyderisk as normal, e.g.
+```shell
+docker-compose down -v
+docker-compose up -d
+docker-compose exec ssm bash
+./gradlew assemble bootTest
+```
+
+b) Leave containers running, but set `reset.on.start=true` in your `application.properties` file, then restart Spyderisk, e.g.  
+```shell
+docker-compose exec ssm bash
+./gradlew assemble bootTest
+```
+
 
 ### Building a SPYDERISK System Modeller Image
 
@@ -479,9 +497,7 @@ Sometimes, to test something you need to build a "production" image of the sort 
 
 To build a production image use something like:
 
-`docker build --tag my-ssm-image --build-arg BUILDKIT_INLINE_CACHE=1 --build-arg MAVEN_USER=${MAVEN_USER} --build-arg MAVEN_PASS=${MAVEN_PASS} --file Dockerfile --target ssm-production .`
-
-Ensure the `MAVEN_USER` and `MAVEN_PASS` environment variables are set and run the command from the host machine (not from within the `ssm` container).
+`docker build --tag my-ssm-image --build-arg BUILDKIT_INLINE_CACHE=1 --file Dockerfile --target ssm-production .`
 
 If you need to test the image in the `system-modeller-deployment` project then just edit the `docker-compose.yml` file in that project to reference `my-ssm-image` instead of the image held remotely, e.g.:
 

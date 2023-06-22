@@ -3,7 +3,6 @@ import React, { Component } from "react";
 import { Button, Col, Grid, Modal, ProgressBar, Row } from "react-bootstrap";
 import ReactDOM from "react-dom";
 import { connect } from "react-redux";
-import { saveRestrictedDownload } from "../../common/actions/api";
 import Banner from "../../common/components/banner/Banner";
 import { getDomains, getUsers, toggleUploadModal, updateUploadProgress, uploadDomain } from "../actions/api";
 import "../styles/index.scss";
@@ -78,9 +77,6 @@ class DomainManager extends Component {
             <div className="content domain-manager">
                 <div className="domain-manager-container">
                     <Banner title="Knowledgebase Manager" options={[
-                        <a key="1" onClick={() => {
-                            this.props.dispatch(saveRestrictedDownload("./domains/ontologies"));
-                        }}>Download ontologies.json</a>
                     ]}/>
                     <div className="domains">
                             {domainUris.map((a, index) => {
@@ -109,28 +105,13 @@ class DomainManager extends Component {
                         <Modal.Title>{modalTitle}</Modal.Title>
                     </Modal.Header>
                     <Modal.Body>
-                        {this.state.uploadModal.newDomain ?
                         <Grid fluid>
                             <Row>
-                                <Col xs={6}><span className="text-bold">New Domain bundle (*.zip): </span></Col>
+                                <Col xs={6}><span className="text-bold">Domain bundle (*.zip): </span></Col>
                                 <Col xs={6}><input placeholder="file" type="file" accept=".zip"
                                                    ref="file-upload"/></Col>
                             </Row>
                         </Grid>
-                        :
-                        <Grid fluid>
-                            <Row>
-                                <Col xs={6}><span className="text-bold">New Domain file/bundle (*.rdf, *.rdf.gz, *.nq, *.nq.gz, *.zip): </span></Col>
-                                <Col xs={6}><input placeholder="file" type="file" accept=".rdf,.rdf.gz,.nq,.nq.gz,.zip"
-                                                   ref="file-upload"/></Col>
-                            </Row>
-                            <Row>
-                                <Col xs={6}><span className="text-bold">New ontologies.json (optional): </span></Col>
-                                <Col xs={6}><input placeholder="file" type="file" accept=".json"
-                                                   ref="file2-upload"/></Col>
-                            </Row>
-                        </Grid>
-                        }
                         <hr/>
                         <ProgressBar active now={this.props.upload.progress}/>
                         {this.props.upload.progress === 100 || this.props.upload.completed ?
@@ -180,7 +161,6 @@ class DomainManager extends Component {
     handleDomainSubmit() {
         const data = new FormData();
         const file = ReactDOM.findDOMNode(this.refs["file-upload"]).files[0];
-        const file2 = this.state.uploadModal.newDomain ? undefined : ReactDOM.findDOMNode(this.refs["file2-upload"]).files[0];
 
         let domainUri = (this.state.uploadModal.domainUri !== undefined) ? 
             this.state.uploadModal.domainUri : "";
@@ -190,9 +170,6 @@ class DomainManager extends Component {
             data.append("file", file);
             data.append("domainUri", domainUri);
             data.append("newDomain", newDomain);
-            if (file2 !== undefined) {
-                data.append("file2", file2);
-            }
 
             this.props.dispatch(updateUploadProgress(10));
             this.props.dispatch(uploadDomain(data, true));

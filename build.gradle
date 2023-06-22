@@ -49,11 +49,6 @@ def systemModellerName = "system-modeller"
 def systemModellerVersion = "3.5.0-SNAPSHOT"
 def javaVersion = 1.8
 
-// When building as a developer, the Maven credentials should be defined in environment variables (MAVEN_USER, MAVEN_PASS).
-// When the build is from the CI, the credentials should be passed in as Gradle properties (mavenUser, mavenPass) to avoid persisting them in the image.
-def mavenUsername = System.getenv('MAVEN_USER') ?: mavenUser
-def mavenPassword = System.getenv('MAVEN_PASS') ?: mavenPass
-
 version = systemModellerVersion  // picked up by sonarqube
 
 // configure plugins //////////////////////////////////////////////////////////////////////////////
@@ -86,14 +81,6 @@ dependencyManagement {
 
 repositories {
     mavenCentral()
-    maven {
-        name "GitHub Packages"
-        url "https://maven.pkg.github.com/SPYDERISK/domain-network"
-        credentials {
-            username = mavenUsername
-            password = mavenPassword
-        }
-    }
 }
 
 // define dependencies ////////////////////////////////////////////////////////////////////////////
@@ -106,9 +93,6 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-thymeleaf')
     compile('org.thymeleaf.extras:thymeleaf-extras-springsecurity5')
     providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
-
-    //domain models
-    compile('uk.ac.soton.itinnovation.security:domain-network:6a1.2.12')
 
     //spring-doc
     compile('org.springdoc:springdoc-openapi-ui:1.5.12')

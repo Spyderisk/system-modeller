@@ -211,8 +211,9 @@ class ModelSummary extends Component {
                                         title="Open Report"
                                     >
                                         <MenuItem onClick={() => this.openReport("technicalReport")}>Technical Report</MenuItem>
-                                        <MenuItem divider />
-                                        <MenuItem onClick={() => this.openReport("riskTreatmentPlan")}>Risk Treatment Plan</MenuItem>
+                                        {/* Risk treatment plan option is currently disabled until it can either be fixed, or replaced by something better */}
+                                        {/* <MenuItem divider />
+                                        <MenuItem onClick={() => this.openReport("riskTreatmentPlan")}>Risk Treatment Plan</MenuItem> */}
                                     </DropdownButton>
                                 </ButtonToolbar>
                             </Panel.Body>
@@ -304,7 +305,7 @@ class ModelSummary extends Component {
                                 <span>
                                     <i className="fa fa-sitemap "/>Consequences and their Impact ({displayedMisbehaviours.length})
                                 </span>
-                                <button onClick={e => openDocumentation(e, "redirect/model-misbehaviours")} className={"doc-help-button"}><i className="fa fa-question"/></button>
+                                <button onClick={e => openDocumentation(e, "redirect/model-consequences-and-impacts")} className={"doc-help-button"}><i className="fa fa-question"/></button>
                             </div>
                         </Panel.Title>
                     </Panel.Heading>
@@ -396,7 +397,7 @@ class ModelSummary extends Component {
         let complianceLabel = "Possible Modelling Errors";        
         let icon = complianceSet.compliant ? "fa fa-check" : "fa fa-warning";
         let tt_text = (nCompThreats > 0) ? nCompliant + " out of " + nCompThreats + " addressed" : "no modelling errors";
-        return this.renderHeader(complianceLabel, icon, nCompliant, nCompThreats, tt_text);
+        return this.renderHeader(complianceLabel, icon, nCompliant, nCompThreats, tt_text, "model-possible-modelling-errors");
     }
 
     renderAssetsHeader(nAssets) {
@@ -418,7 +419,7 @@ class ModelSummary extends Component {
 
     renderControlStrategiesHeader(nCSGs) {
         let tt_text = nCSGs + " control strategies";
-        return this.renderHeader("Control Strategies", "fa fa-shield", -1, nCSGs, tt_text, "model-csgs");
+        return this.renderHeader("Control Strategies", "fa fa-shield", -1, nCSGs, tt_text, "model-control-strategies");
     }
 
     renderThreatsHeader(n1, n2) {

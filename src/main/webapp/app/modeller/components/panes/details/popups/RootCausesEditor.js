@@ -227,7 +227,7 @@ class RootCausesEditor extends React.Component {
                                 this.props.onHide();
                             }}>
                         </span>
-                        <span className="menu-close fa fa-question" onClick={e => openDocumentation(e, "redirect/misbehaviour-explorer")} />
+                        <span className="menu-close fa fa-question" onClick={e => openDocumentation(e, "redirect/consequence-explorer")} />
                     </div>
 
                     <div className="content">

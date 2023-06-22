@@ -50,6 +50,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.sparql.function.library.max;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.slf4j.Logger;
@@ -3108,7 +3109,7 @@ public class JenaQuerierDB implements IQuerierDB {
         // Repair assets that have no populations
         for(AssetDB asset : assets.values()){
             String popURI = asset.getPopulation();
-            if(popURI == null) {
+            if((popURI == null) || (poLevels.get(popURI) == null)) {
                 int maxCardinality = asset.getMaxCardinality();
                 if(maxCardinality == 1) {
                     // Means cardinality is set to 'singleton'
@@ -3196,60 +3197,144 @@ public class JenaQuerierDB implements IQuerierDB {
 
     }
 
-    /* Method to purge any relationship source and target cardinality properties from the asserted
-     * graph, along with any asset min/max cardinality properties (which have now been replaced by
-     * a population level).
+    /* Methods to fix errors caused by bugs or outdated functions in older versions of system-modeller,
+     * which may still cause problems if old system models are imported.
+     * 
+     * Currently two aspects are repaired:
+     * - source and target cardinality can no longer be asserted, as they should be inferred
+     * - the URI of a cardinality constraint should be based on its type and asset IDs, but
+     *   older versions of system-modeller were not consistent about this
      */
     @Override
     public void repairCardinalityConstraints(){
-        /* The source and target cardinality of cardinality constraint entities should be calculated
-         * and stored in the inferred graph (see #1391).
-         * 
-         * However, SSM used to insert default levels for asserted relationships, which override the
-         * calculated levels. Old system models are therefore likely to have relationship source and
-         * target cardinality in the asserted graph that are inconsistent with asset population levels.
-         * This method supports their deletion (see #1392).
-         * 
-         * Assets also had min and max cardinality constraints, which have now been replaced by the
-         * new population levels, so they can also be deleted.  
-         */
-
-        // Get the asserted cardinality constraints, so if caching is enabled we know they are cached
-        Map<String, CardinalityConstraintDB> ccs = getCardinalityConstraints("system");
-
-         // Should only be applied to properties in the asserted graph
+        // Changes should only be applied to properties in the asserted graph
         String graphUri = stack.getGraph("system");
         Model datasetModel = dataset.getNamedModel(graphUri);
 
-        // Create the properties that need to be removed
-        Property sourceCardinalityProp = ResourceFactory.createProperty(getLongName("core#sourceCardinality"));
-        Property targetCardinalityProp = ResourceFactory.createProperty(getLongName("core#targetCardinality"));
+        // Get the asserted cardinality constraints, so if caching is enabled we know they are cached
+        Map<String, CardinalityConstraintDB> ccs = getCardinalityConstraints("system");
+        Map<String, AssetDB> assets = getAssets("system");
 
-        // Delete these properties in a transaction
-        try {
-            dataset.begin(ReadWrite.WRITE);
-            datasetModel.removeAll(null, sourceCardinalityProp, null);
-            datasetModel.removeAll(null, targetCardinalityProp, null);
-            dataset.commit();
-        } 
-        catch (Exception e) {
-            // Abort the changes and signal that there has been an error
-            dataset.abort();
-            String message = String.format("Error occurred while auto repairing asserted cardinality constraints");
-            logger.error(message, e);
-            throw new RuntimeException(message, e);
-        }
-        finally {
-            dataset.end();
-        }
+        /* The source and target cardinality of cardinality constraint entities should be calculated and
+         * stored in the inferred graph. Any asserted values will override these so should be deleted.
+         */
+        this.removeRelationshipCardinality(ccs, datasetModel);
 
-        if(cacheEnabled){
-            // Remove these properties in the cached objects
-            for(CardinalityConstraintDB cc : ccs.values()){
-                cc.setSourceCardinality(null);
-                cc.setTargetCardinality(null);
+        /* The URI for a cardinality constraint should be derived from the IDs of assets plus the
+         * URI of the corresponding relationship type. Any with the wrong URI should be replaced by
+         * one that uses the correct URI
+         */
+        this.fixCardinalityConstraintURI(ccs, assets, datasetModel);
+
+    }
+
+    private void removeRelationshipCardinality(Map<String, CardinalityConstraintDB> ccs, Model datasetModel) {
+         // Create the properties that need to be removed
+         Property sourceCardinalityProp = ResourceFactory.createProperty(getLongName("core#sourceCardinality"));
+         Property targetCardinalityProp = ResourceFactory.createProperty(getLongName("core#targetCardinality"));
+ 
+         // Delete these properties in a transaction
+         try {
+             dataset.begin(ReadWrite.WRITE);
+             datasetModel.removeAll(null, sourceCardinalityProp, null);
+             datasetModel.removeAll(null, targetCardinalityProp, null);
+             dataset.commit();
+         } 
+         catch (Exception e) {
+             // Abort the changes and signal that there has been an error
+             dataset.abort();
+             String message = String.format("Error occurred while auto repairing asserted cardinality constraints");
+             logger.error(message, e);
+             throw new RuntimeException(message, e);
+         }
+         finally {
+             dataset.end();
+         }
+ 
+         if(cacheEnabled){
+             // Remove these properties in the cached objects
+             for(CardinalityConstraintDB cc : ccs.values()){
+                 cc.setSourceCardinality(null);
+                 cc.setTargetCardinality(null);
+             }
+         }
+    }
+    private void fixCardinalityConstraintURI(Map<String, CardinalityConstraintDB> ccs, Map<String, AssetDB> assets, Model datasetModel) {
+        // If the cache is enabled, temporarily disable it
+        boolean cacheDisabled = cacheEnabled;
+        cacheEnabled = false;
+
+        // Get the cache type key for this type of entity
+        String cacheTypeKey = getCacheTypeName("CardinalityConstraintDB");
+
+        // Check and repair the cardinality constraint (link) entities
+        for(CardinalityConstraintDB oldcc : ccs.values()){
+            // Get the relationship entity properties
+            String oldURI = oldcc.getUri();
+            String linkFromURI = oldcc.getLinksFrom();
+            String linkToURI = oldcc.getLinksTo();
+            String linkType = oldcc.getLinkType();
+
+            // Get the asset entities at each end of the relationship
+            AssetDB fromAsset = assets.get(linkFromURI);
+            AssetDB toAsset = assets.get(linkToURI);
+
+            /* There is a problem here if the model includes 'dangling' links. In principle, they can arise if either:
+             * 
+             * - an older, buggier version of SSM failed to remove an asserted link to or
+             *   from an asset when the asset was deleted, leaving a null asset URI
+             * - a user added a link to or from an inferred asset, and the asset hasn't
+             *   yet been regenerated.
+             * 
+             * In the former case, we should just ignore the link entity.
+             */
+            if(linkFromURI == null || linkToURI == null || linkType == null) {
+                // Bad link with a missing property, so remove it from the graph
+                logger.warn("Link {} has a null source, target or type property - ignoring URI check", oldURI);
+                continue;
             }
+
+            /* In the latter case must retain the link entity but will need to create a fake asset entity from which
+             * to get a hashed ID reference for use in creating the correct link URI.
+             */
+            if(fromAsset == null) {
+                fromAsset = new AssetDB();
+                fromAsset.setUri(linkFromURI);
+            }
+            if(toAsset == null) {
+                toAsset = new AssetDB();
+                toAsset.setUri(linkToURI);
+            }
+
+            // Get the correct relationship entity URI
+            String newURI = "system#" + fromAsset.getId() + "-" + linkType.replace("domain#", "") + "-" + toAsset.getId();
+
+            if(!oldURI.equals(newURI)) {
+                // The URI of this CC is incorrect
+                logger.info("Replacing asserted relationship entity {} which should be {}", oldURI, newURI);
+
+                // Create a new CC with the correct URI
+                CardinalityConstraintDB newcc = new CardinalityConstraintDB();
+                newcc.setUri(newURI);
+                newcc.setLinksFrom(fromAsset.getUri());
+                newcc.setLinksTo(toAsset.getUri());
+                newcc.setLinkType(oldcc.getLinkType());
+
+                // Remove the old CC and replace it by the new one
+                delete(oldcc, false);
+                store(newcc, "system");
+
+                // If the cache was enabled, update the cache separately
+                if(cacheDisabled){
+                    cache.deleteEntity(oldcc, cacheTypeKey, true);
+                    cache.storeEntity(newcc, cacheTypeKey, "system");
+                }
+            }
+
         }
+
+        // If the cache was temporarily disabled, enable it again
+        cacheEnabled = cacheDisabled;
 
     }
 
