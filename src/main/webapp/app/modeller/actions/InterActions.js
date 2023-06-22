@@ -5,7 +5,6 @@ polyfill();
 
 
 export function addAsset(asset, clipboard=false) {
-    // console.log("addAsset: ", asset);
     return function (dispatch) {
         dispatch({
             type: clipboard ?
@@ -18,6 +17,7 @@ export function addAsset(asset, clipboard=false) {
                 'iconX': asset.iconX,
                 'iconY': asset.iconY,
                 'type': asset.type,
+                "population": asset.population,
             }
         })
     };
