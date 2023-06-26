@@ -153,6 +153,17 @@ public class AssetControllerTest extends CommonTestSetup{
 		when(secureUrlHelper.getReadModelFromUrl("testModel")).thenReturn(testModel);
 	}
 
+	/**
+	 * Ensure that a given asset has a population level set (may not be the case in older system models)
+	 * @param asset
+	 */
+	private void ensureAssetPopulation(Asset asset) {
+		if (asset.getPopulation() == null) {
+			//Set default population level
+			asset.setPopulation("http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#PopLevelSingleton");
+		}
+	}
+
 	//Tests
 
 	/**
@@ -218,6 +229,7 @@ public class AssetControllerTest extends CommonTestSetup{
 		switchToSystemModel(1);
 
 		Asset testAsset = querier.getSystemAssets(testHelper.getStore()).values().iterator().next();
+		ensureAssetPopulation(testAsset);
 
 		switchToSystemModel(5);
 
@@ -246,6 +258,7 @@ public class AssetControllerTest extends CommonTestSetup{
 		switchToSystemModel(1);
 
 		Asset testAsset = querier.getSystemAssets(testHelper.getStore()).values().iterator().next();
+		ensureAssetPopulation(testAsset);
 
 		given().
 			filter(userSession).
@@ -264,15 +277,23 @@ public class AssetControllerTest extends CommonTestSetup{
 	/**
 	 * Test adding an empty asset object to a model
 	 * Asserts CREATED 201 status
+	 * 
+	 * KEM: I can't see the purpose of this test. Why would anyone want to create an empty asset
+	 * that has nothing defined except its id (and now population). TODO: decide if this is still required
 	 */
 	@Test
 	public void testAddAssetToModelEmptyAssetObject() {
 		switchToSystemModel(5);
 
+		Asset asset = new Asset();
+
+		//Asset must have a population level at least
+		ensureAssetPopulation(asset);
+
 		given().
 			filter(userSession).
 			contentType(ContentType.JSON).
-			body(new Asset()).
+			body(asset).
 		when().
 			post("/models/testModel/assets").
 		then().
