@@ -191,6 +191,7 @@ class MisbehaviourAccordion extends React.Component {
                                         disabled={attackPathThreats.length > 0}
                                         onClick={() => {this.props.dispatch(
                                                                getThreatGraph(this.props.model.id,
+                                                                   this.props.model.riskCalculationMode,
                                                                    this.props.selectedMisbehaviour.misbehaviour.uri));}}
                                         >Calculate Attack Path</Button>
                                 {loadingAttackPath ? <i className="fa fa-spinner fa-pulse fa-lg fa-fw"/> : null}

@@ -1421,6 +1421,9 @@ public class ModelController {
         } catch (MisbehaviourSetInvalidException e) {
             logger.error("Threat graph calculation failed due to invalid misbehaviour set", e);
             throw e;
+        } catch (BadRequestErrorException e) {
+            logger.error("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
+            throw e;
         } catch (Exception e) {
             logger.error("Threat path failed due to an error", e);
             throw new InternalServerErrorException(
