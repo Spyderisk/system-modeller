@@ -117,7 +117,9 @@ public class AttackPathTester extends TestCase {
 
             Assert.assertTrue(apa.checkTargetUris(targetUris));
 
-            TreeJsonDoc treeDoc = apa.calculateAttackTreeDoc(targetUris, true, true);
+            apa.checkRequestedRiskCalculationMode("FUTURE");
+
+            TreeJsonDoc treeDoc = apa.calculateAttackTreeDoc(targetUris, "FUTURE", false, true);
 
 		} catch (Exception e) {
 			e.printStackTrace();

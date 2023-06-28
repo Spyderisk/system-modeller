@@ -37,6 +37,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.UnexpectedException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -1339,7 +1340,7 @@ public class ModelController {
                 throw new MisbehaviourSetInvalidException("Invalid misbehaviour set");
             }
 
-            TreeJsonDoc treeDoc = apa.calculateAttackTreeDoc(targetURIs, allPaths, normalOperations);
+            TreeJsonDoc treeDoc = apa.calculateAttackTreeDoc(targetURIs, "CURRENT", allPaths, normalOperations);
 
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(treeDoc);
 
@@ -1350,6 +1351,75 @@ public class ModelController {
             logger.error("Shortest path report failed due to an error", e);
             throw new InternalServerErrorException(
                     "Shortest path report failed. Please contact support for further assistance.");
+        }
+    }
+
+	/**
+	 * This REST method generates a JSON representation of the shortest attack
+     * path for the given model and target URIs
+	 *
+	 * @param modelId the String representation of the model object to seacrh
+	 * @param riskMode string indicating the prefered risk calculation mode
+	 * @param allPaths flag indicating whether to calculate all paths
+	 * @param normalOperations flag indicationg whether to include normal operations
+	 * @param targetURIs list of target misbehaviour sets
+	 * @return A JSON report containing the attack tree
+     * @throws MisbehaviourSetInvalidException if an invalid target URIs set is provided
+     * @throws InternalServerErrorException   if an error occurs during report generation
+	 */
+	@RequestMapping(value = "/models/{modelId}/threatgraph", method = RequestMethod.GET)
+	public ResponseEntity<TreeJsonDoc> calculateThreatGraph(
+            @PathVariable String modelId,
+            @RequestParam(defaultValue = "true") String riskMode,
+            @RequestParam(defaultValue = "true") boolean allPaths,
+            @RequestParam(defaultValue = "true") boolean normalOperations,
+            @RequestParam List<String> targetURIs) {
+
+        logger.info("Calculating threat graph for model {}", modelId);
+        logger.info(" with target URIs: {}, all-paths: {}, normal-operations: {} riskMode: {}",
+                targetURIs, allPaths, normalOperations, riskMode);
+
+		try {
+            RiskCalculationMode.valueOf(riskMode);
+		} catch (IllegalArgumentException e) {
+			logger.error("Found unexpected riskCalculationMode parameter value {}, valid values are: {}.",
+					riskMode, RiskCalculationMode.values());
+			throw new BadRequestErrorException("Invalid 'riskMode' parameter value " + riskMode +
+                        ", valid values are: " + Arrays.toString(RiskCalculationMode.values()));
+		}
+
+        final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
+
+        AStoreWrapper store = storeModelManager.getStore();
+
+        try {
+            logger.info("Initialising JenaQuerierDB");
+
+            JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
+                    model.getModelStack(), false);
+
+            querierDB.init();
+
+            logger.info("Calculating attack tree");
+
+            AttackPathAlgorithm apa = new AttackPathAlgorithm(querierDB);
+
+            if (!apa.checkTargetUris(targetURIs)) {
+                logger.error("Invalid target URIs set");
+                throw new MisbehaviourSetInvalidException("Invalid misbehaviour set");
+            }
+
+            TreeJsonDoc treeDoc = apa.calculateAttackTreeDoc(targetURIs, riskMode, allPaths, normalOperations);
+
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(treeDoc);
+
+        } catch (MisbehaviourSetInvalidException e) {
+            logger.error("Threat graph calculation failed due to invalid misbehaviour set", e);
+            throw e;
+        } catch (Exception e) {
+            logger.error("Threat path failed due to an error", e);
+            throw new InternalServerErrorException(
+                    "Threat graph calculation failed. Please contact support for further assistance.");
         }
     }
 

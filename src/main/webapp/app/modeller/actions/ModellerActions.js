@@ -1581,14 +1581,15 @@ export function toggleDeveloperMode() {
     };
 }
 
-export function getShortestPathThreats(modelId, msUri) {
+export function getThreatGraph(modelId, msUri) {
     return function(dispatch) {
         dispatch({
             type:instr.LOADING_ATTACK_PATH,
         });
 
         let shortUri = msUri.split("#")[1];
-        let uri = '/models/' + modelId + "/shortestpath?longPath=true&normalOperations=false&targetURIs=system%23" + shortUri;
+        //let uri = '/models/' + modelId + "/threatgraph?longPath=true&normalOperations=false&targetURIs=system%23" + shortUri;
+        let uri = '/models/' + modelId + "/threatgraph?longPath=false&normalOperations=false&targetURIs=system%23" + shortUri;
         axiosInstance.get(uri).then(response => {
             dispatch({
                 type:instr.GET_ATTACK_PATH,
