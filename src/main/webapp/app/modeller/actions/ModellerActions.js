@@ -1589,7 +1589,7 @@ export function getThreatGraph(modelId, msUri) {
 
         let shortUri = msUri.split("#")[1];
         //let uri = '/models/' + modelId + "/threatgraph?longPath=true&normalOperations=false&targetURIs=system%23" + shortUri;
-        let uri = '/models/' + modelId + "/threatgraph?longPath=false&normalOperations=false&targetURIs=system%23" + shortUri;
+        let uri = '/models/' + modelId + "/threatgraph?allPath=false&normalOperations=false&targetURIs=system%23" + shortUri;
         axiosInstance.get(uri).then(response => {
             dispatch({
                 type:instr.GET_ATTACK_PATH,

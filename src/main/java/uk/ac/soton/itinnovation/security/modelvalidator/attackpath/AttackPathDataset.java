@@ -33,7 +33,6 @@ import uk.ac.soton.itinnovation.security.modelquerier.dto.ControlSetDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ControlStrategyDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.LevelDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.MisbehaviourSetDB;
-import uk.ac.soton.itinnovation.security.modelquerier.dto.ModelDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ThreatDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.TrustworthinessAttributeSetDB;
 
@@ -57,8 +56,6 @@ public class AttackPathDataset {
     private static final Logger logger = LoggerFactory.getLogger(AttackPathDataset.class);
 
     protected IQuerierDB querier;
-
-    private ModelDB model;                                                          // Basic details of the system model, including overall risk
 
     protected Map<String, LevelDB> poLevels = new HashMap<>();                // Map of domain model population levels indexed by URI
     protected Map<String, LevelDB> liLevels = new HashMap<>();                // Map of domain model likelihood levels indexed by URI
@@ -120,12 +117,6 @@ public class AttackPathDataset {
         // Load system model control strategies and determine whether they are enabled
         controlStrategies = querier.getControlStrategies("system-inf");
 
-        // Load system model basic data
-        model = querier.getModelInfo("system");
-        logger.debug("model info: {}", model);
-        //logger.debug("FFFFFF: {}", model.isRisksValid());
-        //logger.debug("FFFFFF: {}", model.getRiskCalculationMode());
-
         final long endTime = System.currentTimeMillis();
         logger.info("AttackPathDataset.AttackPathDataset(IQuerierDB querier): execution time {} ms", endTime - startTime);
 
@@ -163,21 +154,6 @@ public class AttackPathDataset {
         } catch (IllegalArgumentException e) {
             //TODO: throw an exception
             logger.error("Found unexpected riskCalculationMode parameter value {}.", input);
-            return false;
-        }
-    }
-
-    public boolean checkRiskCalculationMode(String input) {
-        RiskCalculationMode modelRiskCalculationMode;
-        RiskCalculationMode requestedMode;
-
-        try {
-            modelRiskCalculationMode = RiskCalculationMode.valueOf(model.getRiskCalculationMode());
-            requestedMode = RiskCalculationMode.valueOf(input);
-
-            return modelRiskCalculationMode == requestedMode;
-
-        } catch (IllegalArgumentException e) {
             return false;
         }
     }

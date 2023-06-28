@@ -68,8 +68,26 @@ public class AttackPathAlgorithm {
 
     }
 
+    public boolean checkRiskCalculationMode(String input) {
+        ModelDB model = querier.getModelInfo("system");
+        logger.debug("model info: {}", model);
+
+        RiskCalculationMode modelRiskCalculationMode;
+        RiskCalculationMode requestedMode;
+
+        try {
+            modelRiskCalculationMode = RiskCalculationMode.valueOf(model.getRiskCalculationMode());
+            requestedMode = RiskCalculationMode.valueOf(input);
+
+            return modelRiskCalculationMode == requestedMode;
+
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
     public void checkRequestedRiskCalculationMode(String requestedRiskMode) {
-        if (!apd.checkRiskCalculationMode(requestedRiskMode)) {
+        if (!checkRiskCalculationMode(requestedRiskMode)) {
             logger.debug("mismatch between the stored risk calculation mode and the requested one");
             throw new RuntimeException("mismatch between the stored risk calculation mode and the requested one");
         }

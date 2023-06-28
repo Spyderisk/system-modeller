@@ -1409,6 +1409,11 @@ public class ModelController {
                 throw new MisbehaviourSetInvalidException("Invalid misbehaviour set");
             }
 
+            if (!apa.checkRiskCalculationMode(riskMode)) {
+                logger.error("mismatch in risk calculation mode found");
+                throw new BadRequestErrorException("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
+            }
+
             TreeJsonDoc treeDoc = apa.calculateAttackTreeDoc(targetURIs, riskMode, allPaths, normalOperations);
 
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(treeDoc);
