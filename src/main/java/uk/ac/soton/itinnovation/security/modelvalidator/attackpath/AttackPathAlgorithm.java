@@ -146,7 +146,7 @@ public class AttackPathAlgorithm {
             final long startTime = System.currentTimeMillis();
 
             // calculate attack tree, allPath dictates one or two backtrace
-            // AttackTree is initialised with FUTURE risk mode enabled
+            // runs which is represented in AttackTree as boolean shortestPath
             AttackTree attackTree = new AttackTree(targetUris, isFutureRisk, !allPaths, apd);
 
             doc = attackTree.calculateTreeJsonDoc(allPaths, normalOperations);
