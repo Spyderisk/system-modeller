@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import {OverlayTrigger, Panel, Tooltip, Button, ButtonToolbar} from "react-bootstrap";
 import ThreatsPanel from "../../details/accordion/panels/ThreatsPanel";
 import * as Constants from "../../../../../common/constants.js";
-import {getShortestPathThreats} from "../../../../actions/ModellerActions";
+import {getThreatGraph} from "../../../../actions/ModellerActions";
 
 class MisbehaviourAccordion extends React.Component {
 
@@ -190,7 +190,8 @@ class MisbehaviourAccordion extends React.Component {
                                 <Button className="btn btn-primary btn-xs"
                                         disabled={attackPathThreats.length > 0}
                                         onClick={() => {this.props.dispatch(
-                                                               getShortestPathThreats(this.props.model.id,
+                                                               getThreatGraph(this.props.model.id,
+                                                                   this.props.model.riskCalculationMode,
                                                                    this.props.selectedMisbehaviour.misbehaviour.uri));}}
                                         >Calculate Attack Path</Button>
                                 {loadingAttackPath ? <i className="fa fa-spinner fa-pulse fa-lg fa-fw"/> : null}

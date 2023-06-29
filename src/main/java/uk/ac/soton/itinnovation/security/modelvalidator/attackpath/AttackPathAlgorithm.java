@@ -31,24 +31,66 @@ import uk.ac.soton.itinnovation.security.modelquerier.IQuerierDB;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.TreeJsonDoc;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.Graph;
 
+import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
+import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
+
+import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
+import uk.ac.soton.itinnovation.security.modelvalidator.RiskCalculator;
+import uk.ac.soton.itinnovation.security.modelquerier.dto.ModelDB;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.List;
 
 public class AttackPathAlgorithm {
     private static final Logger logger = LoggerFactory.getLogger(AttackPathAlgorithm.class);
 
     private AttackPathDataset apd;
+    private IQuerierDB querier;
+
+	@Autowired
+	private ModelObjectsHelper modelObjectsHelper;
 
     public AttackPathAlgorithm(IQuerierDB querier) {
+
+        this.querier = querier;
 
         final long startTime = System.currentTimeMillis();
 
         logger.debug("STARTING Shortest Path Attack algortithm ...");
 
+        //TODO might have to delay initialisation of the dataset until risk
+        //mode is checked.
         apd = new AttackPathDataset(querier);
 
         final long endTime = System.currentTimeMillis();
         logger.info("AttackPathAlgorithm.AttackPathAlgorithm(IQuerierDB querier): execution time {} ms", endTime - startTime);
 
+    }
+
+    public boolean checkRiskCalculationMode(String input) {
+        ModelDB model = querier.getModelInfo("system");
+        logger.debug("model info: {}", model);
+
+        RiskCalculationMode modelRiskCalculationMode;
+        RiskCalculationMode requestedMode;
+
+        try {
+            modelRiskCalculationMode = RiskCalculationMode.valueOf(model.getRiskCalculationMode());
+            requestedMode = RiskCalculationMode.valueOf(input);
+
+            return modelRiskCalculationMode == requestedMode;
+
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    public void checkRequestedRiskCalculationMode(String requestedRiskMode) {
+        if (!checkRiskCalculationMode(requestedRiskMode)) {
+            logger.debug("mismatch between the stored risk calculation mode and the requested one");
+            throw new RuntimeException("mismatch between the stored risk calculation mode and the requested one");
+        }
     }
 
     public boolean checkTargetUris(List<String> targetUris) {
@@ -88,12 +130,16 @@ public class AttackPathAlgorithm {
     }
 
 
-    public TreeJsonDoc calculateAttackTreeDoc(List<String> targetUris,
+    public TreeJsonDoc calculateAttackTreeDoc(List<String> targetUris, String riskCalculationMode,
             boolean allPaths, boolean normalOperations) throws RuntimeException {
 
-        logger.debug("calculate attack tree with allPaths: {}, normalOperations: {}",
-                allPaths, normalOperations);
+        logger.debug("calculate attack tree with isFUTURE: {}, allPaths: {}, normalOperations: {}",
+                riskCalculationMode, allPaths, normalOperations);
         logger.debug("target URIs: {}", targetUris);
+
+        checkRequestedRiskCalculationMode(riskCalculationMode);
+
+        boolean isFutureRisk = apd.isFutureRisk(riskCalculationMode);
 
         TreeJsonDoc doc = null;
         try {
@@ -101,7 +147,7 @@ public class AttackPathAlgorithm {
 
             // calculate attack tree, allPath dictates one or two backtrace
             // AttackTree is initialised with FUTURE risk mode enabled
-            AttackTree attackTree = new AttackTree(targetUris, true, !allPaths, apd);
+            AttackTree attackTree = new AttackTree(targetUris, isFutureRisk, !allPaths, apd);
 
             doc = attackTree.calculateTreeJsonDoc(allPaths, normalOperations);
 
