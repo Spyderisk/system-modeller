@@ -749,7 +749,7 @@ public class ModelController {
 		validationProgress.updateProgress(0d, "Risk calculation starting");
 		
 		logger.debug("Marking as calculating risks [{}] {}", modelId, model.getName());
-		model.markAsCalculatingRisks(rcMode);
+		model.markAsCalculatingRisks(rcMode, true);
 
 		ScheduledFuture<?> future = Executors.newScheduledThreadPool(1).schedule(() -> {
 			//boolean valid = false;
@@ -764,7 +764,7 @@ public class ModelController {
 				throw new Exception("Risk calculation failed. Please contact support for further assistance.");
 			} finally {
 				//always reset the flags even if the risk calculation crashes
-				model.finishedCalculatingRisks(results != null);
+				model.finishedCalculatingRisks(results != null, rcMode, true);
 				validationProgress.updateProgress(1.0, "Risk calculation complete");
 			}
 
@@ -834,7 +834,7 @@ public class ModelController {
 			validationProgress.updateProgress(0d, "Risk calculation starting");
 			
 			logger.debug("Marking as calculating risks [{}] {}", modelId, model.getName());
-			model.markAsCalculatingRisks(rcMode);
+			model.markAsCalculatingRisks(rcMode, save);
 		} //synchronized block
 
 		RiskCalcResultsDB results = null;
@@ -848,7 +848,7 @@ public class ModelController {
 			throw new InternalServerErrorException("Risk calculation failed. Please contact support for further assistance.");
 		} finally {
 			//always reset the flags even if the risk calculation crashes
-			model.finishedCalculatingRisks(results != null);
+			model.finishedCalculatingRisks(results != null, rcMode, save);
 			validationProgress.updateProgress(1.0, "Risk calculation complete");
 		}
 		
