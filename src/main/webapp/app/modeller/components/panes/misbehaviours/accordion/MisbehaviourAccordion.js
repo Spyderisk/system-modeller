@@ -93,6 +93,13 @@ class MisbehaviourAccordion extends React.Component {
 
         let loadingAttackPath = this.props.selectedMisbehaviour.loadingAttackPath;
 
+        const handleThreatGraphButtonClick = () => {
+            this.props.dispatch(getThreatGraph(
+                this.props.model.id,
+                this.props.model.riskCalculationMode,
+                this.props.selectedMisbehaviour.misbehaviour.uri));
+        };
+
         return (
             <div className="panel-group accordion">
                 <Panel bsStyle="primary" defaultExpanded>
@@ -187,16 +194,30 @@ class MisbehaviourAccordion extends React.Component {
                     <Panel.Collapse>
                         <Panel.Body>
                             <ButtonToolbar>
-                                <Button className="btn btn-primary btn-xs"
+                                <OverlayTrigger
+                                    delayShow={Constants.TOOLTIP_DELAY}
+                                    placement="right"
+                                    trigger={["hover"]}
+                                    rootClose
+                                    overlay={
+                                        <Tooltip id="tooltip-threat-graph-id"
+                                            className="tooltip-overlay"
+                                        >
+                                        {this.props.model.riskCalculationMode ? "Calculate attack path" : "Run risk calculation first!"}
+                                        </Tooltip>
+                                    }
+                                >
+                                    <Button
+                                        className="btn btn-primary btn-xs"
                                         disabled={
                                             attackPathThreats.length > 0 ||
                                             !this.props.model.riskCalculationMode
                                         }
-                                        onClick={() => {this.props.dispatch(
-                                                               getThreatGraph(this.props.model.id,
-                                                                   this.props.model.riskCalculationMode,
-                                                                   this.props.selectedMisbehaviour.misbehaviour.uri));}}
-                                        >Calculate Attack Path</Button>
+                                        onClick={handleThreatGraphButtonClick}
+                                        >
+                                        Calculate Attack Path
+                                    </Button>
+                                </OverlayTrigger>
                                 {loadingAttackPath ? <i className="fa fa-spinner fa-pulse fa-lg fa-fw"/> : null}
                             </ButtonToolbar>
                             {!loadingAttackPath && <ThreatsPanel dispatch={this.props.dispatch}
