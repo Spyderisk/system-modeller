@@ -1521,7 +1521,7 @@ public class ModelControllerTest extends CommonTestSetup{
 	public void testCalculateRisksWhenCalculatingRisks() {
 		switchToSystemModel(0);
 
-		testModel.markAsCalculatingRisks(RiskCalculationMode.FUTURE);
+		testModel.markAsCalculatingRisks(RiskCalculationMode.FUTURE, true);
 
 		given().
 			filter(userSession).
