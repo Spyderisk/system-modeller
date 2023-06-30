@@ -1586,7 +1586,6 @@ export function getThreatGraph(modelId, riskMode, msUri) {
         dispatch({
             type:instr.LOADING_ATTACK_PATH,
         });
-
         let shortUri = msUri.split("#")[1];
         //let uri = '/models/' + modelId + "/threatgraph?longPath=true&normalOperations=false&targetURIs=system%23" + shortUri;
         let uri = '/models/' + modelId + "/threatgraph?riskMode=" + riskMode + "&allPath=false&normalOperations=false&targetURIs=system%23" + shortUri;

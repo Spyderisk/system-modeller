@@ -188,7 +188,10 @@ class MisbehaviourAccordion extends React.Component {
                         <Panel.Body>
                             <ButtonToolbar>
                                 <Button className="btn btn-primary btn-xs"
-                                        disabled={attackPathThreats.length > 0}
+                                        disabled={
+                                            attackPathThreats.length > 0 ||
+                                            !this.props.model.riskCalculationMode
+                                        }
                                         onClick={() => {this.props.dispatch(
                                                                getThreatGraph(this.props.model.id,
                                                                    this.props.model.riskCalculationMode,
