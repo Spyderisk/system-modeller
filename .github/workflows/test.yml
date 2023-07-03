@@ -26,7 +26,7 @@ jobs:
     - name: Build software
       run: |
         docker-compose -f docker-compose.yml -f docker-compose.test.yml pull  # Force download of any newer dependency images
-        docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d --build
+        docker-compose -f docker-compose.yml -f docker-compose.test.yml --env-file .env.template up -d --build
         docker-compose -f docker-compose.yml -f docker-compose.test.yml images  # Useful for debugging
         docker-compose -f docker-compose.yml -f docker-compose.test.yml images -q | xargs docker inspect | grep -C3 RepoTags  # Useful for debugging
 
