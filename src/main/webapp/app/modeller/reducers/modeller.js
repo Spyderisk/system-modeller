@@ -2236,12 +2236,20 @@ export default function modeller(state = modelState, action) {
     }
 
     if (action.type === instr.LOADING_ATTACK_PATH) {
-        console.log("Loading attack path...");
+        let loading = action.payload;
+
+        if (loading) {
+            console.log("Loading attack path...");
+        }
+        else {
+            console.log("Finished loading attack path (or error)");
+        }
+        
         return {
             ...state,
             selectedMisbehaviour: {
                 ...state.selectedMisbehaviour,
-                loadingAttackPath: true
+                loadingAttackPath: loading
             }
         };
     }
