@@ -1257,11 +1257,13 @@ public class JenaQuerierDB implements IQuerierDB {
 
     @Override
     public AssetDB getAsset(String uri, String... models) {
-        /* Assets are special because in the triple store they are not stored with type core#Asset,
-         * but with a domain model asset subclass.
-         * have a type equal to the domain
-         * model asset type, rather than core#Asset
-         */
+        /* Assets are a special case for two reasons:
+         *
+         *  (a) they are not saved in the store as type 'Asset', but as a sub-type of 'Asset', yet we
+         *      still need to store them under 'AssetDB' in the cache
+         *  (b) they have links to other assets defined by special predicates which differ for each
+         *      domain model
+        */
         String cacheTypeKey = getCacheTypeName(AssetDB.class);
         if (cacheEnabled) {
             // The cache may contain a null value if the entity at uri has been deleted
