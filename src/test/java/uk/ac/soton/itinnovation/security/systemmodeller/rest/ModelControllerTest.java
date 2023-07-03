@@ -1708,7 +1708,7 @@ public class ModelControllerTest extends CommonTestSetup{
 	/**
 	 * Tests getting basic model info for a validated and an unvalidated model
 	 * Asserts OK 200 status
-	 * Asserts there are 28 key/value pairs
+	 * Asserts there are 32 key/value pairs
 	 * Asserts basic flags are correct for the respective models, and that all other model data collections are empty
 	 */
 	@Test
@@ -1722,11 +1722,13 @@ public class ModelControllerTest extends CommonTestSetup{
 		then().
 			assertThat().statusCode(HttpStatus.SC_OK).
 			and().
-			assertThat().body("size()", is(31)).
+			assertThat().body("size()", is(32)).
 			and().
 			assertThat().body("valid", is(true)).
 			and().
 			assertThat().body("riskLevelsValid", is(true)).
+			and().
+			assertThat().body("riskCalculationMode", isEmptyOrNullString()).
 			and().
 			assertThat().body("threats", empty()).
 			and().
@@ -1759,6 +1761,8 @@ public class ModelControllerTest extends CommonTestSetup{
 			and().
 			assertThat().body("valid", is(false)).
 			and().
-			assertThat().body("riskLevelsValid", is(false));
+			assertThat().body("riskLevelsValid", is(false)).
+			and().
+			assertThat().body("riskCalculationMode", isEmptyOrNullString());
 	}
 }
