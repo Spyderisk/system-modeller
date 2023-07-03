@@ -41,7 +41,7 @@ services:
       # These env variables override the values in application.properties
       # https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-external-config
       SPRING_DATA_MONGODB_HOST: mongo
-      KEYCLOAK_CREDENTIALS_SECRET: ${KEYCLOAK_CREDENTIALS_SECRET}
+      KEYCLOAK_CREDENTIALS_SECRET: ${KEYCLOAK_CREDENTIALS_SECRET:-DfkQBcVpjbO6gTMXMBUBfHe45UmFhGxk}
       RESET_ON_START: ${RESET_ON_START:-true}
     volumes:
       # Persistent named volume for the jena-tdb storage
@@ -72,9 +72,9 @@ services:
     # Override the normal entrypoint of `/opt/keycloak/bin/kc.sh`.
     entrypoint: /tmp/import/entrypoint.sh
     environment:
-      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USERNAME}
-      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
-      KEYCLOAK_CREDENTIALS_SECRET: ${KEYCLOAK_CREDENTIALS_SECRET}
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USERNAME:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-password}
+      KEYCLOAK_CREDENTIALS_SECRET: ${KEYCLOAK_CREDENTIALS_SECRET:-DfkQBcVpjbO6gTMXMBUBfHe45UmFhGxk}
       PROXY_ADDRESS_FORWARDING: '${KEYCLOAK_PROXY_ADDRESS_FORWARDING:-false}'
     volumes:
       - type: bind
