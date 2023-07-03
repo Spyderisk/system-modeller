@@ -2299,9 +2299,6 @@ public class JenaQuerierDB implements IQuerierDB {
         // First, prepare the cache for synchronisation, removing deletions that were later stored
         cache.prepareSync();
 
-        // Disable the cache while we synchronise
-        cacheEnabled = false;
-
         try{
             // Start a transaction
             dataset.begin(ReadWrite.WRITE);
@@ -2348,10 +2345,26 @@ public class JenaQuerierDB implements IQuerierDB {
                 // Get entities to be stored/updated
                 Map<String, Map<String, EntityDB>> storeEntitiesByType = cache.getStoreCache(graph);
 
+                // Important to store assets first
+                String assetTypeKey = getCacheTypeName(AssetDB.class);
+                Map<String, EntityDB> entities = storeEntitiesByType.get(assetTypeKey);
+                if(entities != null){
+                    if(entities != null && entities.size() > 0){
+                        logger.info("Saving {} new/modified entities cached as {} to graph {}", entities.size(), assetTypeKey, graph);
+                    }
+                    for(EntityDB entity : entities.values()){
+                        persistEntity(entity, graph);
+                    }
+                }
+
                 // Store/update the entities
                 for(String typeKey : storeEntitiesByType.keySet()){
+                    if(typeKey.equals(getCacheTypeName(AssetDB.class))) {
+                        // Skip the assets, because they were already saved
+                        continue;
+                    }
                     boolean savingLinks = typeKey.equals(getCacheTypeName(CardinalityConstraintDB.class));
-                    Map<String, EntityDB> entities = storeEntitiesByType.get(typeKey);
+                    entities = storeEntitiesByType.get(typeKey);
                     if(entities != null){
                         if(entities != null && entities.size() > 0){
                             logger.info("Saving {} new/modified entities cached as {} to graph {}", entities.size(), typeKey, graph);
@@ -2384,9 +2397,6 @@ public class JenaQuerierDB implements IQuerierDB {
 
         cache.clear();
         checkedOutEntityGraphs.clear();
-
-        // Re-enable the cache
-        cacheEnabled = false;
 
         final long endTime = System.currentTimeMillis();
         logger.info("JenaQuerierDB.sync(): execution time {} ms", endTime - startTime);
