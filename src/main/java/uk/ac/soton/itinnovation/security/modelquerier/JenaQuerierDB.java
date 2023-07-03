@@ -2358,7 +2358,7 @@ public class JenaQuerierDB implements IQuerierDB {
                         }
                         for(EntityDB entity : entities.values()){
                             if(savingLinks){
-                                // Delete the extra triples representing asset relationships
+                                // Save the extra triples representing asset relationships
                                 persistLink(entity, graph);
                             }    
                             persistEntity(entity, graph);
