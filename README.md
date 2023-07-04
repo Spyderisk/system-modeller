@@ -355,7 +355,7 @@ git clone git@github.com:SPYDERISK/system-modeller.git
 cd system-modeller
 ```
 
-### Customise default Configuraion Parameters (Optional Step)
+### Customise default Configuration Parameters (Optional Step)
 
 The default configuration of the Spyderisk service, including service ports and
 credentials, can be customized through the '.env' file. To get started, please
