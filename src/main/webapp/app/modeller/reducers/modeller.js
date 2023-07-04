@@ -28,7 +28,9 @@ const modelState = {
         calculatingRisks: false,
         controlsReset: false,
         canBeEdited: true,
-        canBeShared: true
+        canBeShared: true,
+        risksValid: false,
+        riskCalculationMode: ""
     },
     // Rayna: TODO - when the backend for groups is implemented, put this array in the model above.
     groups: [],
@@ -1079,7 +1081,8 @@ export default function modeller(state = modelState, action) {
             ...state,
             model: {
                 ...state.model,
-                riskLevelsValid: true,
+                riskLevelsValid: model.risksValid,
+                riskCalculationMode: model.riskCalculationMode,
                 risk: modelRisk,
                 saved: saved,
                 controlSets: updatedControlSets,
@@ -2233,12 +2236,20 @@ export default function modeller(state = modelState, action) {
     }
 
     if (action.type === instr.LOADING_ATTACK_PATH) {
-        console.log("Loading attack path...");
+        let loading = action.payload;
+
+        if (loading) {
+            console.log("Loading attack path...");
+        }
+        else {
+            console.log("Finished loading attack path (or error)");
+        }
+        
         return {
             ...state,
             selectedMisbehaviour: {
                 ...state.selectedMisbehaviour,
-                loadingAttackPath: true
+                loadingAttackPath: loading
             }
         };
     }

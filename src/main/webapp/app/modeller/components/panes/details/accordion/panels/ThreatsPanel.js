@@ -43,7 +43,7 @@ class ThreatsPanel extends React.Component {
             sort: {
                 col: (props.name === "direct-effects") ? "likelihood" : (props.name === "attack-path-threats") ? "distance" : "risk",
                 dir: "desc"
-            }
+            }
         }
     }
 

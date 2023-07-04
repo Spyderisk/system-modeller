@@ -310,46 +310,34 @@ class ControlPane extends React.Component {
                         }
                         onClick={() => {
                             this.props.dispatch(
-                                calculateRisksBlocking(this.props.model["id"], "FUTURE", false) // don't save
+                                calculateRisksBlocking(this.props.model["id"], "FUTURE", true) // save
                             );
                         }}
                     >
                         <MenuItem eventKey={1}
                                   onClick={() => {
-                                      this.props.dispatch(calculateRisksBlocking(this.props.model["id"], "FUTURE", false)); // don't save
+                                      this.props.dispatch(calculateRisksBlocking(this.props.model["id"], "FUTURE", true)); // save
                                   }}>
-                            <strong>Calculate future risk (unsaved)</strong>
+                            <strong>Calculate future risk (saved)</strong>
                         </MenuItem>
                         <MenuItem eventKey={2}
                                   onClick={() => {
-                                      this.props.dispatch(calculateRisksBlocking(this.props.model["id"], "FUTURE", true)); // save
+                                      this.props.dispatch(calculateRisksBlocking(this.props.model["id"], "FUTURE", false)); // don't save
                                   }}>
-                            Calculate future risk (saved)
+                            Calculate future risk (unsaved)
                         </MenuItem>
-                        {/* <MenuItem eventKey={3}
+                        <MenuItem eventKey={3}
                                   onClick={() => {
-                                      this.props.dispatch(calculateRisks(this.props.model["id"], "FUTURE")); // save, reload
+                                      this.props.dispatch(calculateRisksBlocking(this.props.model["id"], "CURRENT", true)); // save
                                   }}>
-                            <span className="fa fa-1x fa-play-circle-o"/>{" Calc risks (future/save/reload)"}
-                                </MenuItem> */}
+                            Calculate current risk (saved)
+                        </MenuItem>
                         <MenuItem eventKey={4}
                                   onClick={() => {
                                       this.props.dispatch(calculateRisksBlocking(this.props.model["id"], "CURRENT", false)); // don't save
                                   }}>
                             Calculate current risk (unsaved)
                         </MenuItem>
-                        <MenuItem eventKey={5}
-                                  onClick={() => {
-                                      this.props.dispatch(calculateRisksBlocking(this.props.model["id"], "CURRENT", true)); // save
-                                  }}>
-                            Calculate current risk (saved)
-                        </MenuItem>
-                        {/* <MenuItem eventKey={6}
-                                  onClick={() => {
-                                      this.props.dispatch(calculateRisks(this.props.model["id"], "CURRENT")); // save, reload
-                                  }}>
-                            <span className="fa fa-1x fa-play-circle-o"/>{" Calc risks (current/save/reload)"}
-                            </MenuItem> */}
                     </SplitButton>
                 </OverlayTrigger>
 

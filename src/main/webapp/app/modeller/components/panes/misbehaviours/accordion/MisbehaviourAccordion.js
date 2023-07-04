@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import {OverlayTrigger, Panel, Tooltip, Button, ButtonToolbar} from "react-bootstrap";
 import ThreatsPanel from "../../details/accordion/panels/ThreatsPanel";
 import * as Constants from "../../../../../common/constants.js";
-import {getShortestPathThreats} from "../../../../actions/ModellerActions";
+import {getThreatGraph} from "../../../../actions/ModellerActions";
 
 class MisbehaviourAccordion extends React.Component {
 
@@ -92,6 +92,13 @@ class MisbehaviourAccordion extends React.Component {
             }) : [];
 
         let loadingAttackPath = this.props.selectedMisbehaviour.loadingAttackPath;
+
+        const handleThreatGraphButtonClick = () => {
+            this.props.dispatch(getThreatGraph(
+                this.props.model.id,
+                this.props.model.riskCalculationMode,
+                this.props.selectedMisbehaviour.misbehaviour.uri));
+        };
 
         return (
             <div className="panel-group accordion">
@@ -187,12 +194,30 @@ class MisbehaviourAccordion extends React.Component {
                     <Panel.Collapse>
                         <Panel.Body>
                             <ButtonToolbar>
-                                <Button className="btn btn-primary btn-xs"
-                                        disabled={attackPathThreats.length > 0}
-                                        onClick={() => {this.props.dispatch(
-                                                               getShortestPathThreats(this.props.model.id,
-                                                                   this.props.selectedMisbehaviour.misbehaviour.uri));}}
-                                        ><i class="fa fa-code-fork" aria-hidden="true"></i> Calculate Attack Path</Button>
+                                <OverlayTrigger
+                                    delayShow={Constants.TOOLTIP_DELAY}
+                                    placement="right"
+                                    trigger={["hover"]}
+                                    rootClose
+                                    overlay={
+                                        <Tooltip id="tooltip-threat-graph-id"
+                                            className="tooltip-overlay"
+                                        >
+                                        {this.props.model.riskCalculationMode ? "Calculate attack path" : "Run risk calculation first!"}
+                                        </Tooltip>
+                                    }
+                                >
+                                    <Button
+                                        className="btn btn-primary btn-xs"
+                                        disabled={
+                                            attackPathThreats.length > 0 ||
+                                            !this.props.model.riskCalculationMode
+                                        }
+                                        onClick={handleThreatGraphButtonClick}
+                                        >
+                                        Calculate Attack Path
+                                    </Button>
+                                </OverlayTrigger>
                                 {loadingAttackPath ? <i className="fa fa-spinner fa-pulse fa-lg fa-fw"/> : null}
                             </ButtonToolbar>
                             {!loadingAttackPath && <ThreatsPanel dispatch={this.props.dispatch}

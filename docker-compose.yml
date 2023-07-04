@@ -9,11 +9,6 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
-      args:
-        # These are passed as "build arguments" to the Dockerfile (referenced as "ARG" in there, available only when building).
-        # They are set to the value of the environment variable of the same name.
-        - MAVEN_USER
-        - MAVEN_PASS
     # The "init" config means the container responds to signals and exits cleanly
     init: true
     environment:
@@ -26,6 +21,10 @@ services:
       - type: volume
         source: jena
         target: /code/jena-tdb
+      # Persistent named volume for storage of knowledgebase data (domain model, images and palettes)
+      - type: volume
+        source: knowledgebases
+        target: /opt/spyderisk/knowledgebases
     depends_on:
       - mongo
       - keycloak
@@ -57,5 +56,6 @@ services:
 
 volumes:
   jena:
+  knowledgebases:
   mongo-db:
   mongo-configdb:
