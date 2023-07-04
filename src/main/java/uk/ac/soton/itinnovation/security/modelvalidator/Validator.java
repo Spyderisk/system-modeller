@@ -1863,6 +1863,7 @@ public class Validator {
                 calculateRelationCardinalityConstraint(cc);
                 querier.store(cc, "system-inf");
             } else {
+                // log a warning, although this may just mean one or both assets is yet to be inferred
                 logger.warn(String.format("Orphaned CardinalityConstraint found: [%s]-[%s]-[%s]", cc.getLinksFrom(), cc.getLinkType(), cc.getLinksTo()));
             }
         }

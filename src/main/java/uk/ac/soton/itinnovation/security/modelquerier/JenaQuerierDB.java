@@ -1021,9 +1021,11 @@ public class JenaQuerierDB implements IQuerierDB {
      */
     private <T extends EntityDB> T getEntity(String uri, String cacheTypeName, Class<T> entityClass, String... graphs) {
         if (cacheEnabled) {
-            // The cache may contain a null value if the entity at uri has been deleted
-            Boolean valid = cache.checkEntityValid(uri, graphs);
+            // Try to find the cached value
             T cachedEntity = cache.get(uri, cacheTypeName, entityClass, graphs);
+
+            // Return the cached value including a null value if valid
+            Boolean valid = cache.checkEntityValid(uri, graphs);
             if (cachedEntity != null || valid) {
                 return cachedEntity;
             }
@@ -1130,6 +1132,7 @@ public class JenaQuerierDB implements IQuerierDB {
     }
 
     private <T extends EntityDB> JsonObject getEntityAsJson(String uri, String... graphs) {
+        boolean found = false;
         uri = getLongName(uri);
 
         JsonObject returnJsonObject = null;
@@ -1143,12 +1146,28 @@ public class JenaQuerierDB implements IQuerierDB {
             Model model = dataset.getNamedModel(graphUri);
             Resource resource = model.getResource(uri);
 
+            /* 
+             * org.apache.jena.rdf.model.Model has changed. The createResource(String uri) method now returns
+             * an existing resource if already defined in the Model. The getResource method is now identical,
+             * so it creates and returns an empty resource if there is no resource with the specified URI in
+             * the model.
+             * 
+             * The problem is that createResource associates the new resource with the model, so the call to
+             * model.containsResource returns true even if the model didn't contain this resource. So if the
+             * URI is not defined in any graph, we will still get a non-null JSon object back, albeit one in
+             * which there is no "_graph" member (nor any other member).
+             * 
+             * It is at least arguable that in that case we should return 'null' which was probably what Lee
+             * expected would happen when he wrote this code. That may cause other problems (e.g., if untyped
+             * resources are retrieved by this method, which is possible), so we'll try to detect where there
+             * was no resource later, at the point of use.
+             */
             if (model.containsResource(resource)) {
                 returnJsonObject = resourceToJson(resource, returnJsonObject);
-
                 if (resource.hasProperty(RDF.type)) {
                     // Add a special property tracking the graph in which the type was found
                     returnJsonObject.addProperty("_graph", graph);
+                    found = true;
                 }
             }
         }
@@ -1258,33 +1277,40 @@ public class JenaQuerierDB implements IQuerierDB {
         */
         String cacheTypeKey = getCacheTypeName(AssetDB.class);
         if (cacheEnabled) {
-            // The cache may contain a null value if the entity at uri has been deleted
-            Boolean valid = cache.checkEntityValid(uri, models);
+            // Try to find the cached asset
             AssetDB cachedEntity = cache.get(uri, cacheTypeKey, AssetDB.class, models);
+
+            // Return the cached value including a null value if valid
+            Boolean valid = cache.checkEntityValid(uri, models);
             if (cachedEntity != null || valid) {
                 return cachedEntity;
             }
+
         }
 
         // Not in the cache, so try to get it from the triple store
         JsonObject assetJson = getEntityAsJson(uri, models);
+        AssetDB asset = null;
         if (assetJson != null) {
-            String mainGraph = assetJson.getAsJsonPrimitive("_graph").getAsString();
-            AssetDB asset = jsonToAsset(assetJson);
+            // Find out in which graph the asset was defined (asserted or inferred)
+            JsonPrimitive assetGraph = assetJson.getAsJsonPrimitive("_graph");
+            if(assetGraph != null) {
+                // Convert this graph to a string
+                String mainGraph = assetGraph.getAsString();
 
-            // Add it to the cache if enabled
-            if (cacheEnabled) {
-                cache.cacheEntity(asset, cacheTypeKey, mainGraph, models);
+                // Convert the asset to an AssetDB object to be returned
+                asset = jsonToAsset(assetJson);
+
+                // Add the asset to the cache (in the main graph) if enabled
+                if (cacheEnabled) {
+                    cache.cacheEntity(asset, cacheTypeKey, mainGraph, models);
+                }
+
             }
 
-            return asset;
-
-        } else {
-
-            // Can't find this asset anywhere
-            return null;
-
         }
+
+        return asset;
 
     }
 
