@@ -61,14 +61,6 @@ import uk.ac.soton.itinnovation.security.modelquerier.util.ModelStack;
 import java.lang.Exception;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.Comparator;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Implementation of IQuerierDB for Jena database. Uses Jena methods for querying the Jena database, as opposed to
@@ -2287,6 +2279,8 @@ public class JenaQuerierDB implements IQuerierDB {
         return storeEntity(entity, uri, cacheTypeName, graph);
     }
 
+    /* Synchronise the cache, so afterwards the triple store matches the cache contents.
+     */
     @Override
     public void sync(String... models) {
         final long startTime = System.currentTimeMillis();
@@ -2296,15 +2290,11 @@ public class JenaQuerierDB implements IQuerierDB {
         }
         logger.info("Synchronising model with triple store");
 
-        // First, prepare the cache for synchronisation, removing deletions that were later stored
-        cache.prepareSync();
-
+        // Get entities to be deleted and try to delete them from the triple store
+        Map<String, Map<String, EntityDB>> deleteEntitiesByType = cache.getDeleteCache();
         try{
             // Start a transaction
             dataset.begin(ReadWrite.WRITE);
-
-            // Get entities to be deleted
-            Map<String, Map<String, EntityDB>> deleteEntitiesByType = cache.getDeleteCache();
 
             // Delete the entities
             for(String typeKey : deleteEntitiesByType.keySet()){
@@ -2322,6 +2312,14 @@ public class JenaQuerierDB implements IQuerierDB {
 
             // Commit the changes
             dataset.commit();
+            
+            // If successful, clear the map of entities to be deleted
+            for(String typeKey : deleteEntitiesByType.keySet()){
+                Map<String, EntityDB> entities = deleteEntitiesByType.get(typeKey);
+                entities.clear();
+            }
+            deleteEntitiesByType.clear();
+
         }
         catch (Exception e) {
             // Abort the changes and signal that there has been an error
@@ -2338,12 +2336,12 @@ public class JenaQuerierDB implements IQuerierDB {
         logger.info("Saving new/modified entities");
         // Get the entities that need to be updated and try to save the changes
         for(String graph : models){
+            // Get entities to be stored/updated
+            Map<String, Map<String, EntityDB>> storeEntitiesByType = cache.getStoreCache(graph);
+
             try{
                 // Start a transaction per graph
                 dataset.begin(ReadWrite.WRITE);
-
-                // Get entities to be stored/updated
-                Map<String, Map<String, EntityDB>> storeEntitiesByType = cache.getStoreCache(graph);
 
                 // Important to store assets first
                 String assetTypeKey = getCacheTypeName(AssetDB.class);
@@ -2373,7 +2371,8 @@ public class JenaQuerierDB implements IQuerierDB {
                             if(savingLinks){
                                 // Save the extra triples representing asset relationships
                                 persistLink(entity, graph);
-                            }    
+                            }
+                            // Save the entity
                             persistEntity(entity, graph);
                         }
                     }
@@ -2381,6 +2380,14 @@ public class JenaQuerierDB implements IQuerierDB {
 
                 // Commit the changes
                 dataset.commit();
+
+                // If successful, clear the map of entities to be saved
+                for(String typeKey : storeEntitiesByType.keySet()){
+                    entities = storeEntitiesByType.get(typeKey);
+                    entities.clear();
+                }
+                storeEntitiesByType.clear();
+
             } catch (Exception e) {
                 // Abort the changes and signal that there has been an error
                 dataset.abort();
@@ -2395,8 +2402,7 @@ public class JenaQuerierDB implements IQuerierDB {
 
         }
 
-        cache.clear();
-        checkedOutEntityGraphs.clear();
+        // No need to clear the cache content, as it now matches the triple store
 
         final long endTime = System.currentTimeMillis();
         logger.info("JenaQuerierDB.sync(): execution time {} ms", endTime - startTime);
@@ -3099,9 +3105,8 @@ public class JenaQuerierDB implements IQuerierDB {
 
     }
 
-    /*
-     * What we still do need are some methods to update the asserted graph in specific
-     * ways. These are used by the validator to fix inconsistencies in the asserted graph,
+    /* We still do need some methods to update the asserted graph in specific ways.
+     * These are used by the validator to fix inconsistencies in the asserted graph,
      * providing a sort-of 'automated repair' facility for old/broken system models.
      */
 
@@ -3306,8 +3311,8 @@ public class JenaQuerierDB implements IQuerierDB {
                 continue;
             }
 
-            /* In the latter case must retain the link entity but will need to create a fake asset entity from which
-             * to get a hashed ID reference for use in creating the correct link URI.
+            /* In the latter case must retain the link entity but will need to create a fake asset (not stored)
+             * entity from which to get a hashed ID reference for use in creating the correct link URI.
              */
             if(fromAsset == null) {
                 fromAsset = new AssetDB();
@@ -3319,7 +3324,7 @@ public class JenaQuerierDB implements IQuerierDB {
             }
 
             // Get the correct relationship entity URI
-            String newURI = "system#" + fromAsset.getId() + "-" + linkType.replace("domain#", "") + "-" + toAsset.getId();
+            String newURI = "system#" + fromAsset.generateID() + "-" + linkType.replace("domain#", "") + "-" + toAsset.generateID();
 
             if(!oldURI.equals(newURI)) {
                 // The URI of this CC is incorrect
