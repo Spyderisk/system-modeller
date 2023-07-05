@@ -15,5 +15,3 @@ services:
       # Port 8080 is the one exposed by keycloak by default and not related to any port-mapping.
       # Environment variables are not available at build time (only at runtime).
       KEYCLOAK_AUTH_SERVER_URL: http://keycloak:8080/auth/
-    env_file:
-      - .env.template
