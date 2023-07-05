@@ -479,6 +479,9 @@ public class RiskCalculator {
              * why the unit test fails, which will run in parallel with the risk calculator developments. 
              */
 
+            // First, store the risk calc mode (FUTURE/CURRENT), to ensure this is returned in the results
+            model.setRiskCalculationMode(mode.toString());
+
             // TODO: Remove prints
             progress.updateProgress(0.1, "Creating maps");
             createMaps();
@@ -1447,8 +1450,10 @@ public class RiskCalculator {
                 querier.store(ms, "system-inf");
             }
         }
+
         if (worstRiskLevel != null) {
             model.setRisk(worstRiskLevel.getUri());
+            model.setRisksValid(true); //ensure that flag is set for returning in the response
             querier.store(model, "system-inf");
         }
 

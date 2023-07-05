@@ -116,6 +116,7 @@ dependencies {
     compile('org.apache.jena:jena-tdb:3.14.0')
     annotationProcessor('com.github.therapi:therapi-runtime-javadoc-scribe:0.12.0')
     compile("net.lingala.zip4j:zip4j:2.10.0")
+    compile("com.bpodgursky:jbool_expressions:1.23")
 
     //test dependencies
     testCompile('org.springframework.boot:spring-boot-starter-test') {exclude group: "com.vaadin.external.google", module:"android-json"}
