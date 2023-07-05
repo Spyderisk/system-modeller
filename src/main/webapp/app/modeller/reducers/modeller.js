@@ -28,7 +28,9 @@ const modelState = {
         calculatingRisks: false,
         controlsReset: false,
         canBeEdited: true,
-        canBeShared: true
+        canBeShared: true,
+        risksValid: false,
+        riskCalculationMode: ""
     },
     // Rayna: TODO - when the backend for groups is implemented, put this array in the model above.
     groups: [],
@@ -60,9 +62,11 @@ const modelState = {
     selectedThreat: {
         id: ""
     },
+    attackPaths: {},
     selectedMisbehaviour: {
         misbehaviour: {},
-        loadingRootCauses: false
+        loadingRootCauses: false,
+        loadingAttackPath: false
     },
     expanded: {
         assetDetails: {
@@ -861,6 +865,7 @@ export default function modeller(state = modelState, action) {
                 error: "",
                 waitingForUpdate: false
             },
+            attackPaths: {}
         };
     }
 
@@ -927,6 +932,7 @@ export default function modeller(state = modelState, action) {
                 error: "",
                 waitingForUpdate: false
             },
+            attackPaths: {}
         };
     }
 
@@ -1075,7 +1081,8 @@ export default function modeller(state = modelState, action) {
             ...state,
             model: {
                 ...state.model,
-                riskLevelsValid: true,
+                riskLevelsValid: model.risksValid,
+                riskCalculationMode: model.riskCalculationMode,
                 risk: modelRisk,
                 saved: saved,
                 controlSets: updatedControlSets,
@@ -2228,7 +2235,48 @@ export default function modeller(state = modelState, action) {
         window.open(action.payload);
     }
 
+    if (action.type === instr.LOADING_ATTACK_PATH) {
+        let loading = action.payload;
+
+        if (loading) {
+            console.log("Loading attack path...");
+        }
+        else {
+            console.log("Finished loading attack path (or error)");
+        }
+        
+        return {
+            ...state,
+            selectedMisbehaviour: {
+                ...state.selectedMisbehaviour,
+                loadingAttackPath: loading
+            }
+        };
+    }
+
+    if (action.type === instr.GET_ATTACK_PATH) {
+        let apt = getAttackPathThreatRefs(action.payload);
+        let updatedAttackPaths = {...state.attackPaths};
+        updatedAttackPaths[state.selectedMisbehaviour.misbehaviour.uri] = apt;
+        return {
+            ...state,
+            selectedMisbehaviour: {
+                ...state.selectedMisbehaviour,
+                loadingAttackPath: false
+            },
+            attackPaths: updatedAttackPaths
+        };
+    }
+
     return state;
+}
+
+function getAttackPathThreatRefs(attackPathData) {
+    const prefix = attackPathData.prefix;
+    const sortedAttackThreats = Array.from(new Map(Object.entries(attackPathData.threats)))
+        .sort((a,b) => b[1] - a[1]).map((pair) => [prefix + pair[0], pair[1]]);
+    console.log("modellerReducer: sorted attack path threats found ", sortedAttackThreats.length);
+    return sortedAttackThreats;
 }
 
 function updateControlStrategies(threats, controlStrategies, controlSets) {
