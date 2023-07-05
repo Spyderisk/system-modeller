@@ -24,18 +24,25 @@
 
 package uk.ac.soton.itinnovation.security.modelvalidator.test;
 
-import java.util.List;
 import java.util.ArrayList;
-import junit.framework.TestCase;
+import java.util.List;
+
 import org.apache.jena.query.Dataset;
 import org.apache.jena.tdb.TDBFactory;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import junit.framework.TestCase;
 import uk.ac.soton.itinnovation.security.modelquerier.IQuerierDB;
 import uk.ac.soton.itinnovation.security.modelquerier.JenaQuerierDB;
 import uk.ac.soton.itinnovation.security.modelquerier.SystemModelQuerier;
@@ -47,7 +54,7 @@ import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.TreeJsonD
 @RunWith(JUnit4.class)
 public class AttackPathTester extends TestCase {
 
-    public static Logger logger = LoggerFactory.getLogger(RiskLevelCalculatorTester.class);
+	public static Logger logger = LoggerFactory.getLogger(RiskLevelCalculatorTester.class);
 
 	private static TestHelper tester;
 	private static Dataset dataset;
@@ -56,28 +63,30 @@ public class AttackPathTester extends TestCase {
 	private static SystemModelQuerier smq;
 	private static SystemModelUpdater smu;
 
-	@Rule public TestName name = new TestName();
+	@Rule
+	public TestName name = new TestName();
 
-	@Rule public ErrorCollector collector = new ErrorCollector();
+	@Rule
+	public ErrorCollector collector = new ErrorCollector();
 
 	@BeforeClass
-    public static void beforeClass() {
+	public static void beforeClass() {
 
 		tester = new TestHelper("jena-tdb");
 
-        //Test domain model for shortest attack path
+		// Test domain model for shortest attack path
 		tester.addDomain(0, "modelvalidator/domain-network-6a1-3-5-auto-expanded-unfiltered.nq.gz",
-                "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
+				"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
 
 		tester.addSystem(0, "modelvalidator/system-dataflow-test-singles.nq.gz",
-					"http://it-innovation.soton.ac.uk/system/63d9308f8f6a206408be9010");
+				"http://it-innovation.soton.ac.uk/system/63d9308f8f6a206408be9010");
 
 		tester.setUp();
 
 		dataset = TDBFactory.createDataset("jena-tdb");
 
 		logger.info("RiskLevelCalculator tests executing...");
-    }
+	}
 
 	@Before
 	public void beforeEachTest() {
@@ -91,7 +100,7 @@ public class AttackPathTester extends TestCase {
 
 		logger.debug("Test {} took {} milliseconds", name.getMethodName(), System.currentTimeMillis() - stopwatch);
 
-		//comment in to better debug the test models
+		// comment in to better debug the test models
 		logger.debug("Exporting test model");
 		tester.exportTestModel("build/build/test-results/" + name.getMethodName(), true, false, true);
 	}
@@ -110,16 +119,16 @@ public class AttackPathTester extends TestCase {
 		try {
 			logger.info("Gathering datasets for the attack graph");
 
-            AttackPathAlgorithm apa = new AttackPathAlgorithm(querierDB);
+			AttackPathAlgorithm apa = new AttackPathAlgorithm(querierDB);
 
-            List<String> targetUris = new ArrayList<>();
-            targetUris.add("system#MS-LossOfAuthenticity-a40e98cc");
+			List<String> targetUris = new ArrayList<>();
+			targetUris.add("system#MS-LossOfAuthenticity-a40e98cc");
 
-            Assert.assertTrue(apa.checkTargetUris(targetUris));
+			Assert.assertTrue(apa.checkTargetUris(targetUris));
 
-            apa.checkRequestedRiskCalculationMode("FUTURE");
+			apa.checkRequestedRiskCalculationMode("FUTURE");
 
-            TreeJsonDoc treeDoc = apa.calculateAttackTreeDoc(targetUris, "FUTURE", false, false);
+			TreeJsonDoc treeDoc = apa.calculateAttackTreeDoc(targetUris, "FUTURE", false, false);
 
 		} catch (Exception e) {
 			e.printStackTrace();

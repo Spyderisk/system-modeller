@@ -28,9 +28,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 /**
-* Exception thrown when a rest function tries to access an invalid misbehaviour
-* Will present as an HTTP response.
-*/
+ * Exception thrown when a rest function tries to access an invalid misbehaviour Will present as an HTTP response.
+ */
 @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "Unknown target misbehaviour")
 public class MisbehaviourSetInvalidException extends RuntimeException {
     public MisbehaviourSetInvalidException(String message) {

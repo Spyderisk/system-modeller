@@ -24,8 +24,8 @@
 /////////////////////////////////////////////////////////////////////////
 package uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto;
 
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 public class Graph {
     private Map<String, Integer> threats;
@@ -33,9 +33,7 @@ public class Graph {
     private Map<String, Integer> twas;
     private List<List<String>> links;
 
-    public Graph (Map<String, Integer> threats,
-            Map<String, Integer> misbehaviours,
-            Map<String, Integer> twas,
+    public Graph(Map<String, Integer> threats, Map<String, Integer> misbehaviours, Map<String, Integer> twas,
             List<List<String>> links) {
 
         this.threats = threats;

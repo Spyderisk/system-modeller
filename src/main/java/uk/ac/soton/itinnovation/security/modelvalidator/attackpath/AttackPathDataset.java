@@ -24,9 +24,22 @@
 /////////////////////////////////////////////////////////////////////////
 package uk.ac.soton.itinnovation.security.modelvalidator.attackpath;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
 import uk.ac.soton.itinnovation.security.modelquerier.IQuerierDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.AssetDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ControlSetDB;
@@ -36,50 +49,34 @@ import uk.ac.soton.itinnovation.security.modelquerier.dto.MisbehaviourSetDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ThreatDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.TrustworthinessAttributeSetDB;
 
-import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.HashSet;
-import java.util.Set;
-
-import java.util.stream.Collectors;
-
 public class AttackPathDataset {
     private static final Logger logger = LoggerFactory.getLogger(AttackPathDataset.class);
 
     protected IQuerierDB querier;
 
-    protected Map<String, LevelDB> poLevels = new HashMap<>();                // Map of domain model population levels indexed by URI
-    protected Map<String, LevelDB> liLevels = new HashMap<>();                // Map of domain model likelihood levels indexed by URI
-    protected Map<String, LevelDB> twLevels = new HashMap<>();                // Map of domain model trustworthiness levels indexed by URI
-    protected Map<String, LevelDB> imLevels = new HashMap<>();                // Map of domain model impact levels indexed by URI
-    protected Map<String, LevelDB> riLevels = new HashMap<>();                // Map of domain model risk levels indexed by URI
+    protected Map<String, LevelDB> poLevels = new HashMap<>(); // Map of domain model population levels indexed by URI
+    protected Map<String, LevelDB> liLevels = new HashMap<>(); // Map of domain model likelihood levels indexed by URI
+    protected Map<String, LevelDB> twLevels = new HashMap<>(); // Map of domain model trustworthiness levels indexed by URI
+    protected Map<String, LevelDB> imLevels = new HashMap<>(); // Map of domain model impact levels indexed by URI
+    protected Map<String, LevelDB> riLevels = new HashMap<>(); // Map of domain model risk levels indexed by URI
 
-    protected List<LevelDB> riskLevels = new ArrayList<>();                   // List of risk levels, ordered by level value (increasing risk)
+    protected List<LevelDB> riskLevels = new ArrayList<>(); // List of risk levels, ordered by level value (increasing risk)
 
-    protected Map<String, AssetDB> assets = new HashMap<>();                                              // Map of system model assets, indexed by asset URI
-    protected Map<String, ThreatDB> threats = new HashMap<>();                                            // Map of system model threats, indexed by threat URI
+    protected Map<String, AssetDB> assets = new HashMap<>(); // Map of system model assets, indexed by asset URI
+    protected Map<String, ThreatDB> threats = new HashMap<>(); // Map of system model threats, indexed by threat URI
 
-    protected Map<String, MisbehaviourSetDB> misbehaviourSets = new HashMap<>();                          // Map of system model misbehaviour sets (MS), indexed by URI
-    protected Map<String, TrustworthinessAttributeSetDB> trustworthinessAttributeSets = new HashMap<>();  // Map of system model trustworthiness attribute sets (TWAS), indexed by URI
-    protected Map<String, ControlSetDB> controlSets = new HashMap<>();                                    // Map of system model control sets (CS), indexed by URI
-    protected Map<String, ControlStrategyDB> controlStrategies = new HashMap<>();                         // Map of system model control strategies (CSG), indexed by URI
+    protected Map<String, MisbehaviourSetDB> misbehaviourSets = new HashMap<>(); // Map of system model misbehaviour sets (MS), indexed by URI
+    protected Map<String, TrustworthinessAttributeSetDB> trustworthinessAttributeSets = new HashMap<>(); // Map of system model trustworthiness attribute sets (TWAS), indexed by URI
+    protected Map<String, ControlSetDB> controlSets = new HashMap<>(); // Map of system model control sets (CS), indexed by URI
+    protected Map<String, ControlStrategyDB> controlStrategies = new HashMap<>(); // Map of system model control strategies (CSG), indexed by URI
 
-    protected Map<String, MisbehaviourSetDB> entryPointMisbehaviour = new HashMap<>();                    // Map of system model MS associated with a TWAS, indexed by the TWAS URI
-    protected Map<String, String> misbehaviourTWAS = new HashMap<>();                                     // Map of system model TWAS URI associated with an MS, indexed by the MS URI
+    protected Map<String, MisbehaviourSetDB> entryPointMisbehaviour = new HashMap<>(); // Map of system model MS associated with a TWAS, indexed by the TWAS URI
+    protected Map<String, String> misbehaviourTWAS = new HashMap<>(); // Map of system model TWAS URI associated with an MS, indexed by the MS URI
 
     ////////////////////////////////////////////////
     // Attack path datasets only
-    private Map<String, String> likelihoods = new HashMap<>();             // Map of likelihoods for threats and misbehaviours
-    private Set<String> normalOps = new HashSet<>();                       // Set of normal ops
+    private Map<String, String> likelihoods = new HashMap<>(); // Map of likelihoods for threats and misbehaviours
+    private Set<String> normalOps = new HashSet<>(); // Set of normal ops
 
     public AttackPathDataset(IQuerierDB querier) {
 
@@ -88,7 +85,7 @@ public class AttackPathDataset {
         // Save the querier reference for use in other methods
         this.querier = querier;
 
-         // Load domain model poulation, impact, trustworthiness, risk and likelihood scales as maps keyed on their URI
+        // Load domain model poulation, impact, trustworthiness, risk and likelihood scales as maps keyed on their URI
         poLevels = querier.getPopulationLevels();
         imLevels = querier.getImpactLevels();
         liLevels = querier.getLikelihoodLevels();
@@ -118,21 +115,23 @@ public class AttackPathDataset {
         controlStrategies = querier.getControlStrategies("system-inf");
 
         final long endTime = System.currentTimeMillis();
-        logger.info("AttackPathDataset.AttackPathDataset(IQuerierDB querier): execution time {} ms", endTime - startTime);
+        logger.info("AttackPathDataset.AttackPathDataset(IQuerierDB querier): execution time {} ms",
+                endTime - startTime);
 
     }
 
-    /* Create maps required by the risk calculation to find TWAS, MS and their relationship to roles
-    */
-    protected void createMaps(){
+    /*
+     * Create maps required by the risk calculation to find TWAS, MS and their relationship to roles
+     */
+    protected void createMaps() {
 
         final long startTime = System.currentTimeMillis();
 
         // Create likelihood maps
-        for(ThreatDB threat : threats.values()) {
+        for (ThreatDB threat : threats.values()) {
             likelihoods.put(threat.getUri(), threat.getPrior());
         }
-        for(MisbehaviourSetDB miss : misbehaviourSets.values()) {
+        for (MisbehaviourSetDB miss : misbehaviourSets.values()) {
             likelihoods.put(miss.getUri(), miss.getPrior());
         }
 
@@ -152,13 +151,13 @@ public class AttackPathDataset {
             requestedMode = RiskCalculationMode.valueOf(input);
             return requestedMode == RiskCalculationMode.FUTURE;
         } catch (IllegalArgumentException e) {
-            //TODO: throw an exception
+            // TODO: throw an exception
             logger.error("Found unexpected riskCalculationMode parameter value {}.", input);
             return false;
         }
     }
 
-    public boolean calculateAttackPath()  throws RuntimeException {
+    public boolean calculateAttackPath() throws RuntimeException {
         try {
             createMaps();
             return true;
@@ -172,19 +171,18 @@ public class AttackPathDataset {
         logger.debug("*******************************************************");
         logger.debug("*******************************************************");
         logger.debug("Threat CSGs:");
-        for(ThreatDB threat : threats.values()){
+        for (ThreatDB threat : threats.values()) {
             int csgsSize = threat.getBlockedByCSG().size() + threat.getMitigatedByCSG().size();
-            if (csgsSize>0){
-                logger.debug(" {}, blocked: {} mitigated: {}",
-                        threat.getUri(), threat.getBlockedByCSG().size(),
+            if (csgsSize > 0) {
+                logger.debug(" {}, blocked: {} mitigated: {}", threat.getUri(), threat.getBlockedByCSG().size(),
                         threat.getMitigatedByCSG().size());
             }
             Collection<String> csgsBlocked = threat.getBlockedByCSG();
-            if(csgsBlocked.size()>0){
-                for(String csg : csgsBlocked){
+            if (csgsBlocked.size() > 0) {
+                for (String csg : csgsBlocked) {
                     List<String> css = this.controlStrategies.get(csg).getMandatoryCS();
                     logger.debug("      CSG blocked: {}, cs: {}", csg, css.size());
-                    for(String cs : css){
+                    for (String cs : css) {
                         logger.debug("      cs: {}", cs);
                     }
                 }
@@ -192,27 +190,26 @@ public class AttackPathDataset {
         }
 
         logger.debug("Control Strategies");
-        for(ControlStrategyDB csg : controlStrategies.values()) {
+        for (ControlStrategyDB csg : controlStrategies.values()) {
             logger.debug("CSG: {} cs: {}", csg.getUri(), csg.getMandatoryCS().size());
-            for(String cs : csg.getMandatoryCS()) {
+            for (String cs : csg.getMandatoryCS()) {
                 logger.debug("      cs: {}", cs);
             }
         }
 
         logger.debug("ContolSets:");
-        for(ControlSetDB cs : controlSets.values()){
+        for (ControlSetDB cs : controlSets.values()) {
             logger.debug("ControlSet: {}, proposed {}", cs.getUri(), cs.isProposed());
         }
         logger.debug("Misbehaviours");
-        for(MisbehaviourSetDB ms : misbehaviourSets.values()){
+        for (MisbehaviourSetDB ms : misbehaviourSets.values()) {
             AssetDB asset = assets.get(ms.getLocatedAt());
-            logger.debug("  MS {}, likelihood: {}, risk: {}, asset: {}",
-                    ms.getUri(), ms.getPrior(), ms.getRisk(), asset.getLabel());
+            logger.debug("  MS {}, likelihood: {}, risk: {}, asset: {}", ms.getUri(), ms.getPrior(), ms.getRisk(),
+                    asset.getLabel());
         }
         logger.debug("*******************************************************");
         logger.debug("*******************************************************");
     }
-
 
     public Map<String, String> getLikelihoods() {
         return this.likelihoods;
@@ -222,14 +219,14 @@ public class AttackPathDataset {
         return this.normalOps;
     }
 
-     /**
+    /**
      * get misbehaviour direct cause uris.
      *
      * @param uri
      * @return
      */
-    //TODO MS will provide a direct call to get uris
-    public List<String> getMisbehaviourDirectCauseUris(String misbUri)   throws RuntimeException {
+    // TODO MS will provide a direct call to get uris
+    public List<String> getMisbehaviourDirectCauseUris(String misbUri) throws RuntimeException {
         try {
             MisbehaviourSetDB ms = misbehaviourSets.get(misbUri);
             return new ArrayList<>(ms.getCausedBy());
@@ -238,13 +235,13 @@ public class AttackPathDataset {
         }
     }
 
-     /**
+    /**
      * get threat direct cause uris.
      *
      * @param uri
      * @return
      */
-    public List<String> getThreatDirectCauseUris(String threatUri)   throws RuntimeException {
+    public List<String> getThreatDirectCauseUris(String threatUri) throws RuntimeException {
         try {
             ThreatDB threat = threats.get(threatUri);
             return new ArrayList<>(threat.getCausedBy());
@@ -290,24 +287,24 @@ public class AttackPathDataset {
      * @param csgUri
      * @return
      */
-    public boolean checkContingencyPlan(String csgUri)   throws RuntimeException {
+    public boolean checkContingencyPlan(String csgUri) throws RuntimeException {
         try {
             String contingencyPlan;
-            if(this.checkImplementationRuntime(csgUri)){
+            if (this.checkImplementationRuntime(csgUri)) {
                 contingencyPlan = csgUri.replaceAll("-Implementation-Runtime|-Implementation", "");
             } else {
                 return false;
             }
 
             if (controlStrategies.containsKey(contingencyPlan)) {
-            boolean activated = true;
-            for (String cs : controlStrategies.get(contingencyPlan).getMandatoryCS() ) {
-                if (! controlSets.get(cs).isProposed()){
-                    activated = false;
-                    break;
+                boolean activated = true;
+                for (String cs : controlStrategies.get(contingencyPlan).getMandatoryCS()) {
+                    if (!controlSets.get(cs).isProposed()) {
+                        activated = false;
+                        break;
+                    }
                 }
-            }
-            return activated;
+                return activated;
             }
             return true;
         } catch (Exception e) {
@@ -321,14 +318,13 @@ public class AttackPathDataset {
      * @param threatUri
      * @return
      */
-    public Set<String> getThreatControlStrategyUris(String threatUri, boolean future)   throws RuntimeException {
+    public Set<String> getThreatControlStrategyUris(String threatUri, boolean future) throws RuntimeException {
         // Return list of control strategies (urirefs) that block a threat
         // (uriref)
 
-        /* "blocks": means a CSG appropriate for current or future risk calc
-         * "mitigates": means a CSG appropriate for furture risk (often a
-         * contingency plan for a current risk CSG); excluded from likelihood
-         * calc in current risk
+        /*
+         * "blocks": means a CSG appropriate for current or future risk calc "mitigates": means a CSG appropriate for furture risk (often a contingency plan for a
+         * current risk CSG); excluded from likelihood calc in current risk
          */
 
         Set<String> csgURIs = new HashSet<String>();
@@ -339,11 +335,11 @@ public class AttackPathDataset {
             if (future) {
                 csgURIs.addAll(threat.getMitigatedByCSG());
             }
-            for(String csgURI : csgURIs) {
+            for (String csgURI : csgURIs) {
                 ControlStrategyDB csg = querier.getControlStrategy(csgURI, "system-inf");
                 if (csg.isCurrentRisk()) {
-                   csgToConsider.add(csgURI);
-               }
+                    csgToConsider.add(csgURI);
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -352,12 +348,12 @@ public class AttackPathDataset {
     }
 
     /**
-     * get CSG control sets  uris
+     * get CSG control sets uris
      *
      * @param csgUri
      * @return
      */
-    public List<String> getCsgControlSetsUris(String csgUri)   throws RuntimeException {
+    public List<String> getCsgControlSetsUris(String csgUri) throws RuntimeException {
         try {
             List<String> csList = new ArrayList<>();
             for (String csUri : controlStrategies.get(csgUri).getMandatoryCS()) {
@@ -375,7 +371,7 @@ public class AttackPathDataset {
      * @param csgUri
      * @return
      */
-    public List<ControlSetDB> getCsgControlSets(String csgUri)   throws RuntimeException {
+    public List<ControlSetDB> getCsgControlSets(String csgUri) throws RuntimeException {
         try {
             List<ControlSetDB> csList = new ArrayList<ControlSetDB>();
             for (String csUri : controlStrategies.get(csgUri).getMandatoryCS()) {
@@ -393,14 +389,14 @@ public class AttackPathDataset {
      * @param csgUri
      * @return
      */
-    public List<String> getCsgInactiveControlSets(String csgUri)   throws RuntimeException {
+    public List<String> getCsgInactiveControlSets(String csgUri) throws RuntimeException {
 
         try {
             List<String> csList = new ArrayList<>();
             for (String csUri : this.controlStrategies.get(csgUri).getMandatoryCS()) {
-                //TODO needs revisiting, CS object should be accessed directly
-                for (ControlSetDB cs : controlSets.values()){
-                    if(cs.getUri().equals(csUri) && (!cs.isProposed())) {
+                // TODO needs revisiting, CS object should be accessed directly
+                for (ControlSetDB cs : controlSets.values()) {
+                    if (cs.getUri().equals(csUri) && (!cs.isProposed())) {
                         csList.add(csUri);
                     }
                 }
@@ -417,7 +413,7 @@ public class AttackPathDataset {
      * @param threatUri
      * @return
      */
-    public List<String> getThreatInactiveCSGs(String threatUri, boolean future)  throws RuntimeException {
+    public List<String> getThreatInactiveCSGs(String threatUri, boolean future) throws RuntimeException {
         try {
             List<String> csgUriList = new ArrayList<String>();
             for (String csgUri : getThreatControlStrategyUris(threatUri, future)) {
@@ -431,10 +427,10 @@ public class AttackPathDataset {
         }
     }
 
-    //TODO filtering LevelValue should be a parameter
-    public List<String> filterMisbehaviours()  throws RuntimeException {
-        /* compare MS by risk then likelihood, and return MS with
-         * likelihood or risk >= MEDIUM
+    // TODO filtering LevelValue should be a parameter
+    public List<String> filterMisbehaviours() throws RuntimeException {
+        /*
+         * compare MS by risk then likelihood, and return MS with likelihood or risk >= MEDIUM
          */
 
         List<String> msUris = new ArrayList<>();
@@ -444,26 +440,22 @@ public class AttackPathDataset {
 
             List<MisbehaviourSetDB> msSorted = new ArrayList<>(misbehaviourSets.values());
 
-            Comparator<MisbehaviourSetDB> comparator = Comparator.
-                comparing(MisbehaviourSetDB::getRisk)
-                .thenComparing(MisbehaviourSetDB::getPrior);
+            Comparator<MisbehaviourSetDB> comparator = Comparator.comparing(MisbehaviourSetDB::getRisk)
+                    .thenComparing(MisbehaviourSetDB::getPrior);
 
             msSorted.sort(comparator);
 
             List<MisbehaviourSetDB> msFiltered = msSorted.stream()
-                .filter(ms -> riLevels.get(ms.getRisk()).getLevelValue() >= 3)
-                .collect(Collectors.toList());
+                    .filter(ms -> riLevels.get(ms.getRisk()).getLevelValue() >= 3).collect(Collectors.toList());
 
-            for (MisbehaviourSetDB ms : msFiltered){
+            for (MisbehaviourSetDB ms : msFiltered) {
                 AssetDB asset = assets.get(ms.getLocatedAt());
-                logger.debug("filtered MS:   {} \t-> risk {} prior {} at {}",
-                        ms.getUri().substring(7), ms.getRisk().substring(7),
-                        ms.getPrior().substring(7), asset.getLabel());
+                logger.debug("filtered MS:   {} \t-> risk {} prior {} at {}", ms.getUri().substring(7),
+                        ms.getRisk().substring(7), ms.getPrior().substring(7), asset.getLabel());
                 msUris.add(ms.getUri());
             }
 
             logger.debug("filtered MS sets size: {}/{}", msUris.size(), misbehaviourSets.size());
-
 
         } catch (Exception e) {
             logger.error("got an error filtering misbehaviours: {}", e.getMessage());
@@ -473,7 +465,7 @@ public class AttackPathDataset {
         return msUris;
     }
 
-    public boolean isExternalCause(String uri){
+    public boolean isExternalCause(String uri) {
         boolean retVal = false;
         // TODO: no need to check MS for external causes any more?
         if (misbehaviourSets.containsKey(uri)) {
@@ -481,9 +473,9 @@ public class AttackPathDataset {
             if (ms != null) {
                 retVal = ms.isExternalCause();
             }
-        } else if (trustworthinessAttributeSets.containsKey(uri)){
+        } else if (trustworthinessAttributeSets.containsKey(uri)) {
             TrustworthinessAttributeSetDB twa = trustworthinessAttributeSets.get(uri);
-            if(twa != null) {
+            if (twa != null) {
                 retVal = twa.isExternalCause();
             }
         }
@@ -491,14 +483,13 @@ public class AttackPathDataset {
         return retVal;
     }
 
-
     /**
      * check URI is a normal operation
      *
      * @param uri string of a threat or misbehaviour
      * @rerutn boolean
      */
-    public boolean isNormalOp(String uri){
+    public boolean isNormalOp(String uri) {
         boolean retVal = false;
 
         // check if we have to deal with a threat URI
@@ -522,23 +513,23 @@ public class AttackPathDataset {
     }
 
     // describes if the URI refers to an initial cause misbehaviour
-    public boolean isInitialCause(String uri){
-        if (this.threats.keySet().contains(uri)){
+    public boolean isInitialCause(String uri) {
+        if (this.threats.keySet().contains(uri)) {
             return threats.get(uri).isInitialCause();
         } else {
             return false;
         }
     }
 
-    public boolean isThreatSimple(String uri){
-        if (this.threats.keySet().contains(uri)){
+    public boolean isThreatSimple(String uri) {
+        if (this.threats.keySet().contains(uri)) {
             return true;
         } else {
             return false;
         }
     }
 
-    public boolean isMisbehaviourSet(String uri){
+    public boolean isMisbehaviourSet(String uri) {
         if (this.misbehaviourSets.keySet().contains(uri)) {
             return true;
         } else {
@@ -554,8 +545,8 @@ public class AttackPathDataset {
         }
     }
 
-    public boolean isThreat(String uri){
-        if (this.threats.keySet().contains(uri)){
+    public boolean isThreat(String uri) {
+        if (this.threats.keySet().contains(uri)) {
             return true;
         } else {
             return false;
@@ -567,38 +558,37 @@ public class AttackPathDataset {
     }
 
     public void printThreatUris() {
-        for(String uri : this.threats.keySet()){
+        for (String uri : this.threats.keySet()) {
             logger.debug("Threat: {}", uri);
         }
     }
 
-    public boolean isSecondaryThreat(String uri){
-        if(threats.keySet().contains(uri) && 
-                (threats.get(uri).getSecondaryEffectConditions().size() > 0)) {
-                return true;
+    public boolean isSecondaryThreat(String uri) {
+        if (threats.keySet().contains(uri) && (threats.get(uri).getSecondaryEffectConditions().size() > 0)) {
+            return true;
         }
         return false;
     }
 
     public boolean isRootCause(String uri) {
-        if(threats.keySet().contains(uri)){
+        if (threats.keySet().contains(uri)) {
             ThreatDB threat = this.querier.getThreat(uri, "system-inf");
-            if (threat != null){
+            if (threat != null) {
                 return threat.isRootCause();
             }
         }
         return false;
     }
 
-    public String getLikelihood(String uri){
-        if(this.likelihoods.keySet().contains(uri)){
+    public String getLikelihood(String uri) {
+        if (this.likelihoods.keySet().contains(uri)) {
             return this.likelihoods.get(uri);
         }
         return "";
     }
 
     // check MS list exists, no point going futher
-    public boolean checkMisbehaviourList(List<String> misbehaviours){
+    public boolean checkMisbehaviourList(List<String> misbehaviours) {
         boolean retVal = true;
 
         for (String misb : misbehaviours) {
@@ -612,7 +602,6 @@ public class AttackPathDataset {
         return retVal;
     }
 
-
     /**
      * capitilise string
      *
@@ -620,8 +609,7 @@ public class AttackPathDataset {
      * @return
      */
     private String capitaliseString(String str) {
-            return str.substring(0, 1).toUpperCase() + str.substring(1);
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
 }
-

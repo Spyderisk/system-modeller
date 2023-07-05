@@ -24,26 +24,22 @@
 /////////////////////////////////////////////////////////////////////////
 package uk.ac.soton.itinnovation.security.modelvalidator.attackpath;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Iterator;
-
 import com.bpodgursky.jbool_expressions.And;
 import com.bpodgursky.jbool_expressions.Expression;
-import com.bpodgursky.jbool_expressions.Not;
 import com.bpodgursky.jbool_expressions.Or;
-import com.bpodgursky.jbool_expressions.Variable;
-import com.bpodgursky.jbool_expressions.options.ExprOptions;
-import com.bpodgursky.jbool_expressions.parsers.ExprParser;
 import com.bpodgursky.jbool_expressions.rules.RuleSet;
 
 public class LogicalExpression {
-    private static final Logger logger = LoggerFactory.getLogger(AttackNode.class);
+    // private static final Logger logger = LoggerFactory.getLogger(AttackNode.class);
 
     private boolean allRequired;
 
@@ -55,7 +51,7 @@ public class LogicalExpression {
         this.allRequired = ar;
 
         List<Expression<String>> allCausesAux = new ArrayList<>();
-        for(Object causeObj : cList) {
+        for (Object causeObj : cList) {
             if (causeObj instanceof LogicalExpression) {
                 LogicalExpression leObj = (LogicalExpression) causeObj;
                 allCausesAux.add(leObj.getCause());
@@ -65,16 +61,16 @@ public class LogicalExpression {
             }
         }
 
-        //all_causes = [cc for cc in all_causes if cc is not None]
+        // all_causes = [cc for cc in all_causes if cc is not None]
         for (Expression<String> cc : allCausesAux) {
-            if(cc != null) {
+            if (cc != null) {
                 allCauses.add(cc);
             }
         }
-        
-        if (allCauses.size() == 0){
+
+        if (allCauses.size() == 0) {
             this.cause = null;
-        } else if(allCauses.size() == 1) {
+        } else if (allCauses.size() == 1) {
             this.cause = allCauses.get(0);
         } else {
             if (allRequired) {
@@ -85,7 +81,7 @@ public class LogicalExpression {
                 this.cause = RuleSet.simplify(ors);
             }
         }
-        
+
     }
 
     public String toString() {
@@ -106,45 +102,45 @@ public class LogicalExpression {
     public void setCause(Expression expr) {
         this.cause = expr;
     }
-    public Expression getCause(){
-        if(this.cause == null){
+
+    public Expression getCause() {
+        if (this.cause == null) {
             return this.cause;
         } else {
             return RuleSet.simplify(this.cause);
         }
     }
 
-    public void applyDNF(int maxComplexity){
+    public void applyDNF(int maxComplexity) {
         // apply DNF
-        if (this.cause == null){
+        if (this.cause == null) {
             return;
         }
         int causeComplexity = this.cause.getChildren().size();
-        if (causeComplexity <= maxComplexity){
+        if (causeComplexity <= maxComplexity) {
             this.cause = RuleSet.toDNF(RuleSet.simplify(this.cause));
         }
     }
 
-    public Set<String> uris(){
+    public Set<String> uris() {
         Set<String> symbolSetUris = new HashSet<String>();
-        if(this.cause != null) {
-            for(Expression<String> symbol : this.cause.getChildren()){
+        if (this.cause != null) {
+            for (Expression<String> symbol : this.cause.getChildren()) {
                 symbolSetUris.add(symbol.toString());
             }
-            if(symbolSetUris.isEmpty()){
+            if (symbolSetUris.isEmpty()) {
                 symbolSetUris.add(this.cause.toString());
             }
         }
         return symbolSetUris;
     }
 
-    public String getCsgComment(String dummyUri){
-        if(!dummyUri.startsWith("system#")){
+    public String getCsgComment(String dummyUri) {
+        if (!dummyUri.startsWith("system#")) {
             dummyUri = "system#" + dummyUri;
         }
-        //MyControlStrategy myCSG = new MyControlStrategy("", "", "");
+        // MyControlStrategy myCSG = new MyControlStrategy("", "", "");
         return "";
     }
 
 }
-

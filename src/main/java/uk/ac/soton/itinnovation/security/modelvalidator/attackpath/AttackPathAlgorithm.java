@@ -24,23 +24,18 @@
 /////////////////////////////////////////////////////////////////////////
 package uk.ac.soton.itinnovation.security.modelvalidator.attackpath;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import uk.ac.soton.itinnovation.security.modelquerier.IQuerierDB;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.TreeJsonDoc;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.Graph;
-
-import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
-import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
-
-import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
-import uk.ac.soton.itinnovation.security.modelvalidator.RiskCalculator;
-import uk.ac.soton.itinnovation.security.modelquerier.dto.ModelDB;
-
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.List;
+import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
+import uk.ac.soton.itinnovation.security.modelquerier.IQuerierDB;
+import uk.ac.soton.itinnovation.security.modelquerier.dto.ModelDB;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.Graph;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.TreeJsonDoc;
+import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
 
 public class AttackPathAlgorithm {
     private static final Logger logger = LoggerFactory.getLogger(AttackPathAlgorithm.class);
@@ -48,8 +43,8 @@ public class AttackPathAlgorithm {
     private AttackPathDataset apd;
     private IQuerierDB querier;
 
-	@Autowired
-	private ModelObjectsHelper modelObjectsHelper;
+    @Autowired
+    private ModelObjectsHelper modelObjectsHelper;
 
     public AttackPathAlgorithm(IQuerierDB querier) {
 
@@ -59,12 +54,13 @@ public class AttackPathAlgorithm {
 
         logger.debug("STARTING Shortest Path Attack algortithm ...");
 
-        //TODO might have to delay initialisation of the dataset until risk
-        //mode is checked.
+        // TODO might have to delay initialisation of the dataset until risk
+        // mode is checked.
         apd = new AttackPathDataset(querier);
 
         final long endTime = System.currentTimeMillis();
-        logger.info("AttackPathAlgorithm.AttackPathAlgorithm(IQuerierDB querier): execution time {} ms", endTime - startTime);
+        logger.info("AttackPathAlgorithm.AttackPathAlgorithm(IQuerierDB querier): execution time {} ms",
+                endTime - startTime);
 
     }
 
@@ -103,11 +99,10 @@ public class AttackPathAlgorithm {
         return retVal;
     }
 
-    public AttackTree calculateAttack(List<String> targetUris,
-            boolean allPaths, boolean normalOperations) throws RuntimeException {
+    public AttackTree calculateAttack(List<String> targetUris, boolean allPaths, boolean normalOperations)
+            throws RuntimeException {
 
-        logger.debug("calculate attack tree with allPaths: {}, normalOperations: {}",
-                allPaths, normalOperations);
+        logger.debug("calculate attack tree with allPaths: {}, normalOperations: {}", allPaths, normalOperations);
         logger.debug("target URIs: {}", targetUris);
 
         AttackTree attackTree;
@@ -129,12 +124,11 @@ public class AttackPathAlgorithm {
         return attackTree;
     }
 
+    public TreeJsonDoc calculateAttackTreeDoc(List<String> targetUris, String riskCalculationMode, boolean allPaths,
+            boolean normalOperations) throws RuntimeException {
 
-    public TreeJsonDoc calculateAttackTreeDoc(List<String> targetUris, String riskCalculationMode,
-            boolean allPaths, boolean normalOperations) throws RuntimeException {
-
-        logger.debug("calculate attack tree with isFUTURE: {}, allPaths: {}, normalOperations: {}",
-                riskCalculationMode, allPaths, normalOperations);
+        logger.debug("calculate attack tree with isFUTURE: {}, allPaths: {}, normalOperations: {}", riskCalculationMode,
+                allPaths, normalOperations);
         logger.debug("target URIs: {}", targetUris);
 
         checkRequestedRiskCalculationMode(riskCalculationMode);
@@ -171,7 +165,7 @@ public class AttackPathAlgorithm {
         logger.debug("P r i n t   J S O N   D o c   N o d e s :");
         logger.debug("*****************************************");
 
-        for(String targetMS : tree.getGraphs().keySet()) {
+        for (String targetMS : tree.getGraphs().keySet()) {
             logger.debug("TARGET GRAPH for MS: {}", targetMS.substring(7));
 
             Graph graph = tree.getGraphs().get(targetMS);
@@ -185,4 +179,3 @@ public class AttackPathAlgorithm {
     }
 
 }
-
