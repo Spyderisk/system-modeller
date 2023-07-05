@@ -96,7 +96,7 @@ along with the icons and mapping file needed for generating a UI palette of
 visual assets.
 
 An example knowledgebase is available at:
-https://github.com/Spyderisk/domain-network/packages/1826148 Here, you will
+<https://github.com/Spyderisk/domain-network/packages/1826148> Here, you will
 find the latest .zip bundle, at the bottom of the "Assets" list. This file
 should be downloaded and copied into the system-modeller/knowledgebases folder.
 Once Spyderisk has been started up (see instructions below), these zip files
@@ -110,7 +110,7 @@ a new knowledgebase manually.
 2. `$ docker-compose up -d`
 3. `$ docker-compose exec ssm bash`
 4. `$ ./gradlew assemble bootTest`
-5. Go to http://localhost:8081 or port 8089  in your browser.
+5. Go to <http://localhost:8089> in your browser.
 6. Login in using `testuser` or `testadmin` with password `password`.
 
 N.B. Links in the user interface to documentation, the attack graph image, and
@@ -194,7 +194,6 @@ to:
 Many Linux distributions already have Docker installed. The following command
 will work in `apt` based systems such as Ubuntu. To install Docker:
 
-`
 ```shell
 sudo apt-get install docker docker-compose
 ```
@@ -444,11 +443,17 @@ Where `<SERVICE>` could be e.g. `ssm`.
 ### Port Mappings
 
 The various server ports in the container are mapped by Docker to ports on the
-host. The mapping is defined in the top-level `.env` file which is
-automatically read by Docker and referenced in the `docker-compose.yml` file.
-By default, the ports in the container are mapped to the same numbered ports on
-the host, but if you need to run multiple instances then the `.env` file in one
-instance must be updated to avoid port conflicts.
+host. The default ports on the host are defined in `docker-compose.yml` and `docker-compose.override.yml`:
+
+* 3000: Nodejs (3000) on the `ssm` container 
+* 5005: Java debugging (5005) on the `ssm` container
+* 8081: Tomcat (8081) on the `ssm` container
+* 8080: Keycloak (8080) on the `keycloak` container
+* 8089: Nginx (80) on the `proxy` container
+
+To change the ports mapping it is best to copy the `.env.template` file to `.env` and define the port numbers there. This is necessary if you need to run multiple instances of the service on the same host.
+
+The Nginx reverse proxy forwards requests to the appropriate container and also includes redirects for documentation links. Therefore, it is advised to use port 8089 
 
 *The rest of this document assumes the default port mapping.*
 
@@ -456,27 +461,23 @@ To see the containers created by the `docker-compose` command along with their
 ports:
 
 ```shell
-$ docker-compose ps -a
-           Name                         Command               State                        Ports
----------------------------------------------------------------------------------------------------------------------
-system-modeller_keycloak_1   /bin/sh -c sed -e s/KEYCLO ...   Up      0.0.0.0:8080->8080/tcp, 8443/tcp
-system-modeller_mongo_1      docker-entrypoint.sh mongod      Up      27017/tcp
-system-modeller_ssm_1        /bin/sh -c tail -f /dev/null     Up      0.0.0.0:3000->3000/tcp, 0.0.0.0:5005->5005/tcp,
-                                                                      0.0.0.0:8081->8081/tcp
-```
+$ docker-compose ps
+NAME                         IMAGE                     COMMAND                  SERVICE             CREATED             STATUS              PORTS
+system-modeller-proxy-1      nginx:stable-alpine3.17   "/tmp/import/entrypo…"   proxy               23 minutes ago      Up 23 minutes       0.0.0.0:8089->80/tcp
+system-modeller-keycloak-1   keycloak/keycloak:21.0    "/tmp/import/entrypo…"   keycloak            23 minutes ago      Up 23 minutes       0.0.0.0:8080->8080/tcp, 8443/tcp
+system-modeller-mongo-1      mongo:5.0.16-focal        "docker-entrypoint.s…"   mongo               23 minutes ago      Up 23 minutes       27017/tcp
+system-modeller-ssm-1        system-modeller-ssm       "tail -f /dev/null"      ssm                 23 minutes ago      Up 23 minutes       0.0.0.0:3000->3000/tcp, 0.0.0.0:5005->5005/tcp, 0.0.0.0:8081->8081/tcp```
 
 You might contrast that with a list of all containers on the host found through
 the `docker` command:
 
 ```shell
 $ docker ps
-CONTAINER ID   IMAGE                    COMMAND                  CREATED        STATUS        PORTS
-                                      NAMES
-6692aac7d36a   system-modeller_ssm      "tail -f /dev/null"      13 hours ago   Up 13 hours   0.0.0.0:3000->3000/tcp, 0.0.0.0:5005->5005/tcp, 0.0.0.0:8081->8081/tcp   system-modeller_ssm_1
-b467e458da63   keycloak/keycloak:21.0   "/bin/sh -c 'sed -e …"   13 hours ago   Up 13 hours   0.0.0.0:8080->8080/tcp, 8443/tcp                                         system-modeller_keycloak_1
-f6d74e5e08e2   mongo:4.2.5-bionic       "docker-entrypoint.s…"   13 hours ago   Up 13 hours   27017/tcp
-                                      system-modeller_mongo_1
-etc
+CONTAINER ID   IMAGE                     COMMAND                  CREATED          STATUS          PORTS                                                                    NAMES
+01cc2804cadf   nginx:stable-alpine3.17   "/tmp/import/entrypo…"   24 minutes ago   Up 24 minutes   0.0.0.0:8089->80/tcp                                                     system-modeller-proxy-1
+0a91f360c30b   system-modeller-ssm       "tail -f /dev/null"      24 minutes ago   Up 24 minutes   0.0.0.0:3000->3000/tcp, 0.0.0.0:5005->5005/tcp, 0.0.0.0:8081->8081/tcp   system-modeller-ssm-1
+1b27ac53ec18   keycloak/keycloak:21.0    "/tmp/import/entrypo…"   24 minutes ago   Up 24 minutes   0.0.0.0:8080->8080/tcp, 8443/tcp                                         system-modeller-keycloak-1
+a67ba45f70c5   mongo:5.0.16-focal        "docker-entrypoint.s…"   24 minutes ago   Up 24 minutes   27017/tcp                                                                system-modeller-mongo-1
 ```
 
 ## Development
@@ -660,7 +661,7 @@ Tomcat servlet. As a result the whole SSM application works but the frontend is
 served from static files that are not hot-reloaded.
 
 The SSM served by Tomcat can be accessed at
-<http://localhost:8081/system-modeller>.
+<http://localhost:8089/system-modeller> (via the proxy) or direct to Tomcat via port 8081.
 
 #### Debugging the Backend
 

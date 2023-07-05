@@ -7,7 +7,6 @@ services:
   proxy:
     image: nginx:stable-alpine3.17
     # If there are multiple deployments of the SSM on the same host then they each need to expose a different PROXY_EXTERNAL_PORT
-    container_name: ssm-proxy
     ports:
       - ${PROXY_EXTERNAL_PORT:-8089}:80
     expose:
