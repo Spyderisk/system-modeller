@@ -60,7 +60,7 @@ class ImportModelModal extends React.Component {
         let error = "unknown";
 
         //"reason" may be an object or a simple string
-        if (status && status.reason) {
+        if (status?.reason) {
             error = status.reason.message ? status.reason.message : status.reason;
         }
 
@@ -68,7 +68,7 @@ class ImportModelModal extends React.Component {
     }
 
     render() {
-        let uploadFailed = this.props.upload.status !== undefined && this.props.upload.status.failed;
+        let uploadFailed = this.props.upload.status?.failed;
         let errorMsg = uploadFailed ? this.getErrorMsg(this.props.upload.status) : "";
 
         return (

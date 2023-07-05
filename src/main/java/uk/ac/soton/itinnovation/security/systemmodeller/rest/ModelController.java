@@ -1103,8 +1103,8 @@ public class ModelController {
 						boolean domainModelExists = storeModelManager.domainModelExists(domainURI);
 
 						if (!domainModelExists) {
-							logger.error("System model attempted to use non-existent domain: {}", domainURI);
-							throw new UnprocessableEntityException("System model uses non-existent domain model: " + domainURI);
+							logger.error("The system model attempted to use non-existent domain: {}", domainURI);
+							throw new UnprocessableEntityException("The system model requires a knowledgebase that is not installed: " + domainURI);
 						}
 
 						if (!canAccessAllDomains && !modelObjectsHelper.canUserAccessDomain(domainURI, user.getUsername())) {
