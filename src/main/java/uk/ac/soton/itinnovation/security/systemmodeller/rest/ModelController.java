@@ -54,8 +54,6 @@ import java.util.zip.GZIPOutputStream;
 import javax.naming.SizeLimitExceededException;
 import javax.servlet.http.HttpServletRequest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 //import org.apache.jena.query.Dataset;
 
 import org.keycloak.representations.idm.UserRepresentation;
@@ -79,14 +77,20 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
 import uk.ac.soton.itinnovation.security.model.system.RiskLevelCount;
 import uk.ac.soton.itinnovation.security.model.system.RiskVector;
+import uk.ac.soton.itinnovation.security.modelquerier.JenaQuerierDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.RiskCalcResultsDB;
 import uk.ac.soton.itinnovation.security.modelvalidator.ModelValidator;
 import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackPathAlgorithm;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.TreeJsonDoc;
 import uk.ac.soton.itinnovation.security.semanticstore.AStoreWrapper;
 import uk.ac.soton.itinnovation.security.semanticstore.IStoreWrapper;
+import uk.ac.soton.itinnovation.security.semanticstore.JenaTDBStoreWrapper;
 import uk.ac.soton.itinnovation.security.semanticstore.util.SparqlHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.auth.KeycloakAdminClient;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.Model;
@@ -99,25 +103,17 @@ import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.ModelDTO;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.UpdateModelResponse;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.BadRequestErrorException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.InternalServerErrorException;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.MisbehaviourSetInvalidException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.ModelException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.ModelInvalidException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.NotAcceptableErrorException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.NotFoundErrorException;
-import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.MisbehaviourSetInvalidException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.UnprocessableEntityException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.UserForbiddenFromDomainException;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.StoreModelManager;
 import uk.ac.soton.itinnovation.security.systemmodeller.util.ReportGenerator;
 import uk.ac.soton.itinnovation.security.systemmodeller.util.SecureUrlHelper;
-
-import uk.ac.soton.itinnovation.security.modelquerier.util.ModelStack;
-import uk.ac.soton.itinnovation.security.modelquerier.JenaQuerierDB;
-import uk.ac.soton.itinnovation.security.modelquerier.dto.ModelExportDB;
-import uk.ac.soton.itinnovation.security.semanticstore.JenaTDBStoreWrapper;
-
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackPathAlgorithm;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.TreeJsonDoc;
 
 /**
  * Includes all operations of the Model Controller Service.
