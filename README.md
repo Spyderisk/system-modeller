@@ -113,15 +113,11 @@ a new knowledgebase manually.
 5. Go to <http://localhost:8089> in your browser.
 6. Login in using `testuser` or `testadmin` with password `password`.
 
-N.B. Links in the user interface to documentation, the attack graph image, and
-Keycloak account management functions do not currently work in the development
-environment. Keycloak links can be corrected by editing the port in the URL to
-be 8080.
+N.B. The links in the user interface for the attack graph image does not work in the development environment. Links to Keycloak account management functions and documentation do not work via port 8081 but do work via port 8089.
 
 Please also note that the default setup is to recreate all databases on initial
 start-up. In order to persist any installed knowledgebases and created system
-models, you should ensure that `reset.on.start=false` in your
-`application.properties` file, prior to re-running `./gradlew assemble
+models, you should ensure that `RESET_ON_START=false` in your `.env` file, prior to re-running `./gradlew assemble
 bootTest`.
 
 ## Installing Docker
@@ -447,8 +443,8 @@ host. The default ports on the host are defined in `docker-compose.yml` and `doc
 
 * 3000: Nodejs (3000) on the `ssm` container 
 * 5005: Java debugging (5005) on the `ssm` container
-* 8081: Tomcat (8081) on the `ssm` container
 * 8080: Keycloak (8080) on the `keycloak` container
+* 8081: Tomcat (8081) on the `ssm` container
 * 8089: Nginx (80) on the `proxy` container
 
 To change the ports mapping it is best to copy the `.env.template` file to `.env` and define the port numbers there. This is necessary if you need to run multiple instances of the service on the same host.
