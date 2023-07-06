@@ -380,23 +380,20 @@ public class Model {
 		 * temporarily we should suppress most of the logger statements.
 		 */
 		if (storeModelManager != null) {
-			//logger.debug("loadModelInfo: getting domain models");
 			Map<String, Map<String, Object>> domainModels = storeModelManager.getDomainModels();
-			//logger.debug("loadModelInfo: found {} domain models", domainModels.size());
-			//logger.debug("loadModelInfo: \n {}", domainModels);
 
 			if (domainModels.size() > 0) {
 				String domainGraph = modelInfo.getDomainGraph();
-				//logger.debug("Getting domain model for graph: {}", domainGraph);
+				String domainVersion = null;
 				Map<String, Object> domainModel = domainModels.get(domainGraph);
-				//logger.debug("Domain model: {}", domainModel);
 
 				if (domainModel == null) {
-					throw new RuntimeException("Could not locate domain model for graph: " + domainGraph);
+					logger.error("Could not locate domain model for graph: " + domainGraph);
+				}
+				else {
+					domainVersion = (String) domainModel.get("version");
 				}
 
-				String domainVersion = (String) domainModel.get("version");
-				//logger.debug("Domain version: {}", domainVersion);
 				this.setDomainVersion(domainVersion);
 			}
 			else {
