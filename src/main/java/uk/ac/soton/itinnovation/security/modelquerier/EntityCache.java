@@ -186,13 +186,20 @@ public class EntityCache {
      * triple store if the cache is synchronised.
      */
     public <T extends EntityDB> void storeEntity(T entity, String typeKey, String graph) {
+        // Get the entity URI
+        String uri = entity.getUri();
+
         // Add the entity to the cache without changing validity status for the entity type
         cacheEntity(entity, typeKey, false, graph);
 
         // Add it to the staging area, so we know it must be written to the DB at the next synchronisation 
         Map<String, Map<String, EntityDB>> storeByType = storeByTypeByGraph.computeIfAbsent(graph, k -> new HashMap<>());
         Map<String, EntityDB> store = storeByType.computeIfAbsent(typeKey, k -> new HashMap<>());
-        store.put(entity.getUri(), entity);
+        store.put(uri, entity);
+
+        // If the same entity is in the list of entities to be deleted at the next synchronisation, remove it
+        Map<String, EntityDB> deletions = deleteByType.computeIfAbsent(typeKey, k -> new HashMap<>());
+        if(deletions.keySet().contains(uri)) deletions.remove(uri);
 
     }
 
@@ -357,20 +364,7 @@ public class EntityCache {
         return valid;
     }
 
-    /* Clears entities from the delete list if they were subsequently stored */
-    public void prepareSync(){
-        for(String graph : systemGraphs) {
-            Map<String, Map<String, EntityDB>> cacheByType = cacheByTypeByGraph.computeIfAbsent(graph, k -> new HashMap<>());
-            for(String typeKey : cacheByType.keySet()){
-                Map<String, EntityDB> deletions = deleteByType.computeIfAbsent(typeKey, k -> new HashMap<>());
-                Map<String, EntityDB> cacheThisType = cacheByType.computeIfAbsent(typeKey, k -> new HashMap<>());
-                for(String uri : cacheThisType.keySet()){
-                    if(deletions.keySet().contains(uri)) deletions.remove(uri);
-                }
-            }
-        }
-    }
-
+    /* Clears all content from the cache */
     public void clear() {
         cacheByTypeByGraph.clear();
         cacheByUriByGraph.clear();
