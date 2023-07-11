@@ -380,23 +380,20 @@ public class Model {
 		 * temporarily we should suppress most of the logger statements.
 		 */
 		if (storeModelManager != null) {
-			//logger.debug("loadModelInfo: getting domain models");
 			Map<String, Map<String, Object>> domainModels = storeModelManager.getDomainModels();
-			//logger.debug("loadModelInfo: found {} domain models", domainModels.size());
-			//logger.debug("loadModelInfo: \n {}", domainModels);
 
 			if (domainModels.size() > 0) {
 				String domainGraph = modelInfo.getDomainGraph();
-				//logger.debug("Getting domain model for graph: {}", domainGraph);
+				String domainVersion = null;
 				Map<String, Object> domainModel = domainModels.get(domainGraph);
-				//logger.debug("Domain model: {}", domainModel);
 
 				if (domainModel == null) {
-					throw new RuntimeException("Could not locate domain model for graph: " + domainGraph);
+					logger.error("Could not locate domain model for graph: " + domainGraph);
+				}
+				else {
+					domainVersion = (String) domainModel.get("version");
 				}
 
-				String domainVersion = (String) domainModel.get("version");
-				//logger.debug("Domain version: {}", domainVersion);
 				this.setDomainVersion(domainVersion);
 			}
 			else {
@@ -642,6 +639,8 @@ public class Model {
 		
 		logger.info("Invalidating model: {}", getUri());
 		setValid(false);
+		setRiskLevelsValid(false);
+		setRiskCalculationMode(null); //clear any previous risk calc mode
 		setStateUpdating(false);
 	}
 
@@ -652,23 +651,36 @@ public class Model {
 		save();
 	}
 
-	public void markAsCalculatingRisks(RiskCalculationMode rcMode) {
+	public void markAsCalculatingRisks(RiskCalculationMode rcMode, boolean save) {
 		logger.info("Marking as calculating risks: {}", getUri());
 		setStateUpdating(true);
 		setCalculatingRisks(true);
 		save();
 		
-		logger.info("Invalidating risk levels: {}", getUri());
-		setRiskLevelsValid(false);
-		setRiskCalculationMode(rcMode);
+		if (save) {
+			logger.info("Invalidating risk levels: {}", getUri());
+			setRiskLevelsValid(false);
+			setRiskCalculationMode(rcMode);
+		}
+
 		setStateUpdating(false);
 	}
 
-	public void finishedCalculatingRisks(boolean result) {
+	public void finishedCalculatingRisks(boolean result, RiskCalculationMode rcMode, boolean save) {
 		logger.debug("Setting risk calculation result ({}): {}", result, getUri());
 		setCalculatingRisks(false);
-		setRiskLevelsValid(result);
-		save();
+		if (save) {
+			//If saving risk calc results, store the risksValid value prior to saving
+			setRiskLevelsValid(result);
+			setRiskCalculationMode(rcMode);
+			save();
+		}
+		else {
+			//Otherwise save the other params and set the risksValid flag only for the response
+			save();
+			setRiskLevelsValid(result);
+			setRiskCalculationMode(rcMode);
+		}
 	}
 
 /////////////////////////////////////////////////////////////////////////

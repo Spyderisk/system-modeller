@@ -4,34 +4,59 @@
 version: '3.7'
 
 services:
+  proxy:
+    image: nginx:stable-alpine3.17
+    # If there are multiple deployments of the SSM on the same host then they each need to expose a different PROXY_EXTERNAL_PORT
+    ports:
+      - ${PROXY_EXTERNAL_PORT:-8089}:80
+    expose:
+      - 80
+    environment:
+      scheme: ${SERVICE_PROTOCOL:-http}
+      server_port: ${SERVICE_PORT:-8089}
+      kc_proxy_pass: '${EXTERNAL_KEYCLOAK_AUTH_SERVER_URL:-http://keycloak:8080/auth}'
+      documentation_url: '${DOCUMENTATION_URL:-https://spyderisk.org/documentation/modeller/latest/}'
+      tomcat_port: ${TOMCAT_PORT:-8081}
+    # When nginx starts it does a health check on the "upstream" servers and if none of them in a group are present it will fail.
+    # Hence, nginx must start after the ssm and keycloak.
+    # See https://docs.nginx.com/nginx/admin-guide/load-balancer/tcp-health-check/
+    restart: on-failure
+    depends_on:
+      - ssm
+      - keycloak
+    entrypoint: /tmp/import/entrypoint.sh
+    volumes:
+      - type: bind
+        source: ./provisioning/nginx
+        target: /tmp/import
 
   ssm:
     build:
       context: ./
       dockerfile: Dockerfile
-      args:
-        # These are passed as "build arguments" to the Dockerfile (referenced as "ARG" in there, available only when building).
-        # They are set to the value of the environment variable of the same name.
-        - MAVEN_USER
-        - MAVEN_PASS
     # The "init" config means the container responds to signals and exits cleanly
     init: true
     environment:
       # These env variables override the values in application.properties
       # https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-external-config
       SPRING_DATA_MONGODB_HOST: mongo
-      KEYCLOAK_CREDENTIALS_SECRET: ${KEYCLOAK_CREDENTIALS_SECRET}
+      KEYCLOAK_CREDENTIALS_SECRET: ${KEYCLOAK_CREDENTIALS_SECRET:-DfkQBcVpjbO6gTMXMBUBfHe45UmFhGxk}
+      RESET_ON_START: ${RESET_ON_START:-true}
     volumes:
       # Persistent named volume for the jena-tdb storage
       - type: volume
         source: jena
         target: /code/jena-tdb
+      # Persistent named volume for storage of knowledgebase data (domain model, images and palettes)
+      - type: volume
+        source: knowledgebases
+        target: /opt/spyderisk/knowledgebases
     depends_on:
       - mongo
       - keycloak
 
   mongo:
-    image: mongo:4.2.5-bionic
+    image: mongo:5.0.16-focal
     volumes:
       - type: volume
         source: mongo-db
@@ -46,9 +71,9 @@ services:
     # Override the normal entrypoint of `/opt/keycloak/bin/kc.sh`.
     entrypoint: /tmp/import/entrypoint.sh
     environment:
-      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USERNAME}
-      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
-      KEYCLOAK_CREDENTIALS_SECRET: ${KEYCLOAK_CREDENTIALS_SECRET}
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USERNAME:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-password}
+      KEYCLOAK_CREDENTIALS_SECRET: ${KEYCLOAK_CREDENTIALS_SECRET:-DfkQBcVpjbO6gTMXMBUBfHe45UmFhGxk}
       PROXY_ADDRESS_FORWARDING: '${KEYCLOAK_PROXY_ADDRESS_FORWARDING:-false}'
     volumes:
       - type: bind
@@ -57,5 +82,6 @@ services:
 
 volumes:
   jena:
+  knowledgebases:
   mongo-db:
   mongo-configdb:

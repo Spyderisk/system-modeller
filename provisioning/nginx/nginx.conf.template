@@ -1,0 +1,78 @@
+
+user  nginx;
+worker_processes  auto;
+
+error_log  /var/log/nginx/error.log warn;
+pid        /var/run/nginx.pid;
+
+
+events {
+    worker_connections  1024;
+}
+
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_host"';
+
+    access_log  /var/log/nginx/access.log  main;
+
+    sendfile        on;
+
+    # This first line sets the HTTP Host header in the request to the one that was received by nginx (preserving it).
+    # It includes the request port and is essential for the SSM to redirect the browser to the correct Keycloak address.
+    proxy_set_header Host              $http_host;
+    # These two are used by keycloak if it is set to proxy address forwarding mode:
+    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;  # If this proxy is behind another reverse proxy that terminates SSL then $scheme must be explicitly set to "https"
+    # These headers do not seem to have any effect but can't hurt and may be used in logging.
+    proxy_set_header X-Real-IP         $remote_addr;
+    proxy_set_header X-Forwarded-Host  $server_name;
+    proxy_set_header X-Forwarded-Port  $server_port;
+
+    server {
+        listen 80;
+        absolute_redirect off;
+
+        # For each endpoint, we are explicit about how to treat URLs without a trailing slash. Not doing this causes some hidden problems.
+        # $scheme and $http_host come from the request URL and are e.g. "https" and "some.domain:port". They are needed to preserve this part of the URL.
+
+        location / {
+            return 301 $scheme://$http_host/system-modeller/;
+        }
+        location = /system-modeller {
+            rewrite ^(.*)$ $scheme://$http_host$1/ redirect;
+        }
+        location /system-modeller/ {
+            client_max_body_size 100M;
+            #proxy_pass http://ssm:8080/system-modeller/;
+            proxy_pass http://ssm:$tomcat_port/system-modeller/;
+        }
+
+        location = /auth {
+            rewrite ^(.*)$ $scheme://$http_host$1/ redirect;
+        }
+        location /auth/ {
+            proxy_pass $kc_proxy_pass/;
+        }
+
+        location = /documentation {
+            rewrite ^(.*)$ $scheme://$http_host$1/ redirect;
+        }
+        location /documentation/ {
+            rewrite ^/documentation/(.*) $documentation_url$1 redirect;
+        }
+
+        location /documentation/redirect/ {
+            # Here we do a browser redirect of the URL for things starting /documentation/redirect
+            # These are special addresses embedded in the SSM where we want to decouple the documentation identifier in the SSM 
+            # from the actual place in the documentation that should be accessed.
+            # Right now, all locations defined in the SSM need to redirect to a heading in the Reference Guide so this is easy.
+            rewrite ^/documentation/redirect/(.*) $documentation_url/Reference%20Guide/#$1 redirect;
+        }
+    }
+}

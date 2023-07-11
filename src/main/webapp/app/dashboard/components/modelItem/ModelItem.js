@@ -29,8 +29,9 @@ class ModelItem extends Component {
     }
 
     renderVersionWarning(validatedDomainVersion, domainVersion) {
-        let versionWarningText = "Version does not match current knowledgebase version (" + domainVersion + "). Please revalidate!";
-        let versionMismatch = (validatedDomainVersion && (validatedDomainVersion !== domainVersion));
+        let versionWarningText = domainVersion ? "Version does not match current knowledgebase version (" + domainVersion + "). Please revalidate!"
+                                                : "No version of this knowledgebase is currently installed";
+        let versionMismatch = !domainVersion || (validatedDomainVersion && (validatedDomainVersion !== domainVersion));
         return <OverlayTrigger delayShow={Constants.TOOLTIP_DELAY} placement="bottom"
                 overlay={<Tooltip id="version-tooltip">
                     <strong>{versionWarningText}</strong></Tooltip>}>
@@ -186,7 +187,22 @@ class ModelItem extends Component {
                                 this.state.open ?
                                     <span className="model-item-open">{domain}</span>
                                 :
-                                    <span className="model-item-closed">{domain}</span>
+                                    <OverlayTrigger
+                                        delayShow={Constants.TOOLTIP_DELAY}
+                                        placement="right"
+                                        overlay={
+                                            <Popover
+                                                id="model-title-popover"
+                                                className={"tooltip-overlay"}
+                                            >
+                                                <span>{domain}</span>
+                                            </Popover>
+                                        }
+                                    >
+                                        <span className="model-item-closed">
+                                            {domain}
+                                        </span>
+                                    </OverlayTrigger>
                             }
                         </Col>
                         <Col className="version" xs={2} md={2} >
