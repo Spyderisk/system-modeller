@@ -118,7 +118,7 @@ N.B. The links in the user interface for the attack graph image does not work in
 Please also note that the default setup is to recreate all databases on initial
 start-up. In order to persist any installed knowledgebases and created system
 models, you should ensure that the environment variable `RESET_ON_START=false` prior to re-running `./gradlew assemble bootTest`.
-In the bash shell, that can be done uith `export RESET_ON_START=false`.
+In the bash shell, that can be done with `export RESET_ON_START=false`.
 Alternatively, put `RESET_ON_START=false` in your `.env` file and "source" it with `set -a; source .env; set +a`.
 
 ## Installing Docker
