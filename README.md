@@ -117,8 +117,9 @@ N.B. The links in the user interface for the attack graph image does not work in
 
 Please also note that the default setup is to recreate all databases on initial
 start-up. In order to persist any installed knowledgebases and created system
-models, you should ensure that `RESET_ON_START=false` in your `.env` file, prior to re-running `./gradlew assemble
-bootTest`.
+models, you should ensure that the environment variable `RESET_ON_START=false` prior to re-running `./gradlew assemble bootTest`.
+In the bash shell, that can be done uith `export RESET_ON_START=false`.
+Alternatively, put `RESET_ON_START=false` in your `.env` file and "source" it with `set -a; source .env; set +a`.
 
 ## Installing Docker
 
@@ -721,7 +722,7 @@ docker-compose down
 
 In all these cases, the (Docker disk) volumes are persisted and named volumes
 will be reattached to new containers, during restart. Assuming that you have
-`reset.on.start=false` in your `application.properties` file, this also means
+`RESET_ON_START=false` in your `.env` file, this also means
 that any knowledgebases (domain models), system models, palettes, etc will be
 persisted after restarting the containers.
 
@@ -738,11 +739,11 @@ docker-compose exec ssm bash
 ./gradlew assemble bootTest
 ```
 
-b) Leave containers running, but set `reset.on.start=true` in your
-`application.properties` file, then restart Spyderisk, e.g.
+b) Leave containers running, but set `RESET_ON_START=true` then restart Spyderisk, e.g.
 
 ```shell
 docker-compose exec ssm bash
+export RESET_ON_START=true
 ./gradlew assemble bootTest
 ```
 
