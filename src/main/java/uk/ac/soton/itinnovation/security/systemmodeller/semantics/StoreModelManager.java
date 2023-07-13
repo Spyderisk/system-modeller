@@ -148,7 +148,7 @@ public class StoreModelManager {
 		
 		modelGraph = SparqlHelper.escapeURI(modelGraph);
 		if (store.graphExists(modelGraph)) {
-			logger.info("Graph <{}> for model {} already exists and will be deleted now", modelGraph, modelName);
+			logger.warn("Graph <{}> for model {} already exists and will be deleted now", modelGraph, modelName);
 			deleteModel(modelGraph);
 		}
 
@@ -212,7 +212,17 @@ public class StoreModelManager {
 		//logger.debug("Loaded model {} into graph <{}>: {}", modelName, modelGraph, insertDataSetQuery);
 		return modelGraph;
 	}
-	
+
+	/**
+	 * Check that a domain model exists
+	 *
+	 * @param modelGraph URI string to uniquely identify the domain model within the store
+	 * @return flag to indicate if the domain model exists
+	 */
+	public boolean domainModelExists(String modelGraph) {
+		return store.graphExists(modelGraph);
+	}
+
 	public File exportModelResourceToFile(String resourcePath) throws IOException {
 		String sm = getSerialisedModel(resourcePath);
 		
@@ -495,6 +505,17 @@ public class StoreModelManager {
 		});
 		
 		return result;
+	}
+
+	/**
+	 * Returns specific domain model stored in the system.
+	 * TODO: optimise this method to get a single domain model, via new query
+	 *
+	 * @return map of domain model info
+	 */
+	public Map<String, Object> getDomainModel(String domainURI) {
+		Map<String, Map<String, Object>> domainModels = this.getDomainModels();
+		return domainModels.get(domainURI);
 	}
 
 	/**

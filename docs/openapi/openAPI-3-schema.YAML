@@ -1399,32 +1399,6 @@ paths:
             '*/*':
               schema:
                 type: object
-  /domains/{domain}/palette:
-    post:
-      tags:
-      - domain-model-controller
-      operationId: updatePalette
-      parameters:
-      - name: domain
-        in: path
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              additionalProperties:
-                type: object
-        required: true
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: object
   /domains/upload:
     post:
       tags:
@@ -1450,9 +1424,6 @@ paths:
               type: object
               properties:
                 file:
-                  type: string
-                  format: binary
-                file2:
                   type: string
                   format: binary
       responses:
@@ -1707,6 +1678,57 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ThreatDTO'
+  /models/{modelId}/threatgraph:
+    get:
+      tags:
+      - model-controller
+      description: |-
+        This REST method generates a JSON representation of the shortest attack
+         path for the given model and target URIs
+      operationId: calculateThreatGraph
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to seacrh
+        required: true
+        schema:
+          type: string
+      - name: riskMode
+        in: query
+        description: string indicating the prefered risk calculation mode
+        required: false
+        schema:
+          type: string
+          default: FUTURE
+      - name: allPaths
+        in: query
+        description: flag indicating whether to calculate all paths
+        required: false
+        schema:
+          type: boolean
+          default: false
+      - name: normalOperations
+        in: query
+        description: flag indicationg whether to include normal operations
+        required: false
+        schema:
+          type: boolean
+          default: false
+      - name: targetURIs
+        in: query
+        description: list of target misbehaviour sets
+        required: true
+        schema:
+          type: array
+          items:
+            type: string
+      responses:
+        "200":
+          description: A JSON report containing the attack tree
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/TreeJsonDoc'
   /models/{modelId}/riskvector:
     get:
       tags:
@@ -2031,6 +2053,30 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Asset'
+  /images/{domainModel}/{image}:
+    get:
+      tags:
+      - model-controller
+      operationId: getImage
+      parameters:
+      - name: domainModel
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: image
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: string
+                format: binary
   /domains/:
     get:
       tags:
@@ -2070,18 +2116,6 @@ paths:
       tags:
       - domain-model-controller
       operationId: getAllUsers
-      responses:
-        "200":
-          description: OK
-          content:
-            '*/*':
-              schema:
-                type: object
-  /domains/ontologies:
-    get:
-      tags:
-      - domain-model-controller
-      operationId: exportOntologies
       responses:
         "200":
           description: OK
@@ -2188,7 +2222,7 @@ paths:
     get:
       tags:
       - json-error-controller
-      operationId: error_5
+      operationId: error_2
       responses:
         "200":
           description: OK
@@ -2210,7 +2244,7 @@ paths:
     post:
       tags:
       - json-error-controller
-      operationId: error
+      operationId: error_1
       responses:
         "200":
           description: OK
@@ -2221,7 +2255,7 @@ paths:
     delete:
       tags:
       - json-error-controller
-      operationId: error_3
+      operationId: error_5
       responses:
         "200":
           description: OK
@@ -2232,7 +2266,7 @@ paths:
     options:
       tags:
       - json-error-controller
-      operationId: error_2
+      operationId: error_4
       responses:
         "200":
           description: OK
@@ -2243,7 +2277,7 @@ paths:
     head:
       tags:
       - json-error-controller
-      operationId: error_4
+      operationId: error_3
       responses:
         "200":
           description: OK
@@ -2254,7 +2288,7 @@ paths:
     patch:
       tags:
       - json-error-controller
-      operationId: error_1
+      operationId: error
       responses:
         "200":
           description: OK
@@ -2570,6 +2604,11 @@ components:
           type: boolean
         riskLevelsValid:
           type: boolean
+        riskCalculationMode:
+          type: string
+          enum:
+          - CURRENT
+          - FUTURE
         calculatingRisks:
           type: boolean
         canBeEdited:
@@ -3280,6 +3319,10 @@ components:
           type: string
         risk:
           type: string
+        risksValid:
+          type: boolean
+        riskCalculationMode:
+          type: string
         versionInfo:
           type: string
         domainVersion:
@@ -3468,6 +3511,39 @@ components:
         status:
           type: string
         error:
+          type: string
+    Graph:
+      type: object
+      properties:
+        threats:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int32
+        misbehaviours:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int32
+        twas:
+          type: object
+          additionalProperties:
+            type: integer
+            format: int32
+        links:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+    TreeJsonDoc:
+      type: object
+      properties:
+        graphs:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Graph'
+        uriPrefix:
           type: string
     Control:
       type: object

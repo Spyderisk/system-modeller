@@ -50,6 +50,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.sparql.function.library.max;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.slf4j.Logger;
@@ -60,14 +61,6 @@ import uk.ac.soton.itinnovation.security.modelquerier.util.ModelStack;
 import java.lang.Exception;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.Comparator;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Implementation of IQuerierDB for Jena database. Uses Jena methods for querying the Jena database, as opposed to
@@ -1028,9 +1021,11 @@ public class JenaQuerierDB implements IQuerierDB {
      */
     private <T extends EntityDB> T getEntity(String uri, String cacheTypeName, Class<T> entityClass, String... graphs) {
         if (cacheEnabled) {
-            // The cache may contain a null value if the entity at uri has been deleted
-            Boolean valid = cache.checkEntityValid(uri, graphs);
+            // Try to find the cached value
             T cachedEntity = cache.get(uri, cacheTypeName, entityClass, graphs);
+
+            // Return the cached value including a null value if valid
+            Boolean valid = cache.checkEntityValid(uri, graphs);
             if (cachedEntity != null || valid) {
                 return cachedEntity;
             }
@@ -1137,6 +1132,7 @@ public class JenaQuerierDB implements IQuerierDB {
     }
 
     private <T extends EntityDB> JsonObject getEntityAsJson(String uri, String... graphs) {
+        boolean found = false;
         uri = getLongName(uri);
 
         JsonObject returnJsonObject = null;
@@ -1150,12 +1146,28 @@ public class JenaQuerierDB implements IQuerierDB {
             Model model = dataset.getNamedModel(graphUri);
             Resource resource = model.getResource(uri);
 
+            /* 
+             * org.apache.jena.rdf.model.Model has changed. The createResource(String uri) method now returns
+             * an existing resource if already defined in the Model. The getResource method is now identical,
+             * so it creates and returns an empty resource if there is no resource with the specified URI in
+             * the model.
+             * 
+             * The problem is that createResource associates the new resource with the model, so the call to
+             * model.containsResource returns true even if the model didn't contain this resource. So if the
+             * URI is not defined in any graph, we will still get a non-null JSon object back, albeit one in
+             * which there is no "_graph" member (nor any other member).
+             * 
+             * It is at least arguable that in that case we should return 'null' which was probably what Lee
+             * expected would happen when he wrote this code. That may cause other problems (e.g., if untyped
+             * resources are retrieved by this method, which is possible), so we'll try to detect where there
+             * was no resource later, at the point of use.
+             */
             if (model.containsResource(resource)) {
                 returnJsonObject = resourceToJson(resource, returnJsonObject);
-
                 if (resource.hasProperty(RDF.type)) {
                     // Add a special property tracking the graph in which the type was found
                     returnJsonObject.addProperty("_graph", graph);
+                    found = true;
                 }
             }
         }
@@ -1256,40 +1268,49 @@ public class JenaQuerierDB implements IQuerierDB {
 
     @Override
     public AssetDB getAsset(String uri, String... models) {
-        /* Assets are special because in the triple store they are not stored with type core#Asset,
-         * but with a domain model asset subclass.
-         * have a type equal to the domain
-         * model asset type, rather than core#Asset
-         */
+        /* Assets are a special case for two reasons:
+         *
+         *  (a) they are not saved in the store as type 'Asset', but as a sub-type of 'Asset', yet we
+         *      still need to store them under 'AssetDB' in the cache
+         *  (b) they have links to other assets defined by special predicates which differ for each
+         *      domain model
+        */
         String cacheTypeKey = getCacheTypeName(AssetDB.class);
         if (cacheEnabled) {
-            // The cache may contain a null value if the entity at uri has been deleted
-            Boolean valid = cache.checkEntityValid(uri, models);
+            // Try to find the cached asset
             AssetDB cachedEntity = cache.get(uri, cacheTypeKey, AssetDB.class, models);
+
+            // Return the cached value including a null value if valid
+            Boolean valid = cache.checkEntityValid(uri, models);
             if (cachedEntity != null || valid) {
                 return cachedEntity;
             }
+
         }
 
         // Not in the cache, so try to get it from the triple store
         JsonObject assetJson = getEntityAsJson(uri, models);
+        AssetDB asset = null;
         if (assetJson != null) {
-            String mainGraph = assetJson.getAsJsonPrimitive("_graph").getAsString();
-            AssetDB asset = jsonToAsset(assetJson);
+            // Find out in which graph the asset was defined (asserted or inferred)
+            JsonPrimitive assetGraph = assetJson.getAsJsonPrimitive("_graph");
+            if(assetGraph != null) {
+                // Convert this graph to a string
+                String mainGraph = assetGraph.getAsString();
 
-            // Add it to the cache if enabled
-            if (cacheEnabled) {
-                cache.cacheEntity(asset, cacheTypeKey, mainGraph, models);
+                // Convert the asset to an AssetDB object to be returned
+                asset = jsonToAsset(assetJson);
+
+                // Add the asset to the cache (in the main graph) if enabled
+                if (cacheEnabled) {
+                    cache.cacheEntity(asset, cacheTypeKey, mainGraph, models);
+                }
+
             }
 
-            return asset;
-
-        } else {
-
-            // Can't find this asset anywhere
-            return null;
-
         }
+
+        return asset;
 
     }
 
@@ -2284,6 +2305,8 @@ public class JenaQuerierDB implements IQuerierDB {
         return storeEntity(entity, uri, cacheTypeName, graph);
     }
 
+    /* Synchronise the cache, so afterwards the triple store matches the cache contents.
+     */
     @Override
     public void sync(String... models) {
         final long startTime = System.currentTimeMillis();
@@ -2293,18 +2316,11 @@ public class JenaQuerierDB implements IQuerierDB {
         }
         logger.info("Synchronising model with triple store");
 
-        // First, prepare the cache for synchronisation, removing deletions that were later stored
-        cache.prepareSync();
-
-        // Disable the cache while we synchronise
-        cacheEnabled = false;
-
+        // Get entities to be deleted and try to delete them from the triple store
+        Map<String, Map<String, EntityDB>> deleteEntitiesByType = cache.getDeleteCache();
         try{
             // Start a transaction
             dataset.begin(ReadWrite.WRITE);
-
-            // Get entities to be deleted
-            Map<String, Map<String, EntityDB>> deleteEntitiesByType = cache.getDeleteCache();
 
             // Delete the entities
             for(String typeKey : deleteEntitiesByType.keySet()){
@@ -2322,6 +2338,14 @@ public class JenaQuerierDB implements IQuerierDB {
 
             // Commit the changes
             dataset.commit();
+            
+            // If successful, clear the map of entities to be deleted
+            for(String typeKey : deleteEntitiesByType.keySet()){
+                Map<String, EntityDB> entities = deleteEntitiesByType.get(typeKey);
+                entities.clear();
+            }
+            deleteEntitiesByType.clear();
+
         }
         catch (Exception e) {
             // Abort the changes and signal that there has been an error
@@ -2338,26 +2362,43 @@ public class JenaQuerierDB implements IQuerierDB {
         logger.info("Saving new/modified entities");
         // Get the entities that need to be updated and try to save the changes
         for(String graph : models){
+            // Get entities to be stored/updated
+            Map<String, Map<String, EntityDB>> storeEntitiesByType = cache.getStoreCache(graph);
+
             try{
                 // Start a transaction per graph
                 dataset.begin(ReadWrite.WRITE);
 
-                // Get entities to be stored/updated
-                Map<String, Map<String, EntityDB>> storeEntitiesByType = cache.getStoreCache(graph);
+                // Important to store assets first
+                String assetTypeKey = getCacheTypeName(AssetDB.class);
+                Map<String, EntityDB> entities = storeEntitiesByType.get(assetTypeKey);
+                if(entities != null){
+                    if(entities != null && entities.size() > 0){
+                        logger.info("Saving {} new/modified entities cached as {} to graph {}", entities.size(), assetTypeKey, graph);
+                    }
+                    for(EntityDB entity : entities.values()){
+                        persistEntity(entity, graph);
+                    }
+                }
 
                 // Store/update the entities
                 for(String typeKey : storeEntitiesByType.keySet()){
+                    if(typeKey.equals(getCacheTypeName(AssetDB.class))) {
+                        // Skip the assets, because they were already saved
+                        continue;
+                    }
                     boolean savingLinks = typeKey.equals(getCacheTypeName(CardinalityConstraintDB.class));
-                    Map<String, EntityDB> entities = storeEntitiesByType.get(typeKey);
+                    entities = storeEntitiesByType.get(typeKey);
                     if(entities != null){
                         if(entities != null && entities.size() > 0){
                             logger.info("Saving {} new/modified entities cached as {} to graph {}", entities.size(), typeKey, graph);
                         }
                         for(EntityDB entity : entities.values()){
                             if(savingLinks){
-                                // Delete the extra triples representing asset relationships
+                                // Save the extra triples representing asset relationships
                                 persistLink(entity, graph);
-                            }    
+                            }
+                            // Save the entity
                             persistEntity(entity, graph);
                         }
                     }
@@ -2365,6 +2406,14 @@ public class JenaQuerierDB implements IQuerierDB {
 
                 // Commit the changes
                 dataset.commit();
+
+                // If successful, clear the map of entities to be saved
+                for(String typeKey : storeEntitiesByType.keySet()){
+                    entities = storeEntitiesByType.get(typeKey);
+                    entities.clear();
+                }
+                storeEntitiesByType.clear();
+
             } catch (Exception e) {
                 // Abort the changes and signal that there has been an error
                 dataset.abort();
@@ -2379,11 +2428,7 @@ public class JenaQuerierDB implements IQuerierDB {
 
         }
 
-        cache.clear();
-        checkedOutEntityGraphs.clear();
-
-        // Re-enable the cache
-        cacheEnabled = false;
+        // No need to clear the cache content, as it now matches the triple store
 
         final long endTime = System.currentTimeMillis();
         logger.info("JenaQuerierDB.sync(): execution time {} ms", endTime - startTime);
@@ -3086,9 +3131,8 @@ public class JenaQuerierDB implements IQuerierDB {
 
     }
 
-    /*
-     * What we still do need are some methods to update the asserted graph in specific
-     * ways. These are used by the validator to fix inconsistencies in the asserted graph,
+    /* We still do need some methods to update the asserted graph in specific ways.
+     * These are used by the validator to fix inconsistencies in the asserted graph,
      * providing a sort-of 'automated repair' facility for old/broken system models.
      */
 
@@ -3108,7 +3152,7 @@ public class JenaQuerierDB implements IQuerierDB {
         // Repair assets that have no populations
         for(AssetDB asset : assets.values()){
             String popURI = asset.getPopulation();
-            if(popURI == null) {
+            if((popURI == null) || (poLevels.get(popURI) == null)) {
                 int maxCardinality = asset.getMaxCardinality();
                 if(maxCardinality == 1) {
                     // Means cardinality is set to 'singleton'
@@ -3196,60 +3240,144 @@ public class JenaQuerierDB implements IQuerierDB {
 
     }
 
-    /* Method to purge any relationship source and target cardinality properties from the asserted
-     * graph, along with any asset min/max cardinality properties (which have now been replaced by
-     * a population level).
+    /* Methods to fix errors caused by bugs or outdated functions in older versions of system-modeller,
+     * which may still cause problems if old system models are imported.
+     * 
+     * Currently two aspects are repaired:
+     * - source and target cardinality can no longer be asserted, as they should be inferred
+     * - the URI of a cardinality constraint should be based on its type and asset IDs, but
+     *   older versions of system-modeller were not consistent about this
      */
     @Override
     public void repairCardinalityConstraints(){
-        /* The source and target cardinality of cardinality constraint entities should be calculated
-         * and stored in the inferred graph (see #1391).
-         * 
-         * However, SSM used to insert default levels for asserted relationships, which override the
-         * calculated levels. Old system models are therefore likely to have relationship source and
-         * target cardinality in the asserted graph that are inconsistent with asset population levels.
-         * This method supports their deletion (see #1392).
-         * 
-         * Assets also had min and max cardinality constraints, which have now been replaced by the
-         * new population levels, so they can also be deleted.  
-         */
-
-        // Get the asserted cardinality constraints, so if caching is enabled we know they are cached
-        Map<String, CardinalityConstraintDB> ccs = getCardinalityConstraints("system");
-
-         // Should only be applied to properties in the asserted graph
+        // Changes should only be applied to properties in the asserted graph
         String graphUri = stack.getGraph("system");
         Model datasetModel = dataset.getNamedModel(graphUri);
 
-        // Create the properties that need to be removed
-        Property sourceCardinalityProp = ResourceFactory.createProperty(getLongName("core#sourceCardinality"));
-        Property targetCardinalityProp = ResourceFactory.createProperty(getLongName("core#targetCardinality"));
+        // Get the asserted cardinality constraints, so if caching is enabled we know they are cached
+        Map<String, CardinalityConstraintDB> ccs = getCardinalityConstraints("system");
+        Map<String, AssetDB> assets = getAssets("system");
 
-        // Delete these properties in a transaction
-        try {
-            dataset.begin(ReadWrite.WRITE);
-            datasetModel.removeAll(null, sourceCardinalityProp, null);
-            datasetModel.removeAll(null, targetCardinalityProp, null);
-            dataset.commit();
-        } 
-        catch (Exception e) {
-            // Abort the changes and signal that there has been an error
-            dataset.abort();
-            String message = String.format("Error occurred while auto repairing asserted cardinality constraints");
-            logger.error(message, e);
-            throw new RuntimeException(message, e);
-        }
-        finally {
-            dataset.end();
-        }
+        /* The source and target cardinality of cardinality constraint entities should be calculated and
+         * stored in the inferred graph. Any asserted values will override these so should be deleted.
+         */
+        this.removeRelationshipCardinality(ccs, datasetModel);
 
-        if(cacheEnabled){
-            // Remove these properties in the cached objects
-            for(CardinalityConstraintDB cc : ccs.values()){
-                cc.setSourceCardinality(null);
-                cc.setTargetCardinality(null);
+        /* The URI for a cardinality constraint should be derived from the IDs of assets plus the
+         * URI of the corresponding relationship type. Any with the wrong URI should be replaced by
+         * one that uses the correct URI
+         */
+        this.fixCardinalityConstraintURI(ccs, assets, datasetModel);
+
+    }
+
+    private void removeRelationshipCardinality(Map<String, CardinalityConstraintDB> ccs, Model datasetModel) {
+         // Create the properties that need to be removed
+         Property sourceCardinalityProp = ResourceFactory.createProperty(getLongName("core#sourceCardinality"));
+         Property targetCardinalityProp = ResourceFactory.createProperty(getLongName("core#targetCardinality"));
+ 
+         // Delete these properties in a transaction
+         try {
+             dataset.begin(ReadWrite.WRITE);
+             datasetModel.removeAll(null, sourceCardinalityProp, null);
+             datasetModel.removeAll(null, targetCardinalityProp, null);
+             dataset.commit();
+         } 
+         catch (Exception e) {
+             // Abort the changes and signal that there has been an error
+             dataset.abort();
+             String message = String.format("Error occurred while auto repairing asserted cardinality constraints");
+             logger.error(message, e);
+             throw new RuntimeException(message, e);
+         }
+         finally {
+             dataset.end();
+         }
+ 
+         if(cacheEnabled){
+             // Remove these properties in the cached objects
+             for(CardinalityConstraintDB cc : ccs.values()){
+                 cc.setSourceCardinality(null);
+                 cc.setTargetCardinality(null);
+             }
+         }
+    }
+    private void fixCardinalityConstraintURI(Map<String, CardinalityConstraintDB> ccs, Map<String, AssetDB> assets, Model datasetModel) {
+        // If the cache is enabled, temporarily disable it
+        boolean cacheDisabled = cacheEnabled;
+        cacheEnabled = false;
+
+        // Get the cache type key for this type of entity
+        String cacheTypeKey = getCacheTypeName("CardinalityConstraintDB");
+
+        // Check and repair the cardinality constraint (link) entities
+        for(CardinalityConstraintDB oldcc : ccs.values()){
+            // Get the relationship entity properties
+            String oldURI = oldcc.getUri();
+            String linkFromURI = oldcc.getLinksFrom();
+            String linkToURI = oldcc.getLinksTo();
+            String linkType = oldcc.getLinkType();
+
+            // Get the asset entities at each end of the relationship
+            AssetDB fromAsset = assets.get(linkFromURI);
+            AssetDB toAsset = assets.get(linkToURI);
+
+            /* There is a problem here if the model includes 'dangling' links. In principle, they can arise if either:
+             * 
+             * - an older, buggier version of SSM failed to remove an asserted link to or
+             *   from an asset when the asset was deleted, leaving a null asset URI
+             * - a user added a link to or from an inferred asset, and the asset hasn't
+             *   yet been regenerated.
+             * 
+             * In the former case, we should just ignore the link entity.
+             */
+            if(linkFromURI == null || linkToURI == null || linkType == null) {
+                // Bad link with a missing property, so remove it from the graph
+                logger.warn("Link {} has a null source, target or type property - ignoring URI check", oldURI);
+                continue;
             }
+
+            /* In the latter case must retain the link entity but will need to create a fake asset (not stored)
+             * entity from which to get a hashed ID reference for use in creating the correct link URI.
+             */
+            if(fromAsset == null) {
+                fromAsset = new AssetDB();
+                fromAsset.setUri(linkFromURI);
+            }
+            if(toAsset == null) {
+                toAsset = new AssetDB();
+                toAsset.setUri(linkToURI);
+            }
+
+            // Get the correct relationship entity URI
+            String newURI = "system#" + fromAsset.generateID() + "-" + linkType.replace("domain#", "") + "-" + toAsset.generateID();
+
+            if(!oldURI.equals(newURI)) {
+                // The URI of this CC is incorrect
+                logger.info("Replacing asserted relationship entity {} which should be {}", oldURI, newURI);
+
+                // Create a new CC with the correct URI
+                CardinalityConstraintDB newcc = new CardinalityConstraintDB();
+                newcc.setUri(newURI);
+                newcc.setLinksFrom(fromAsset.getUri());
+                newcc.setLinksTo(toAsset.getUri());
+                newcc.setLinkType(oldcc.getLinkType());
+
+                // Remove the old CC and replace it by the new one
+                delete(oldcc, false);
+                store(newcc, "system");
+
+                // If the cache was enabled, update the cache separately
+                if(cacheDisabled){
+                    cache.deleteEntity(oldcc, cacheTypeKey, true);
+                    cache.storeEntity(newcc, cacheTypeKey, "system");
+                }
+            }
+
         }
+
+        // If the cache was temporarily disabled, enable it again
+        cacheEnabled = cacheDisabled;
 
     }
 

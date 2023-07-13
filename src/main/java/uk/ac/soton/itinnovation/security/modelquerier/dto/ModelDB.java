@@ -48,9 +48,13 @@ public class ModelDB extends EntityDB {
 	protected String label;
 	@SerializedName("rdfs#comment")
 	protected String description;
-	
+
     @SerializedName("hasRisk")
     private String risk;
+
+    private boolean risksValid;
+
+    private String riskCalculationMode;
 
     //@SerializedName("http://www.w3.org/2002/07/owl#versionInfo")
     private String versionInfo;

@@ -24,24 +24,29 @@
 /////////////////////////////////////////////////////////////////////////
 package uk.ac.soton.itinnovation.security.systemmodeller;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.io.IOUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
+
+import org.apache.commons.io.FileUtils;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import uk.ac.soton.itinnovation.security.systemmodeller.auth.KeycloakAdminClient;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.StoreModelManager;
+import uk.ac.soton.itinnovation.security.systemmodeller.util.DomainModelUtils;
 import uk.ac.soton.itinnovation.security.systemmodeller.util.PaletteGenerator;
 
 /**
@@ -64,43 +69,48 @@ public class InitializeManagementGraph implements CommandLineRunner {
 	@Value("${reset.on.start}")
 	private boolean resetOnStart;
 	
+	@Value("${knowledgebases.source.folder}")
+	private String kbSourceFolder;
+
+	@Value("${knowledgebases.install.folder}")
+	private String kbInstallFolder;
+
+	@Value("${check.installed.knowledgebases}")
+	private boolean checkDomainModelsAndPalettes;
+
 	@Override
 	public void run(String... args) {
 
-		logger.info("Getting list of domain models from ontologies.json");
-
-		ArrayList<String> ontologyNames = new ArrayList();
-		ArrayList<String> defaultUserOntologies = new ArrayList();
-
-		try {
-			//open ontologies.json
-			JSONArray json = new JSONArray(IOUtils.toString(
-				PaletteGenerator.class.getClassLoader().getResourceAsStream("static/data/ontologies.json")
-			));
-
-			//for each ontology:
-			for (int i = 0; i < json.length(); i++) {
-				//parse the JSON file to get the ontology name
-				JSONObject ont = (JSONObject) json.get(i);
-				String ontology = ont.getString("ontology");
-				String ontologyName = ontology.replace(".rdf", "").replace(".nq", "");
-				ontologyNames.add(ontologyName);
-
-				boolean defaultUserAccess = ont.getBoolean("defaultUserAccess");
-				logger.info("Found {}: default user access = {}", ontology, defaultUserAccess);
-				if (defaultUserAccess) {
-					defaultUserOntologies.add(ontologyName);
-				}
-			}
-		} catch (IOException ex) {
-			logger.error("Could not load ontologies from ontologies.json", ex);
-			System.exit(1);
-		}
-
-		//store the list of default user domain models
-		modelObjectsHelper.setDefaultUserDomainModels(defaultUserOntologies);
+		ArrayList<String> ontologyNames = new ArrayList<>();
+		ArrayList<String> defaultUserOntologies = new ArrayList<>();
+		HashSet<String> domainGraphs = new HashSet<>(); //all loaded domain model URIs loaded via zip bundles
+		HashSet<String> duplicatedDomainGraphs = new HashSet<>(); //domain graphs that have been loaded more than once
 
 		if (resetOnStart || storeModelManager.storeIsEmpty()) {
+			logger.info("Removing installed knowledgebases:");
+			try {
+				File kbInstallDir = new File(kbInstallFolder);
+				if (kbInstallDir.isDirectory()) {
+					File[] kbList = kbInstallDir.listFiles();
+					if (kbList != null) {
+						for (File kb : kbList) {
+							if (kb.isDirectory()) {
+								logger.info(kb.getAbsolutePath());
+								FileUtils.deleteDirectory(kb);
+							}
+						}
+					}
+				}
+				else {
+					logger.error("Cannot locate knowledgebases install folder: {}", kbInstallDir);
+					System.exit(1);
+				}
+			}
+			catch (IOException ex) {
+				logger.error("Could not remove installed knowledgebases", ex);
+				System.exit(1);
+			}
+
 			logger.info("Running management graph initialisation");
 
 			//clear all graphs - this will include orphaned models
@@ -121,26 +131,142 @@ public class InitializeManagementGraph implements CommandLineRunner {
 			String resourcePath = "/core.rdf";
 			storeModelManager.loadModelFromResource(coreModelName, coreModelGraph, resourcePath);
 			logger.info("Added core model to the management graph");
+	
+			//List of identified zip files located in knowledgebases source folder
+			ArrayList<File> zipfilesList = new ArrayList<>();
+	
+			try {
+				logger.info("Checking for knowledgebases source folder: {}", kbSourceFolder);
+				File kbDataDir = new File(kbSourceFolder);
+				if (kbDataDir.isDirectory()) {
+					File[] fileList = kbDataDir.listFiles();
+					if (fileList != null) {
+						for (File file : fileList) {
+							if (!file.isDirectory()) {
+								String filename = file.getName();
+								if (filename.endsWith(".zip")) {
+									zipfilesList.add(file);
+								}
+							}
+						}
+					}
+				}
+				else {
+					logger.error("Cannot locate knowledgebases source folder: {}", kbDataDir);
+					System.exit(1);
+				}
+	
+				DomainModelUtils domainModelUtils= new DomainModelUtils();
 
-			//get resources dir in build folder
-			String resourcesDir = PaletteGenerator.class.getClassLoader().getResource("static/data").getPath();
-					
-			for (String ontologyName : ontologyNames) {
-				String graph = "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/" + ontologyName;
-				String ontology = ontologyName + ".nq";
-				logger.info("Adding domain model {} to the management graph", ontology);
+				logger.info("Located .zip files: {}", zipfilesList.size());
 
-				String ontologyResourcePath = "/" + ontology;
-				storeModelManager.loadModelFromResource(ontologyName, graph, ontologyResourcePath);
+				//Get zipfiles array
+				File[] zipfiles = zipfilesList.toArray(new File[zipfilesList.size()]);
 
-				generatePaletteOrExit(ontologyName);
+				//Sort files into alphabetical order
+				Arrays.sort(zipfiles);
+
+				for (File zipfile : zipfiles) {
+					logger.info(zipfile.getName());
+				}
+
+				if (zipfiles.length > 0) {
+					for (File zipfile : zipfiles) {
+						Map<String, String> results = domainModelUtils.extractDomainBundle(kbInstallFolder, zipfile, true, null, null);
+
+						String domainUri = null;
+						String domainModelName = null;
+						String domainModelFolder = null;
+						File iconMappingFile = null;
+						String nqFilepath = null;
+
+						if (results.containsKey("domainUri")) {
+							domainUri = results.get("domainUri");
+						}
+			
+						if (results.containsKey("domainModelName")) {
+							domainModelName = results.get("domainModelName");
+						}
+
+						if (results.containsKey("domainModelFolder")) {
+							domainModelFolder = results.get("domainModelFolder");
+						}
+			
+						if (results.containsKey("nqFilepath")) {
+							File f = new File(results.get("nqFilepath"));
+							nqFilepath = f.getAbsolutePath();
+						}
+						
+						if (results.containsKey("iconMappingFile")) {
+							iconMappingFile = new File(results.get("iconMappingFile"));
+						}
+			
+						logger.debug("domainUri: {}", domainUri);
+						logger.info("domainModelName: {}", domainModelName);
+						logger.debug("domain model file: {}", nqFilepath);
+
+						if (domainGraphs.contains(domainUri)) {
+							logger.warn("Domain model exists and will be overwritten: {}", domainUri);
+							duplicatedDomainGraphs.add(domainUri);
+						}
+
+						logger.info("Adding domain model {} to the management graph", domainModelName);
+						storeModelManager.loadModel(domainModelName, domainUri, nqFilepath);
+
+						domainGraphs.add(domainUri);
+
+						Map<String, Object> domainModel = storeModelManager.getDomainModel(domainUri);
+						String title = (String) domainModel.get("title");
+						String label = (String) domainModel.get("label");
+						String version = (String) domainModel.get("version");
+		
+						logger.info("URI: {}", domainUri);
+						logger.info("title: {}", title);
+						logger.info("label: {}", label);
+						logger.info("version: {}", version);
+		
+						//Create palette using icon mappings file
+						boolean paletteCreated = false;
+
+						if (iconMappingFile != null) {
+							logger.debug("Loading icon mappings from file: {}", iconMappingFile.getAbsolutePath());
+							logger.info("Creating palette for {}", domainUri);
+							PaletteGenerator pg = PaletteGenerator.createPalette(domainModelFolder, domainUri, modelObjectsHelper, new FileInputStream(iconMappingFile));
+							paletteCreated = pg.isPaletteCreated();
+							if (paletteCreated) {
+								ontologyNames.add(domainModelName);
+								logger.info("Added domain model: {}", domainModelName);
+
+								boolean defaultUserAccess = pg.isDefaultUserAccess();
+								if (defaultUserAccess) {
+									logger.info("Adding default user access for {}", domainModelName);
+									defaultUserOntologies.add(domainModelName);
+								}
+							}
+						}
+
+						if (!paletteCreated) {
+							logger.error("Palette not generated for: " + domainUri);
+						}
+					}
+				}
+				else {
+					logger.warn("No domain model bundles found in source folder: {}", kbSourceFolder);
+				}
+			}
+			catch (IOException ex) {
+				logger.error("Could not load domain models", ex);
+				System.exit(1);
 			}
 			
+			//store the list of default user domain models
+			modelObjectsHelper.setDefaultUserDomainModels(defaultUserOntologies);
+
 			logger.debug("Domain models in management graph: {}", storeModelManager.getDomainModels());
 
 			logger.info("Putting all users in the management graph");
 			List<UserRepresentation> users = keycloakAdminClient.getAllUsers();
-			ArrayList<String> userNames = new ArrayList();
+			ArrayList<String> userNames = new ArrayList<>();
 
 			for (UserRepresentation u : users){
 				logger.debug("{}", u.getUsername());
@@ -155,38 +281,74 @@ public class InitializeManagementGraph implements CommandLineRunner {
 					logger.info(ontologyName + ": " + userNames);
 				}
 			}
-		} else {
-			// Jena is not empty so we presume BOTH Jena and Mongo have been initialised.
-			// However, it is still possible that this is a new SSM container using
-			// previously created DB volumes. So we must check that the palettes exist
-			// as they reside within the container itself.
-			logger.info("Checking for palettes");
+		}
 
-			for (String ontologyName : ontologyNames) {
-				String paletteFile = "/static/data/palette-" + ontologyName + ".json";
+		if (checkDomainModelsAndPalettes) {
+			//Final check of installed domain models and palettes
+			Map<String, Map<String, Object>> domainModels = storeModelManager.getDomainModels();
 
-				if (this.getClass().getResource(paletteFile) == null) {
-					logger.info("Palette does not exist: {}. Regenerating...", paletteFile);
-					generatePaletteOrExit(ontologyName);
+			logger.info("Checking domain models and palettes...");
+			logger.info("");
+
+			if (domainModels.keySet().size() > 0) {
+				boolean palettesExist = true;
+
+				for (String domainModelUri : domainModels.keySet()) {
+					Map<String, Object> domainModel = domainModels.get(domainModelUri);
+					String title = (String) domainModel.get("title");
+					String label = (String) domainModel.get("label");
+					String version = (String) domainModel.get("version");
+
+					logger.info("URI: {}", domainModelUri);
+					logger.info("title: {}", title);
+					logger.info("label: {}", label);
+					logger.info("version: {}", version);
+
+					String domainModelName = title;
+					Path palettePath = Paths.get(kbInstallFolder, domainModelName, "palette.json");
+					File paletteFile = palettePath.toFile();
+
+					if (paletteFile.exists()) {
+						logger.info("palette: {}", paletteFile.getAbsolutePath());
+					}
+					else {
+						logger.error("palette: {}", paletteFile.getAbsolutePath() + " (missing)");
+						palettesExist = false;
+					}
+
+					logger.info("");
 				}
-				else {
-					logger.info("Found {}", paletteFile);
+
+				if (!palettesExist) {
+					logger.error("One or more palettes are missing (see details above)");
+					System.exit(1);
 				}
+
+				if (duplicatedDomainGraphs.size() > 0) {
+					logger.warn("Multiple zipfiles were found for the following domain graphs:");
+					for (String graphUri : duplicatedDomainGraphs) {
+						logger.warn(graphUri);
+					}
+					logger.info("");
+				}
+			}
+			else {
+				boolean production = true;
+				String profile = System.getProperty("spring.profiles.active");
+				if ((profile != null) && (profile.equals("test") || profile.equals("dev"))) {
+					production = false;
+				}
+				logger.warn("No domain models currently installed! Options include:");
+				String restartMsg = production ? "restart Spyderisk (docker-compose down -v; docker-compose up -d)" 
+											: "restart Spyderisk (ensure reset.on.start=true in application properties)";
+
+				logger.warn("1) Copy required domain model zip bundles into {} then " + restartMsg, kbSourceFolder);
+				logger.warn("2) Manually install each required domain model (knowledgebase) via the Spyderisk Knowledgebase Manager page");
 			}
 		}
 
 		logger.info("Finished management graph initialisation");
+		logger.info("Spyderisk startup complete!");
 	}
 
-	private void generatePaletteOrExit(String ontologyName) {
-		logger.info("Generating palette for {}", ontologyName);
-
-		String graph = "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/" + ontologyName;
-
-		boolean paletteCreated = PaletteGenerator.createPalette(graph, modelObjectsHelper);
-
-		if (!paletteCreated) {
-			System.exit(1);
-		}
-	}
 }

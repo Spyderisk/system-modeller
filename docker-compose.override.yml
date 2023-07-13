@@ -10,9 +10,6 @@ services:
   ssm:
     build:
       target: ssm-dev
-    env_file:
-      # The .env.secrets file can contain Maven credentials that will be put into the environment of the SSM container for use by Gradle
-      - .env.secrets
     environment:
       # For local development and testing with a web client, both the SSM and the web browser need to access keycloak on the same URL (as the SSM redirects the browser to keycloak).
       # That means that the normal docker-networking cannot be used (can't just go to http://keycloak which would work from SSM container but not web browser).
@@ -20,7 +17,7 @@ services:
 
       # Use the DOCKER_GATEWAY_HOST value (in `.env` file) if it is set (used in Linux), fall back on "host.docker.internal"
       # See https://sthasantosh.com.np/2020/05/23/docker-tip-how-to-use-the-hosts-ip-address-inside-a-docker-container-on-macos-windows-and-linux/
-      KEYCLOAK_AUTH_SERVER_URL: http://${DOCKER_GATEWAY_HOST:-host.docker.internal}:${KEYCLOAK_PORT}/auth/
+      KEYCLOAK_AUTH_SERVER_URL: http://${DOCKER_GATEWAY_HOST:-host.docker.internal}:${KEYCLOAK_PORT:-8080}/auth/
     volumes:
       # Volumes of type "bind" mount a folder from the host machine.
 
@@ -65,15 +62,15 @@ services:
         target: /tmp
     ports:
       # port 3000 is used by the NodeJS server when doing frontend development
-      - ${NODEJS_PORT}:3000
+      - ${NODEJS_PORT:-3000}:3000
       # port 8081 is used by Spring Boot for the backend
-      - ${TOMCAT_PORT}:8081
+      - ${TOMCAT_PORT:-8081}:8081
       # port 5005 is used by the Java debugger
-      - ${JAVADEBUG_PORT}:5005
+      - ${JAVADEBUG_PORT:-5005}:5005
 
   keycloak:
     ports:
-      - ${KEYCLOAK_PORT}:8080
+      - ${KEYCLOAK_PORT:-8080}:8080
 
 volumes:
   gradle:

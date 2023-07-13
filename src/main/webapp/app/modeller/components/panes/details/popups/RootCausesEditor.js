@@ -105,7 +105,7 @@ class RootCausesEditor extends React.Component {
 
     render() {
         //console.log("RootCausesEditor: render this.props:", this.props);
-        const {model, selectedMisbehaviour, hoverThreat, dispatch, loading, ...modalProps} = this.props;
+        const {model, attackPaths, selectedMisbehaviour, hoverThreat, dispatch, loading, ...modalProps} = this.props;
 
         if (!selectedMisbehaviour || _.isEmpty(selectedMisbehaviour.misbehaviour)) return null;
         const misbehaviour = selectedMisbehaviour.misbehaviour;
@@ -227,7 +227,7 @@ class RootCausesEditor extends React.Component {
                                 this.props.onHide();
                             }}>
                         </span>
-                        <span className="menu-close fa fa-question" onClick={e => openDocumentation(e, "redirect/misbehaviour-explorer")} />
+                        <span className="menu-close fa fa-question" onClick={e => openDocumentation(e, "redirect/consequence-explorer")} />
                     </div>
 
                     <div className="content">
@@ -287,6 +287,7 @@ class RootCausesEditor extends React.Component {
 
                         <MisbehaviourAccordion dispatch={dispatch}
                                                selectedMisbehaviour={selectedMisbehaviour}
+                                               attackPaths={attackPaths}
                                                selectedThreat={this.props.selectedThreat}
                                                twas={twas}
                                                asset={asset}
@@ -346,6 +347,7 @@ RootCausesEditor.propTypes = {
     model: PropTypes.object,
     getTwasForMisbehaviourSet: PropTypes.func,
     selectedMisbehaviour: PropTypes.object,
+    attackPaths: PropTypes.object,
     selectedThreat: PropTypes.object,
     onHide: PropTypes.func,
     loading: PropTypes.object,
