@@ -432,8 +432,8 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @param uri control strategy URI
-	 * @return A JSON representation of a control strategey object
+	 * @param uri control strategies (CSG) URI
+	 * @return A JSON representation of a control strategies object
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
 	@RequestMapping(value = "/models/{modelId}/entity/system/controlStrategies/{uri}", method = RequestMethod.GET)
@@ -476,7 +476,7 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @return A JSON representation of a control strategey object map 
+	 * @return A JSON representation of control strategies object map
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
 	@RequestMapping(value = "/models/{modelId}/entity/system/controlStrategies", method = RequestMethod.GET)
@@ -514,7 +514,7 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @param uri control strategy URI
+	 * @param uri control set URI
 	 * @return A JSON representation of a control set object
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
@@ -559,8 +559,8 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @param controlsetURI control strategy URI
-	 * @return A JSON representation of a control set object map
+	 * @param controlsetURI control set URI
+	 * @return A JSON representation of a map of system model control sets
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
 	@RequestMapping(value = "/models/{modelId}/entity/system/controlSets", method = RequestMethod.GET)
@@ -680,7 +680,7 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @param uri trustworthiness attribute set URI
+	 * @param uri trustworthiness attribute set (TWAS) URI
 	 * @return A JSON representation of a trustworthiness attribute set object
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
@@ -724,7 +724,7 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @return A JSON representation of a trustworthiness attribute set object map
+	 * @return A JSON representation of a map of system model trustworthiness attribute set (TWAS)
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
 	@RequestMapping(value = "/models/{modelId}/entity/system/trustworthinessAttributeSet", method = RequestMethod.GET)
