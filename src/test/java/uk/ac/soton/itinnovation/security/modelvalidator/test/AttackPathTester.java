@@ -49,7 +49,13 @@ import uk.ac.soton.itinnovation.security.modelquerier.SystemModelQuerier;
 import uk.ac.soton.itinnovation.security.modelquerier.SystemModelUpdater;
 import uk.ac.soton.itinnovation.security.modelquerier.util.TestHelper;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackPathAlgorithm;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithm;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.TreeJsonDoc;
+
+import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
+import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
+import uk.ac.soton.itinnovation.security.modelvalidator.RiskCalculator;
+import uk.ac.soton.itinnovation.security.modelvalidator.Validator;
 
 @RunWith(JUnit4.class)
 public class AttackPathTester extends TestCase {
@@ -78,8 +84,17 @@ public class AttackPathTester extends TestCase {
 		tester.addDomain(0, "modelvalidator/domain-network-6a1-3-5-auto-expanded-unfiltered.nq.gz",
 				"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
 
+        tester.addDomain(1, "modelvalidator/domain-ssm-testing-6a3.nq",
+                "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/ssm-testing-6a3");
+
 		tester.addSystem(0, "modelvalidator/system-dataflow-test-singles.nq.gz",
 				"http://it-innovation.soton.ac.uk/system/63d9308f8f6a206408be9010");
+
+		tester.addSystem(1, "modelvalidator/Test-6a3-1ANB-HighSatC-asserted.nq",
+				"http://it-innovation.soton.ac.uk/system/63b2f38af03b473a0ce2a3b9");
+
+		tester.addSystem(2, "modelvalidator/simple.nq",
+				"http://it-innovation.soton.ac.uk/system/64ca44f968ff6b3ad580a3da");
 
 		tester.setUp();
 
@@ -133,6 +148,61 @@ public class AttackPathTester extends TestCase {
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Exception thrown by attack path dataset gathering");
+			return;
+		}
+	}
+
+    	@Test
+	public void testRecommendations() {
+		logger.info("Switching to selected domain and system model test cases");
+		//tester.switchModels(0, 2);
+		tester.switchModels(0, 0);
+
+		logger.info("Creating a querierDB object");
+		IQuerierDB querierDB = new JenaQuerierDB(dataset, tester.getModel(), true);
+		querierDB.init();
+        /*
+		querierDB.initForValidation();
+
+        try {
+            logger.info("Validating the model - ensures no dependence on bugs in older SSM validators");
+            Validator validator = new Validator(querierDB);
+            validator.validate(new Progress(tester.getGraph("system")));
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception thrown by validator preparing attack path test case");
+            return;
+		}
+
+        try {
+			logger.info("Calculating risks and generating attack graph");
+			RiskCalculator rc = new RiskCalculator(querierDB);
+			rc.calculateRiskLevels(RiskCalculationMode.FUTURE, true, new Progress(tester.getGraph("system"))); //save results, as queried below
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception thrown by risk level calculator");
+			return;
+		}
+        */
+		try {
+			logger.info("Gathering datasets for recommendations");
+
+			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(querierDB);
+
+			List<String> targetUris = new ArrayList<>();
+			//targetUris.add("system#MS-LossOfAuthenticity-7aca3a77");
+			targetUris.add("system#MS-LossOfAuthenticity-a40e98cc");
+            //targetUris.add("system#MS-LossOfConfidentiality-a40e98cc");
+
+			Assert.assertTrue(reca.checkTargetUris(targetUris));
+
+			reca.checkRequestedRiskCalculationMode("FUTURE");
+
+			reca.recommendations(targetUris, "FUTURE", false, false);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception thrown by attack path recommendations");
 			return;
 		}
 	}

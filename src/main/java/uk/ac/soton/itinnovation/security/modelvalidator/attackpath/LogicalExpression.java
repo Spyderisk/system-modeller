@@ -36,10 +36,13 @@ import org.slf4j.LoggerFactory;
 import com.bpodgursky.jbool_expressions.And;
 import com.bpodgursky.jbool_expressions.Expression;
 import com.bpodgursky.jbool_expressions.Or;
+import com.bpodgursky.jbool_expressions.Variable;
 import com.bpodgursky.jbool_expressions.rules.RuleSet;
 
 public class LogicalExpression {
-    // private static final Logger logger = LoggerFactory.getLogger(AttackNode.class);
+    private static final Logger logger = LoggerFactory.getLogger(LogicalExpression.class);
+
+    private static int instanceCount = 0; // Static counter variable
 
     private boolean allRequired;
 
@@ -48,24 +51,34 @@ public class LogicalExpression {
 
     public LogicalExpression(AttackPathDataset ds, List<Object> cList, boolean ar) {
 
+        instanceCount++;
+
         this.allRequired = ar;
 
-        List<Expression<String>> allCausesAux = new ArrayList<>();
         for (Object causeObj : cList) {
             if (causeObj instanceof LogicalExpression) {
                 LogicalExpression leObj = (LogicalExpression) causeObj;
-                allCausesAux.add(leObj.getCause());
+                if (leObj.getCause() != null) {
+                    //logger.debug("Looks like {} a LE : {}", instanceCount, leObj.getCause().toString().substring(7));
+                    allCauses.add(leObj.getCause());
+                } else {
+                    //logger.debug("Looks like {} a LE : None", instanceCount);
+                }
             } else {
                 Expression exprObj = (Expression) causeObj;
-                allCausesAux.add(exprObj);
+                if (exprObj != null) {
+                    //logger.debug("Looks like {} a string : {} {}", instanceCount, causeObj, causeObj.getClass().getName());
+                    //logger.debug("Looks like {} a string : {}", instanceCount, causeObj.toString().substring(7));
+
+                    allCauses.add(exprObj);
+                } else {
+                    //logger.debug("Looks like {} a string : None", instanceCount);
+                }
             }
         }
 
-        // all_causes = [cc for cc in all_causes if cc is not None]
-        for (Expression<String> cc : allCausesAux) {
-            if (cc != null) {
-                allCauses.add(cc);
-            }
+        if (allCauses.isEmpty()) {
+            //logger.debug("ATTENTION LE has a empty cause {}, {}, {}", cList.size(), cList, allCauses.size());
         }
 
         if (allCauses.size() == 0) {
@@ -86,7 +99,7 @@ public class LogicalExpression {
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("{");
+        sb.append("LE{{");
         Set<String> uris = this.uris();
         Iterator<String> it = uris.iterator();
         while (it.hasNext()) {
@@ -95,7 +108,7 @@ public class LogicalExpression {
                 sb.append(", ");
             }
         }
-        sb.append("}");
+        sb.append("}}");
         return sb.toString();
     }
 
@@ -105,6 +118,7 @@ public class LogicalExpression {
 
     public Expression getCause() {
         if (this.cause == null) {
+            //logger.debug("Return a null cause");
             return this.cause;
         } else {
             return RuleSet.simplify(this.cause);
@@ -129,6 +143,7 @@ public class LogicalExpression {
                 symbolSetUris.add(symbol.toString());
             }
             if (symbolSetUris.isEmpty()) {
+                logger.debug("EMPTY URI");
                 symbolSetUris.add(this.cause.toString());
             }
         }
@@ -142,5 +157,61 @@ public class LogicalExpression {
         // MyControlStrategy myCSG = new MyControlStrategy("", "", "");
         return "";
     }
+    public List<Expression> getListFromOr() {
+        List<Expression> retVal = new ArrayList<>();
+        if (this.cause == null) {
+            logger.debug("Logical Expression cause is none, cannot find mitigation CSG");
+        //} else if (this.cause instanceof Expression) {
+        //   retVal.add(this.cause);
+        } else if (this.cause instanceof Or) {
+            for (Expression expr : this.cause.getChildren()) {
+                retVal.add(expr);
+                //logger.debug("convert CSG Or option, adding {} type: {}", expr, expr.getClass().getName());
+            }
+        } else if (this.cause instanceof And) {
+            for (Expression expr : this.cause.getChildren()) {
+                retVal.add(expr);
+                logger.debug("convert CSG And option, adding {}", expr);
+            }
+        } else {
+            logger.debug("convert_CSG_options: Logical Expression operator not supported");
+        }
 
+        return retVal;
+    }
+
+    public List<Variable> getListFromAnd(Expression expression) {
+        List<Variable> retVal = new ArrayList<>();
+
+        if (expression instanceof And) {
+            for (Object obj : expression.getChildren()) {
+                if (obj instanceof Variable) {
+                    retVal.add((Variable)obj);
+                }
+            }
+        } else if (expression instanceof Variable) {
+           retVal.add((Variable)expression);
+        } else {
+            logger.debug("convert_CSG_options: Logical Expression operator not supported");
+        }
+        return retVal;
+    }
+
+    public List<Expression> convertCSGSymbols(List<Expression> leList) {
+        List<Expression> csgUris = new ArrayList<>();
+        /*
+        for (Expression expr : leList) {
+            if (expr instanceof Expression)  {
+                csgUris.add(expr);
+            } else if (expr instanceof And) {
+                for (Expression expr : expr) {
+                    csgUris.add(expr);
+                }
+            } else {
+                logger.debug("Logical operator not supported {}", le);
+            }
+        }
+        */
+        return csgUris;
+    }
 }

@@ -228,8 +228,12 @@ public class AttackPathDataset {
     // TODO MS will provide a direct call to get uris
     public List<String> getMisbehaviourDirectCauseUris(String misbUri) throws RuntimeException {
         try {
+            //logger.debug("MS DCUri: {}", misbUri);
             MisbehaviourSetDB ms = misbehaviourSets.get(misbUri);
-            return new ArrayList<>(ms.getCausedBy());
+            //return new ArrayList<>(ms.getCausedBy());
+            List<String> al = new ArrayList<>(ms.getCausedBy());
+            //logger.debug("caused by: {}", al);
+            return al;
         } catch (Exception e) {
             return new ArrayList<String>();
         }
@@ -256,8 +260,8 @@ public class AttackPathDataset {
      * @param csgUri
      * @return
      */
-    public boolean isCurrentRiskCSG(String csgUri) {
-        return this.checkImplementationRuntime(csgUri);
+    public boolean isRuntimeChangable(String csgUri) {
+        return !csgUri.contains("-Implementation-Runtime") & (csgUri.contains("-Runtime") || csgUri.contains("-Implementation"));
     }
 
     private boolean checkImplementationRuntime(String csgUri) {
@@ -276,9 +280,8 @@ public class AttackPathDataset {
      * @param csgUri
      * @return
      */
-    public boolean isFutureRiskCSG(String csgUri) {
-        // TODO: REGEX is now changed!!!
-        return !(csgUri.endsWith("-Implementation-Runtime") || csgUri.endsWith("-Implementation"));
+    public boolean hasExternalDependencies(String csgUri) {
+        return !(csgUri.contains("-Implementation-Runtime") || csgUri.contains("-Implementation"));
     }
 
     /**
@@ -287,10 +290,10 @@ public class AttackPathDataset {
      * @param csgUri
      * @return
      */
-    public boolean checkContingencyPlan(String csgUri) throws RuntimeException {
+    public boolean isContingencyActivation(String csgUri) throws RuntimeException {
         try {
             String contingencyPlan;
-            if (this.checkImplementationRuntime(csgUri)) {
+            if (this.hasExternalDependencies(csgUri)) {
                 contingencyPlan = csgUri.replaceAll("-Implementation-Runtime|-Implementation", "");
             } else {
                 return false;
@@ -312,18 +315,12 @@ public class AttackPathDataset {
         }
     }
 
-    /**
-     * get threat CSGs
-     *
-     * @param threatUri
-     * @return
-     */
     public Set<String> getThreatControlStrategyUris(String threatUri, boolean future) throws RuntimeException {
-        // Return list of control strategies (urirefs) that block a threat
-        // (uriref)
+        // Return list of control strategies (urirefs) that block a threat (uriref)
 
         /*
-         * "blocks": means a CSG appropriate for current or future risk calc "mitigates": means a CSG appropriate for furture risk (often a contingency plan for a
+         * "blocks": means a CSG appropriate for current or future risk calc
+         * "mitigates": means a CSG appropriate for furture risk (often a contingency plan for a
          * current risk CSG); excluded from likelihood calc in current risk
          */
 
@@ -332,18 +329,69 @@ public class AttackPathDataset {
         ThreatDB threat = this.threats.get(threatUri);
         try {
             csgURIs.addAll(threat.getBlockedByCSG());
+            //logger.debug("GET BLOCKED by CSG: {}", csgURIs);
             if (future) {
                 csgURIs.addAll(threat.getMitigatedByCSG());
-            }
-            for (String csgURI : csgURIs) {
-                ControlStrategyDB csg = querier.getControlStrategy(csgURI, "system-inf");
-                if (csg.isCurrentRisk()) {
-                    csgToConsider.add(csgURI);
+                //logger.debug("GET MITIGATED by CSG: {}", csgURIs);
+                for (String csgURI : csgURIs) {
+                    if (hasExternalDependencies(csgURI)) {
+                        csgToConsider.add(csgURI);
+                    }
+                }
+            } else {
+                for (String csgURI : csgURIs) {
+                    if (isRuntimeChangable(csgURI)) {
+                        if (!isContingencyActivation(csgURI)) {
+                            csgToConsider.add(csgURI);
+                        }
+                    }
                 }
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        //logger.debug("getThreatCSGUris: {}, to consider: {}", threatUri, csgToConsider);
+        return csgToConsider;
+    }
+
+
+    /**
+     * get threat CSGs
+     *
+     * @param threatUri
+     * @return
+     */
+    public Set<String> getThreatControlStrategyUris1(String threatUri, boolean future) throws RuntimeException {
+        // Return list of control strategies (urirefs) that block a threat
+        // (uriref)
+
+        /*
+         * "blocks": means a CSG appropriate for current or future risk calc
+         * "mitigates": means a CSG appropriate for furture risk (often a
+         * contingency plan for a current risk CSG); excluded from likelihood
+         * calc in current risk
+         */
+
+        Set<String> csgURIs = new HashSet<String>();
+        Set<String> csgToConsider = new HashSet<>();
+        ThreatDB threat = this.threats.get(threatUri);
+        try {
+            csgURIs.addAll(threat.getBlockedByCSG());
+            logger.debug("GET BLOCKED by CSG: {}", csgURIs);
+            if (future) {
+                csgURIs.addAll(threat.getMitigatedByCSG());
+                logger.debug("GET MITIGATED by CSG: {}", csgURIs);
+            }
+            for (String csgURI : csgURIs) {
+                ControlStrategyDB csg = querier.getControlStrategy(csgURI, "system-inf");
+                if (csg.isCurrentRisk()) {
+                    csgToConsider.add(csgURI);
+                } 
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        logger.debug("getThreatCSGuris: {}, {}", threatUri, csgToConsider);
         return csgToConsider;
     }
 
@@ -612,4 +660,11 @@ public class AttackPathDataset {
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
+    public void applyCS(Set<String> csSet) {
+        for (String csURI : csSet) {
+            logger.debug("enabling CS {}", csURI);
+            ControlSetDB cs = controlSets.get(csURI);
+            cs.setProposed(true);
+        }
+    }
 }

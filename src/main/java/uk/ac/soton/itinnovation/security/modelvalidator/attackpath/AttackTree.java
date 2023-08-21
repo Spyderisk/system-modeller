@@ -488,10 +488,10 @@ public class AttackTree {
         return treeJsonDoc;
     }
 
-    private LogicalExpression attackMitigationCSG() {
+    public LogicalExpression attackMitigationCSG() {
         List<LogicalExpression> leList = new ArrayList<>();
         for (String uri : this.targetUris) {
-            leList.add(this.nodeByUri.get(uri).getControlStrategies());
+            leList.add(this.nodeByUri.get(uri).getAttackTreeMitigationCSG());
         }
         logger.debug("attackMitigationCSG LE size: {}", leList.size());
         return new LogicalExpression(this.apd, new ArrayList<Object>(leList), true);
@@ -571,6 +571,21 @@ public class AttackTree {
         logger.debug("CSGs...............: {}", csgs.size());
         logger.debug("CS.................: {}", controls.size());
         logger.info("#################################");
+        /*
+        for (AttackNode an : this.nodeByUri.values()) {
+            logger.debug("  attack node: {}", an.getUri());
+        }
+        */
     }
 
+    public void logicalExpressions() {
+        logger.info("#################################");
+        logger.info("LogicalExpressions test start");
+
+        for (String uri : this.attackMitigationCSG().uris()) {
+            logger.info("LE s: {}");
+        }
+
+        logger.info("LogicalExpressions test end");
+    }
 }
