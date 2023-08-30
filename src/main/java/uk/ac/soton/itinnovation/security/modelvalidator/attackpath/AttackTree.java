@@ -588,4 +588,24 @@ public class AttackTree {
 
         logger.info("LogicalExpressions test end");
     }
+
+    public void addMinPrimaryThreatDistances() {
+        for (AttackNode an : this.nodes()) {
+            if (an.isExternalCause()) {
+                
+            }
+        }
+    }
+
+    private void addMinPrimaryThreatDistance(String uriRef, Set<String> currentPath) {
+        if (currentPath == null) {
+            currentPath = new HashSet<>();
+        }
+        currentPath.add(uriRef);
+        AttackNode currentNode = this.nodeByUri.get(uriRef);
+        String parentDistances = "";
+        if (currentNode.isThreat()) {
+
+        }
+    }
 }

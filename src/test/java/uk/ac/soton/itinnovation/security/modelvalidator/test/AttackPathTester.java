@@ -26,6 +26,7 @@ package uk.ac.soton.itinnovation.security.modelvalidator.test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.jena.query.Dataset;
 import org.apache.jena.tdb.TDBFactory;
@@ -57,6 +58,9 @@ import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
 import uk.ac.soton.itinnovation.security.modelvalidator.RiskCalculator;
 import uk.ac.soton.itinnovation.security.modelvalidator.Validator;
 
+import uk.ac.soton.itinnovation.security.model.system.MisbehaviourSet;
+import uk.ac.soton.itinnovation.security.systemmodeller.model.Model;
+
 @RunWith(JUnit4.class)
 public class AttackPathTester extends TestCase {
 
@@ -84,17 +88,23 @@ public class AttackPathTester extends TestCase {
 		tester.addDomain(0, "modelvalidator/domain-network-6a1-3-5-auto-expanded-unfiltered.nq.gz",
 				"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
 
-        tester.addDomain(1, "modelvalidator/domain-ssm-testing-6a3.nq",
-                "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/ssm-testing-6a3");
+        //tester.addDomain(1, "modelvalidator/domain-ssm-testing-6a3.nq",
+        //        "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/ssm-testing-6a3");
+
+        //tester.addDomain(0, "modelvalidator/data-flow/domain-network-6a3-2-2-unfiltered.nq.gz",
+        //        "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/ssm-testing-6a3");
 
 		tester.addSystem(0, "modelvalidator/system-dataflow-test-singles.nq.gz",
 				"http://it-innovation.soton.ac.uk/system/63d9308f8f6a206408be9010");
 
-		tester.addSystem(1, "modelvalidator/Test-6a3-1ANB-HighSatC-asserted.nq",
-				"http://it-innovation.soton.ac.uk/system/63b2f38af03b473a0ce2a3b9");
+		//tester.addSystem(1, "modelvalidator/Test-6a3-1ANB-HighSatC-asserted.nq",
+		//		"http://it-innovation.soton.ac.uk/system/63b2f38af03b473a0ce2a3b9");
 
-		tester.addSystem(2, "modelvalidator/simple.nq",
-				"http://it-innovation.soton.ac.uk/system/64ca44f968ff6b3ad580a3da");
+		//tester.addSystem(2, "modelvalidator/simple.nq",
+		//		"http://it-innovation.soton.ac.uk/system/64ca44f968ff6b3ad580a3da");
+
+		//tester.addSystem(0, "modelvalidator/data-flow/system-dataflow-test-singles-validated.nq.gz",
+	    //   	"http://it-innovation.soton.ac.uk/system/63d9308f8f6a206408be9010");
 
 		tester.setUp();
 
@@ -152,7 +162,7 @@ public class AttackPathTester extends TestCase {
 		}
 	}
 
-    	@Test
+    @Test
 	public void testRecommendations() {
 		logger.info("Switching to selected domain and system model test cases");
 		//tester.switchModels(0, 2);
@@ -204,6 +214,36 @@ public class AttackPathTester extends TestCase {
 			e.printStackTrace();
 			fail("Exception thrown by attack path recommendations");
 			return;
+		}
+	}
+
+	@Test
+	public void testCurrentOrFutureRiskCalculation() {
+		tester.switchModels(0, 0);
+
+		smq = new SystemModelQuerier(tester.getModel());
+
+		try {
+			IQuerierDB querierDB = new JenaQuerierDB(dataset, tester.getModel(), true);
+			querierDB.initForRiskCalculation();
+			RiskCalculator rc = new RiskCalculator(querierDB);
+			rc.calculateRiskLevels(RiskCalculationMode.CURRENT, true, new Progress(tester.getGraph("system"))); //save results, as queried below
+
+			MisbehaviourSet ms = smq.getMisbehaviourSet(tester.getStore(),
+					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#MS-LossOfAuthenticity-a40e98cc",
+					false); //no need for causes here
+			assertEquals(5, ms.getLikelihood().getValue());
+
+			rc.calculateRiskLevels(RiskCalculationMode.FUTURE, true, new Progress(tester.getGraph("system"))); //save results, as queried below
+                                                                                                               //
+			ms = smq.getMisbehaviourSet(tester.getStore(),
+					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#MS-LossOfAuthenticity-a40e98cc",
+					false); //no need for causes here
+			assertEquals(5, ms.getLikelihood().getValue());
+
+		} catch (Exception e) {
+			logger.error("Exception thrown by risk level calculator", e);
+			fail("Exception thrown by risk level calculator");
 		}
 	}
 }

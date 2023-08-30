@@ -48,6 +48,9 @@ import com.bpodgursky.jbool_expressions.Variable;
 import com.bpodgursky.jbool_expressions.parsers.ExprParser;
 import com.bpodgursky.jbool_expressions.rules.RuleSet;
 
+import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
+import uk.ac.soton.itinnovation.security.modelvalidator.RiskCalculator;
+
 public class RecommendationsAlgorithm {
     private static final Logger logger = LoggerFactory.getLogger(RecommendationsAlgorithm.class);
 
@@ -147,22 +150,18 @@ public class RecommendationsAlgorithm {
         return attackTree;
     }
 
-    private List<Expression> getListFromAnd(LogicalExpression le) {
-        // take a logical expression and return a list of symbols
-        List<Expression> retVal = new ArrayList<>();
-        /*
-        if (le instanceof Expression) {
-            retVal.add(le);
-        } else if (le instanceof And) {
-            for (Expression expr : le.args) {
-                retVal.add(expr);
-            }
-        } else {
-            logger.error("convert csg options: logical expression operator not supported");
-        }
-                */
-        return retVal;
+    /*
+    private void calculateRisk() {
+		try {
+		    Progress validationProgress = modelObjectsHelper.getValidationProgressOfModel(model);
+			querier.initForRiskCalculation();
+			RiskCalculator rc = new RiskCalculator(querier);
+			rc.calculateRiskLevels(RiskCalculationMode.FUTURE, false, new Progress(tester.getGraph("system")));
+		} catch (Exception e) {
+			logger.error("Exception thrown by risk level calculator", e);
+		}
     }
+    */
 
     private CSGNode applyCSGs(LogicalExpression le, CSGNode myNode) {
         logger.debug("applyCSGs");
@@ -204,7 +203,7 @@ public class RecommendationsAlgorithm {
             // TODO: I need to keep track of CS changes or roll them back later
             apd.applyCS(csSet);
 
-            // Re-calculate risk now
+            // Re-calculate risk now and 
 
 
         }
@@ -221,10 +220,6 @@ public class RecommendationsAlgorithm {
 
             // step: attackMitigationCSG?
             LogicalExpression attackMitigationCSG = threatTree.attackMitigationCSG();
-
-            // TODO remove the following lines
-            //attackMitigationCSG.applyDNF(100);
-            //logger.debug("attackMitigationCSG DNF {}", attackMitigationCSG.getCause());
 
             // step: rootNode?
             CSGNode rootNode = applyCSGs(attackMitigationCSG, new CSGNode());

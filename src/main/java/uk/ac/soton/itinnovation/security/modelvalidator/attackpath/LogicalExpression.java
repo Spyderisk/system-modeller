@@ -161,8 +161,6 @@ public class LogicalExpression {
         List<Expression> retVal = new ArrayList<>();
         if (this.cause == null) {
             logger.debug("Logical Expression cause is none, cannot find mitigation CSG");
-        //} else if (this.cause instanceof Expression) {
-        //   retVal.add(this.cause);
         } else if (this.cause instanceof Or) {
             for (Expression expr : this.cause.getChildren()) {
                 retVal.add(expr);

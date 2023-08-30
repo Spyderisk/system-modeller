@@ -87,6 +87,7 @@ import uk.ac.soton.itinnovation.security.modelquerier.dto.RiskCalcResultsDB;
 import uk.ac.soton.itinnovation.security.modelvalidator.ModelValidator;
 import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackPathAlgorithm;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithm;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.TreeJsonDoc;
 import uk.ac.soton.itinnovation.security.semanticstore.AStoreWrapper;
 import uk.ac.soton.itinnovation.security.semanticstore.IStoreWrapper;
@@ -1378,6 +1379,67 @@ public class ModelController {
             logger.error("Threat path failed due to an error", e);
             throw new InternalServerErrorException(
                     "Threat graph calculation failed. Please contact support for further assistance.");
+        }
+    }
+
+
+	/**
+	 * This REST method generates a recommendation report 
+	 *
+	 * @param modelId the String representation of the model object to seacrh
+	 * @param riskMode string indicating the prefered risk calculation mode
+	 * @return A JSON report containing recommendations 
+     * @throws InternalServerErrorException   if an error occurs during report generation
+	 */
+	@RequestMapping(value = "/models/{modelId}/recommendations", method = RequestMethod.GET)
+	public ResponseEntity<TreeJsonDoc> calculateRecommendations(
+            @PathVariable String modelId,
+            @RequestParam(defaultValue = "FUTURE") String riskMode) {
+
+        logger.info("Calculating threat graph for model {}", modelId);
+        logger.info(" riskMode: {}",riskMode);
+
+		try {
+            RiskCalculationMode.valueOf(riskMode);
+		} catch (IllegalArgumentException e) {
+			logger.error("Found unexpected riskCalculationMode parameter value {}, valid values are: {}.",
+					riskMode, RiskCalculationMode.values());
+			throw new BadRequestErrorException("Invalid 'riskMode' parameter value " + riskMode +
+                        ", valid values are: " + Arrays.toString(RiskCalculationMode.values()));
+		}
+
+        final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
+
+        AStoreWrapper store = storeModelManager.getStore();
+
+        try {
+            logger.info("Initialising JenaQuerierDB");
+
+            JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
+                    model.getModelStack(), false);
+
+            querierDB.init();
+
+            logger.info("Calculating Recommendations");
+
+			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(querierDB);
+
+            if (!reca.checkRiskCalculationMode(riskMode)) {
+                logger.error("mismatch in risk calculation mode found");
+                throw new BadRequestErrorException("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
+            }
+
+            TreeJsonDoc treeDoc = null;
+
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(treeDoc);
+
+        } catch (BadRequestErrorException e) {
+            logger.error("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
+            throw e;
+        } catch (Exception e) {
+            logger.error("Threat path failed due to an error", e);
+            throw new InternalServerErrorException(
+                    "Finding recommendations failed. Please contact support for further assistance.");
         }
     }
 
