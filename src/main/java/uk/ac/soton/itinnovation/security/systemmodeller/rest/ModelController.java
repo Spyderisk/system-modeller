@@ -988,8 +988,8 @@ public class ModelController {
 		headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
 		headers.add("Pragma", "no-cache");
 		headers.add("Expires", "0");
-		headers.add("Content-disposition", "attachment;filename=Model" + model.getId() + "_" +
-				(new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss")).format(new Date()) + ".nq.gz");
+		headers.add("Content-disposition", "attachment;filename=" + model.getName() + " asserted " +
+				(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm")).format(new Date()) + ".nq.gz");
 		
 		//If we have temporarily invalidated the model above, reset the flag to true
 		if (resetValidFlag) {
