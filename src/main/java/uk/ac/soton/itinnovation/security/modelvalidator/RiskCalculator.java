@@ -170,6 +170,7 @@ public class RiskCalculator {
 
         // Load system model assets, matching patterns and nodes
         assets = querier.getAssets("system", "system-inf");
+        logger.info("Found {} system assets", assets.size());
         matchingPatterns = querier.getMatchingPatterns("system-inf");
         nodes = querier.getNodes("system-inf");
 
@@ -416,9 +417,19 @@ public class RiskCalculator {
         for (ThreatDB threat : threats.values()) {
             List<String> causesThisThreat = new ArrayList<>();
             for(String twasURI : threat.getEntryPoints()){
-                String msURI = entryPointMisbehaviour.get(twasURI).getUri();
-                if(!causesThisThreat.contains(msURI))
-                    causesThisThreat.add(msURI);
+                if(twasURI == null){
+                    logger.info("Found null entry point for threat = {}", threat.getUri());
+                }
+                String msURI;
+                MisbehaviourSetDB ms = entryPointMisbehaviour.get(twasURI);
+                if(ms != null){
+                    msURI = entryPointMisbehaviour.get(twasURI).getUri();
+                    if(!causesThisThreat.contains(msURI))
+                        causesThisThreat.add(msURI);
+                } else {
+                    logger.info("Found null MS in entryPointMisbehaviour for TWAS = {}, threat {}", twasURI, threat.getUri());
+                    throw new RuntimeException(String.format("Found null MS in entryPointMisbehaviour for TWAS = {}", twasURI));
+                }
             }
             for(String msURI : threat.getSecondaryEffectConditions()){
                 if(!causesThisThreat.contains(msURI))
