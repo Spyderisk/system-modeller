@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
 <head>
-    <th:block th:include="fragments/head :: head"/>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="viewport" content="width=device-width"/>
+    <link th:href="${@environment.getProperty('server.servlet.contextPath', T(java.lang.String))} + '/css/lib/bootstrap.min.css'" rel="stylesheet" type="text/css"/>
     <title th:text="${@environment.getProperty('spring.application.name') + ' - Welcome'}"></title>
     <link href="https://fonts.googleapis.com/css?family=Lato:400,400i|Rajdhani:400,700&display=swap" rel="stylesheet">
-    <link th:href="${@environment.getProperty('server.servlet.contextPath', T(java.lang.String))} + '/css/welcome.css'"
-          type="text/css" rel="stylesheet"/>
+    <link th:href="${@environment.getProperty('server.servlet.contextPath', T(java.lang.String))} + '/css/welcome.css'" type="text/css" rel="stylesheet"/>
 </head>
 <body>
 <div class="content">
