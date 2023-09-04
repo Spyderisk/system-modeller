@@ -57,13 +57,15 @@ public class RecommendationsAlgorithm {
     private AttackPathDataset apd;
     private IQuerierDB querier;
     private AttackTree threatTree;
+    private String modelId;
 
     @Autowired
     private ModelObjectsHelper modelObjectsHelper;
 
-    public RecommendationsAlgorithm(IQuerierDB querier) {
+    public RecommendationsAlgorithm(IQuerierDB querier, String modelId) {
 
         this.querier = querier;
+        this.modelId = modelId;
 
         final long startTime = System.currentTimeMillis();
 
@@ -203,9 +205,8 @@ public class RecommendationsAlgorithm {
             // TODO: I need to keep track of CS changes or roll them back later
             apd.applyCS(csSet);
 
-            // Re-calculate risk now and 
-
-
+            // Re-calculate risk now and
+            apd.calculateRisk(this.modelId);
         }
 
         return new CSGNode();
@@ -218,11 +219,13 @@ public class RecommendationsAlgorithm {
             threatTree = calculateAttackTree(targetUris,
                     riskCalculationMode, allPaths, normalOperations);
 
+            // test risk calculation and risk vectors:
+            this.apd.getRiskVector();
             // step: attackMitigationCSG?
-            LogicalExpression attackMitigationCSG = threatTree.attackMitigationCSG();
+            //LogicalExpression attackMitigationCSG = threatTree.attackMitigationCSG();
 
             // step: rootNode?
-            CSGNode rootNode = applyCSGs(attackMitigationCSG, new CSGNode());
+            //CSGNode rootNode = applyCSGs(attackMitigationCSG, new CSGNode());
 
             // step: makeRecommendations?
 

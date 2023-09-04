@@ -1410,6 +1410,8 @@ public class ModelController {
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
+		String mId = model.getId();
+
         AStoreWrapper store = storeModelManager.getStore();
 
         try {
@@ -1422,7 +1424,7 @@ public class ModelController {
 
             logger.info("Calculating Recommendations");
 
-			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(querierDB);
+			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(querierDB, mId);
 
             if (!reca.checkRiskCalculationMode(riskMode)) {
                 logger.error("mismatch in risk calculation mode found");

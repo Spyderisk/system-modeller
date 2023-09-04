@@ -39,7 +39,10 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
+import uk.ac.soton.itinnovation.security.modelvalidator.RiskCalculator;
 import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
+
 import uk.ac.soton.itinnovation.security.modelquerier.IQuerierDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.AssetDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ControlSetDB;
@@ -48,6 +51,7 @@ import uk.ac.soton.itinnovation.security.modelquerier.dto.LevelDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.MisbehaviourSetDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ThreatDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.TrustworthinessAttributeSetDB;
+import uk.ac.soton.itinnovation.security.model.system.RiskVector;
 
 public class AttackPathDataset {
     private static final Logger logger = LoggerFactory.getLogger(AttackPathDataset.class);
@@ -665,6 +669,37 @@ public class AttackPathDataset {
             logger.debug("enabling CS {}", csURI);
             ControlSetDB cs = controlSets.get(csURI);
             cs.setProposed(true);
+            querier.updateProposedStatus(true, cs, "system");
         }
+    }
+
+    public void calculateRisk(String modelId) {
+        try {
+			logger.info("Calculating risks for APD");
+			RiskCalculator rc = new RiskCalculator(querier);
+			rc.calculateRiskLevels(RiskCalculationMode.FUTURE, true, new Progress(modelId));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return;
+		}
+    }
+
+    public void getRiskVector() {
+
+        //Map<LevelDB, Integer> riskVector = new HashMap<>();
+        Map<String, Integer> riskVector = new HashMap<>();
+        for (LevelDB level : riLevels.values()) {
+            riskVector.put(level.getUri(), 0);
+            //riskVector.put(level, 0);
+        }
+
+        for (MisbehaviourSetDB ms : misbehaviourSets.values()) {
+            riskVector.put(ms.getRisk(), riskVector.get(ms.getRisk()) + 1);
+            //riskVector.put(riLevels.get(ms.getRisk()), riskVector.get(riLevels.get(ms.getRisk())) + 1);
+        }
+        logger.debug("RISK VECTOR: {}", riskVector);
+        logger.debug("ri levels: {}", riLevels.values());
+        RiskVector rv = RiskVector(riLevels.values(), riskVector);
+        logger.debug("RISKVECTOR: {}", rv);
     }
 }
