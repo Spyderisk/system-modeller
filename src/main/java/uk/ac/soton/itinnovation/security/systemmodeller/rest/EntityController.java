@@ -354,7 +354,7 @@ public class EntityController {
 	 * @return A JSON representation of a misbehaviour set object
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/system/misbehaviourSet/{uri}", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/system/misbehaviourSets/{uri}", method = RequestMethod.GET)
 	public ResponseEntity<MisbehaviourSetDB> getEntitySystemMisbehaviourSet(
             @PathVariable String modelId,
             @PathVariable String uri) {
@@ -397,7 +397,7 @@ public class EntityController {
 	 * @return A JSON representation of misbehaviour set objects map
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/system/misbehaviourSet", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/system/misbehaviourSets", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, MisbehaviourSetDB>> getEntitySystemMisbehaviourSets(
             @PathVariable String modelId) {
 
@@ -684,7 +684,7 @@ public class EntityController {
 	 * @return A JSON representation of a trustworthiness attribute set object
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/system/trustworthinessAttributeSet/{uri}", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/system/trustworthinessAttributeSets/{uri}", method = RequestMethod.GET)
 	public ResponseEntity<TrustworthinessAttributeSetDB> getEntitySystemTWA(
             @PathVariable String modelId,
             @PathVariable String uri) {
@@ -727,7 +727,7 @@ public class EntityController {
 	 * @return A JSON representation of a map of system model trustworthiness attribute set (TWAS)
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/system/trustworthinessAttributeSet", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/system/trustworthinessAttributeSets", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, TrustworthinessAttributeSetDB>> getEntitySystemTWAs(
             @PathVariable String modelId) {
 
@@ -848,7 +848,7 @@ public class EntityController {
 	 * @return A JSON representation of a consequence object
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/domain/misbehaviour/{uri}", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/domain/misbehaviours/{uri}", method = RequestMethod.GET)
 	public ResponseEntity<MisbehaviourDB> getEntityDomainMisbehaviour(
             @PathVariable String modelId,
             @PathVariable String uri) {
@@ -891,7 +891,7 @@ public class EntityController {
 	 * @return A JSON representation of a consequence object map
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/domain/misbehaviour", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/domain/misbehaviours", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, MisbehaviourDB>> getEntityDomainMisbehaviours(
             @PathVariable String modelId) {
 
