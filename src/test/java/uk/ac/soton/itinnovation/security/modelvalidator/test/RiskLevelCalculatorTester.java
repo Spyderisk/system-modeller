@@ -90,7 +90,7 @@ public class RiskLevelCalculatorTester extends TestCase {
 		tester = new TestHelper("jena-tdb");
 
 		tester.addDomain(0, "modelvalidator/domain-network.rdf.gz", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
-		tester.addDomain(1, "modelvalidator/domain-shield.rdf.gz", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-shield");
+		//tester.addDomain(1, "modelvalidator/domain-shield.rdf.gz", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-shield");
 		tester.addDomain(2, "modelvalidator/FOGPROTECT-3j1-5.nq.gz", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-fogprotect");
 		tester.addDomain(3, "modelvalidator/domain-shield-with-frequency.rdf.gz", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-shield-with-frequency");
 		tester.addDomain(4, "modelvalidator/TESTING-2a6-1.nq.gz", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network-testing");
@@ -100,17 +100,20 @@ public class RiskLevelCalculatorTester extends TestCase {
 		tester.addDomain(6, "modelvalidator/domain-ssm-testing-6a3.nq", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/ssm-testing-6a3");
 		tester.addDomain(7, "modelvalidator/ssm-testing-6a3-0-16-auto-expanded.nq", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/ssm-testing-6a3-expanded");
 
+		tester.addDomain(8, "modelvalidator/RiskLevelCalculator/domain-network-v6a3-2-2-unfiltered.nq.gz",
+                "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network-v6a3-2-2");
+
 		//unvalidated system model for testing risk calculator
 		tester.addSystem(0, "modelvalidator/system-network.nq.gz",
 			"http://it-innovation.soton.ac.uk/system/5ad09178567d94846a9aeaec");
 
 		//validated system model for testing risk calculator
-		tester.addSystem(1, "modelvalidator/system-shield-valid.nq.gz",
-			"http://it-innovation.soton.ac.uk/system/5b15202b567d9478125b3dda");
+		//tester.addSystem(1, "modelvalidator/system-shield-valid.nq.gz",
+		//	"http://it-innovation.soton.ac.uk/system/5b15202b567d9478125b3dda");
 
 		//system model for testing attack paths
-		tester.addSystem(2, "modelvalidator/system-attack-path-simple-test.nq.gz",
-			"http://it-innovation.soton.ac.uk/system/5c6687d4567d94019ca7e022");
+		//tester.addSystem(2, "modelvalidator/system-attack-path-simple-test.nq.gz",
+		//	"http://it-innovation.soton.ac.uk/system/5c6687d4567d94019ca7e022");
 
 		//system model for testing 'current' vs 'future' risk calculation
 		tester.addSystem(3, "modelvalidator/Current_Risk_Test_Case.nq.gz",
@@ -138,6 +141,9 @@ public class RiskLevelCalculatorTester extends TestCase {
 
 		tester.addSystem(9, "modelvalidator/Test-6a3-1ANB-HighSatC-asserted.nq",
 				"http://it-innovation.soton.ac.uk/system/63b2f38af03b473a0ce2a3b9");
+
+		tester.addSystem(10, "modelvalidator/RiskLevelCalculator/system-dataflow-test-singles-validated.nq.gz",
+				"http://it-innovation.soton.ac.uk/system/63d9308f8f6a206408be9010");
 
 		tester.setUp();
 
@@ -418,10 +424,10 @@ public class RiskLevelCalculatorTester extends TestCase {
 	}
 
 	//TODO: fix or delete this test
-	@Ignore("This test fails for refactored validator but we don't yet know why. Testing the two risk calculations separately works fine (see below).")
+	//@Ignore("This test fails for refactored validator but we don't yet know why. Testing the two risk calculations separately works fine (see below).")
 	@Test
 	public void testCurrentOrFutureRiskCalculation() {
-		tester.switchModels(2, 3);
+		tester.switchModels(8, 10);
 
 		try {
 			IQuerierDB querierDB = new JenaQuerierDB(dataset, tester.getModel(), true);
@@ -429,16 +435,19 @@ public class RiskLevelCalculatorTester extends TestCase {
 			RiskCalculator rc = new RiskCalculator(querierDB);
 			rc.calculateRiskLevels(RiskCalculationMode.CURRENT, true, new Progress(tester.getGraph("system"))); //save results, as queried below
 
-			MisbehaviourSet ms = smq.getMisbehaviourSet(tester.getStore(),
-					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#MS-LossOfAvailability-d7369b42",
+            MisbehaviourSet ms = smq.getMisbehaviourSet(tester.getStore(),
+					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#MS-LossOfAuthenticity-a40e98cc",
 					false); //no need for causes here
-			assertEquals(2, ms.getLikelihood().getValue());
+			logger.info("Future risk: MS-LossOfAuthenticity-a40e98cc has likelihood {}, value {}",ms.getLikelihood(),ms.getLikelihood().getValue());
+			assertEquals(0, ms.getLikelihood().getValue());
 
 			rc.calculateRiskLevels(RiskCalculationMode.FUTURE, true, new Progress(tester.getGraph("system"))); //save results, as queried below
 			ms = smq.getMisbehaviourSet(tester.getStore(),
-					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#MS-LossOfAvailability-d7369b42",
+					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#MS-LossOfAuthenticity-a40e98cc",
 					false); //no need for causes here
-			assertEquals(1, ms.getLikelihood().getValue());
+			logger.info("Current risk: MS-LossOfAuthenticity-a40e98cc has likelihood {}, value {}",ms.getLikelihood(),ms.getLikelihood().getValue());
+			assertEquals(3, ms.getLikelihood().getValue());
+
 		} catch (Exception e) {
 			logger.error("Exception thrown by risk level calculator", e);
 			fail("Exception thrown by risk level calculator");
