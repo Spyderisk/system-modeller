@@ -350,11 +350,11 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @param uri consequence URI
-	 * @return A JSON representation of a consequence object
+	 * @param uri misbehaviour set URI
+	 * @return A JSON representation of a misbehaviour set object
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/system/consequences/{uri}", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/system/misbehaviourSets/{uri}", method = RequestMethod.GET)
 	public ResponseEntity<MisbehaviourSetDB> getEntitySystemMisbehaviourSet(
             @PathVariable String modelId,
             @PathVariable String uri) {
@@ -394,10 +394,10 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @return A JSON representation of a consequece objects map
+	 * @return A JSON representation of misbehaviour set objects map
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/system/consequences", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/system/misbehaviourSets", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, MisbehaviourSetDB>> getEntitySystemMisbehaviourSets(
             @PathVariable String modelId) {
 
@@ -432,11 +432,11 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @param uri control strategy URI
-	 * @return A JSON representation of a control strategey object
+	 * @param uri control strategies (CSG) URI
+	 * @return A JSON representation of a control strategies object
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/system/controlstrategies/{uri}", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/system/controlStrategies/{uri}", method = RequestMethod.GET)
 	public ResponseEntity<ControlStrategyDB> getEntitySystemControlStrategy(
             @PathVariable String modelId,
             @PathVariable String uri) {
@@ -476,10 +476,10 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @return A JSON representation of a control strategey object map 
+	 * @return A JSON representation of control strategies object map
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/system/controlstrategies", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/system/controlStrategies", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, ControlStrategyDB>> getEntitySystemControlStrategies(
             @PathVariable String modelId) {
 
@@ -514,11 +514,11 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @param uri control strategy URI
+	 * @param uri control set URI
 	 * @return A JSON representation of a control set object
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/system/controlsets/{uri}", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/system/controlSets/{uri}", method = RequestMethod.GET)
 	public ResponseEntity<ControlSetDB> getEntitySystemControlSet(
             @PathVariable String modelId,
             @PathVariable String uri) {
@@ -559,11 +559,11 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @param controlsetURI control strategy URI
-	 * @return A JSON representation of a control set object map
+	 * @param controlsetURI control set URI
+	 * @return A JSON representation of a map of system model control sets
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/system/controlsets", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/system/controlSets", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, ControlSetDB>> getEntitySystemControlSets(
             @PathVariable String modelId) {
 
@@ -680,11 +680,11 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @param uri trustworthiness attribute set URI
-	 * @return A JSON representation of a trustworthiness attribute object
+	 * @param uri trustworthiness attribute set (TWAS) URI
+	 * @return A JSON representation of a trustworthiness attribute set object
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/system/trustworthiness/{uri}", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/system/trustworthinessAttributeSets/{uri}", method = RequestMethod.GET)
 	public ResponseEntity<TrustworthinessAttributeSetDB> getEntitySystemTWA(
             @PathVariable String modelId,
             @PathVariable String uri) {
@@ -724,10 +724,10 @@ public class EntityController {
 	 * This REST method ...
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @return A JSON representation of a trustworthiness attribute object map
+	 * @return A JSON representation of a map of system model trustworthiness attribute set (TWAS)
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/system/trustworthiness", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/system/trustworthinessAttributeSets", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, TrustworthinessAttributeSetDB>> getEntitySystemTWAs(
             @PathVariable String modelId) {
 
@@ -848,7 +848,7 @@ public class EntityController {
 	 * @return A JSON representation of a consequence object
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/domain/consequences/{uri}", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/domain/misbehaviours/{uri}", method = RequestMethod.GET)
 	public ResponseEntity<MisbehaviourDB> getEntityDomainMisbehaviour(
             @PathVariable String modelId,
             @PathVariable String uri) {
@@ -891,7 +891,7 @@ public class EntityController {
 	 * @return A JSON representation of a consequence object map
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/entity/domain/consequences", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/entity/domain/misbehaviours", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, MisbehaviourDB>> getEntityDomainMisbehaviours(
             @PathVariable String modelId) {
 

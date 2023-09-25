@@ -22,6 +22,7 @@ class ModelItem extends Component {
             openLockedModal:false
         }
 
+        this.formatRiskCalcMode = this.formatRiskCalcMode.bind(this);
         this.updateModel = this.updateModel.bind(this);
         this.deleteModel = this.deleteModel.bind(this);
         this.takeControl = this.takeControl.bind(this);
@@ -74,19 +75,22 @@ class ModelItem extends Component {
 
         let statColor = "";
         let status = "";
-        if(model.riskLevelsValid){
+
+        if (model.riskLevelsValid){
             statColor = "green";
-            status = "Risk-calculated";
-        } else if(model.valid && !model.riskLevelsValid) {
+            status = "Risk-calculated (" + this.formatRiskCalcMode(model.riskCalculationMode) + ")";
+        } else if (model.valid && !model.riskLevelsValid) {
             statColor = "orange";
             status = "Validated";
         } else {
             statColor = "red";
             status = "Not Validated"
         }
+
         let statusStyle = {
             color: statColor
         }
+
         return (
             <div>
                 <Modal show={this.state.openLockedModal}>
@@ -373,6 +377,11 @@ class ModelItem extends Component {
             </div>
 
         );
+    }
+
+    formatRiskCalcMode(mode) {
+        //Capitalise first char, lower case the rest
+        return mode.charAt(0).toUpperCase() + mode.slice(1).toLowerCase();
     }
 
     clickPanelAction(e) {
