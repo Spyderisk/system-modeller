@@ -138,7 +138,7 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting threat");
+            logger.info("getting system threats");
 
             Map<String, ThreatDB> threats = querierDB.getThreats("system-inf");
 
@@ -163,7 +163,7 @@ public class EntityController {
     public ResponseEntity<MisbehaviourSetDB> getEntitySystemMisbehaviourSet(@PathVariable String modelId,
             @PathVariable String uri) {
 
-        logger.info("get system misbihaviour for model {} with URI: {}", modelId, uri);
+        logger.info("get system misbehaviour set for model {} with URI: {}", modelId, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -177,7 +177,7 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting misbehaviour");
+            logger.info("getting misbehaviour sets");
 
             MisbehaviourSetDB ms = querierDB.getMisbehaviourSet(uri, "system-inf");
 
@@ -205,7 +205,7 @@ public class EntityController {
     public ResponseEntity<Map<String, MisbehaviourSetDB>> getEntitySystemMisbehaviourSets(
             @PathVariable String modelId) {
 
-        logger.info("get system misbihaviours for model {}", modelId);
+        logger.info("get system misbehaviour sets for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -219,7 +219,7 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting misbehaviours");
+            logger.info("getting misbehaviour sets");
 
             Map<String, MisbehaviourSetDB> msMap = querierDB.getMisbehaviourSets("system-inf");
 
@@ -367,7 +367,7 @@ public class EntityController {
     @RequestMapping(value = "/models/{modelId}/entity/system/controlSets", method = RequestMethod.GET)
     public ResponseEntity<Map<String, ControlSetDB>> getEntitySystemControlSets(@PathVariable String modelId) {
 
-        logger.info("get system ControlSet for model {}", modelId);
+        logger.info("get system ControlSets for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -482,10 +482,10 @@ public class EntityController {
      * @throws InternalServerErrorException if an error occurs during report generation
      */
     @RequestMapping(value = "/models/{modelId}/entity/system/trustworthinessAttributeSets/{uri}", method = RequestMethod.GET)
-    public ResponseEntity<TrustworthinessAttributeSetDB> getEntitySystemTWA(@PathVariable String modelId,
+    public ResponseEntity<TrustworthinessAttributeSetDB> getEntitySystemTWAS(@PathVariable String modelId,
             @PathVariable String uri) {
 
-        logger.info("get system TWA for model {} with URI: {}", modelId, uri);
+        logger.info("get system TWAS for model {} with URI: {}", modelId, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -499,19 +499,19 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting TWA");
+            logger.info("getting TWAS");
 
-            TrustworthinessAttributeSetDB twa = querierDB.getTrustworthinessAttributeSet(uri, "system-inf");
+            TrustworthinessAttributeSetDB twas = querierDB.getTrustworthinessAttributeSet(uri, "system-inf");
 
-            if (twa == null) {
+            if (twas == null) {
                 return ResponseEntity.notFound().build();
             }
 
-            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(twa);
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(twas);
 
         } catch (Exception e) {
-            logger.error("Simple API get TWA failed due to an error", e);
-            throw new InternalServerErrorException("TWA fetch failed. Please contact support for further assistance.");
+            logger.error("Simple API get TWAS failed due to an error", e);
+            throw new InternalServerErrorException("TWAS fetch failed. Please contact support for further assistance.");
         }
     }
 
@@ -526,7 +526,7 @@ public class EntityController {
     public ResponseEntity<Map<String, TrustworthinessAttributeSetDB>> getEntitySystemTWAs(
             @PathVariable String modelId) {
 
-        logger.info("get system TWA for model {}", modelId);
+        logger.info("get system TWAS for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -556,7 +556,7 @@ public class EntityController {
      * This REST method ...
      *
      * @param modelId the String representation of the model object to seacrh
-     * @param uri     control strategy URI
+     * @param uri     control URI
      * @return A JSON representation of a control object
      * @throws InternalServerErrorException if an error occurs during report generation
      */
@@ -577,7 +577,7 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting control");
+            logger.info("getting domain control");
 
             ControlDB control = querierDB.getControl(uri, "domain");
 
@@ -635,8 +635,8 @@ public class EntityController {
      * This REST method ...
      *
      * @param modelId the String representation of the model object to seacrh
-     * @param uri     consequence URI
-     * @return A JSON representation of a consequence object
+     * @param uri     misbehaviour URI
+     * @return A JSON representation of a misbehaviour object
      * @throws InternalServerErrorException if an error occurs during report generation
      */
     @RequestMapping(value = "/models/{modelId}/entity/domain/misbehaviours/{uri}", method = RequestMethod.GET)
@@ -657,7 +657,7 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting misbehaviour set");
+            logger.info("getting domain misbehaviour");
 
             MisbehaviourDB misbehaviour = querierDB.getMisbehaviour(uri, "domain");
 
@@ -678,7 +678,7 @@ public class EntityController {
      * This REST method ...
      *
      * @param modelId the String representation of the model object to seacrh
-     * @return A JSON representation of a consequence object map
+     * @return A JSON representation of a misbehaviours object map
      * @throws InternalServerErrorException if an error occurs during report generation
      */
     @RequestMapping(value = "/models/{modelId}/entity/domain/misbehaviours", method = RequestMethod.GET)
@@ -698,7 +698,7 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting misbehaviours");
+            logger.info("getting domain misbehaviours");
 
             Map<String, MisbehaviourDB> misbehaviours = querierDB.getMisbehaviours("domain");
 
@@ -724,7 +724,7 @@ public class EntityController {
     public ResponseEntity<LevelDB> getEntityDomainLevel(@PathVariable String modelId, @PathVariable String metric,
             @PathVariable String uri) {
 
-        logger.info("get domain impact level for metric: {}, uri: {}", metric, uri);
+        logger.info("get {} level for model {}, uri: {}", metric, modelId, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -737,8 +737,6 @@ public class EntityController {
                     model.getModelStack(), false);
 
             querierDB.init();
-
-            logger.info("getting impact level");
 
             LevelDB level = null;
 
@@ -788,7 +786,7 @@ public class EntityController {
     public ResponseEntity<Map<String, LevelDB>> getEntityDomainLevels(@PathVariable String modelId,
             @PathVariable String metric) {
 
-        logger.info("get domain impact levels for model {}, metric: {}", modelId, metric);
+        logger.info("get {} levels for model {}", metric, modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -801,8 +799,6 @@ public class EntityController {
                     model.getModelStack(), false);
 
             querierDB.init();
-
-            logger.info("getting impact level");
 
             Map<String, LevelDB> levels;
 
