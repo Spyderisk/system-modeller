@@ -89,22 +89,36 @@ public class RiskLevelCalculatorTester extends TestCase {
 
 		tester = new TestHelper("jena-tdb");
 
-		tester.addDomain(0, "modelvalidator/domain-network.rdf.gz", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
-		//tester.addDomain(1, "modelvalidator/domain-shield.rdf.gz", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-shield");
-		tester.addDomain(2, "modelvalidator/FOGPROTECT-3j1-5.nq.gz", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-fogprotect");
+		tester.addDomain(0, "modelvalidator/RiskLevelCalculator/domain-network_domain-network.rdf.gz",
+                "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
+
+		tester.addDomain(1, "modelvalidator/RiskLevelCalculator/domain-shield.rdf.gz",
+                "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-shield");
+
+		tester.addDomain(2, "modelvalidator/RiskLevelCalculator/FOGPROTECT-3j1-5_domain-fogprotect.nq.gz",
+                "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-fogprotect");
 		tester.addDomain(3, "modelvalidator/domain-shield-with-frequency.rdf.gz", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-shield-with-frequency");
-		tester.addDomain(4, "modelvalidator/TESTING-2a6-1.nq.gz", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network-testing");
-		tester.addDomain(5, "modelvalidator/domain-network_8.0.0-SNAPSHOT-NETWORK-3j1-5.nq.gz","http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network-8_0_0");
+
+		tester.addDomain(4, "modelvalidator/RiskLevelCalculator/TESTING-2a6-1_domain-network-testing.nq.gz",
+                "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network-testing");
+
+		tester.addDomain(5, "modelvalidator/RiskLevelCalculator/domain-network_8.0.0-SNAPSHOT-NETWORK-3j1-5_domain-network-8_0_0.nq.gz",
+                "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network-8_0_0");
 
 		//Test domain model for population support
-		tester.addDomain(6, "modelvalidator/domain-ssm-testing-6a3.nq", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/ssm-testing-6a3");
-		tester.addDomain(7, "modelvalidator/ssm-testing-6a3-0-16-auto-expanded.nq", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/ssm-testing-6a3-expanded");
+		tester.addDomain(6, "modelvalidator/RiskLevelCalculator/domain_ssm-testing-6a3.nq.gz",
+                "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/ssm-testing-6a3");
+
+		tester.addDomain(7, "modelvalidator/RiskLevelCalculator/ssm-testing-6a3-0-16-auto-expanded_ssm-testing-6a3-expanded.nq.gz",
+                "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/ssm-testing-6a3-expanded");
+
 
 		tester.addDomain(8, "modelvalidator/RiskLevelCalculator/domain-network-v6a3-2-2-unfiltered.nq.gz",
                 "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network-v6a3-2-2");
 
+
 		//unvalidated system model for testing risk calculator
-		tester.addSystem(0, "modelvalidator/system-network.nq.gz",
+		tester.addSystem(0, "modelvalidator/RiskLevelCalculator/system-network_domain-network.nq.gz",
 			"http://it-innovation.soton.ac.uk/system/5ad09178567d94846a9aeaec");
 
 		//validated system model for testing risk calculator
@@ -116,33 +130,33 @@ public class RiskLevelCalculatorTester extends TestCase {
 		//	"http://it-innovation.soton.ac.uk/system/5c6687d4567d94019ca7e022");
 
 		//system model for testing 'current' vs 'future' risk calculation
-		tester.addSystem(3, "modelvalidator/Current_Risk_Test_Case.nq.gz",
+		tester.addSystem(3, "modelvalidator/RiskLevelCalculator/Current_Risk_Test_Case_domain-fogprotect.nq.gz",
 			"http://it-innovation.soton.ac.uk/system/5eb3b4c33fd34e33c59df896");
 
 		//system model for testing intrinsic threat likelihoods
-		tester.addSystem(4, "modelvalidator/system-shield-validated-with-frequencies.nq.gz",
+		tester.addSystem(4, "modelvalidator/RiskLevelCalculator/system-shield-validated-with-frequencies_domain-shield.nq.gz",
 			"http://it-innovation.soton.ac.uk/system/5b15202b567d9478125b3dda",
 			"http://it-innovation.soton.ac.uk/system/5b15202b567d9478125b3ddb");
 
 		//validated simple test model
-		tester.addSystem(5, "modelvalidator/PatternMatchingAndControlStrategyTest-v2a-valid.nq.gz",
+		tester.addSystem(5, "modelvalidator/RiskLevelCalculator/PatternMatchingAndControlStrategyTest-v2a-valid_domain-network-testing.nq.gz",
 			"http://it-innovation.soton.ac.uk/system/5d99e263884bd32188c3282b");
 
 		//test model to test threat causation
-		tester.addSystem(6, "modelvalidator/ThreatCausationTest_-_v2a6_-_valid.nq.gz",
+		tester.addSystem(6, "modelvalidator/RiskLevelCalculator/ThreatCausationTest_-_v2a6_-_valid_domain-network-testing.nq.gz",
 			"http://it-innovation.soton.ac.uk/system/5ea812ae3fd34e04ce51ea06");
 
-		tester.addSystem(7, "modelvalidator/RC-rerun-test-V.nq.gz",
+		tester.addSystem(7, "modelvalidator/RiskLevelCalculator/RC-rerun-test-V_domain-network-8_0_0.nq.gz",
 				"http://it-innovation.soton.ac.uk/system/5f241c02992e8308e4a9aeb4");
 
 		//Test system model for population support
-		tester.addSystem(8, "modelvalidator/Test-6a3-00.nq.gz",
+		tester.addSystem(8, "modelvalidator/RiskLevelCalculator/Test-6a3-00_ssm-testing-6a3.nq.gz",
 				"http://it-innovation.soton.ac.uk/system/63971077df89a647814e6d8b");
 
-		tester.addSystem(9, "modelvalidator/Test-6a3-1ANB-HighSatC-asserted.nq",
+		tester.addSystem(9, "modelvalidator/RiskLevelCalculator/Test-6a3-1ANB-HighSatC-asserted_ssm-testing-6a3-expanded.nq.gz",
 				"http://it-innovation.soton.ac.uk/system/63b2f38af03b473a0ce2a3b9");
 
-		tester.addSystem(10, "modelvalidator/RiskLevelCalculator/system-dataflow-test-singles-validated.nq.gz",
+		tester.addSystem(10, "modelvalidator/RiskLevelCalculator/system-dataflow-test-singles-validated_domain-network-v6a3-2-2.nq.gz",
 				"http://it-innovation.soton.ac.uk/system/63d9308f8f6a206408be9010");
 
 		tester.setUp();
@@ -331,10 +345,11 @@ public class RiskLevelCalculatorTester extends TestCase {
 	 * Tests that the threat frequency functionality is working correctly. This uses a full domain and system model,
 	 * both of which should be replaced by simple test models in the future.
 	 */
-	@Ignore("Fails due to bad input. See https://iglab.it-innovation.soton.ac.uk/Security/system-modeller/-/merge_requests/655#note_28417")
+	//@Ignore("Fails due to bad input. See https://iglab.it-innovation.soton.ac.uk/Security/system-modeller/-/merge_requests/655#note_28417")
 	@Test
 	public void testThreatFrequency() {
-		tester.switchModels(3, 4);
+		tester.switchModels(8, 10);
+		//tester.switchModels(1, 4);
 
 		try {
 			IQuerierDB querierDB = new JenaQuerierDB(dataset, tester.getModel(), true);
@@ -356,7 +371,7 @@ public class RiskLevelCalculatorTester extends TestCase {
 
 		// If the frequency functionality is  working then the likelihood of this threat will be VeryLow, otherwise it
 		// will be Low
-		Threat threat = threats.get("http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#H.A.H.3-H_a9feda22");
+		Threat threat = threats.get("http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#DF.C.CCDFCS.3.2-MP-CCDFCS_6f472a59_363e1940_a40e98cc_78a9ab96_6f472a59_40cad76f_40cad76f");
 		assertEquals(threat.getLikelihood().getValue(), 0);
 	}
 
