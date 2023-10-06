@@ -73,13 +73,14 @@ public class EntityController {
     public String adminRole;
 
     /**
-     * This REST method retrieves a JSON document describing a specific system model threat.
-     *
-     * @param modelId the String representation of the model object to search
-     * @param uri     threat URI (of the form "system#ThreatName_ID")
-     * @return A JSON representation of a threat object
-     * @throws InternalServerErrorException if an error occurs during report generation
-     */
+    * Retrieves a JSON document describing a specific system model threat.
+    *
+    * @param modelId The String representation of the model object to search.
+    * @param uri Threat URI (of the short form "system#ThreatName_ID"),
+    *            e.g., "system#123". The URI should be properly encoded.
+    * @return A JSON representation of a threat object.
+    * @throws InternalServerErrorException if an error occurs during report generation.
+    */
     @RequestMapping(value = "/models/{modelId}/entity/system/threats/{uri}", method = RequestMethod.GET)
     public ResponseEntity<ThreatDB> getEntitySystemThreat(@PathVariable String modelId, @PathVariable String uri) {
 
@@ -115,8 +116,9 @@ public class EntityController {
     }
 
     /**
-     * This REST method ...
-     *
+     * Retrieves a list of JSON documents describing all threats associated with
+     * a specific system model.
+      *
      * @param modelId the String representation of the model object to seacrh
      * @return A JSON representation of threat objects map
      * @throws InternalServerErrorException if an error occurs during report generation
@@ -152,10 +154,11 @@ public class EntityController {
     }
 
     /**
-     * This REST method ...
+     * This REST method retrieves a misbehavour sets (MS).
      *
      * @param modelId the String representation of the model object to seacrh
-     * @param uri     misbehaviour set URI
+     * @param uri MisbehaviourSet URI (of the short form "system#MisbehaviourSetName_ID"),
+     *            e.g., "system#123". The URI should be properly encoded.
      * @return A JSON representation of a misbehaviour set object
      * @throws InternalServerErrorException if an error occurs during report generation
      */
@@ -195,7 +198,8 @@ public class EntityController {
     }
 
     /**
-     * This REST method ...
+     * This REST method retrives all misbehavour sets (MS) from the specified
+     * system model.
      *
      * @param modelId the String representation of the model object to seacrh
      * @return A JSON representation of misbehaviour set objects map
@@ -233,13 +237,14 @@ public class EntityController {
     }
 
     /**
-     * This REST method ...
-     *
-     * @param modelId the String representation of the model object to seacrh
-     * @param uri     control strategies (CSG) URI
-     * @return A JSON representation of a control strategies object
-     * @throws InternalServerErrorException if an error occurs during report generation
-     */
+    * Retrieves control strategies (CSG) for a specific CSG URI.
+    *
+    * @param modelId The String representation of the model object to search.
+    * @param uri Control strategies (CSG) short form URI to retrieve data from,
+    *            e.g., "system#123". The URI should be properly encoded.
+    * @return A JSON representation of a control strategies object.
+    * @throws InternalServerErrorException if an error occurs during report generation.
+    */
     @RequestMapping(value = "/models/{modelId}/entity/system/controlStrategies/{uri}", method = RequestMethod.GET)
     public ResponseEntity<ControlStrategyDB> getEntitySystemControlStrategy(@PathVariable String modelId,
             @PathVariable String uri) {
@@ -276,7 +281,7 @@ public class EntityController {
     }
 
     /**
-     * This REST method ...
+     * Retrieves all control strategies (CSG) for a specific system model.
      *
      * @param modelId the String representation of the model object to seacrh
      * @return A JSON representation of control strategies object map
@@ -314,10 +319,11 @@ public class EntityController {
     }
 
     /**
-     * This REST method ...
+     * Retrieves control set (CS) for a specific CS URI.
      *
      * @param modelId the String representation of the model object to seacrh
-     * @param uri     control set URI
+     * @param uri Control set (CSG) short form URI to retrieve data from,
+     *            e.g., "system#123". The URI should be properly encoded.
      * @return A JSON representation of a control set object
      * @throws InternalServerErrorException if an error occurs during report generation
      */
@@ -357,10 +363,9 @@ public class EntityController {
     }
 
     /**
-     * This REST method ...
+     * Retrieves all control sets (CS) from a specific system model.
      *
-     * @param modelId       the String representation of the model object to seacrh
-     * @param controlsetURI control set URI
+     * @param modelId the String representation of the model object to seacrh
      * @return A JSON representation of a map of system model control sets
      * @throws InternalServerErrorException if an error occurs during report generation
      */
@@ -395,10 +400,11 @@ public class EntityController {
     }
 
     /**
-     * This REST method ...
+     * Retrieves an asset for a specific Asset URI.
      *
      * @param modelId the String representation of the model object to seacrh
-     * @param uri     asset URI
+     * @param uri asset short form URI to retrieve data from,
+     *            e.g., "system#123". The URI should be properly encoded.
      * @return A JSON representation of an asset object
      * @throws InternalServerErrorException if an error occurs during report generation
      */
@@ -437,7 +443,7 @@ public class EntityController {
     }
 
     /**
-     * This REST method ...
+     * Retrieves all assets for a specific system model.
      *
      * @param modelId the String representation of the model object to seacrh
      * @return A JSON representation of an asset object map
@@ -474,10 +480,11 @@ public class EntityController {
     }
 
     /**
-     * This REST method ...
+     * Retrieves a trustworthiness attribute set (TWAS) for a specific CSG URI.
      *
      * @param modelId the String representation of the model object to seacrh
-     * @param uri     trustworthiness attribute set (TWAS) URI
+     * @param uri     trustworthiness attribute set (TWAS) short form URI,
+     *                e.g., "system#123". The URI should be properly encoded.
      * @return A JSON representation of a trustworthiness attribute set object
      * @throws InternalServerErrorException if an error occurs during report generation
      */
@@ -516,7 +523,7 @@ public class EntityController {
     }
 
     /**
-     * This REST method ...
+     * Retrieves all trustworthiness attribute sets (TWAS) from a system model.
      *
      * @param modelId the String representation of the model object to seacrh
      * @return A JSON representation of a map of system model trustworthiness attribute set (TWAS)
@@ -553,10 +560,11 @@ public class EntityController {
     }
 
     /**
-     * This REST method ...
+     * Retrieves domain model control for a specific control URI.
      *
      * @param modelId the String representation of the model object to seacrh
-     * @param uri     control URI
+     * @param uri Control short form URI to retrieve data from,
+     *            e.g., "system#123". The URI should be properly encoded.
      * @return A JSON representation of a control object
      * @throws InternalServerErrorException if an error occurs during report generation
      */
@@ -595,7 +603,7 @@ public class EntityController {
     }
 
     /**
-     * This REST method ...
+     * Retrieves all domain model controls for a specific system model.
      *
      * @param modelId the String representation of the model object to seacrh
      * @return A JSON representation of a control object map
@@ -632,10 +640,11 @@ public class EntityController {
     }
 
     /**
-     * This REST method ...
+     * This REST method retrieves domain misbehavour for URI.
      *
      * @param modelId the String representation of the model object to seacrh
-     * @param uri     misbehaviour URI
+     * @param uri Misbehaviour URI (of the short form "system#MisbehaviourName_ID"),
+     *            e.g., "system#123". The URI should be properly encoded.
      * @return A JSON representation of a misbehaviour object
      * @throws InternalServerErrorException if an error occurs during report generation
      */
@@ -675,7 +684,8 @@ public class EntityController {
     }
 
     /**
-     * This REST method ...
+     * This REST method retrieves all domain misbehavours for the specific
+     * system model.
      *
      * @param modelId the String representation of the model object to seacrh
      * @return A JSON representation of a misbehaviours object map
@@ -712,15 +722,15 @@ public class EntityController {
     }
 
     /**
-     * This REST method ...
+     * Retrieves a domain level metric for a specific URI.
      *
      * @param modelId the String representation of the model object to seacrh
      * @param metric  metric name
-     * @param uri     level URI
+     * @param uri level short form URI, e.g., "system#123". The URI should be properly encoded.
      * @return A JSON representation of a level object
      * @throws InternalServerErrorException if an error occurs during report generation
      */
-    @RequestMapping(value = "/models/{modelId}/entity/domain/{metric}/{uri}", method = RequestMethod.GET)
+    @RequestMapping(value = "/models/{modelId}/entity/domain/levels/{metric}/{uri}", method = RequestMethod.GET)
     public ResponseEntity<LevelDB> getEntityDomainLevel(@PathVariable String modelId, @PathVariable String metric,
             @PathVariable String uri) {
 
@@ -775,14 +785,14 @@ public class EntityController {
     }
 
     /**
-     * This REST method ...
+     * Retrieves all domain level metric for a specific system model.
      *
      * @param modelId the String representation of the model object to seacrh
      * @param metric  metric name
      * @return A JSON representation of a level object map
      * @throws InternalServerErrorException if an error occurs during report generation
      */
-    @RequestMapping(value = "/models/{modelId}/entity/domain/{metric}", method = RequestMethod.GET)
+    @RequestMapping(value = "/models/{modelId}/entity/domain/levels/{metric}", method = RequestMethod.GET)
     public ResponseEntity<Map<String, LevelDB>> getEntityDomainLevels(@PathVariable String modelId,
             @PathVariable String metric) {
 
