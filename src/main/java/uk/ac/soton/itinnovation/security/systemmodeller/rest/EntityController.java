@@ -46,6 +46,7 @@ import uk.ac.soton.itinnovation.security.modelquerier.dto.LevelDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.MisbehaviourDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.MisbehaviourSetDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ThreatDB;
+import uk.ac.soton.itinnovation.security.modelquerier.dto.TrustworthinessAttributeDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.TrustworthinessAttributeSetDB;
 import uk.ac.soton.itinnovation.security.semanticstore.AStoreWrapper;
 import uk.ac.soton.itinnovation.security.semanticstore.JenaTDBStoreWrapper;
@@ -468,7 +469,7 @@ public class EntityController {
 
             logger.info("getting assets");
 
-            Map<String, AssetDB> assets = querierDB.getAssets("system-inf");
+            Map<String, AssetDB> assets = querierDB.getAssets("system", "system-inf");
 
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(assets);
 
@@ -558,6 +559,87 @@ public class EntityController {
             throw new InternalServerErrorException("TWAs fetch failed. Please contact support for further assistance.");
         }
     }
+
+    /**
+     * Retrieves a trustworthiness attribute (TWA) for a specific CSG URI.
+     *
+     * @param modelId the String representation of the model object to seacrh
+     * @param uri     trustworthiness attribute (TWA) short form URI,
+     *                e.g., "system#123". The URI should be properly encoded.
+     * @return A JSON representation of a trustworthiness attribute object
+     * @throws InternalServerErrorException if an error occurs during report generation
+     */
+    @RequestMapping(value = "/models/{modelId}/entity/domain/trustworthinessAttributes/{uri}", method = RequestMethod.GET)
+    public ResponseEntity<TrustworthinessAttributeDB> getEntityDomainTWA(@PathVariable String modelId,
+            @PathVariable String uri) {
+
+        logger.info("get system TWAS for model {} with URI: {}", modelId, uri);
+
+        final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
+
+        AStoreWrapper store = storeModelManager.getStore();
+
+        try {
+            logger.info("Initialising JenaQuerierDB");
+
+            JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
+                    model.getModelStack(), false);
+
+            querierDB.init();
+
+            logger.info("getting TWAS");
+
+            TrustworthinessAttributeDB twa = querierDB.getTrustworthinessAttribute(uri, "domain");
+
+            if (twa == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(twa);
+
+        } catch (Exception e) {
+            logger.error("Simple API get TWAS failed due to an error", e);
+            throw new InternalServerErrorException("TWAS fetch failed. Please contact support for further assistance.");
+        }
+    }
+
+    /**
+     * Retrieves all trustworthiness attributes (TWA) from the domain model.
+     *
+     * @param modelId the String representation of the model object to seacrh
+     * @return A JSON representation of a map of system model trustworthiness attribute (TWA)
+     * @throws InternalServerErrorException if an error occurs during report generation
+     */
+    @RequestMapping(value = "/models/{modelId}/entity/domain/trustworthinessAttributes", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, TrustworthinessAttributeDB>> getEntityDomainTWAs(
+            @PathVariable String modelId) {
+
+        logger.info("get system TWAS for model {}", modelId);
+
+        final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
+
+        AStoreWrapper store = storeModelManager.getStore();
+
+        try {
+            logger.info("Initialising JenaQuerierDB");
+
+            JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
+                    model.getModelStack(), false);
+
+            querierDB.init();
+
+            logger.info("getting TWAs");
+
+            Map<String, TrustworthinessAttributeDB> twas = querierDB.getTrustworthinessAttributes("domain");
+
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(twas);
+
+        } catch (Exception e) {
+            logger.error("Simple API get TWAs failed due to an error", e);
+            throw new InternalServerErrorException("TWAs fetch failed. Please contact support for further assistance.");
+        }
+    }
+
 
     /**
      * Retrieves domain model control for a specific control URI.
