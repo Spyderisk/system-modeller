@@ -25,23 +25,9 @@
 package uk.ac.soton.itinnovation.security.systemmodeller.rest;
 
 import static io.restassured.RestAssured.given;
-import static java.util.stream.Collectors.toList;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.iterableWithSize;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import org.apache.http.HttpStatus;
 import org.junit.Before;
@@ -59,14 +45,6 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import io.restassured.http.ContentType;
-import uk.ac.soton.itinnovation.security.model.Level;
-import uk.ac.soton.itinnovation.security.model.system.Asset;
-import uk.ac.soton.itinnovation.security.model.system.ControlSet;
-import uk.ac.soton.itinnovation.security.model.system.MetadataPair;
-import uk.ac.soton.itinnovation.security.model.system.Threat;
-import uk.ac.soton.itinnovation.security.model.system.TrustworthinessAttributeSet;
-import uk.ac.soton.itinnovation.security.modelquerier.SystemModelQuerier;
 import uk.ac.soton.itinnovation.security.systemmodeller.CommonTestSetup;
 import uk.ac.soton.itinnovation.security.systemmodeller.SystemModellerApplication;
 import uk.ac.soton.itinnovation.security.systemmodeller.TestHelper;
@@ -74,7 +52,6 @@ import uk.ac.soton.itinnovation.security.systemmodeller.auth.KeycloakAdminClient
 import uk.ac.soton.itinnovation.security.systemmodeller.model.Model;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.ModelFactory;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.WebKeyRole;
-import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.util.SecureUrlHelper;
 
 @RunWith(SpringRunner.class)
@@ -84,9 +61,6 @@ public class EntityControllerTest extends CommonTestSetup {
 	private static final Logger logger = LoggerFactory.getLogger(EntityControllerTest.class);
 
 	//System objects, spying on secureUrlHelper to control model access
-	@Autowired
-	private ModelObjectsHelper modelHelper;
-
 	@Autowired
 	private ModelFactory modelFactory;
 
@@ -111,14 +85,12 @@ public class EntityControllerTest extends CommonTestSetup {
 	private Model testModel;
 	private String testUserId;
 	private static TestHelper testHelper;
-	private static SystemModelQuerier querier;
 
 	@BeforeClass
 	public static void beforeClass() {
 		logger.info("Setting up EntityControllerTest class");
 		testHelper = new TestHelper("jena-tdb");
 		testHelper.setUp();
-		querier = new SystemModelQuerier(testHelper.getModel());
 	}
 
 	@Before
