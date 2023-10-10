@@ -428,7 +428,7 @@ public class EntityController {
 
             logger.info("getting asset");
 
-            AssetDB asset = querierDB.getAsset(uri, "system-inf");
+            AssetDB asset = querierDB.getAsset(uri, "system", "system-inf");
 
             if (asset == null) {
                 return ResponseEntity.notFound().build();
@@ -481,7 +481,7 @@ public class EntityController {
     }
 
     /**
-     * Retrieves a trustworthiness attribute set (TWAS) for a specific CSG URI.
+     * Retrieves a trustworthiness attribute set (TWAS) for a specific URI.
      *
      * @param modelId the String representation of the model object to seacrh
      * @param uri     trustworthiness attribute set (TWAS) short form URI,
@@ -561,7 +561,7 @@ public class EntityController {
     }
 
     /**
-     * Retrieves a trustworthiness attribute (TWA) for a specific CSG URI.
+     * Retrieves a trustworthiness attribute (TWA) for a specific URI, from the domain model.
      *
      * @param modelId the String representation of the model object to seacrh
      * @param uri     trustworthiness attribute (TWA) short form URI,
@@ -573,7 +573,7 @@ public class EntityController {
     public ResponseEntity<TrustworthinessAttributeDB> getEntityDomainTWA(@PathVariable String modelId,
             @PathVariable String uri) {
 
-        logger.info("get system TWAS for model {} with URI: {}", modelId, uri);
+        logger.info("get domain TWA for model {} with URI: {}", modelId, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -614,7 +614,7 @@ public class EntityController {
     public ResponseEntity<Map<String, TrustworthinessAttributeDB>> getEntityDomainTWAs(
             @PathVariable String modelId) {
 
-        logger.info("get system TWAS for model {}", modelId);
+        logger.info("get domain TWAs for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -694,7 +694,7 @@ public class EntityController {
     @RequestMapping(value = "/models/{modelId}/entity/domain/controls", method = RequestMethod.GET)
     public ResponseEntity<Map<String, ControlDB>> getEntityDomainControls(@PathVariable String modelId) {
 
-        logger.info("get domain Control for model {}", modelId);
+        logger.info("get domain Controls for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -722,7 +722,7 @@ public class EntityController {
     }
 
     /**
-     * This REST method retrieves domain misbehavour for URI.
+     * This REST method retrieves domain misbehaviour for URI.
      *
      * @param modelId the String representation of the model object to seacrh
      * @param uri Misbehaviour URI (of the short form "system#MisbehaviourName_ID"),
@@ -766,7 +766,7 @@ public class EntityController {
     }
 
     /**
-     * This REST method retrieves all domain misbehavours for the specific
+     * This REST method retrieves all domain misbehaviours for the specific
      * system model.
      *
      * @param modelId the String representation of the model object to seacrh
@@ -776,7 +776,7 @@ public class EntityController {
     @RequestMapping(value = "/models/{modelId}/entity/domain/misbehaviours", method = RequestMethod.GET)
     public ResponseEntity<Map<String, MisbehaviourDB>> getEntityDomainMisbehaviours(@PathVariable String modelId) {
 
-        logger.info("get domain Misbehaviour for model {}", modelId);
+        logger.info("get domain Misbehaviours for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
