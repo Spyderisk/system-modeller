@@ -155,7 +155,7 @@ public class EntityController {
     }
 
     /**
-     * This REST method retrieves a misbehavour sets (MS).
+     * This REST method retrieves a misbehavour set (MS).
      *
      * @param modelId the String representation of the model object to seacrh
      * @param uri MisbehaviourSet URI (of the short form "system#MisbehaviourSetName_ID"),
@@ -167,7 +167,7 @@ public class EntityController {
     public ResponseEntity<MisbehaviourSetDB> getEntitySystemMisbehaviourSet(@PathVariable String modelId,
             @PathVariable String uri) {
 
-        logger.info("get system misbehaviour set for model {} with URI: {}", modelId, uri);
+        logger.info("Get system misbehaviour set for model {} with URI: {}", modelId, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -181,12 +181,18 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting misbehaviour sets");
+            logger.info("Getting misbehaviour set: {}", uri);
 
             MisbehaviourSetDB ms = querierDB.getMisbehaviourSet(uri, "system-inf");
 
             if (ms == null) {
                 return ResponseEntity.notFound().build();
+            }
+
+            // Check if there is an impact level in the asserted graph, and if so, use it 
+            MisbehaviourSetDB systemMS = querierDB.getMisbehaviourSet(uri, "system");
+            if (systemMS != null && systemMS.getImpactLevel() != null) {
+                ms.setImpactLevel(systemMS.getImpactLevel());
             }
 
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(ms);
@@ -210,7 +216,7 @@ public class EntityController {
     public ResponseEntity<Map<String, MisbehaviourSetDB>> getEntitySystemMisbehaviourSets(
             @PathVariable String modelId) {
 
-        logger.info("get system misbehaviour sets for model {}", modelId);
+        logger.info("Get system misbehaviour sets for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -224,9 +230,36 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting misbehaviour sets");
+            logger.info("Getting misbehaviour sets");
 
-            Map<String, MisbehaviourSetDB> msMap = querierDB.getMisbehaviourSets("system-inf");
+            /* This approach seems to be unnecessary, as we can get the asserted impact levels from the system graph directly
+            //Map<String, MisbehaviourSetDB> msMap = querierDB.getMisbehaviourSets("system-inf");
+            //logger.info("Got {} misbehaviourSets from system-inf graph", msMap.size());
+
+            logger.info("Getting asserted impact levels...");
+            for (MisbehaviourSetDB ms : msMap.values()) {
+                // Check if there is an impact level in the asserted graph, and if so, use it 
+                MisbehaviourSetDB systemMS = querierDB.getMisbehaviourSet(ms.getUri(), "system");
+                if (systemMS != null && systemMS.getImpactLevel() != null) {
+                    ms.setImpactLevel(systemMS.getImpactLevel());
+                    logger.info("{}: {}", ms.getUri(), ms.getImpactLevel());
+                }
+                //else {
+                //    logger.info("{} (no asserted impact)", ms.getUri());
+                //}
+            }
+            */
+
+            // Get misbehaviour sets mainly from inferred graph, but include any impact levels from asserted graph
+            Map<String, MisbehaviourSetDB> msMap = querierDB.getMisbehaviourSets("system", "system-inf");
+            logger.info("Got {} misbehaviourSets", msMap.size());
+
+            logger.info("Non-negligible impact levels:");
+            for (MisbehaviourSetDB ms : msMap.values()) {
+                if (!ms.getImpactLevel().contains("ImpactLevelNegligible")) {
+                    logger.info("{}: {}", ms.getUri(), ms.getImpactLevel());
+                }
+            }
 
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(msMap);
 
