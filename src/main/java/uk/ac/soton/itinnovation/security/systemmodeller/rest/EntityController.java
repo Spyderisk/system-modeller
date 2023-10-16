@@ -183,7 +183,7 @@ public class EntityController {
 
             logger.info("Getting misbehaviour set: {}", uri);
 
-            // Get misbehaviour sets mainly from inferred graph, but include any impact levels from asserted graph
+            // Get misbehaviour set mainly from inferred graph, but include any impact level from asserted graph
             MisbehaviourSetDB ms = querierDB.getMisbehaviourSet(uri, "system-inf", "system");
 
             if (ms == null) {
@@ -503,7 +503,7 @@ public class EntityController {
     public ResponseEntity<TrustworthinessAttributeSetDB> getEntitySystemTWAS(@PathVariable String modelId,
             @PathVariable String uri) {
 
-        logger.info("get system TWAS for model {} with URI: {}", modelId, uri);
+        logger.info("Get system TWAS for model {} with URI: {}", modelId, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -517,9 +517,10 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting TWAS");
+            logger.info("Getting TWAS: {}", uri);
 
-            TrustworthinessAttributeSetDB twas = querierDB.getTrustworthinessAttributeSet(uri, "system-inf");
+            // Get TWAS mainly from inferred graph, but include any asserted tw level from asserted graph
+            TrustworthinessAttributeSetDB twas = querierDB.getTrustworthinessAttributeSet(uri, "system-inf", "system");
 
             if (twas == null) {
                 return ResponseEntity.notFound().build();
@@ -544,7 +545,7 @@ public class EntityController {
     public ResponseEntity<Map<String, TrustworthinessAttributeSetDB>> getEntitySystemTWAs(
             @PathVariable String modelId) {
 
-        logger.info("get system TWAS for model {}", modelId);
+        logger.info("Get system TWAS for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -558,9 +559,9 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting TWAs");
+            logger.info("Getting TWAS");
 
-            Map<String, TrustworthinessAttributeSetDB> twas = querierDB.getTrustworthinessAttributeSets("system-inf");
+            Map<String, TrustworthinessAttributeSetDB> twas = querierDB.getTrustworthinessAttributeSets("system-inf", "system");
 
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(twas);
 
