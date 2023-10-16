@@ -183,16 +183,11 @@ public class EntityController {
 
             logger.info("Getting misbehaviour set: {}", uri);
 
-            MisbehaviourSetDB ms = querierDB.getMisbehaviourSet(uri, "system-inf");
+            // Get misbehaviour sets mainly from inferred graph, but include any impact levels from asserted graph
+            MisbehaviourSetDB ms = querierDB.getMisbehaviourSet(uri, "system-inf", "system");
 
             if (ms == null) {
                 return ResponseEntity.notFound().build();
-            }
-
-            // Check if there is an impact level in the asserted graph, and if so, use it 
-            MisbehaviourSetDB systemMS = querierDB.getMisbehaviourSet(uri, "system");
-            if (systemMS != null && systemMS.getImpactLevel() != null) {
-                ms.setImpactLevel(systemMS.getImpactLevel());
             }
 
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(ms);
@@ -232,26 +227,8 @@ public class EntityController {
 
             logger.info("Getting misbehaviour sets");
 
-            /* This approach seems to be unnecessary, as we can get the asserted impact levels from the system graph directly
-            //Map<String, MisbehaviourSetDB> msMap = querierDB.getMisbehaviourSets("system-inf");
-            //logger.info("Got {} misbehaviourSets from system-inf graph", msMap.size());
-
-            logger.info("Getting asserted impact levels...");
-            for (MisbehaviourSetDB ms : msMap.values()) {
-                // Check if there is an impact level in the asserted graph, and if so, use it 
-                MisbehaviourSetDB systemMS = querierDB.getMisbehaviourSet(ms.getUri(), "system");
-                if (systemMS != null && systemMS.getImpactLevel() != null) {
-                    ms.setImpactLevel(systemMS.getImpactLevel());
-                    logger.info("{}: {}", ms.getUri(), ms.getImpactLevel());
-                }
-                //else {
-                //    logger.info("{} (no asserted impact)", ms.getUri());
-                //}
-            }
-            */
-
             // Get misbehaviour sets mainly from inferred graph, but include any impact levels from asserted graph
-            Map<String, MisbehaviourSetDB> msMap = querierDB.getMisbehaviourSets("system", "system-inf");
+            Map<String, MisbehaviourSetDB> msMap = querierDB.getMisbehaviourSets("system-inf", "system");
             logger.info("Got {} misbehaviourSets", msMap.size());
 
             logger.info("Non-negligible impact levels:");
