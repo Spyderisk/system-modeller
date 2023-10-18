@@ -11,7 +11,7 @@ info:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
 servers:
-  - url: http://localhost:8081/system-modeller
+- url: http://localhost:8089/system-modeller
     description: Local server
 paths:
   /models/{modelid}:
@@ -1876,6 +1876,520 @@ paths:
               schema:
                 type: string
                 format: binary
+  /models/{modelId}/entity/system/trustworthinessAttributeSets:
+    get:
+      tags:
+      - entity-controller
+      description: Retrieves all trustworthiness attribute sets (TWAS) from a system
+        model.
+      operationId: getEntitySystemTWAs
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to seacrh
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A JSON representation of a map of system model trustworthiness
+            attribute set (TWAS)
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/TrustworthinessAttributeSetDB'
+  /models/{modelId}/entity/system/trustworthinessAttributeSets/{uri}:
+    get:
+      tags:
+      - entity-controller
+      description: Retrieves a trustworthiness attribute set (TWAS) for a specific
+        URI.
+      operationId: getEntitySystemTWAS
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to seacrh
+        required: true
+        schema:
+          type: string
+      - name: uri
+        in: path
+        description: "trustworthiness attribute set (TWAS) short form URI,\n     \
+          \           e.g., \"system#123\". The URI should be properly encoded."
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A JSON representation of a trustworthiness attribute set object
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/TrustworthinessAttributeSetDB'
+  /models/{modelId}/entity/system/threats:
+    get:
+      tags:
+      - entity-controller
+      description: |-
+        Retrieves a list of JSON documents describing all threats associated with
+         a specific system model.
+      operationId: getEntitySystemThreats
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to seacrh
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A JSON representation of threat objects map
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/ThreatDB'
+  /models/{modelId}/entity/system/threats/{uri}:
+    get:
+      tags:
+      - entity-controller
+      description: Retrieves a JSON document describing a specific system model threat.
+      operationId: getEntitySystemThreat
+      parameters:
+      - name: modelId
+        in: path
+        description: The String representation of the model object to search.
+        required: true
+        schema:
+          type: string
+      - name: uri
+        in: path
+        description: "Threat URI (of the short form \"system#ThreatName_ID\"),\n \
+          \           e.g., \"system#123\". The URI should be properly encoded."
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A JSON representation of a threat object.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ThreatDB'
+  /models/{modelId}/entity/system/misbehaviourSets:
+    get:
+      tags:
+      - entity-controller
+      description: |-
+        This REST method retrives all misbehavour sets (MS) from the specified
+         system model.
+      operationId: getEntitySystemMisbehaviourSets
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to seacrh
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A JSON representation of misbehaviour set objects map
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/MisbehaviourSetDB'
+  /models/{modelId}/entity/system/misbehaviourSets/{uri}:
+    get:
+      tags:
+      - entity-controller
+      description: This REST method retrieves a misbehavour set (MS).
+      operationId: getEntitySystemMisbehaviourSet
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to seacrh
+        required: true
+        schema:
+          type: string
+      - name: uri
+        in: path
+        description: "MisbehaviourSet URI (of the short form \"system#MisbehaviourSetName_ID\"\
+          ),\n            e.g., \"system#123\". The URI should be properly encoded."
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A JSON representation of a misbehaviour set object
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MisbehaviourSetDB'
+  /models/{modelId}/entity/system/controlStrategies:
+    get:
+      tags:
+      - entity-controller
+      description: Retrieves all control strategies (CSG) for a specific system model.
+      operationId: getEntitySystemControlStrategies
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to seacrh
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A JSON representation of control strategies object map
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/ControlStrategyDB'
+  /models/{modelId}/entity/system/controlStrategies/{uri}:
+    get:
+      tags:
+      - entity-controller
+      description: Retrieves control strategies (CSG) for a specific CSG URI.
+      operationId: getEntitySystemControlStrategy
+      parameters:
+      - name: modelId
+        in: path
+        description: The String representation of the model object to search.
+        required: true
+        schema:
+          type: string
+      - name: uri
+        in: path
+        description: "Control strategies (CSG) short form URI to retrieve data from,\n\
+          \            e.g., \"system#123\". The URI should be properly encoded."
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A JSON representation of a control strategies object.
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ControlStrategyDB'
+  /models/{modelId}/entity/system/controlSets:
+    get:
+      tags:
+      - entity-controller
+      description: Retrieves all control sets (CS) from a specific system model.
+      operationId: getEntitySystemControlSets
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to seacrh
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A JSON representation of a map of system model control sets
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/ControlSetDB'
+  /models/{modelId}/entity/system/controlSets/{uri}:
+    get:
+      tags:
+      - entity-controller
+      description: Retrieves control set (CS) for a specific CS URI.
+      operationId: getEntitySystemControlSet
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to seacrh
+        required: true
+        schema:
+          type: string
+      - name: uri
+        in: path
+        description: "Control set (CSG) short form URI to retrieve data from,\n  \
+          \          e.g., \"system#123\". The URI should be properly encoded."
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A JSON representation of a control set object
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ControlSetDB'
+  /models/{modelId}/entity/system/assets:
+    get:
+      tags:
+      - entity-controller
+      description: Retrieves all assets for a specific system model.
+      operationId: getEntitySystemAssets
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to seacrh
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A JSON representation of an asset object map
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/AssetDB'
+  /models/{modelId}/entity/system/assets/{uri}:
+    get:
+      tags:
+      - entity-controller
+      description: Retrieves an asset for a specific Asset URI.
+      operationId: getEntitySystemAsset
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to seacrh
+        required: true
+        schema:
+          type: string
+      - name: uri
+        in: path
+        description: "asset short form URI to retrieve data from,\n            e.g.,\
+          \ \"system#123\". The URI should be properly encoded."
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A JSON representation of an asset object
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AssetDB'
+  /models/{modelId}/entity/domain/trustworthinessAttributes:
+    get:
+      tags:
+      - entity-controller
+      description: Retrieves all trustworthiness attributes (TWA) from the domain
+        model.
+      operationId: getEntityDomainTWAs
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to seacrh
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A JSON representation of a map of system model trustworthiness
+            attribute (TWA)
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/TrustworthinessAttributeDB'
+  /models/{modelId}/entity/domain/trustworthinessAttributes/{uri}:
+    get:
+      tags:
+      - entity-controller
+      description: "Retrieves a trustworthiness attribute (TWA) for a specific URI,\
+        \ from the domain model."
+      operationId: getEntityDomainTWA
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to seacrh
+        required: true
+        schema:
+          type: string
+      - name: uri
+        in: path
+        description: "trustworthiness attribute (TWA) short form URI,\n          \
+          \      e.g., \"system#123\". The URI should be properly encoded."
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A JSON representation of a trustworthiness attribute object
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/TrustworthinessAttributeDB'
+  /models/{modelId}/entity/domain/misbehaviours:
+    get:
+      tags:
+      - entity-controller
+      description: |-
+        This REST method retrieves all domain misbehaviours for the specific
+         system model.
+      operationId: getEntityDomainMisbehaviours
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to seacrh
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A JSON representation of a misbehaviours object map
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/MisbehaviourDB'
+  /models/{modelId}/entity/domain/misbehaviours/{uri}:
+    get:
+      tags:
+      - entity-controller
+      description: This REST method retrieves domain misbehaviour for URI.
+      operationId: getEntityDomainMisbehaviour
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to seacrh
+        required: true
+        schema:
+          type: string
+      - name: uri
+        in: path
+        description: "Misbehaviour URI (of the short form \"system#MisbehaviourName_ID\"\
+          ),\n            e.g., \"system#123\". The URI should be properly encoded."
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A JSON representation of a misbehaviour object
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/MisbehaviourDB'
+  /models/{modelId}/entity/domain/levels/{metric}:
+    get:
+      tags:
+      - entity-controller
+      description: Retrieves all domain level metric for a specific system model.
+      operationId: getEntityDomainLevels
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to seacrh
+        required: true
+        schema:
+          type: string
+      - name: metric
+        in: path
+        description: metric name
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A JSON representation of a level object map
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/LevelDB'
+  /models/{modelId}/entity/domain/levels/{metric}/{uri}:
+    get:
+      tags:
+      - entity-controller
+      description: Retrieves a domain level metric for a specific URI.
+      operationId: getEntityDomainLevel
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to seacrh
+        required: true
+        schema:
+          type: string
+      - name: metric
+        in: path
+        description: metric name
+        required: true
+        schema:
+          type: string
+      - name: uri
+        in: path
+        description: "level short form URI, e.g., \"system#123\". The URI should be\
+          \ properly encoded."
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A JSON representation of a level object
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LevelDB'
+  /models/{modelId}/entity/domain/controls:
+    get:
+      tags:
+      - entity-controller
+      description: Retrieves all domain model controls for a specific system model.
+      operationId: getEntityDomainControls
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to seacrh
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A JSON representation of a control object map
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/ControlDB'
+  /models/{modelId}/entity/domain/controls/{uri}:
+    get:
+      tags:
+      - entity-controller
+      description: Retrieves domain model control for a specific control URI.
+      operationId: getEntityDomainControl
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to seacrh
+        required: true
+        schema:
+          type: string
+      - name: uri
+        in: path
+        description: "Control short form URI to retrieve data from,\n            e.g.,\
+          \ \"system#123\". The URI should be properly encoded."
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A JSON representation of a control object
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/ControlDB'
   /models/{modelId}/controls:
     get:
       tags:
@@ -2222,7 +2736,7 @@ paths:
     get:
       tags:
       - json-error-controller
-      operationId: error_2
+      operationId: error_1
       responses:
         "200":
           description: OK
@@ -2233,7 +2747,7 @@ paths:
     put:
       tags:
       - json-error-controller
-      operationId: error_6
+      operationId: error
       responses:
         "200":
           description: OK
@@ -2244,7 +2758,7 @@ paths:
     post:
       tags:
       - json-error-controller
-      operationId: error_1
+      operationId: error_3
       responses:
         "200":
           description: OK
@@ -2255,7 +2769,7 @@ paths:
     delete:
       tags:
       - json-error-controller
-      operationId: error_5
+      operationId: error_4
       responses:
         "200":
           description: OK
@@ -2266,7 +2780,7 @@ paths:
     options:
       tags:
       - json-error-controller
-      operationId: error_4
+      operationId: error_5
       responses:
         "200":
           description: OK
@@ -2277,7 +2791,7 @@ paths:
     head:
       tags:
       - json-error-controller
-      operationId: error_3
+      operationId: error_6
       responses:
         "200":
           description: OK
@@ -2288,7 +2802,7 @@ paths:
     patch:
       tags:
       - json-error-controller
-      operationId: error
+      operationId: error_2
       responses:
         "200":
           description: OK
@@ -3280,8 +3794,6 @@ components:
           type: string
         defaultLevel:
           type: string
-        prior:
-          type: string
         risk:
           type: string
         externalCause:
@@ -3303,6 +3815,8 @@ components:
         hasMin:
           type: string
         hasMax:
+          type: string
+        likelihood:
           type: string
     ModelDB:
       type: object
@@ -3429,8 +3943,6 @@ components:
           type: boolean
         normalOperation:
           type: boolean
-        prior:
-          type: string
         risk:
           type: string
         directMisbehaviours:
@@ -3453,6 +3965,8 @@ components:
           type: boolean
         rootCause:
           type: boolean
+        likelihood:
+          type: string
     TrustworthinessAttributeSetDB:
       type: object
       properties:
@@ -3545,6 +4059,111 @@ components:
             $ref: '#/components/schemas/Graph'
         uriPrefix:
           type: string
+    ControlStrategyDB:
+      type: object
+      properties:
+        uri:
+          type: string
+        type:
+          type: string
+        id:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        parent:
+          type: string
+        blockingEffect:
+          type: string
+        coverageLevel:
+          type: string
+        controlSets:
+          type: array
+          items:
+            type: string
+        mandatoryCS:
+          type: array
+          items:
+            type: string
+        optionalCS:
+          type: array
+          items:
+            type: string
+        blocks:
+          type: array
+          items:
+            type: string
+        mitigates:
+          type: array
+          items:
+            type: string
+        triggers:
+          type: array
+          items:
+            type: string
+        currentRisk:
+          type: boolean
+        futureRisk:
+          type: boolean
+        enabled:
+          type: boolean
+        minOf:
+          type: string
+        maxOf:
+          type: string
+        hasMin:
+          type: string
+        hasMax:
+          type: string
+    AssetDB:
+      type: object
+      properties:
+        uri:
+          type: string
+        type:
+          type: string
+        id:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        minCardinality:
+          type: integer
+          format: int32
+        maxCardinality:
+          type: integer
+          format: int32
+        population:
+          type: string
+    TrustworthinessAttributeDB:
+      type: object
+      properties:
+        uri:
+          type: string
+        type:
+          type: string
+        id:
+          type: string
+        label:
+          type: string
+        description:
+          type: string
+        metaLocatedAt:
+          type: array
+          items:
+            type: string
+        minOf:
+          type: string
+        maxOf:
+          type: string
+        hasMin:
+          type: string
+        hasMax:
+          type: string
+        visible:
+          type: boolean
     Control:
       type: object
       properties:
