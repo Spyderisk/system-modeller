@@ -85,7 +85,7 @@ public class EntityController {
     @RequestMapping(value = "/models/{modelId}/entity/system/threats/{uri}", method = RequestMethod.GET)
     public ResponseEntity<ThreatDB> getEntitySystemThreat(@PathVariable String modelId, @PathVariable String uri) {
 
-        logger.info("get system threat for model {} with URI: {}", modelId, uri);
+        logger.info("Get system threat for model {} with URI: {}", modelId, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -99,7 +99,7 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting threat");
+            logger.info("Getting threat");
 
             ThreatDB threat = querierDB.getThreat(uri, "system-inf");
 
@@ -127,7 +127,7 @@ public class EntityController {
     @RequestMapping(value = "/models/{modelId}/entity/system/threats", method = RequestMethod.GET)
     public ResponseEntity<Map<String, ThreatDB>> getEntitySystemThreats(@PathVariable String modelId) {
 
-        logger.info("get system threats for model {}", modelId);
+        logger.info("Get system threats for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -141,7 +141,7 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting system threats");
+            logger.info("Getting system threats");
 
             Map<String, ThreatDB> threats = querierDB.getThreats("system-inf");
 
@@ -260,7 +260,7 @@ public class EntityController {
     public ResponseEntity<ControlStrategyDB> getEntitySystemControlStrategy(@PathVariable String modelId,
             @PathVariable String uri) {
 
-        logger.info("get system ControlStrategy for model {} with URI: {}", modelId, uri);
+        logger.info("Get system ControlStrategy for model {} with URI: {}", modelId, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -274,7 +274,7 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting control strategy");
+            logger.info("Getting control strategy");
 
             ControlStrategyDB csg = querierDB.getControlStrategy(uri, "system-inf");
 
@@ -302,7 +302,7 @@ public class EntityController {
     public ResponseEntity<Map<String, ControlStrategyDB>> getEntitySystemControlStrategies(
             @PathVariable String modelId) {
 
-        logger.info("get system ControlStrategies for model {}", modelId);
+        logger.info("Get system ControlStrategies for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -316,7 +316,7 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting control strategies");
+            logger.info("Getting control strategies");
 
             Map<String, ControlStrategyDB> csgs = querierDB.getControlStrategies("system-inf");
 
@@ -342,7 +342,7 @@ public class EntityController {
     public ResponseEntity<ControlSetDB> getEntitySystemControlSet(@PathVariable String modelId,
             @PathVariable String uri) {
 
-        logger.info("get system ControlSet for model {} with URI: {}", modelId, uri);
+        logger.info("Get system ControlSet for model {} with URI: {}", modelId, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -356,9 +356,10 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting control set");
+            logger.info("Getting control set: {}", uri);
 
-            ControlSetDB cs = querierDB.getControlSet(uri, "system-inf");
+            // Get control set mainly from inferred graph, but include any proposed flag and coverage level from asserted graph
+            ControlSetDB cs = querierDB.getControlSet(uri, "system-inf", "system");
 
             if (cs == null) {
                 return ResponseEntity.notFound().build();
@@ -383,7 +384,7 @@ public class EntityController {
     @RequestMapping(value = "/models/{modelId}/entity/system/controlSets", method = RequestMethod.GET)
     public ResponseEntity<Map<String, ControlSetDB>> getEntitySystemControlSets(@PathVariable String modelId) {
 
-        logger.info("get system ControlSets for model {}", modelId);
+        logger.info("Get system ControlSets for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -397,9 +398,10 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting control sets");
+            logger.info("Getting control sets");
 
-            Map<String, ControlSetDB> css = querierDB.getControlSets("system-inf");
+            // Get control sets mainly from inferred graph, but include any proposed flag and coverage level from asserted graph
+            Map<String, ControlSetDB> css = querierDB.getControlSets("system-inf", "system");
 
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(css);
 
@@ -422,7 +424,7 @@ public class EntityController {
     @RequestMapping(value = "/models/{modelId}/entity/system/assets/{uri}", method = RequestMethod.GET)
     public ResponseEntity<AssetDB> getEntitySystemAsset(@PathVariable String modelId, @PathVariable String uri) {
 
-        logger.info("get system Asset for model {} with URI: {}", modelId, uri);
+        logger.info("Get system Asset for model {} with URI: {}", modelId, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -436,7 +438,7 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting asset");
+            logger.info("Getting asset");
 
             AssetDB asset = querierDB.getAsset(uri, "system", "system-inf");
 
@@ -463,7 +465,7 @@ public class EntityController {
     @RequestMapping(value = "/models/{modelId}/entity/system/assets", method = RequestMethod.GET)
     public ResponseEntity<Map<String, AssetDB>> getEntitySystemAssets(@PathVariable String modelId) {
 
-        logger.info("get system Assets for model {}", modelId);
+        logger.info("Get system Assets for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -477,7 +479,7 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting assets");
+            logger.info("Getting assets");
 
             Map<String, AssetDB> assets = querierDB.getAssets("system", "system-inf");
 
@@ -584,7 +586,7 @@ public class EntityController {
     public ResponseEntity<TrustworthinessAttributeDB> getEntityDomainTWA(@PathVariable String modelId,
             @PathVariable String uri) {
 
-        logger.info("get domain TWA for model {} with URI: {}", modelId, uri);
+        logger.info("Get domain TWA for model {} with URI: {}", modelId, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -598,7 +600,7 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting TWAS");
+            logger.info("Getting TWAS");
 
             TrustworthinessAttributeDB twa = querierDB.getTrustworthinessAttribute(uri, "domain");
 
@@ -625,7 +627,7 @@ public class EntityController {
     public ResponseEntity<Map<String, TrustworthinessAttributeDB>> getEntityDomainTWAs(
             @PathVariable String modelId) {
 
-        logger.info("get domain TWAs for model {}", modelId);
+        logger.info("Get domain TWAs for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -639,7 +641,7 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting TWAs");
+            logger.info("Getting TWAs");
 
             Map<String, TrustworthinessAttributeDB> twas = querierDB.getTrustworthinessAttributes("domain");
 
@@ -664,7 +666,7 @@ public class EntityController {
     @RequestMapping(value = "/models/{modelId}/entity/domain/controls/{uri}", method = RequestMethod.GET)
     public ResponseEntity<ControlDB> getEntityDomainControl(@PathVariable String modelId, @PathVariable String uri) {
 
-        logger.info("get domain Control for model {} with URI: {}", modelId, uri);
+        logger.info("Get domain Control for model {} with URI: {}", modelId, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -678,7 +680,7 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting domain control");
+            logger.info("Getting domain control");
 
             ControlDB control = querierDB.getControl(uri, "domain");
 
@@ -705,7 +707,7 @@ public class EntityController {
     @RequestMapping(value = "/models/{modelId}/entity/domain/controls", method = RequestMethod.GET)
     public ResponseEntity<Map<String, ControlDB>> getEntityDomainControls(@PathVariable String modelId) {
 
-        logger.info("get domain Controls for model {}", modelId);
+        logger.info("Get domain Controls for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -719,7 +721,7 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting domain controls");
+            logger.info("Getting domain controls");
 
             Map<String, ControlDB> controls = querierDB.getControls("domain");
 
@@ -745,7 +747,7 @@ public class EntityController {
     public ResponseEntity<MisbehaviourDB> getEntityDomainMisbehaviour(@PathVariable String modelId,
             @PathVariable String uri) {
 
-        logger.info("get domain Misbehaviour for model {} with URI: {}", modelId, uri);
+        logger.info("Get domain Misbehaviour for model {} with URI: {}", modelId, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -759,7 +761,7 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting domain misbehaviour");
+            logger.info("Getting domain misbehaviour");
 
             MisbehaviourDB misbehaviour = querierDB.getMisbehaviour(uri, "domain");
 
@@ -787,7 +789,7 @@ public class EntityController {
     @RequestMapping(value = "/models/{modelId}/entity/domain/misbehaviours", method = RequestMethod.GET)
     public ResponseEntity<Map<String, MisbehaviourDB>> getEntityDomainMisbehaviours(@PathVariable String modelId) {
 
-        logger.info("get domain Misbehaviours for model {}", modelId);
+        logger.info("Get domain Misbehaviours for model {}", modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -801,7 +803,7 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("getting domain misbehaviours");
+            logger.info("Getting domain misbehaviours");
 
             Map<String, MisbehaviourDB> misbehaviours = querierDB.getMisbehaviours("domain");
 
@@ -827,7 +829,7 @@ public class EntityController {
     public ResponseEntity<LevelDB> getEntityDomainLevel(@PathVariable String modelId, @PathVariable String metric,
             @PathVariable String uri) {
 
-        logger.info("get {} level for model {}, uri: {}", metric, modelId, uri);
+        logger.info("Get {} level for model {}, uri: {}", metric, modelId, uri);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
@@ -889,7 +891,7 @@ public class EntityController {
     public ResponseEntity<Map<String, LevelDB>> getEntityDomainLevels(@PathVariable String modelId,
             @PathVariable String metric) {
 
-        logger.info("get {} levels for model {}", metric, modelId);
+        logger.info("Get {} levels for model {}", metric, modelId);
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
