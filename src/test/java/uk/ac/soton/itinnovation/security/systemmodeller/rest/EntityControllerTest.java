@@ -26,6 +26,7 @@ package uk.ac.soton.itinnovation.security.systemmodeller.rest;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
@@ -183,7 +184,7 @@ public class EntityControllerTest extends CommonTestSetup {
 	 * Test getting a known asset from a model
 	 * Asset URI queried is "system#b3007cf5"
 	 * Asserts OK 200 status
-	 * Asserts URI returned is as expected
+	 * Asserts that various fields contain expected values
 	 */
 	@Test
 	public void testGetAssetInModel() {
@@ -194,9 +195,11 @@ public class EntityControllerTest extends CommonTestSetup {
 		when().
 			get("/models/testModel/entity/system/assets/system#b3007cf5").
 		then().
-			assertThat().statusCode(HttpStatus.SC_OK).
-			and().
-			assertThat().body("uri", is("system#b3007cf5"));
+			assertThat().statusCode(HttpStatus.SC_OK).and().
+			assertThat().body("uri", is("system#b3007cf5")).and().
+			assertThat().body("type", is("domain#Server")).and().
+			assertThat().body("id", is("8b35b871")).and().
+			assertThat().body("label", is("H2"));
 	}
 
 	/**
@@ -252,7 +255,7 @@ public class EntityControllerTest extends CommonTestSetup {
 	 * Test getting a known threat from a model
 	 * Threat URI queried is "system#H.L.IoH.3-MP-IoH_3be54ba5_1c22bad9_a51becab_7ce5d07_3be54ba5_2b9585d2"
 	 * Asserts OK 200 status
-	 * Asserts URI returned is as expected
+	 * Asserts that various fields contain expected values
 	 */
 	@Test
 	public void testGetThreat() {
@@ -265,9 +268,11 @@ public class EntityControllerTest extends CommonTestSetup {
 		when().
 			get("/models/testModel/entity/system/threats/" + threat).
 		then().
-			assertThat().statusCode(HttpStatus.SC_OK).
-			and().
-			assertThat().body("uri", is(threat));
+			assertThat().statusCode(HttpStatus.SC_OK).and().
+			assertThat().body("type", is("core#Threat")).and().
+			assertThat().body("label", is("H.L.IoH.3_IoH_Internet_[HostContext:R2-S2]_R2_[Interface:R2-Internet]_Internet_[NetworkPath:Internet]")).and().
+			assertThat().body("appliesTo", is("system#MP-IoH_3be54ba5_1c22bad9_a51becab_7ce5d07_3be54ba5_2b9585d2")).and().
+			assertThat().body("threatens", is("system#dcfba8a5"));
 	}
 
 	/**
@@ -293,7 +298,7 @@ public class EntityControllerTest extends CommonTestSetup {
 	 * Test getting a known misbehaviourSet from a model
 	 * MisbehaviourSet URI queried is "system#MS-LossOfAuthenticity-a40e98cc"
 	 * Asserts OK 200 status
-	 * Asserts URI returned is as expected
+	 * Asserts that various fields contain expected values
 	 */
 	@Test
 	public void testGetMisbehaviourSet() {
@@ -306,9 +311,12 @@ public class EntityControllerTest extends CommonTestSetup {
 		when().
 			get("/models/testModel/entity/system/misbehaviourSets/" + misbehaviourSet).
 		then().
-			assertThat().statusCode(HttpStatus.SC_OK).
-			and().
-			assertThat().body("uri", is(misbehaviourSet));
+			assertThat().statusCode(HttpStatus.SC_OK).and().
+			assertThat().body("uri", is(misbehaviourSet)).and().
+			assertThat().body("type", is("core#MisbehaviourSet")).and().
+			assertThat().body("impactLevel", is("domain#ImpactLevelMedium")).and().
+			assertThat().body("likelihood", is("domain#LikelihoodVeryHigh")).and().
+			assertThat().body("risk", is("domain#RiskLevelHigh"));
 	}
 
 	/**
@@ -334,7 +342,7 @@ public class EntityControllerTest extends CommonTestSetup {
 	 * Test getting a known controlStrategy (CSG) from a model
 	 * ControlStrategy URI queried is "system#CSG-ChipAndPinAccessControlAtHost_M_cae3ab52_ea018765"
 	 * Asserts OK 200 status
-	 * Asserts URI returned is as expected
+	 * Asserts that various fields contain expected values
 	 */
 	@Test
 	public void testGetControlStrategy() {
@@ -347,9 +355,12 @@ public class EntityControllerTest extends CommonTestSetup {
 		when().
 			get("/models/testModel/entity/system/controlStrategies/" + controlStrategy).
 		then().
-			assertThat().statusCode(HttpStatus.SC_OK).
-			and().
-			assertThat().body("uri", is(controlStrategy));
+			assertThat().statusCode(HttpStatus.SC_OK).and().
+			assertThat().body("uri", is(controlStrategy)).and().
+			assertThat().body("type", is("core#ControlStrategy")).and().
+			assertThat().body("description", startsWith("Access to device")).and().
+			assertThat().body("parent", is("domain#CSG-ChipAndPinAccessControlAtHost")).and().
+			assertThat().body("coverageLevel", is("domain#TrustworthinessLevelVeryLow"));
 	}
 
 	/**
@@ -373,24 +384,26 @@ public class EntityControllerTest extends CommonTestSetup {
 
 	/**
 	 * Test getting a known controlSet from a model
-	 * ControlSet URI queried is "system#CS-PenetrationTesting-a51becab"
+	 * ControlSet URI queried is "system#CS-StaticData-a40e98cc"
 	 * Asserts OK 200 status
-	 * Asserts URI returned is as expected
+	 * Asserts that various fields contain expected values
 	 */
 	@Test
 	public void testGetControlSet() {
 		switchToSystemModel(11);
 
-		String controlSet = "system#CS-PenetrationTesting-a51becab";
+		String controlSet = "system#CS-StaticData-a40e98cc";
 
 		given().
 			filter(userSession).
 		when().
 			get("/models/testModel/entity/system/controlSets/" + controlSet).
 		then().
-			assertThat().statusCode(HttpStatus.SC_OK).
-			and().
-			assertThat().body("uri", is(controlSet));
+			assertThat().statusCode(HttpStatus.SC_OK).and().
+			assertThat().body("uri", is(controlSet)).and().
+			assertThat().body("type", is("core#ControlSet")).and().
+			assertThat().body("coverageLevel", is("domain#TrustworthinessLevelSafe")).and().
+			assertThat().body("proposed", is(false));
 	}
 
 	/**
@@ -416,7 +429,7 @@ public class EntityControllerTest extends CommonTestSetup {
 	 * Test getting a known trustworthinessAttributeSet (TWAS) from a model
 	 * TWAS URI queried is "system#TWAS-ExploitTW-40cad76f"
 	 * Asserts OK 200 status
-	 * Asserts URI returned is as expected
+	 * Asserts that various fields contain expected values
 	 */
 	@Test
 	public void testGetTWAS() {
@@ -429,9 +442,11 @@ public class EntityControllerTest extends CommonTestSetup {
 		when().
 			get("/models/testModel/entity/system/trustworthinessAttributeSets/" + trustworthinessAttributeSet).
 		then().
-			assertThat().statusCode(HttpStatus.SC_OK).
-			and().
-			assertThat().body("uri", is(trustworthinessAttributeSet));
+			assertThat().statusCode(HttpStatus.SC_OK).and().
+			assertThat().body("uri", is(trustworthinessAttributeSet)).and().
+			assertThat().body("trustworthinessAttribute", is("domain#ExploitTW")).and().
+			assertThat().body("assertedLevel", is("domain#TrustworthinessLevelSafe")).and().
+			assertThat().body("inferredLevel", is("domain#TrustworthinessLevelMedium"));
 	}
 
 
@@ -460,7 +475,7 @@ public class EntityControllerTest extends CommonTestSetup {
 	 * Test getting a known trustworthinessAttribute (TWA) from domain model used by system model 11
 	 * TWA URI queried is "domain#Authenticity"
 	 * Asserts OK 200 status
-	 * Asserts URI returned is as expected
+	 * Asserts that various fields contain expected values
 	 */
 	@Test
 	public void testGetDomainTWA() {
@@ -501,7 +516,7 @@ public class EntityControllerTest extends CommonTestSetup {
 	 * Test getting a known control from domain model used by system model 11
 	 * Control URI queried is "domain#AccessKey"
 	 * Asserts OK 200 status
-	 * Asserts URI returned is as expected
+	 * Asserts that various fields contain expected values
 	 */
 	@Test
 	public void testGetDomainControl() {
@@ -542,7 +557,7 @@ public class EntityControllerTest extends CommonTestSetup {
 	 * Test getting a known misbehaviour from domain model used by system model 11
 	 * Misbehaviour URI queried is "domain#LossOfControl"
 	 * Asserts OK 200 status
-	 * Asserts URI returned is as expected
+	 * Asserts that various fields contain expected values
 	 */
 	@Test
 	public void testGetDomainMisbehaviour() {
@@ -668,7 +683,7 @@ public class EntityControllerTest extends CommonTestSetup {
 	/**
 	 * Testing getting specific impact level from domain model used by system model 11
 	 * Asserts OK 200 status
-	 * Asserts URI returned is as expected
+	 * Asserts that various fields contain expected values
 	 */
 	@Test
 	public void testGetDomainImpactLevel() {
@@ -690,7 +705,7 @@ public class EntityControllerTest extends CommonTestSetup {
 	/**
 	 * Testing getting specific population level from domain model used by system model 11
 	 * Asserts OK 200 status
-	 * Asserts URI returned is as expected
+	 * Asserts that various fields contain expected values
 	 */
 	@Test
 	public void testGetDomainPopulationLevel() {
@@ -712,7 +727,7 @@ public class EntityControllerTest extends CommonTestSetup {
 	/**
 	 * Testing getting specific likelihood level from domain model used by system model 11
 	 * Asserts OK 200 status
-	 * Asserts URI returned is as expected
+	 * Asserts that various fields contain expected values
 	 */
 	@Test
 	public void testGetDomainLikelihoodLevel() {
@@ -734,7 +749,7 @@ public class EntityControllerTest extends CommonTestSetup {
 	/**
 	 * Testing getting specific trustworthiness level from domain model used by system model 11
 	 * Asserts OK 200 status
-	 * Asserts URI returned is as expected
+	 * Asserts that various fields contain expected values
 	 */
 	@Test
 	public void testGetDomainTrustworthinessLevel() {
@@ -756,7 +771,7 @@ public class EntityControllerTest extends CommonTestSetup {
 	/**
 	 * Testing getting specific risk level from domain model used by system model 11
 	 * Asserts OK 200 status
-	 * Asserts URI returned is as expected
+	 * Asserts that various fields contain expected values
 	 */
 	@Test
 	public void testGetDomainRiskLevel() {
