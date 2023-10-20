@@ -438,7 +438,7 @@ public class EntityController {
 
             querierDB.init();
 
-            logger.info("Getting asset");
+            logger.info("Getting asset: {}", uri);
 
             AssetDB asset = querierDB.getAsset(uri, "system", "system-inf");
 
