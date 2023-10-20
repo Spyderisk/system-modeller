@@ -181,13 +181,13 @@ public class EntityControllerTest extends CommonTestSetup {
 	}
 
 	/**
-	 * Test getting a known asset from a model
+	 * Test getting a known asserted asset from a model
 	 * Asset URI queried is "system#b3007cf5"
 	 * Asserts OK 200 status
 	 * Asserts that various fields contain expected values
 	 */
 	@Test
-	public void testGetAssetInModel() {
+	public void testGetAssertedAssetInModel() {
 		switchToSystemModel(10);
 
 		given().
@@ -199,7 +199,31 @@ public class EntityControllerTest extends CommonTestSetup {
 			assertThat().body("uri", is("system#b3007cf5")).and().
 			assertThat().body("type", is("domain#Server")).and().
 			assertThat().body("id", is("8b35b871")).and().
-			assertThat().body("label", is("H2"));
+			assertThat().body("label", is("H2")).and().
+			assertThat().body("asserted", is(true));
+	}
+
+	/**
+	 * Test getting a known inferred asset from a model
+	 * Asset URI queried is "system#Interface_a51becab_3be54ba5"
+	 * Asserts OK 200 status
+	 * Asserts that various fields contain expected values
+	 */
+	@Test
+	public void testGetInferredAssetInModel() {
+		switchToSystemModel(11);
+
+		given().
+			filter(userSession).
+		when().
+			get("/models/testModel/entity/system/assets/system#Interface_a51becab_3be54ba5").
+		then().
+			assertThat().statusCode(HttpStatus.SC_OK).and().
+			assertThat().body("uri", is("system#Interface_a51becab_3be54ba5")).and().
+			assertThat().body("type", is("domain#Interface")).and().
+			assertThat().body("id", is("7ce5d07")).and().
+			assertThat().body("label", is("[Interface:R2-Internet]")).and().
+			assertThat().body("asserted", is(false));
 	}
 
 	/**
