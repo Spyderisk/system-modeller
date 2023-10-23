@@ -86,5 +86,14 @@ public class TestHelper extends uk.ac.soton.itinnovation.security.modelquerier.u
 		//Test system model for population support
 		this.addSystem(9, "StoreTest/Test-6a3-00.nq.gz",
 				"http://it-innovation.soton.ac.uk/system/63971077df89a647814e6d8b");
+
+		//Latest tests
+		this.addDomain(3, "StoreTest/dataflow/domain-network-6a3-2-2.nq", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
+		this.addSystem(10, "StoreTest/dataflow/DataFlow_Test_Singles_asserted.nq.gz",
+				"http://it-innovation.soton.ac.uk/system/63d9308f8f6a206408be9010");
+		this.addSystem(11, "StoreTest/dataflow/DataFlow_Test_Singles.nq.gz",
+				"http://it-innovation.soton.ac.uk/system/63d9308f8f6a206408be9010");
+
+		
 	}
 }
