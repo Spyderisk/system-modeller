@@ -4129,6 +4129,8 @@ components:
           type: string
         description:
           type: string
+        asserted:
+          type: boolean
         minCardinality:
           type: integer
           format: int32
