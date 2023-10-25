@@ -105,7 +105,6 @@ public class InitializeManagementGraph implements CommandLineRunner {
 				}
 				else {
 					logger.warn("Cannot locate knowledgebases install folder: {}", kbInstallDir);
-					//System.exit(1);
 				}
 			}
 			catch (IOException ex) {
@@ -155,7 +154,6 @@ public class InitializeManagementGraph implements CommandLineRunner {
 				}
 				else {
 					logger.warn("Cannot locate knowledgebases source folder: {}", kbDataDir);
-					//System.exit(1);
 				}
 	
 				DomainModelUtils domainModelUtils= new DomainModelUtils();
