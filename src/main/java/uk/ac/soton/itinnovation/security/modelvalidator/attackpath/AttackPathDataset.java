@@ -699,7 +699,7 @@ public class AttackPathDataset {
         }
         logger.debug("RISK VECTOR: {}", riskVector);
         logger.debug("ri levels: {}", riLevels.values());
-        RiskVector rv = RiskVector(riLevels.values(), riskVector);
-        logger.debug("RISKVECTOR: {}", rv);
+        //RiskVector rv = RiskVector(riLevels.values(), riskVector);
+        //logger.debug("RISKVECTOR: {}", rv);
     }
 }
