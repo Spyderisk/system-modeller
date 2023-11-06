@@ -38,4 +38,8 @@ public class InferredAssetDB extends AssetDB {
 	private String displayedAtNode;
 	private String displayedAtAsset;
 	private String createdByPattern;
+
+	public boolean getAsserted() {
+		return false;
+	}
 }
