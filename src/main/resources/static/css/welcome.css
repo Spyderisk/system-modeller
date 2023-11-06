@@ -31,6 +31,10 @@ html, body {
     font-size: 6em;
 }
 
+.welcome-page .eula {
+    margin-top: 10px;
+}
+
 .footer {
     background-color: #000000;
     height: 50px;

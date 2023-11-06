@@ -106,6 +106,7 @@ public class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
 
 			// permit anyone to access the following public pages
 			.antMatchers("/", "/welcome").permitAll()
+			.antMatchers("/", "/EULA").permitAll()
 
 			// Explicitly list all operations on models that can be performed unauthenticated.
 			// We need to explicitly restrict "/models" as "/models/**" also matches it.

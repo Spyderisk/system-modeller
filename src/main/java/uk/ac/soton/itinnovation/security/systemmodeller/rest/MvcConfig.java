@@ -25,6 +25,7 @@
 
 package uk.ac.soton.itinnovation.security.systemmodeller.rest;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -32,11 +33,15 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @Configuration
 public class MvcConfig extends WebMvcConfigurerAdapter {
 
+	@Value("${eula.filename}")
+	private String eulaViewname;
+
 	@Override
 	public void addViewControllers(ViewControllerRegistry registry) {
 
 		registry.addViewController("/").setViewName("welcome");
 		registry.addViewController("/welcome").setViewName("welcome");
+		registry.addViewController("/EULA").setViewName(eulaViewname);
 		registry.addViewController("/dashboard").setViewName("dashboard");
 		registry.addViewController("/domain-manager").setViewName("domainManager");
 		registry.addViewController("/admin").setViewName("admin");
