@@ -1032,7 +1032,7 @@ export default function modeller(state = modelState, action) {
 
         misbehaviourSets.map((ms) => {
             let msuri = prefix + ms.uri;
-            let likelihoodUri = prefix + ms.prior;
+            let likelihoodUri = prefix + ms.likelihood;
             let riskUri = prefix + ms.risk;
 
             let likelihood = likelihoodLevels[likelihoodUri];
@@ -1091,10 +1091,9 @@ export default function modeller(state = modelState, action) {
                     ...state.model.threats.map((threat) => {
                         let threatKey = threat["uri"].replace(prefix, "");
                         if (threatKey in threatsMap) {
-                            //console.log("updating threat: " + threat["uri"]);
                             let rcThreat = threatsMap[threatKey];
 
-                            let likelihoodUri = prefix + rcThreat.prior;
+                            let likelihoodUri = prefix + rcThreat.likelihood;
                             let riskUri = prefix + rcThreat.risk;
                 
                             let likelihood = likelihoodLevels[likelihoodUri];
