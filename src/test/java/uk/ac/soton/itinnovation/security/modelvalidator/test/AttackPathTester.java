@@ -86,11 +86,9 @@ public class AttackPathTester extends TestCase {
 
 		tester = new TestHelper("jena-tdb");
 
-        //tester.addDomain(0, "modelvalidator/data-flow/domain-network-6a3-2-2-unfiltered.nq.gz",
         tester.addDomain(0, "modelvalidator/domain-network-6a1-3-5-auto-expanded-unfiltered.nq.gz",
                 "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
 
-		//tester.addSystem(0, "modelvalidator/data-flow/system-dataflow-test-singles-validated.nq.gz",
 		tester.addSystem(0, "modelvalidator/system-dataflow-test-singles.nq.gz",
                 "http://it-innovation.soton.ac.uk/system/63d9308f8f6a206408be9010");
 
