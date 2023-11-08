@@ -161,7 +161,7 @@ class RootCausesEditor extends React.Component {
                    x: window.outerWidth * 0.2,
                      y: (100 / window.innerHeight) * window.devicePixelRatio,
                    width: 560,
-                   height: 600,
+                   height: 650,
                  }}
                  style={{ zIndex: this.props.windowOrder }}
                  minWidth={150}

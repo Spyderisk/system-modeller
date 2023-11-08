@@ -185,7 +185,7 @@ class MisbehaviourAccordion extends React.Component {
                         </Panel.Body>
                     </Panel.Collapse>
                 </Panel>
-                <Panel bsStyle="primary">
+                <Panel bsStyle="primary" defaultExpanded>
                     <Panel.Heading>
                         <Panel.Title toggle>
                             {this.renderHeader("Attack path threats", null, "Threats identified in the attack path of this consequence.", "attack-path-threats")}
