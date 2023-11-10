@@ -1,3 +1,10 @@
+# Short summary
+
+Spyderisk is licensed under the Apache 2.0 license.
+
+The [README in the licenses directory](./licenses/README.md) explains how to apply
+license headers to files in Spyderisk.
+
 # Spyderisk Open Project Copyright and Licenses
 
 Regardless of who owns contributions, Spyderisk source code is entirely
