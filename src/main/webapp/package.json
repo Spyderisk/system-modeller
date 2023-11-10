@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.16.5",
-    "axios": "^0.21.3",
+    "axios": "^1.6.0",
     "classnames": "^2.2.6",
     "es6-promise": "^4.2.4",
     "immutable": "^4.0.0-rc.12",
