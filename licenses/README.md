@@ -30,8 +30,8 @@ the Apache 2.0 license and we can freely use it.
 https://www.apache.org/licenses/LICENSE-2.0.txt
 
 In order to apply the Apache license to a source code file in the Spyderisk
-project, insert this at the top, replacing the text in [brackets] with the
-correct values.
+project, insert this at the top within an appropriate comment block for the language
+you are using, replacing the text in [brackets] with the correct values.
 
 ```
 Copyright [YEAR] The Spyderisk Authors
