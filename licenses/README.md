@@ -71,7 +71,7 @@ Copyright 2023 The Spyderisk Authors
 <!-- SPDX-FileCopyrightText: 2023 The Spyderisk Authors -->
 <!-- SPDX-ArtifactOfProjectName: Spyderisk -->
 <!-- SPDX-FileType: Documentation -->
-<!-- SPDX-FileComment: Original by Dan Shearer, October 2023 -->
+<!-- SPDX-FileComment: Original by [NAME OF AUTHOR], [MONTH] [YEAR] -->
 ```
 
 # What about third-party GPL code?
