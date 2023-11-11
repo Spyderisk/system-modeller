@@ -1,6 +1,7 @@
 # Short summary
 
 Spyderisk is licensed under the Apache 2.0 license.
+
 The [README in the licenses directory](./licenses/README.md) explains how to apply
 license headers to files in Spyderisk.
 
@@ -24,7 +25,9 @@ simply have "Copyright the Spyderisk Authors" at the top as well as the name of 
 original author.
 
 Spyderisk documentation and configuration files are generally under a Creative Commons 
-license, again explained in [```licenses/```](./licenses/README.md).
+license, again explained in [```licenses/```](./licenses/README.md). It is not necessary 
+for every file to have a copyright notice, but in Spyderisk we do insist that all source code
+files do.
 
 # No CLA
 
