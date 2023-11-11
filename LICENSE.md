@@ -15,15 +15,16 @@ code developed outside Spyderisk.
 
 As of 2023, the copyright (ownership) of the code in all Spyderisk source trees
 is held by either the individual authors, or, quite often, the University of
-Southampton ("Soton"). The University of Southampton was the original owner of
-nearly all Spyderisk code before it was open sourced in 2023.  For all new
-contributions we recommend where possible that the original author retain
+Southampton ("Soton"). The University of Southampton funded the IT Innovation Centre
+to create nearly all Spyderisk code before it was open sourced in 2023. For any 
+new contributions - and we hope there will be many - we recommend the original author retain
 copyright ownership as an individual. If you work for an organisation and are
 unsure of who owns your output while at work, ask your management. Many files
-simply have "Copyright the Spyderisk Authors" at the top.
+simply have "Copyright the Spyderisk Authors" at the top as well as the name of the
+original author.
 
 Spyderisk documentation and configuration files are generally under a Creative Commons 
-license, again explained in ```licenses/```.
+license, again explained in [```licenses/```](./licenses/README.md).
 
 # No CLA
 
@@ -41,6 +42,6 @@ Southampton. We have chosen not to do this.
 as every code contributor.
  
 Spyderisk uses the excellent Apache 2 license from
-[apache.org](https://apache.org), but apache.org itself is organisation serving
-large companies and we do not use their CLAs. We are not affiliated with
+[apache.org](https://apache.org), but apache.org itself is an organisation serving
+large companies, and we do not use their CLAs. We are not affiliated with
 apache.org in any way.
