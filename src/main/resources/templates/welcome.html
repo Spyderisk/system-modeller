@@ -20,7 +20,8 @@
             <a th:href="@{~/documentation}" class="btn btn-primary btn-large">View Documentation</a>
         </div>
         <div class="eula">
-            <a th:href="@{/EULA}" >End User License Agreement</a>
+            <h3 class="text-center">End User License Agreement</h3>
+            <div class="eula-textbox" th:utext="${@environment.getProperty('eula.html')}"></div>
         </div>
     </div>
     <div class="footer">
