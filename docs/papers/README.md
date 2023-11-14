@@ -27,3 +27,5 @@ as described in the top-level [licenses/](../../licences/README.md) directory.
 
 * [boletsis2022.pdf](./boletsis2022.pdf): C. Boletsis, R. Halvorsrud, J. Pickering, S. Phillips, and M. Surridge, ‘Cybersecurity for SMEs: Introducing the Human Element into Socio-technical Cybersecurity Risk Assessment’, presented at the 12th International Conference on Information Visualization Theory and Applications, Jul. 2022, pp. 266–274. Accessed: Jul. 05, 2022. [Online]. 
 
+* [taylor2022.pdf](./taylor2022.pdf): S. Taylor, P. Melas, K. Meacham, M. Surridge, S. Senior, S. Phillips, 'Dynamic Risk Management Tools: Final
+Prototypes and Technical Report', published by the [FogProtect Project](https://fogprotect.eu/).
