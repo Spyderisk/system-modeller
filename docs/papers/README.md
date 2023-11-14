@@ -3,7 +3,7 @@
 The [DOI system](https://en.wikipedia.org/wiki/Digital_object_identifier) is the standard for uniquely
 identifying papers and their metadata. All Spyderisk papers have a DOI.
 
-In addition, this directory contains the PDFs of articles written by contributors to
+In addition, this directory contains the PDFs of papers, articles and reports written by contributors to
 Spyderisk. These PDFs are referred to throughout the Spyderisk tree, particularly in
 the [Spyderisk history document](./../../HISTORY.md) and having them here
 ensures the PDFs are always available given the many systems the originals are
