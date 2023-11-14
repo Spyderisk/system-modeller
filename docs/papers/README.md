@@ -10,8 +10,6 @@ ensures the PDFs are always available given the many systems the originals are
 stored in. This scheme also gives a single web address that can be crawled by 
 [archive.org](https://archive.org), rather than a different destination for every DOI.
 
-Add papers subdirectory, with explanation as to why this is in addition to
-
 The authors own their own work and have contributed these articles under the CC-BY-SA license
 as described in the top-level [licenses/](../../licences/README.md) directory.
 
