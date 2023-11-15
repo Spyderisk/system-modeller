@@ -5,6 +5,11 @@ Spyderisk is licensed under the Apache 2.0 license.
 The [README in the licenses directory](./licenses/README.md) explains how to apply
 license headers to files in Spyderisk.
 
+The site [TL;DR Legal](https://www.tldrlegal.com/license/apache-license-2-0-apache-2-0)
+summarises the Apache license as:
+> You can do what you like with the software, as long as you include the required notices.
+> This permissive license contains a patent license from the contributors of the code.
+
 # Spyderisk Open Project Copyright and Licenses
 
 Regardless of who owns contributions, Spyderisk source code is entirely
@@ -14,15 +19,16 @@ the directory [```licenses/```](./licenses/README.md), which also contains the t
 discussion about the Spyderisk policies and practices on incorporating open source 
 code developed outside Spyderisk.
 
-As of 2023, the copyright (ownership) of the code in all Spyderisk source trees
-is held by either the individual authors, or, quite often, the University of
-Southampton ("Soton"). The University of Southampton funded the IT Innovation Centre
-to create nearly all Spyderisk code before it was open sourced in 2023. For any 
+As of 2023, the copyright of the code in all Spyderisk source trees
+is owned by either the individual authors, or, quite often, the University of
+Southampton ("Soton"). The IT Innovation Centre of the University of Southampton
+created nearly all Spyderisk code before it was open sourced in 2023. For any 
 new contributions - and we hope there will be many - we recommend the original author retain
 copyright ownership as an individual. If you work for an organisation and are
-unsure of who owns your output while at work, ask your management. Many files
-simply have "Copyright the Spyderisk Authors" at the top as well as the name of the
-original author.
+unsure of who owns your output while at work, see your employment contract and
+ask your management. Many files simply have "Copyright the Spyderisk Authors" at the
+top as well as the name of the original author. This is a reference to the file
+[```AUTHORS.md```](./AUTHORS.md). 
 
 Spyderisk documentation and configuration files are generally under a Creative Commons 
 license, again explained in [```licenses/```](./licenses/README.md). It is not necessary 
@@ -32,7 +38,7 @@ files do.
 # No CLA
 
 Spyderisk does *not* and will not have a Contributor License Agreement (CLA),
-for reaons similar to [Red Hat](https://opensource.com/article/19/2/cla-problems),
+for reasons similar to [Red Hat](https://opensource.com/article/19/2/cla-problems),
 the [Software Freedom Conservancy](https://sfconservancy.org/blog/2014/jun/09/do-not-need-cla/) and
 other leading open source voices.
 
