@@ -230,8 +230,6 @@ class ModelMisBehavPanel extends React.Component {
                 filter: state.filter,
                 sort: state.sort
             };
-            //console.log("Changing selected misbehaviour: " + state.selected 
-            //        + " to " + props.selectedMisbehaviour.misbehaviour.id);
             return {
                 ...state,
                 selected: props.selectedMisbehaviour.misbehaviour.id,
@@ -245,7 +243,6 @@ class ModelMisBehavPanel extends React.Component {
                 filter: state.filter,
                 sort: state.sort
             };
-            //console.log("selected threat changed");
             return {
                 ...state,
                 ...ModelMisBehavPanel.getUpdatedState(props, state)
@@ -257,7 +254,6 @@ class ModelMisBehavPanel extends React.Component {
                 filter: state.filter,
                 sort: state.sort
             };
-            //console.log("misbehaviours changed");
             return {
                 ...state,
                 ...ModelMisBehavPanel.getUpdatedState(props, state)
@@ -268,7 +264,6 @@ class ModelMisBehavPanel extends React.Component {
                 filter: state.filter,
                 sort: state.sort
             };
-            //console.log("filter or sort changed");
             return {
                 ...state,
                 ...ModelMisBehavPanel.getUpdatedState(props, state)
@@ -276,7 +271,6 @@ class ModelMisBehavPanel extends React.Component {
         }
 
         // null represents no change to state
-        //console.log("nothing changed");
         return null;
     }
 
@@ -634,7 +628,6 @@ let mapStateToProps = function (state) {
         selectedMisbehaviour: state.modeller.selectedMisbehaviour,
         rightSidePanelWidth: state.modeller.view.rightSidePanelWidth,
         authz: state.modeller.authz,
-
     };
 };
 
@@ -644,10 +637,10 @@ let mapStateToProps = function (state) {
 ModelMisBehavPanel.propTypes = {
     panelType: PropTypes.string,
     selectedMisbehaviours: PropTypes.array,
+    selectedMisbehaviour: PropTypes.object,
     selectedThreat: PropTypes.string,
     adjustAssetNameSizes: PropTypes.bool,
     authz: PropTypes.object,
-
 };
 
 export default connect(mapStateToProps)(ModelMisBehavPanel);
