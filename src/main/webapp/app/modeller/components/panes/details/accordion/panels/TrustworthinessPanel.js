@@ -1,8 +1,7 @@
 import React from "react";
 import PropTypes from 'prop-types';
-import {FormControl} from 'react-bootstrap';
-import {updateTwasOnAsset, getRootCauses, revertAssertedTwasOnAsset} from "../../../../../actions/ModellerActions";
-//import {getRenderedLevelText, getLevelColour} from "../../../../util/Levels";
+import {Form, FormGroup, Checkbox} from 'react-bootstrap';
+import {updateTwasOnAsset, getRootCauses, revertAssertedTwasOnAsset, toggleFilter} from "../../../../../actions/ModellerActions";
 
 class TrustworthinessPanel extends React.Component {
 
@@ -104,9 +103,28 @@ class TrustworthinessPanel extends React.Component {
         //console.log("self.state:", self.state);
         
         //flag to hide TWAS where visible = false
-        let hideInvisibleTwas = true;
+        let hideInvisibleTwas = this.props.filters.assetDetails.twas;
         
-        return this.props.renderTrustworthinessAttributes(attributes, levels, self, hideInvisibleTwas);
+        return (
+            <div>
+                <Form>
+                    <FormGroup>
+                        <Checkbox
+                            checked={hideInvisibleTwas}
+                            onChange={(e) => {
+                                this.setFilter(e.nativeEvent.target.checked)
+                            }}>
+                            Only visible attributes
+                        </Checkbox>
+                    </FormGroup>
+                </Form>
+                {this.props.renderTrustworthinessAttributes(attributes, levels, self, hideInvisibleTwas)}
+            </div>
+        )
+    }
+
+    setFilter(value) {
+        this.props.dispatch(toggleFilter("twas", value));
     }
 
     twValueChanged(e) {
@@ -176,6 +194,7 @@ TrustworthinessPanel.propTypes = {
     levels: PropTypes.array,
     asset: PropTypes.object,
     twas: PropTypes.array,
+    filters: PropTypes.object,
     openMisbehaviourExplorer: PropTypes.func,
     renderTrustworthinessAttributes: PropTypes.func,
     dispatch: PropTypes.func

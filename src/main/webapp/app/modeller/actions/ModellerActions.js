@@ -1078,6 +1078,18 @@ export function togglePanel(panel, expanded) {
     };
 }
 
+export function toggleFilter(panel, selected) {
+    return function (dispatch) {
+        dispatch({
+            type: instr.TOGGLE_FILTER,
+            payload: {
+                panel: panel,
+                selected: selected
+            }
+        });
+    };
+}
+
 export function activateThreatEditor() {
     //console.log("activateThreatEditor");
     return function (dispatch) {

@@ -229,6 +229,7 @@ class DetailsAccordion extends React.Component {
                                 renderTrustworthinessAttributes={this.props.renderTrustworthinessAttributes}
                                 asset={asset.uri === "" ? undefined : asset}
                                 twas={twas}
+                                filters={this.props.filters}
                                 authz={this.props.authz}
                             />
                         </Panel.Body>
@@ -506,6 +507,7 @@ DetailsAccordion.propTypes = {
     selectedThreat: PropTypes.object,
     selectedMisbehaviour: PropTypes.object,
     expanded: PropTypes.object,
+    filters: PropTypes.object,
     loading: PropTypes.object,
     getAssetType: PropTypes.func,
     getAssetsForType: PropTypes.func,

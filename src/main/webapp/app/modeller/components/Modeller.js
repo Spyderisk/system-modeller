@@ -315,6 +315,7 @@ class Modeller extends React.Component {
                             selectedThreat={this.props.selectedThreat}
                             selectedMisbehaviour={this.props.selectedMisbehaviour}
                             expanded={this.props.expanded}
+                            filters={this.props.filters}
                             loading={this.props.loading}
                             getAssetType={this.getAssetType}
                             getAssetsForType={this.getAssetsForType}
@@ -1014,6 +1015,7 @@ var mapStateToProps = function (state) {
         selectedMisbehaviour: state.modeller.selectedMisbehaviour,
         attackPaths: state.modeller.attackPaths,
         expanded: state.modeller.expanded,
+        filters: state.modeller.filters,
         misbehaviourTwas: state.modeller.misbehaviourTwas,
         isMisbehaviourExplorerVisible: state.modeller.isMisbehaviourExplorerVisible,
         isMisbehaviourExplorerActive: state.modeller.isMisbehaviourExplorerActive,
@@ -1066,6 +1068,7 @@ Modeller.propTypes = {
     selectedMisbehaviour: PropTypes.object,
     attackPaths: PropTypes.object,
     expanded: PropTypes.object,
+    filters: PropTypes.object,
     misbehaviourTwas: PropTypes.object,
     isControlExplorerVisible: PropTypes.bool,
     isControlExplorerActive: PropTypes.bool,

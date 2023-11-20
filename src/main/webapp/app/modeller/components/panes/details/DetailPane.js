@@ -304,6 +304,7 @@ class DetailPane extends React.Component {
                                   selectedThreat={this.props.selectedThreat}
                                   selectedMisbehaviour={this.props.selectedMisbehaviour}
                                   expanded={this.props.expanded}
+                                  filters={this.props.filters}
                     //selectedThreatVisibility={this.props.selectedThreatVisibility}
                                   getAssetType={this.props.getAssetType}
                                   getAssetsForType={this.props.getAssetsForType}
@@ -532,6 +533,7 @@ DetailPane.propTypes = {
     selectedThreat: PropTypes.object,
     selectedMisbehaviour: PropTypes.object,
     expanded: PropTypes.object,
+    filters: PropTypes.object,
     assetHistory: PropTypes.array,
     historyPointer: PropTypes.number,
     backEnabled: PropTypes.bool,
