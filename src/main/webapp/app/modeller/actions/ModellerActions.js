@@ -1078,12 +1078,13 @@ export function togglePanel(panel, expanded) {
     };
 }
 
-export function toggleFilter(panel, selected) {
+export function toggleFilter(panel, filter, selected) {
     return function (dispatch) {
         dispatch({
             type: instr.TOGGLE_FILTER,
             payload: {
                 panel: panel,
+                filter: filter,
                 selected: selected
             }
         });

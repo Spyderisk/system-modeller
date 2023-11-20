@@ -103,7 +103,7 @@ class TrustworthinessPanel extends React.Component {
         //console.log("self.state:", self.state);
         
         //flag to hide TWAS where visible = false
-        let hideInvisibleTwas = this.props.filters.assetDetails.twas;
+        let hideInvisibleTwas = this.props.filters.assetDetails.twas.hideInvisible;
         
         return (
             <div>
@@ -124,7 +124,7 @@ class TrustworthinessPanel extends React.Component {
     }
 
     setFilter(value) {
-        this.props.dispatch(toggleFilter("twas", value));
+        this.props.dispatch(toggleFilter("twas", "hideInvisible", value));
     }
 
     twValueChanged(e) {
