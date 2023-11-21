@@ -340,7 +340,7 @@ public class InitializeManagementGraph implements CommandLineRunner {
 				}
 				logger.warn("No domain models currently installed! Options include:");
 				String restartMsg = production ? "restart Spyderisk (docker-compose down -v; docker-compose up -d)" 
-											: "restart Spyderisk (ensure reset.on.start=true in application properties)";
+											: "restart Spyderisk (ensure RESET_ON_START=true in your .env file)";
 
 				logger.warn("1) Copy required domain model zip bundles into {} then " + restartMsg, kbSourceFolder);
 				logger.warn("2) Manually install each required domain model (knowledgebase) via the Spyderisk Knowledgebase Manager page");
