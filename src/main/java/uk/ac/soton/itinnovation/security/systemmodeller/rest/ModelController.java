@@ -37,6 +37,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.UnexpectedException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -53,7 +54,7 @@ import java.util.zip.GZIPOutputStream;
 import javax.naming.SizeLimitExceededException;
 import javax.servlet.http.HttpServletRequest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+//import org.apache.jena.query.Dataset;
 
 import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
@@ -76,13 +77,20 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
 import uk.ac.soton.itinnovation.security.model.system.RiskLevelCount;
 import uk.ac.soton.itinnovation.security.model.system.RiskVector;
+import uk.ac.soton.itinnovation.security.modelquerier.JenaQuerierDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.RiskCalcResultsDB;
 import uk.ac.soton.itinnovation.security.modelvalidator.ModelValidator;
 import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackPathAlgorithm;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.TreeJsonDoc;
+import uk.ac.soton.itinnovation.security.semanticstore.AStoreWrapper;
 import uk.ac.soton.itinnovation.security.semanticstore.IStoreWrapper;
+import uk.ac.soton.itinnovation.security.semanticstore.JenaTDBStoreWrapper;
 import uk.ac.soton.itinnovation.security.semanticstore.util.SparqlHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.auth.KeycloakAdminClient;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.Model;
@@ -95,10 +103,12 @@ import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.ModelDTO;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.UpdateModelResponse;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.BadRequestErrorException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.InternalServerErrorException;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.MisbehaviourSetInvalidException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.ModelException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.ModelInvalidException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.NotAcceptableErrorException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.NotFoundErrorException;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.UnprocessableEntityException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.UserForbiddenFromDomainException;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.StoreModelManager;
@@ -106,7 +116,7 @@ import uk.ac.soton.itinnovation.security.systemmodeller.util.ReportGenerator;
 import uk.ac.soton.itinnovation.security.systemmodeller.util.SecureUrlHelper;
 
 /**
- * Includes all operations of the Model Controller Service. 
+ * Includes all operations of the Model Controller Service.
  */
 @RestController
 public class ModelController {
@@ -736,7 +746,7 @@ public class ModelController {
 		validationProgress.updateProgress(0d, "Risk calculation starting");
 		
 		logger.debug("Marking as calculating risks [{}] {}", modelId, model.getName());
-		model.markAsCalculatingRisks(rcMode);
+		model.markAsCalculatingRisks(rcMode, true);
 
 		ScheduledFuture<?> future = Executors.newScheduledThreadPool(1).schedule(() -> {
 			//boolean valid = false;
@@ -751,7 +761,7 @@ public class ModelController {
 				throw new Exception("Risk calculation failed. Please contact support for further assistance.");
 			} finally {
 				//always reset the flags even if the risk calculation crashes
-				model.finishedCalculatingRisks(results != null);
+				model.finishedCalculatingRisks(results != null, rcMode, true);
 				validationProgress.updateProgress(1.0, "Risk calculation complete");
 			}
 
@@ -821,7 +831,7 @@ public class ModelController {
 			validationProgress.updateProgress(0d, "Risk calculation starting");
 			
 			logger.debug("Marking as calculating risks [{}] {}", modelId, model.getName());
-			model.markAsCalculatingRisks(rcMode);
+			model.markAsCalculatingRisks(rcMode, save);
 		} //synchronized block
 
 		RiskCalcResultsDB results = null;
@@ -835,7 +845,7 @@ public class ModelController {
 			throw new InternalServerErrorException("Risk calculation failed. Please contact support for further assistance.");
 		} finally {
 			//always reset the flags even if the risk calculation crashes
-			model.finishedCalculatingRisks(results != null);
+			model.finishedCalculatingRisks(results != null, rcMode, save);
 			validationProgress.updateProgress(1.0, "Risk calculation complete");
 		}
 		
@@ -978,8 +988,8 @@ public class ModelController {
 		headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
 		headers.add("Pragma", "no-cache");
 		headers.add("Expires", "0");
-		headers.add("Content-disposition", "attachment;filename=Model" + model.getId() + "_" +
-				(new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss")).format(new Date()) + ".nq.gz");
+		headers.add("Content-disposition", "attachment;filename=" + model.getName() + " asserted " +
+				(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm")).format(new Date()) + ".nq.gz");
 		
 		//If we have temporarily invalidated the model above, reset the flag to true
 		if (resetValidFlag) {
@@ -1094,18 +1104,28 @@ public class ModelController {
 						}
 					}
 					
-					if(!validDomain && line.contains("<http://it-innovation.soton.ac.uk/ontologies/trustworthiness/core#domainGraph>")){
+					if (!validDomain && line.contains("<http://it-innovation.soton.ac.uk/ontologies/trustworthiness/core#domainGraph>")) {
 						String domainURI = line.substring(0, line.lastIndexOf("<")-1);
 						domainURI = domainURI.substring(domainURI.lastIndexOf("<") + 1, domainURI.lastIndexOf(">"));
-						logger.debug(domainURI);
-						if(!canAccessAllDomains && !modelObjectsHelper.canUserAccessDomain(domainURI, user.getUsername())){
+						logger.debug("Model domain: {}", domainURI);
+
+						boolean domainModelExists = storeModelManager.domainModelExists(domainURI);
+
+						if (!domainModelExists) {
+							logger.error("The system model attempted to use non-existent domain: {}", domainURI);
+							throw new UnprocessableEntityException("The system model requires a knowledgebase that is not installed: " + domainURI);
+						}
+
+						if (!canAccessAllDomains && !modelObjectsHelper.canUserAccessDomain(domainURI, user.getUsername())) {
 							logger.info("User: {} blocked from importing model with domain {}", user.getUsername(), domainURI);
 							throw new UserForbiddenFromDomainException();
 						}
+
 						validDomain = true;
 						domainGraph = domainURI;
 					}
-					if(oldGraphURI!=null && validDomain){
+
+					if (oldGraphURI!=null && validDomain){
 						break;
 					}
 				} while ((line = bufferedReader.readLine()) != null);
@@ -1283,4 +1303,82 @@ public class ModelController {
 		String reportJson = reportGenerator.generate(modelObjectsHelper, model);
 		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(reportJson);
 	}
+
+	/**
+	 * This REST method generates a JSON representation of the shortest attack
+     * path for the given model and target URIs
+	 *
+	 * @param modelId the String representation of the model object to seacrh
+	 * @param riskMode string indicating the prefered risk calculation mode
+	 * @param allPaths flag indicating whether to calculate all paths
+	 * @param normalOperations flag indicationg whether to include normal operations
+	 * @param targetURIs list of target misbehaviour sets
+	 * @return A JSON report containing the attack tree
+     * @throws MisbehaviourSetInvalidException if an invalid target URIs set is provided
+     * @throws InternalServerErrorException   if an error occurs during report generation
+	 */
+	@RequestMapping(value = "/models/{modelId}/threatgraph", method = RequestMethod.GET)
+	public ResponseEntity<TreeJsonDoc> calculateThreatGraph(
+            @PathVariable String modelId,
+            @RequestParam(defaultValue = "FUTURE") String riskMode,
+            @RequestParam(defaultValue = "false") boolean allPaths,
+            @RequestParam(defaultValue = "false") boolean normalOperations,
+            @RequestParam List<String> targetURIs) {
+
+        logger.info("Calculating threat graph for model {}", modelId);
+        logger.info(" with target URIs: {}, all-paths: {}, normal-operations: {} riskMode: {}",
+                targetURIs, allPaths, normalOperations, riskMode);
+
+		try {
+            RiskCalculationMode.valueOf(riskMode);
+		} catch (IllegalArgumentException e) {
+			logger.error("Found unexpected riskCalculationMode parameter value {}, valid values are: {}.",
+					riskMode, RiskCalculationMode.values());
+			throw new BadRequestErrorException("Invalid 'riskMode' parameter value " + riskMode +
+                        ", valid values are: " + Arrays.toString(RiskCalculationMode.values()));
+		}
+
+        final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
+
+        AStoreWrapper store = storeModelManager.getStore();
+
+        try {
+            logger.info("Initialising JenaQuerierDB");
+
+            JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
+                    model.getModelStack(), false);
+
+            querierDB.init();
+
+            logger.info("Calculating attack tree");
+
+            AttackPathAlgorithm apa = new AttackPathAlgorithm(querierDB);
+
+            if (!apa.checkTargetUris(targetURIs)) {
+                logger.error("Invalid target URIs set");
+                throw new MisbehaviourSetInvalidException("Invalid misbehaviour set");
+            }
+
+            if (!apa.checkRiskCalculationMode(riskMode)) {
+                logger.error("mismatch in risk calculation mode found");
+                throw new BadRequestErrorException("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
+            }
+
+            TreeJsonDoc treeDoc = apa.calculateAttackTreeDoc(targetURIs, riskMode, allPaths, normalOperations);
+
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(treeDoc);
+
+        } catch (MisbehaviourSetInvalidException e) {
+            logger.error("Threat graph calculation failed due to invalid misbehaviour set", e);
+            throw e;
+        } catch (BadRequestErrorException e) {
+            logger.error("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
+            throw e;
+        } catch (Exception e) {
+            logger.error("Threat path failed due to an error", e);
+            throw new InternalServerErrorException(
+                    "Threat graph calculation failed. Please contact support for further assistance.");
+        }
+    }
+
 }

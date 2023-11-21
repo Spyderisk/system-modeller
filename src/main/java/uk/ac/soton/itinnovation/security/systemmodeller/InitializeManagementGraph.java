@@ -86,6 +86,8 @@ public class InitializeManagementGraph implements CommandLineRunner {
 		HashSet<String> domainGraphs = new HashSet<>(); //all loaded domain model URIs loaded via zip bundles
 		HashSet<String> duplicatedDomainGraphs = new HashSet<>(); //domain graphs that have been loaded more than once
 
+		logger.info("resetOnStart: {}", resetOnStart);
+
 		if (resetOnStart || storeModelManager.storeIsEmpty()) {
 			logger.info("Removing installed knowledgebases:");
 			try {
@@ -102,8 +104,7 @@ public class InitializeManagementGraph implements CommandLineRunner {
 					}
 				}
 				else {
-					logger.error("Cannot locate knowledgebases install folder: {}", kbInstallDir);
-					System.exit(1);
+					logger.warn("Cannot locate knowledgebases install folder: {}", kbInstallDir);
 				}
 			}
 			catch (IOException ex) {
@@ -152,8 +153,7 @@ public class InitializeManagementGraph implements CommandLineRunner {
 					}
 				}
 				else {
-					logger.error("Cannot locate knowledgebases source folder: {}", kbDataDir);
-					System.exit(1);
+					logger.warn("Cannot locate knowledgebases source folder: {}", kbDataDir);
 				}
 	
 				DomainModelUtils domainModelUtils= new DomainModelUtils();
@@ -340,7 +340,7 @@ public class InitializeManagementGraph implements CommandLineRunner {
 				}
 				logger.warn("No domain models currently installed! Options include:");
 				String restartMsg = production ? "restart Spyderisk (docker-compose down -v; docker-compose up -d)" 
-											: "restart Spyderisk (ensure reset.on.start=true in application properties)";
+											: "restart Spyderisk (ensure RESET_ON_START=true in your .env file)";
 
 				logger.warn("1) Copy required domain model zip bundles into {} then " + restartMsg, kbSourceFolder);
 				logger.warn("2) Manually install each required domain model (knowledgebase) via the Spyderisk Knowledgebase Manager page");

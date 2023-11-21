@@ -61,14 +61,6 @@ import uk.ac.soton.itinnovation.security.modelquerier.util.ModelStack;
 import java.lang.Exception;
 import java.lang.reflect.Type;
 import java.util.*;
-import java.util.Comparator;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Implementation of IQuerierDB for Jena database. Uses Jena methods for querying the Jena database, as opposed to
@@ -1029,9 +1021,11 @@ public class JenaQuerierDB implements IQuerierDB {
      */
     private <T extends EntityDB> T getEntity(String uri, String cacheTypeName, Class<T> entityClass, String... graphs) {
         if (cacheEnabled) {
-            // The cache may contain a null value if the entity at uri has been deleted
-            Boolean valid = cache.checkEntityValid(uri, graphs);
+            // Try to find the cached value
             T cachedEntity = cache.get(uri, cacheTypeName, entityClass, graphs);
+
+            // Return the cached value including a null value if valid
+            Boolean valid = cache.checkEntityValid(uri, graphs);
             if (cachedEntity != null || valid) {
                 return cachedEntity;
             }
@@ -1138,6 +1132,7 @@ public class JenaQuerierDB implements IQuerierDB {
     }
 
     private <T extends EntityDB> JsonObject getEntityAsJson(String uri, String... graphs) {
+        boolean found = false;
         uri = getLongName(uri);
 
         JsonObject returnJsonObject = null;
@@ -1151,12 +1146,28 @@ public class JenaQuerierDB implements IQuerierDB {
             Model model = dataset.getNamedModel(graphUri);
             Resource resource = model.getResource(uri);
 
+            /* 
+             * org.apache.jena.rdf.model.Model has changed. The createResource(String uri) method now returns
+             * an existing resource if already defined in the Model. The getResource method is now identical,
+             * so it creates and returns an empty resource if there is no resource with the specified URI in
+             * the model.
+             * 
+             * The problem is that createResource associates the new resource with the model, so the call to
+             * model.containsResource returns true even if the model didn't contain this resource. So if the
+             * URI is not defined in any graph, we will still get a non-null JSon object back, albeit one in
+             * which there is no "_graph" member (nor any other member).
+             * 
+             * It is at least arguable that in that case we should return 'null' which was probably what Lee
+             * expected would happen when he wrote this code. That may cause other problems (e.g., if untyped
+             * resources are retrieved by this method, which is possible), so we'll try to detect where there
+             * was no resource later, at the point of use.
+             */
             if (model.containsResource(resource)) {
                 returnJsonObject = resourceToJson(resource, returnJsonObject);
-
                 if (resource.hasProperty(RDF.type)) {
                     // Add a special property tracking the graph in which the type was found
                     returnJsonObject.addProperty("_graph", graph);
+                    found = true;
                 }
             }
         }
@@ -1257,40 +1268,58 @@ public class JenaQuerierDB implements IQuerierDB {
 
     @Override
     public AssetDB getAsset(String uri, String... models) {
-        /* Assets are special because in the triple store they are not stored with type core#Asset,
-         * but with a domain model asset subclass.
-         * have a type equal to the domain
-         * model asset type, rather than core#Asset
-         */
+        /* Assets are a special case for two reasons:
+         *
+         *  (a) they are not saved in the store as type 'Asset', but as a sub-type of 'Asset', yet we
+         *      still need to store them under 'AssetDB' in the cache
+         *  (b) they have links to other assets defined by special predicates which differ for each
+         *      domain model
+        */
         String cacheTypeKey = getCacheTypeName(AssetDB.class);
+
         if (cacheEnabled) {
-            // The cache may contain a null value if the entity at uri has been deleted
-            Boolean valid = cache.checkEntityValid(uri, models);
+            // Try to find the cached asset
             AssetDB cachedEntity = cache.get(uri, cacheTypeKey, AssetDB.class, models);
+
+            // Return the cached value including a null value if valid
+            Boolean valid = cache.checkEntityValid(uri, models);
             if (cachedEntity != null || valid) {
                 return cachedEntity;
             }
+
         }
 
         // Not in the cache, so try to get it from the triple store
         JsonObject assetJson = getEntityAsJson(uri, models);
-        if (assetJson != null) {
-            String mainGraph = assetJson.getAsJsonPrimitive("_graph").getAsString();
-            AssetDB asset = jsonToAsset(assetJson);
 
-            // Add it to the cache if enabled
-            if (cacheEnabled) {
-                cache.cacheEntity(asset, cacheTypeKey, mainGraph, models);
+        AssetDB asset = null;
+
+        if (assetJson != null) {
+            // Find out in which graph the asset was defined (asserted or inferred)
+            JsonPrimitive assetGraph = assetJson.getAsJsonPrimitive("_graph");
+            if (assetGraph != null) {
+                // Convert this graph to a string
+                String mainGraph = assetGraph.getAsString();
+
+                // Determine if asset is inferred
+                boolean inferred = mainGraph.equals("system-inf");
+
+                // Add inferred flag to JSON object, to indicate which asset object type to create in jsonToAsset below 
+                assetJson.addProperty("inferred", inferred);
+
+                // Convert the asset to an AssetDB (or InferredAssetDB) object to be returned
+                asset = jsonToAsset(assetJson);
+
+                // Add the asset to the cache (in the main graph) if enabled
+                if (cacheEnabled) {
+                    cache.cacheEntity(asset, cacheTypeKey, mainGraph, models);
+                }
+
             }
 
-            return asset;
-
-        } else {
-
-            // Can't find this asset anywhere
-            return null;
-
         }
+
+        return asset;
 
     }
 
@@ -2285,6 +2314,8 @@ public class JenaQuerierDB implements IQuerierDB {
         return storeEntity(entity, uri, cacheTypeName, graph);
     }
 
+    /* Synchronise the cache, so afterwards the triple store matches the cache contents.
+     */
     @Override
     public void sync(String... models) {
         final long startTime = System.currentTimeMillis();
@@ -2294,18 +2325,11 @@ public class JenaQuerierDB implements IQuerierDB {
         }
         logger.info("Synchronising model with triple store");
 
-        // First, prepare the cache for synchronisation, removing deletions that were later stored
-        cache.prepareSync();
-
-        // Disable the cache while we synchronise
-        cacheEnabled = false;
-
+        // Get entities to be deleted and try to delete them from the triple store
+        Map<String, Map<String, EntityDB>> deleteEntitiesByType = cache.getDeleteCache();
         try{
             // Start a transaction
             dataset.begin(ReadWrite.WRITE);
-
-            // Get entities to be deleted
-            Map<String, Map<String, EntityDB>> deleteEntitiesByType = cache.getDeleteCache();
 
             // Delete the entities
             for(String typeKey : deleteEntitiesByType.keySet()){
@@ -2323,6 +2347,14 @@ public class JenaQuerierDB implements IQuerierDB {
 
             // Commit the changes
             dataset.commit();
+            
+            // If successful, clear the map of entities to be deleted
+            for(String typeKey : deleteEntitiesByType.keySet()){
+                Map<String, EntityDB> entities = deleteEntitiesByType.get(typeKey);
+                entities.clear();
+            }
+            deleteEntitiesByType.clear();
+
         }
         catch (Exception e) {
             // Abort the changes and signal that there has been an error
@@ -2339,26 +2371,43 @@ public class JenaQuerierDB implements IQuerierDB {
         logger.info("Saving new/modified entities");
         // Get the entities that need to be updated and try to save the changes
         for(String graph : models){
+            // Get entities to be stored/updated
+            Map<String, Map<String, EntityDB>> storeEntitiesByType = cache.getStoreCache(graph);
+
             try{
                 // Start a transaction per graph
                 dataset.begin(ReadWrite.WRITE);
 
-                // Get entities to be stored/updated
-                Map<String, Map<String, EntityDB>> storeEntitiesByType = cache.getStoreCache(graph);
+                // Important to store assets first
+                String assetTypeKey = getCacheTypeName(AssetDB.class);
+                Map<String, EntityDB> entities = storeEntitiesByType.get(assetTypeKey);
+                if(entities != null){
+                    if(entities != null && entities.size() > 0){
+                        logger.info("Saving {} new/modified entities cached as {} to graph {}", entities.size(), assetTypeKey, graph);
+                    }
+                    for(EntityDB entity : entities.values()){
+                        persistEntity(entity, graph);
+                    }
+                }
 
                 // Store/update the entities
                 for(String typeKey : storeEntitiesByType.keySet()){
+                    if(typeKey.equals(getCacheTypeName(AssetDB.class))) {
+                        // Skip the assets, because they were already saved
+                        continue;
+                    }
                     boolean savingLinks = typeKey.equals(getCacheTypeName(CardinalityConstraintDB.class));
-                    Map<String, EntityDB> entities = storeEntitiesByType.get(typeKey);
+                    entities = storeEntitiesByType.get(typeKey);
                     if(entities != null){
                         if(entities != null && entities.size() > 0){
                             logger.info("Saving {} new/modified entities cached as {} to graph {}", entities.size(), typeKey, graph);
                         }
                         for(EntityDB entity : entities.values()){
                             if(savingLinks){
-                                // Delete the extra triples representing asset relationships
+                                // Save the extra triples representing asset relationships
                                 persistLink(entity, graph);
-                            }    
+                            }
+                            // Save the entity
                             persistEntity(entity, graph);
                         }
                     }
@@ -2366,6 +2415,14 @@ public class JenaQuerierDB implements IQuerierDB {
 
                 // Commit the changes
                 dataset.commit();
+
+                // If successful, clear the map of entities to be saved
+                for(String typeKey : storeEntitiesByType.keySet()){
+                    entities = storeEntitiesByType.get(typeKey);
+                    entities.clear();
+                }
+                storeEntitiesByType.clear();
+
             } catch (Exception e) {
                 // Abort the changes and signal that there has been an error
                 dataset.abort();
@@ -2380,11 +2437,7 @@ public class JenaQuerierDB implements IQuerierDB {
 
         }
 
-        cache.clear();
-        checkedOutEntityGraphs.clear();
-
-        // Re-enable the cache
-        cacheEnabled = false;
+        // No need to clear the cache content, as it now matches the triple store
 
         final long endTime = System.currentTimeMillis();
         logger.info("JenaQuerierDB.sync(): execution time {} ms", endTime - startTime);
@@ -3087,9 +3140,8 @@ public class JenaQuerierDB implements IQuerierDB {
 
     }
 
-    /*
-     * What we still do need are some methods to update the asserted graph in specific
-     * ways. These are used by the validator to fix inconsistencies in the asserted graph,
+    /* We still do need some methods to update the asserted graph in specific ways.
+     * These are used by the validator to fix inconsistencies in the asserted graph,
      * providing a sort-of 'automated repair' facility for old/broken system models.
      */
 
@@ -3294,8 +3346,8 @@ public class JenaQuerierDB implements IQuerierDB {
                 continue;
             }
 
-            /* In the latter case must retain the link entity but will need to create a fake asset entity from which
-             * to get a hashed ID reference for use in creating the correct link URI.
+            /* In the latter case must retain the link entity but will need to create a fake asset (not stored)
+             * entity from which to get a hashed ID reference for use in creating the correct link URI.
              */
             if(fromAsset == null) {
                 fromAsset = new AssetDB();
@@ -3307,7 +3359,7 @@ public class JenaQuerierDB implements IQuerierDB {
             }
 
             // Get the correct relationship entity URI
-            String newURI = "system#" + fromAsset.getId() + "-" + linkType.replace("domain#", "") + "-" + toAsset.getId();
+            String newURI = "system#" + fromAsset.generateID() + "-" + linkType.replace("domain#", "") + "-" + toAsset.generateID();
 
             if(!oldURI.equals(newURI)) {
                 // The URI of this CC is incorrect

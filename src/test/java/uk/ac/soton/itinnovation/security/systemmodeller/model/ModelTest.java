@@ -1374,7 +1374,7 @@ public class ModelTest {
 		Model testModel = createTestModel(0);
 
 		//Model calculating risks
-		testModel.markAsCalculatingRisks(RiskCalculationMode.FUTURE);
+		testModel.markAsCalculatingRisks(RiskCalculationMode.FUTURE, true);
 
 		assertThatIllegalStateException()
 			.isThrownBy(
@@ -1439,7 +1439,7 @@ public class ModelTest {
 		Model testModel = createTestModel(0);
 
 		//Calculating risks
-		testModel.markAsCalculatingRisks(RiskCalculationMode.FUTURE);
+		testModel.markAsCalculatingRisks(RiskCalculationMode.FUTURE, true);
 
 		assertThatIllegalStateException()
 			.isThrownBy(
@@ -1457,7 +1457,7 @@ public class ModelTest {
 		//Risk levels invalid
 		testModel.setRiskLevelsValid(false);
 
-		testModel.markAsCalculatingRisks(RiskCalculationMode.FUTURE);
+		testModel.markAsCalculatingRisks(RiskCalculationMode.FUTURE, true);
 
 		//Model valid but risk levels invalid
 		assertTrue(testModel.isValid());
@@ -1476,7 +1476,7 @@ public class ModelTest {
 		//Risk levels invalid
 		testModel.setRiskLevelsValid(false);
 
-		testModel.markAsCalculatingRisks(RiskCalculationMode.CURRENT);
+		testModel.markAsCalculatingRisks(RiskCalculationMode.CURRENT, true);
 
 		//Model valid but risk levels invalid
 		assertTrue(testModel.isValid());
@@ -1495,7 +1495,7 @@ public class ModelTest {
 		//Risk levels valid
 		testModel.setRiskLevelsValid(true);
 
-		testModel.markAsCalculatingRisks(RiskCalculationMode.FUTURE);
+		testModel.markAsCalculatingRisks(RiskCalculationMode.FUTURE, true);
 
 		//Model valid but risk levels invalid
 		assertTrue(testModel.isValid());
@@ -1516,7 +1516,7 @@ public class ModelTest {
 
 		assertThatIllegalStateException()
 			.isThrownBy(
-				() -> testModel.markAsCalculatingRisks(RiskCalculationMode.FUTURE)
+				() -> testModel.markAsCalculatingRisks(RiskCalculationMode.FUTURE, true)
 			)
 			.withMessage(
 				"Cannot set calculatingRisk: already validating"
@@ -1528,11 +1528,11 @@ public class ModelTest {
 		Model testModel = createTestModel(0);
 
 		//Model calculating risks
-		testModel.markAsCalculatingRisks(RiskCalculationMode.FUTURE);
+		testModel.markAsCalculatingRisks(RiskCalculationMode.FUTURE, true);
 
 		assertThatIllegalStateException()
 			.isThrownBy(
-				() -> testModel.markAsCalculatingRisks(RiskCalculationMode.FUTURE)
+				() -> testModel.markAsCalculatingRisks(RiskCalculationMode.FUTURE, true)
 			)
 			.withMessage(
 				"Cannot set calculatingRisk: already calculating risks"
@@ -1544,9 +1544,9 @@ public class ModelTest {
 		Model testModel = createTestModel(0);
 
 		//Model calculating FUTURE risks
-		testModel.markAsCalculatingRisks(RiskCalculationMode.FUTURE);
+		testModel.markAsCalculatingRisks(RiskCalculationMode.FUTURE, true);
 
-		testModel.finishedCalculatingRisks(true);
+		testModel.finishedCalculatingRisks(true, RiskCalculationMode.FUTURE, true);
 
 		//Model and risks valid
 		assertTrue(testModel.isValid());
@@ -1563,9 +1563,9 @@ public class ModelTest {
 		Model testModel = createTestModel(0);
 
 		//Model calculating FUTURE risks
-		testModel.markAsCalculatingRisks(RiskCalculationMode.FUTURE);
+		testModel.markAsCalculatingRisks(RiskCalculationMode.FUTURE, true);
 
-		testModel.finishedCalculatingRisks(false);
+		testModel.finishedCalculatingRisks(false, RiskCalculationMode.FUTURE, true);
 
 		//Model valid and risks invalid
 		assertTrue(testModel.isValid());
@@ -1583,7 +1583,7 @@ public class ModelTest {
 
 		assertThatIllegalStateException()
 			.isThrownBy(
-				() -> testModel.finishedCalculatingRisks(true)
+				() -> testModel.finishedCalculatingRisks(true, RiskCalculationMode.FUTURE, true)
 			)
 			.withMessage(
 				"Cannot clear calculatingRisk: not calculating risks"
@@ -1599,7 +1599,7 @@ public class ModelTest {
 
 		assertThatIllegalStateException()
 			.isThrownBy(
-				() -> testModel.finishedCalculatingRisks(true)
+				() -> testModel.finishedCalculatingRisks(true, RiskCalculationMode.FUTURE, true)
 			)
 			.withMessage(
 				"Cannot clear calculatingRisk: not calculating risks"
