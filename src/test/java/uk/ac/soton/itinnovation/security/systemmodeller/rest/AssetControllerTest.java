@@ -277,23 +277,14 @@ public class AssetControllerTest extends CommonTestSetup{
 	/**
 	 * Test adding an empty asset object to a model
 	 * Asserts CREATED 201 status
-	 * 
-	 * KEM: I can't see the purpose of this test. Why would anyone want to create an empty asset
-	 * that has nothing defined except its id (and now population). TODO: decide if this is still required
 	 */
 	@Test
 	public void testAddAssetToModelEmptyAssetObject() {
 		switchToSystemModel(5);
-
-		Asset asset = new Asset();
-
-		//Asset must have a population level at least
-		ensureAssetPopulation(asset);
-
 		given().
 			filter(userSession).
 			contentType(ContentType.JSON).
-			body(asset).
+			body(new Asset()).
 		when().
 			post("/models/testModel/assets").
 		then().
