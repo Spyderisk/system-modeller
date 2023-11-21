@@ -75,6 +75,9 @@ public final class Asset extends SemanticEntity {
 		//no default cardinality restrictions
 		minCardinality = -1;
 		maxCardinality = -1;
+
+		//set default population level
+		population = "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#PopLevelSingleton";
 		
 		this.asserted = true;
 		this.visible = true;
