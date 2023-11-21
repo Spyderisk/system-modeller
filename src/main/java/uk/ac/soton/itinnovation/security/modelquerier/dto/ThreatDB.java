@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -97,6 +98,7 @@ public class ThreatDB extends EntityDB {
 
 	// Properties set during risk calculation
 	@SerializedName("hasPrior")
+    @JsonProperty("likelihood")
 	private String prior;									// Synonym for threat likelihood
 	@SerializedName("hasRisk")
 	private String risk;									// Risk level, calculated from the likleihood and impact of threat effects

@@ -50,6 +50,7 @@ import uk.ac.soton.itinnovation.security.systemmodeller.semantics.StoreModelMana
  */
 @TestPropertySource(properties = {"spring.data.mongodb.database=${test.spring.data.mongodb.database}",
                                     "reset.on.start=false",
+                                    "knowledgebases.source.folder=/code/knowledgebases-test",
                                     "knowledgebases.install.folder=/opt/spyderisk/knowledgebases-test",
                                     "check.installed.knowledgebases=false"
 })

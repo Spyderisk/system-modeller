@@ -1276,6 +1276,7 @@ public class JenaQuerierDB implements IQuerierDB {
          *      domain model
         */
         String cacheTypeKey = getCacheTypeName(AssetDB.class);
+
         if (cacheEnabled) {
             // Try to find the cached asset
             AssetDB cachedEntity = cache.get(uri, cacheTypeKey, AssetDB.class, models);
@@ -1290,15 +1291,23 @@ public class JenaQuerierDB implements IQuerierDB {
 
         // Not in the cache, so try to get it from the triple store
         JsonObject assetJson = getEntityAsJson(uri, models);
+
         AssetDB asset = null;
+
         if (assetJson != null) {
             // Find out in which graph the asset was defined (asserted or inferred)
             JsonPrimitive assetGraph = assetJson.getAsJsonPrimitive("_graph");
-            if(assetGraph != null) {
+            if (assetGraph != null) {
                 // Convert this graph to a string
                 String mainGraph = assetGraph.getAsString();
 
-                // Convert the asset to an AssetDB object to be returned
+                // Determine if asset is inferred
+                boolean inferred = mainGraph.equals("system-inf");
+
+                // Add inferred flag to JSON object, to indicate which asset object type to create in jsonToAsset below 
+                assetJson.addProperty("inferred", inferred);
+
+                // Convert the asset to an AssetDB (or InferredAssetDB) object to be returned
                 asset = jsonToAsset(assetJson);
 
                 // Add the asset to the cache (in the main graph) if enabled

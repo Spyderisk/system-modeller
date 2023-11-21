@@ -86,6 +86,8 @@ public class InitializeManagementGraph implements CommandLineRunner {
 		HashSet<String> domainGraphs = new HashSet<>(); //all loaded domain model URIs loaded via zip bundles
 		HashSet<String> duplicatedDomainGraphs = new HashSet<>(); //domain graphs that have been loaded more than once
 
+		logger.info("resetOnStart: {}", resetOnStart);
+
 		if (resetOnStart || storeModelManager.storeIsEmpty()) {
 			logger.info("Removing installed knowledgebases:");
 			try {
@@ -102,8 +104,7 @@ public class InitializeManagementGraph implements CommandLineRunner {
 					}
 				}
 				else {
-					logger.error("Cannot locate knowledgebases install folder: {}", kbInstallDir);
-					System.exit(1);
+					logger.warn("Cannot locate knowledgebases install folder: {}", kbInstallDir);
 				}
 			}
 			catch (IOException ex) {
@@ -152,8 +153,7 @@ public class InitializeManagementGraph implements CommandLineRunner {
 					}
 				}
 				else {
-					logger.error("Cannot locate knowledgebases source folder: {}", kbDataDir);
-					System.exit(1);
+					logger.warn("Cannot locate knowledgebases source folder: {}", kbDataDir);
 				}
 	
 				DomainModelUtils domainModelUtils= new DomainModelUtils();
