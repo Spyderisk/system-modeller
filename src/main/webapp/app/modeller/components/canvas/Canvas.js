@@ -1678,8 +1678,7 @@ class Canvas extends React.Component {
                             "visible": true,
                             "iconX": action.iconX + 60,
                             "iconY": action.iconY - 60,
-                            "minCardinality": Constants.ASSET_MIN_CARDINALITY,
-                            "maxCardinality": Constants.ASSET_MAX_CARDINALITY
+                            "population": action.population
                         };
                         loaderFunc = () => {
                             return postAssertedAsset(

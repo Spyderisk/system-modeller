@@ -8,7 +8,7 @@ import {
 import { connect } from "react-redux";
 import { saveDownload } from "../../../common/actions/api";
 import * as Constants from "../../../common/constants.js";
-import { openDocumentation } from "../../../common/documentation/documentation";
+import { openDocumentation, openApiDocs } from "../../../common/documentation/documentation";
 import {
     reCentreCanvas,
     reCentreModel,
@@ -457,6 +457,15 @@ class Header extends React.Component {
                                     }
                                 >
                                     Reference Guide
+                                </MenuItem>
+                                <MenuItem
+                                    key={10}
+                                    eventKey={10}
+                                    onClick={(e) =>
+                                        openApiDocs(e)
+                                    }
+                                >
+                                    Spyderisk REST API
                                 </MenuItem>
                                 <MenuItem divider />
                                 <h4 style={{ color: "black", paddingLeft: "20px" }}>

@@ -42,6 +42,8 @@ services:
       SPRING_DATA_MONGODB_HOST: mongo
       KEYCLOAK_CREDENTIALS_SECRET: ${KEYCLOAK_CREDENTIALS_SECRET:-DfkQBcVpjbO6gTMXMBUBfHe45UmFhGxk}
       RESET_ON_START: ${RESET_ON_START:-true}
+      DISPLAY_EULA: ${DISPLAY_EULA:-true}
+      EULA_HTML: ${EULA_HTML}
     volumes:
       # Persistent named volume for the jena-tdb storage
       - type: volume

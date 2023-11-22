@@ -19,6 +19,10 @@
             <a sec:authorize="isAnonymous()" th:href="@{/dashboard}" class="btn btn-primary btn-large">Login</a>
             <a th:href="@{~/documentation}" class="btn btn-primary btn-large">View Documentation</a>
         </div>
+        <div class="eula" th:if="${@environment.getProperty('display.eula')} == 'true'">
+            <h3 class="text-center">End User License Agreement</h3>
+            <div class="eula-textbox" th:utext="${@environment.getProperty('eula.html')}"></div>
+        </div>
     </div>
     <div class="footer">
         <div class="container">
