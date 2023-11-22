@@ -40,23 +40,6 @@ class DetailsAccordion extends React.Component {
         });
     }
 
-    // shouldComponentUpdate(nextProps, nextState) {
-    //     //console.log("DetailsAccordion.shouldComponentUpdate");
-    //
-    //     // if (nextProps.selectedAsset["id"] != this.props.selectedAsset["id"]) {
-    //     //     console.log("selectedAsset is changing from " + this.props.selectedAsset["id"] + " to " + nextProps.selectedAsset["id"] + " - don't render yet..");
-    //     //     //this.props.dispatch(getCompiledAssetDetails(nextProps.model["id"], nextProps.selectedAsset["id"]));
-    //     //     return true;
-    //     // }
-    //     // else if (nextProps.model["validationStatus"] && (nextProps.model["validationStatus"] == "success") ) {
-    //     //     console.log("DetailsAccordion.shouldComponentUpdate detected successful validation. Updating selected asset..");
-    //     //     this.props.dispatch(resetValidationStatus()); //reset validationStatus to ensure the getCompiledAssetDetails is only called once here
-    //     //     //this.props.dispatch(getCompiledAssetDetails(nextProps.model["id"], nextProps.selectedAsset["id"]));
-    //     //     return true;
-    //     // }
-    //     return true;
-    // }
-
     render() {
         let {model, selectedAsset} = this.props;
 
@@ -79,8 +62,6 @@ class DetailsAccordion extends React.Component {
 
         let inferredAssets = [];
         if (asset["inferredAssets"]) {
-            //console.log('asset["inferredAssets"]:', asset["inferredAssets"]);
-
             inferredAssets = asset["inferredAssets"].map((assetUri) => {
                 let inferredAsset = model["assets"].find((asset) => asset["uri"] === assetUri);
                 if (inferredAsset) {
@@ -91,8 +72,6 @@ class DetailsAccordion extends React.Component {
                 }
             }).filter((a) => a !== undefined); //filter any undefined values
         }
-
-        //console.log("inferredAssets:", inferredAssets);
 
         //get incoming/outgoing relations
         const aId = this.props.selectedAsset.id;
@@ -116,7 +95,6 @@ class DetailsAccordion extends React.Component {
 
         let threats = this.props.threats;
         let assetThreats = threats.filter((threat) => threat["threatensAssets"] === asset["uri"]);
-        //console.log("assetThreats", assetThreats);
         if (assetThreats === undefined) {
             assetThreats = [];
         }
@@ -125,15 +103,12 @@ class DetailsAccordion extends React.Component {
         let assetCsgsSet = new Set(); //set of CSG URIs for this asset
         assetThreats.forEach((threat) => {
             let threatCsgs = Object.keys(threat.controlStrategies);
-            //console.log("threatCsgs:", threatCsgs);
             threatCsgs.forEach((csg) => {
                 assetCsgsSet.add(csg);
             });
         });
 
-        //console.log("assetCsgsSet:", assetCsgsSet);
         let assetCsgUris = assetCsgsSet;
-        //console.log("assetCsgUris:", assetCsgUris);
 
         let csgsByName = new Map();
         assetCsgUris.forEach((csgUri) => {
@@ -143,22 +118,14 @@ class DetailsAccordion extends React.Component {
         });
         
         csgsByName = new Map([...csgsByName.entries()].sort());
-        //console.log("csgsByName:", csgsByName);
         let csgsArray = Array.from(csgsByName);
-        //console.log("csgsArray:", csgsArray);
         let enabledCsgs = csgsArray.filter((csgEntry) => csgEntry[1].enabled);
-        //console.log("enabledCsgs:", enabledCsgs);
-
-        //console.log("asset.misbehaviourSets: ", asset.misbehaviourSets);
 
         let misbehaviourSets = asset.misbehaviourSets ? asset.misbehaviourSets.map((uri) => {
             return this.props.model.misbehaviourSets[uri];
         }) : [];
 
         let misbehaviours = getMisbehaviours(misbehaviourSets, asset.label);
-        //console.log(asset.label);
-        
-        //console.log("misbehaviours:", Object.values(misbehaviours));
         
         //Determine displayed misbehaviours - in this case those that are "visible"
         let displayedMisbehaviours = Object.values(misbehaviours).filter((misbehaviour) => {
@@ -166,31 +133,12 @@ class DetailsAccordion extends React.Component {
             let invisible = visible !== undefined && !visible;
             return !invisible;
         });
-        //console.log("displayedMisbehaviours:", displayedMisbehaviours);
-
-        //console.log("DetailsAccordion: misbehaviours:");
-        //console.log(misbehaviours);
 
         // get full TWAS objects array for this asset
         let twas = this.getTWAS(asset);
 
         return (
             <div className="panel-group detail-accordion">
-
-                {/* <Panel bsStyle="primary">
-                    <Panel.Heading>
-                        <Panel.Title toggle>
-                            <span><i className="fa fa-info-circle " />Asset Details and Cardinality</span>
-                        </Panel.Title>
-                    </Panel.Heading>
-                    <Panel.Collapse>
-                        <Panel.Body>
-                            <AssetDetailsPanel>
-
-                            </AssetDetailsPanel>
-                        </Panel.Body>
-                    </Panel.Collapse>
-                </Panel> */}
 
                 <Panel bsStyle="primary">
                     <Panel.Heading>
@@ -229,6 +177,7 @@ class DetailsAccordion extends React.Component {
                                 renderTrustworthinessAttributes={this.props.renderTrustworthinessAttributes}
                                 asset={asset.uri === "" ? undefined : asset}
                                 twas={twas}
+                                filters={this.props.filters}
                                 authz={this.props.authz}
                             />
                         </Panel.Body>
@@ -449,23 +398,18 @@ class DetailsAccordion extends React.Component {
         if (label === undefined)
             return "";
 
-        //return label.replace(/([A-Z])/g, ' $1').trim().toLowerCase();
         return label;
     }
 
     getTWAS(asset) {
-        //console.log("getTWAS for asset:", asset);
         let twas = [];
 
         let twasURIs = asset.trustworthinessAttributeSets ? asset.trustworthinessAttributeSets : [];
-        //console.log("twasURIs:", twasURIs);
-        //console.log("this.props.model.twas:", this.props.model.twas);
 
         twas = twasURIs.map((uri) => {
             return this.props.model.twas[uri];
         });
 
-        //console.log("twas:", twas);
         return twas;
     }
 
@@ -475,7 +419,6 @@ class DetailsAccordion extends React.Component {
 }
 
 function getMisbehaviours(assetMisbehaviours, assetLabel) {
-    //console.log("DetailsAccordion: getMisbehaviours()", assetMisbehaviours);
 
     //This is a set of misbehaviours, grouped into those with the same label
     var misbehavioursSet = {};
@@ -492,8 +435,6 @@ function getMisbehaviours(assetMisbehaviours, assetLabel) {
                     misbehavioursSet[misbehaviour.misbehaviourLabel] = misbehavioursGroup;
                 }
             });
-
-        //console.log("misbehavioursSet:", misbehavioursSet);
     }
 
     return misbehavioursSet;
@@ -506,6 +447,7 @@ DetailsAccordion.propTypes = {
     selectedThreat: PropTypes.object,
     selectedMisbehaviour: PropTypes.object,
     expanded: PropTypes.object,
+    filters: PropTypes.object,
     loading: PropTypes.object,
     getAssetType: PropTypes.func,
     getAssetsForType: PropTypes.func,
