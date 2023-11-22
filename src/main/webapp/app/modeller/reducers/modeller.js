@@ -76,7 +76,7 @@ const modelState = {
     filters: {
         assetDetails: {
             twas: {
-                hideInvisible: true
+                showInvisible: false
             }
         }
     },
@@ -1555,7 +1555,7 @@ export default function modeller(state = modelState, action) {
         let selected = action.payload.selected;
 
         //TODO (if/when required): add support for toggling other filters
-        if (panel !== "twas" || filter !== "hideInvisible") {
+        if (panel !== "twas" || filter !== "showInvisible") {
             console.log("Panel/filter not known:", panel, filter);
             return state;
         }
@@ -1568,7 +1568,7 @@ export default function modeller(state = modelState, action) {
                     ...state.filters.assetDetails,
                     twas: {
                         ...state.filters.assetDetails.twas,
-                        hideInvisible: selected
+                        showInvisible: selected
                     }
                 }
             }

@@ -897,7 +897,7 @@ class Modeller extends React.Component {
         return this.props.model.misbehaviourSets[id];
     }
 
-    renderTrustworthinessAttributes(attributes, levels, self, hideInvisibleTwas) {
+    renderTrustworthinessAttributes(attributes, levels, self, showInvisibleTwas) {
         return (
             <div>
                 <div key={0} className="row head">
@@ -914,13 +914,11 @@ class Modeller extends React.Component {
                 {attributes.map((field, index) => {
                     let updating = self.state.updating[field.label];
                     let twas = self.state.twas[field.label];
-                    //console.log("twas: ", twas);
                     
                     //Is TWAS visible?
                     let visible = twas["visible"];
 
-                    if (hideInvisibleTwas && (visible !== undefined) && !visible) {
-                        //console.log("Hiding TWAS: " + twas.attribute.label);
+                    if (!showInvisibleTwas && (visible !== undefined) && !visible) {
                         return;
                     }
 

@@ -92,29 +92,29 @@ class TrustworthinessPanel extends React.Component {
 
         let levels = this.state.levels;
         
-        //flag to hide TWAS where visible = false
-        let hideInvisibleTwas = this.props.filters.assetDetails.twas.hideInvisible;
+        //flag to show TWAS where visible = false
+        let showInvisibleTwas = this.props.filters.assetDetails.twas.showInvisible;
         
         return (
             <div>
                 <Form>
                     <FormGroup>
                         <Checkbox
-                            checked={hideInvisibleTwas}
+                            checked={showInvisibleTwas}
                             onChange={(e) => {
                                 this.setFilter(e.nativeEvent.target.checked)
                             }}>
-                            Only visible attributes
+                            Show hidden attributes
                         </Checkbox>
                     </FormGroup>
                 </Form>
-                {this.props.renderTrustworthinessAttributes(attributes, levels, self, hideInvisibleTwas)}
+                {this.props.renderTrustworthinessAttributes(attributes, levels, self, showInvisibleTwas)}
             </div>
         )
     }
 
     setFilter(value) {
-        this.props.dispatch(toggleFilter("twas", "hideInvisible", value));
+        this.props.dispatch(toggleFilter("twas", "showInvisible", value));
     }
 
     twValueChanged(e) {
