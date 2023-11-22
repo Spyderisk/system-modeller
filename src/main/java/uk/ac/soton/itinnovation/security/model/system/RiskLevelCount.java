@@ -24,14 +24,15 @@
 /////////////////////////////////////////////////////////////////////////
 package uk.ac.soton.itinnovation.security.model.system;
 
+import java.util.Objects;
 import uk.ac.soton.itinnovation.security.model.Level;
 
-public class RiskLevelCount {
-	
+public class RiskLevelCount implements Comparable<RiskLevelCount> {
+
 	private Level level;
-			
+
 	private int count;
-	
+
 	public RiskLevelCount() {
 	}
 
@@ -50,6 +51,30 @@ public class RiskLevelCount {
 	public void setCount(int count) {
 		this.count = count;
 	}
-	
-	
+
+    @Override
+    public int compareTo(RiskLevelCount other) {
+        // Compare levels first
+        int levelComparison = this.level.compareTo(other.level);
+        if (levelComparison != 0) {
+            return levelComparison;
+        }
+
+        // If levels are equal, compare counts
+        return Integer.compare(this.count, other.count);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        RiskLevelCount that = (RiskLevelCount) obj;
+        return count == that.count && Objects.equals(level, that.level);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(level, count);
+    }
+
 }

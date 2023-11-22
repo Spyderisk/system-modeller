@@ -29,13 +29,13 @@ import java.util.HashMap;
 import java.util.Map;
 import uk.ac.soton.itinnovation.security.model.Level;
 
-public class RiskVector {
-	
+public class RiskVector implements Comparable<RiskVector> {
+
 	private Map<String, RiskLevelCount> riskVector;
 
 	public RiskVector(Collection<Level> riskLevels, Map<String, Integer> riskLevelCounts) {
 		riskVector = new HashMap<>();
-		
+
 		//For each defined risk level, get the count of misbehaviours at this level
 		for (Level riskLevel : riskLevels) {
 			RiskLevelCount riskLevelCount = new RiskLevelCount();
@@ -57,23 +57,63 @@ public class RiskVector {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		
+
 		sb.append("(");
-		
+
 		Collection<RiskLevelCount> riskLevelCounts = riskVector.values();
-		
+
 		for (RiskLevelCount riskLevelCount : riskLevelCounts) {
 			sb.append(riskLevelCount.getLevel().getLabel());
 			sb.append(": ");
 			sb.append(riskLevelCount.getCount());
 			sb.append(", ");
 		}
-		
+
 		sb.setLength(sb.length() -2); //remove last comma
-		
+
 		sb.append(")");
-		
+
 		return sb.toString();
 	}
 
+    public String overall() {
+        int overall = 0;
+        String label = "";
+        for (Map.Entry<String, RiskLevelCount> entry : riskVector.entrySet()) {
+            String riskLevelLabel = entry.getValue().getLevel().getUri();
+            int riskLevelValue = entry.getValue().getLevel().getValue();
+            int riskCount = entry.getValue().getCount();
+            if (riskCount > 0) {
+                if (riskLevelValue >= overall) {
+                    overall = riskLevelValue;
+                    label = riskLevelLabel;
+                }
+            }
+        }
+        return label;
+    }
+
+    @Override
+    public int compareTo(RiskVector other) {
+        // Iterate through map entries and compare RiskLevelCount objects
+        for (Map.Entry<String, RiskLevelCount> entry : riskVector.entrySet()) {
+            String key = entry.getKey();
+            RiskLevelCount thisRiskLevelCount = entry.getValue();
+            RiskLevelCount otherRiskLevelCount = other.riskVector.get(key);
+
+            if (otherRiskLevelCount == null) {
+                // Handle the case where the key is not present in the other RiskVector
+                return 1; // or -1, depending on your requirements
+            }
+
+            // Compare RiskLevelCount objects
+            int result = thisRiskLevelCount.compareTo(otherRiskLevelCount);
+            if (result != 0) {
+                return result;
+            }
+        }
+
+        // If all RiskLevelCount objects are equal, consider the RiskVectors equal
+        return 0;
+    }
 }

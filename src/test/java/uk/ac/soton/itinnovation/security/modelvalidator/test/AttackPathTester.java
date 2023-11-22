@@ -86,11 +86,21 @@ public class AttackPathTester extends TestCase {
 
 		tester = new TestHelper("jena-tdb");
 
+        /*
         tester.addDomain(0, "modelvalidator/domain-network-6a1-3-5-auto-expanded-unfiltered.nq.gz",
                 "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
 
 		tester.addSystem(0, "modelvalidator/system-dataflow-test-singles.nq.gz",
                 "http://it-innovation.soton.ac.uk/system/63d9308f8f6a206408be9010");
+        */
+
+        tester.addDomain(0, "modelvalidator/AttackPath/domain-network-6a3-2-3.nq.gz",
+                "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
+
+		tester.addSystem(1, "modelvalidator/AttackPath/FP_UC2_v6b-1019-Level_2-CURRENT_2023-11-21T1004.nq.gz",
+                "http://it-innovation.soton.ac.uk/system/634fbe62d3733e1bc2fae417");
+		tester.addSystem(0, "modelvalidator/AttackPath/Steel_Mill_no_FWBlocks.nq.gz",
+                "http://it-innovation.soton.ac.uk/system/64dc9b524ccc6e0b7ca67da");
 
 		tester.setUp();
 
@@ -157,9 +167,9 @@ public class AttackPathTester extends TestCase {
 		IQuerierDB querierDB = new JenaQuerierDB(dataset, tester.getModel(), true);
 		querierDB.init();
 
-        /*
 		querierDB.initForValidation();
 
+        /*
         try {
             logger.info("Validating the model - ensures no dependence on bugs in older SSM validators");
             Validator validator = new Validator(querierDB);
@@ -188,10 +198,16 @@ public class AttackPathTester extends TestCase {
 
 			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(querierDB, tester.getGraph("system"));
 
+            reca.listMS();
+            //MS LIST from FP model: [system#MS-PhysicalShutdown-a0806d46, system#MS-LossOfReliability-a0806d46]
+
 			List<String> targetUris = new ArrayList<>();
 			//targetUris.add("system#MS-LossOfAuthenticity-7aca3a77");
-			targetUris.add("system#MS-LossOfAuthenticity-a40e98cc");
+			// -> targetUris.add("system#MS-LossOfAuthenticity-a40e98cc");
             //targetUris.add("system#MS-LossOfConfidentiality-a40e98cc");
+
+            // target MS from FP model
+            targetUris.add("system#MS-LossOfReliability-a0806d46");
 
 			Assert.assertTrue(reca.checkTargetUris(targetUris));
 

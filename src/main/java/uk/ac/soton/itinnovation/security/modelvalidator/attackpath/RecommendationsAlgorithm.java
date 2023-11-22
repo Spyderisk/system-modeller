@@ -33,7 +33,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.AdditionalPropertyDTO;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.AssetDTO;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ConsequenceDTO;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ControlDTO;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ControlStrategyDTO;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationDTO;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationReportDTO;
+//import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RiskVectorDTO;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.StateDTO;
+
 import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
+import uk.ac.soton.itinnovation.security.model.system.RiskVector;
 import uk.ac.soton.itinnovation.security.modelquerier.IQuerierDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ModelDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ControlSetDB;
@@ -58,6 +69,8 @@ public class RecommendationsAlgorithm {
     private IQuerierDB querier;
     private AttackTree threatTree;
     private String modelId;
+    private int recCounter = 0;
+    private RecommendationReportDTO report;
 
     @Autowired
     private ModelObjectsHelper modelObjectsHelper;
@@ -66,6 +79,8 @@ public class RecommendationsAlgorithm {
 
         this.querier = querier;
         this.modelId = modelId;
+
+        this.report = new RecommendationReportDTO();
 
         final long startTime = System.currentTimeMillis();
 
@@ -180,12 +195,12 @@ public class RecommendationsAlgorithm {
 
         for (Expression csgOption : csgOptions) {
             logger.debug("examining CSG option {}", csgOption.getClass().getName());
-            //logger.debug("children: {}", csgOption.getChildren().size());
 
             List<Variable> options = le.getListFromAnd(csgOption);
+
             List<String> csgList = new ArrayList<>();
             for (Variable va : options) {
-                logger.debug("va -> {}, {}", va, va.getClass().getName());
+                logger.debug("variable -> {}, {}", va, va.getClass().getName());
                 csgList.add(va.toString());
             }
 
@@ -203,35 +218,97 @@ public class RecommendationsAlgorithm {
 
             // apply all CS in the CS_set
             // TODO: I need to keep track of CS changes or roll them back later
-            apd.applyCS(csSet);
+            apd.applyCS(csSet, true);
 
-            // Re-calculate risk now and
-            apd.calculateRisk(this.modelId);
+            // Re-calculate risk now and create a recommendation
+            try {
+                RiskVector riskResponse = apd.calculateRisk(this.modelId);
+                logger.debug("RiskResponse: {}", riskResponse);
+                StateDTO state = apd.getState();
+
+                // populate recommendation object
+                RecommendationDTO recommendation = new RecommendationDTO();
+                recommendation.setIdentifier(this.recCounter++);
+                recommendation.setCategory("unknown");
+
+                List<ControlStrategyDTO> recCSGList = new ArrayList<>();
+                for (String csgUri : csgList) {
+                    ControlStrategyDTO csgDto = new ControlStrategyDTO();
+                    csgDto.setUri(csgUri);
+                    csgDto.setDescription(apd.getCSGDescription(csgUri));
+                    recCSGList.add(csgDto);
+                }
+                recommendation.setControlStrategies(recCSGList);
+
+                List<ControlDTO> recControlList = new ArrayList<>();
+                for (String ctrlUri : csSet) {
+                    ControlDTO ctrl = new ControlDTO();
+                    ctrl.setUri(ctrlUri);
+                    recControlList.add(ctrl);
+                }
+                recommendation.setControls(recControlList);
+
+                recommendation.setState(state);
+
+                logger.debug("RECOMMENDATION: {}", recommendation);
+
+                if (this.report.getRecommendations() == null) {
+                    report.setRecommendations(new ArrayList<>());
+                }
+                report.getRecommendations().add(recommendation);
+
+            } catch (Exception e) {
+                logger.warn("failed to get risk calculation, restore model");
+                // restore model ...
+                // TODO: restore model controls
+                // raise exception since failed to run risk calculation
+            }
+
+            // check if risk has improved or teminate loop
+            // logger.info("Termination condition");
+
+            // undo CS changes in CS_set
+            logger.debug("undo CS set");
+            apd.applyCS(csSet, false);
         }
 
-        return new CSGNode();
+        return myNode;
     }
 
     public void recommendations(List<String> targetUris, String riskCalculationMode, boolean allPaths,
             boolean normalOperations) throws RuntimeException {
         logger.debug("Recommendations core part");
         try {
+
+            // get initial risk state
+            RiskVector riskResponse = apd.calculateRisk(this.modelId);
+            apd.getState();
+
+            StateDTO state = new StateDTO();
+            state.setRisk(riskResponse.toString());
+            report.setCurrent(state);
+
+            // calculate threat tree
             threatTree = calculateAttackTree(targetUris,
                     riskCalculationMode, allPaths, normalOperations);
 
-            // test risk calculation and risk vectors:
-            this.apd.getRiskVector();
             // step: attackMitigationCSG?
-            //LogicalExpression attackMitigationCSG = threatTree.attackMitigationCSG();
+            LogicalExpression attackMitigationCSG = threatTree.attackMitigationCSG();
 
             // step: rootNode?
-            //CSGNode rootNode = applyCSGs(attackMitigationCSG, new CSGNode());
+            CSGNode rootNode = applyCSGs(attackMitigationCSG, new CSGNode());
 
-            // step: makeRecommendations?
+            // step: makeRecommendations on rootNode?
 
+            //logger.debug("REPORT has: {} recommendations", report.getRecommendations().size());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void listMS() {
+        List<String> msList = apd.filterMisbehaviours();
+        logger.debug("TOP MS LIST: {}", msList);
     }
 }
 

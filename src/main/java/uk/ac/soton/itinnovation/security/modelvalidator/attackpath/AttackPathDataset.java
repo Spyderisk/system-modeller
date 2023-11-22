@@ -39,9 +39,25 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.AdditionalPropertyDTO;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.AssetDTO;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ConsequenceDTO;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ControlDTO;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ControlStrategyDTO;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationDTO;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationReportDTO;
+//import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RiskVectorDTO;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.StateDTO;
+
+
+import uk.ac.soton.itinnovation.security.model.Level;
+
+import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
+import uk.ac.soton.itinnovation.security.model.system.RiskVector;
+import uk.ac.soton.itinnovation.security.model.system.RiskLevelCount;
+
 import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
 import uk.ac.soton.itinnovation.security.modelvalidator.RiskCalculator;
-import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
 
 import uk.ac.soton.itinnovation.security.modelquerier.IQuerierDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.AssetDB;
@@ -51,7 +67,6 @@ import uk.ac.soton.itinnovation.security.modelquerier.dto.LevelDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.MisbehaviourSetDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ThreatDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.TrustworthinessAttributeSetDB;
-import uk.ac.soton.itinnovation.security.model.system.RiskVector;
 
 public class AttackPathDataset {
     private static final Logger logger = LoggerFactory.getLogger(AttackPathDataset.class);
@@ -169,6 +184,11 @@ public class AttackPathDataset {
             logger.error("calculating attack path dataset failed", e);
             throw new RuntimeException(e);
         }
+    }
+
+    public String getCSGDescription(String uri) {
+        ControlStrategyDB csg = controlStrategies.get(uri);
+        return csg.getDescription();
     }
 
     private void printAttackPathDataset() {
@@ -497,8 +517,10 @@ public class AttackPathDataset {
 
             msSorted.sort(comparator);
 
+            int threshold = riLevels.get("domain#RiskLevelHigh").getLevelValue();
             List<MisbehaviourSetDB> msFiltered = msSorted.stream()
-                    .filter(ms -> riLevels.get(ms.getRisk()).getLevelValue() >= 3).collect(Collectors.toList());
+                    .filter(ms -> riLevels.get(ms.getRisk()).getLevelValue() >= threshold).collect(Collectors.toList());
+            
 
             for (MisbehaviourSetDB ms : msFiltered) {
                 AssetDB asset = assets.get(ms.getLocatedAt());
@@ -664,42 +686,96 @@ public class AttackPathDataset {
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
-    public void applyCS(Set<String> csSet) {
+    public void applyCS(Set<String> csSet, boolean enable) {
         for (String csURI : csSet) {
-            logger.debug("enabling CS {}", csURI);
+            String logMessage = enable ? "enabling CS {}" : "disabling CS {}";
+            logger.debug(logMessage, csURI);
             ControlSetDB cs = controlSets.get(csURI);
-            cs.setProposed(true);
+            cs.setProposed(enable);
             querier.updateProposedStatus(true, cs, "system");
+            querier.store(cs, "system");
         }
     }
 
-    public void calculateRisk(String modelId) {
+    public RiskVector calculateRisk(String modelId) throws RuntimeException {
         try {
 			logger.info("Calculating risks for APD");
 			RiskCalculator rc = new RiskCalculator(querier);
 			rc.calculateRiskLevels(RiskCalculationMode.FUTURE, true, new Progress(modelId));
+            return getRiskVector();
 		} catch (Exception e) {
+            logger.error("Error calculating risks for APD", e);
 			e.printStackTrace();
-			return;
+            throw new RuntimeException("Failed to calculate risk");
 		}
     }
 
-    public void getRiskVector() {
+    public RiskVector getRiskVector() {
 
-        //Map<LevelDB, Integer> riskVector = new HashMap<>();
         Map<String, Integer> riskVector = new HashMap<>();
+        Collection<Level> riskLevels = new ArrayList<>();
         for (LevelDB level : riLevels.values()) {
             riskVector.put(level.getUri(), 0);
-            //riskVector.put(level, 0);
+            Level l = new Level();
+            l.setValue(Integer.valueOf(level.getLevelValue()));
+            l.setUri(level.getUri());
+            riskLevels.add(l);
         }
 
         for (MisbehaviourSetDB ms : misbehaviourSets.values()) {
             riskVector.put(ms.getRisk(), riskVector.get(ms.getRisk()) + 1);
-            //riskVector.put(riLevels.get(ms.getRisk()), riskVector.get(riLevels.get(ms.getRisk())) + 1);
         }
-        logger.debug("RISK VECTOR: {}", riskVector);
-        logger.debug("ri levels: {}", riLevels.values());
-        //RiskVector rv = RiskVector(riLevels.values(), riskVector);
-        //logger.debug("RISKVECTOR: {}", rv);
+
+        RiskVector rv = new RiskVector(riskLevels, riskVector);
+        logger.debug("RISKVECTOR: {}", rv);
+
+        return rv;
+    }
+
+    public StateDTO getState() {
+        // state is risk + list of consequences
+
+        Map<String, Integer> riskVector = new HashMap<>();
+        Collection<Level> riskLevels = new ArrayList<>();
+        for (LevelDB level : riLevels.values()) {
+            riskVector.put(level.getUri(), 0);
+            Level l = new Level();
+            l.setValue(Integer.valueOf(level.getLevelValue()));
+            l.setUri(level.getUri());
+            riskLevels.add(l);
+        }
+
+        List<ConsequenceDTO> consequences = new ArrayList<>();
+        for (MisbehaviourSetDB ms : misbehaviourSets.values()) {
+            riskVector.put(ms.getRisk(), riskVector.get(ms.getRisk()) + 1);
+            //logger.debug("CONSEQUENCE: {} ", ms);
+            int threshold = riLevels.get("domain#RiskLevelHigh").getLevelValue();
+            if (riLevels.get(ms.getRisk()).getLevelValue() >= threshold) {
+                logger.debug("CONSEQUENCE: {} ", ms);
+                ConsequenceDTO consequence = new ConsequenceDTO();
+                consequence.setUri(ms.getUri());
+                consequence.setRisk(ms.getRisk());
+                consequence.setImpact(ms.getImpactLevel());
+                consequence.setLikelihood(ms.getPrior());
+                AssetDB asset = assets.get(ms.getLocatedAt());
+                AssetDTO assetDTO = new AssetDTO();
+                assetDTO.setUri(asset.getUri());
+                assetDTO.setType(asset.getType());
+                assetDTO.setLabel(asset.getLabel());
+                consequence.setAsset(assetDTO);
+                consequences.add(consequence);
+            }
+        }
+
+        RiskVector rv = new RiskVector(riskLevels, riskVector);
+        logger.debug("OVERALL: {}", rv.overall());
+
+        StateDTO state = new StateDTO();
+        state.setRisk(riskVector.toString());
+        state.setConsequences(consequences);
+        logger.debug("STATE: {}", riskVector);
+
+        return state;
+
     }
 }
