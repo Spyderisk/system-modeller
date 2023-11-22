@@ -1,0 +1,97 @@
+name: Test and publish
+
+on:
+  push:
+    branches: [ "dev", "main" ]
+  pull_request:
+    branches: [ "dev", "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+
+  test:
+
+    runs-on: ubuntu-22.04
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        lfs: true
+
+    - name: Checkout LFS objects
+      run: git lfs checkout
+
+    - name: Build software
+      run: |
+        docker-compose -f docker-compose.yml -f docker-compose.test.yml pull  # Force download of any newer dependency images
+        docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d --build
+        docker-compose -f docker-compose.yml -f docker-compose.test.yml images  # Useful for debugging
+        docker-compose -f docker-compose.yml -f docker-compose.test.yml images -q | xargs docker inspect | grep -C3 RepoTags  # Useful for debugging
+
+    - name: Run tests
+      # Here we execute a command inside the ssm container built in the previous step.
+      # If the tests fail we still want to run the next step to archive the test results, so we set FAIL to 0 initially and to 1 on failure but in doing so ensure that the test command always succeeds.
+      # The value of ${FAIL} is written into ${GITHUB_ENV} for use in the next step.
+      run: |
+        FAIL=0
+        docker-compose -f docker-compose.yml -f docker-compose.test.yml exec -T ssm sh -c "cd /system-modeller && ./gradlew test" || FAIL=1
+        docker cp $(docker-compose -f docker-compose.yml -f docker-compose.test.yml ps -q ssm):/system-modeller/build/build/reports/tests/test/ test-artifacts
+        echo "FAIL=${FAIL}" >> ${GITHUB_ENV}
+
+    - name: Archive test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-artifacts
+        path: test-artifacts/
+
+    - name: Return test success
+      # If the tests failed then make the whole job fail
+      run: test ${FAIL} -eq 0
+
+  publish:
+
+    # This job should only run if the test job succeeds
+    # Don't run this job if it's a pull request, otherwise we get an image with branch name "merge" for every PR
+    needs: test
+    if: success() && github.event_name != 'pull_request'
+ 
+    runs-on: ubuntu-22.04
+
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        lfs: true
+
+    - name: Checkout LFS objects
+      run: git lfs checkout
+
+    - name: Build the Docker image
+      # The metadata inside the image will include the final git commit SHA and the time of the final commit.
+      # The tag applied to the image will be like spyderisk/system-modeller:<branch-name>-<timestamp>
+      # e.g. spyderisk/system-modeller:dev-20230405T1012
+      # Where the timestamp is the time of the final commit in the build.
+      # In addition, the image is tagged with spyderisk/system-modeller:<branch-name>-latest
+      run: |
+        TAG_ROOT=spyderisk/system-modeller
+        TIMESTAMP=$(git show -s --format=%cI ${GITHUB_SHA})
+        SHORT_TIME=$(echo ${TIMESTAMP} | sed 's/[-:]//g')
+        REF_END=$(echo ${GITHUB_REF} | sed 's/.*\///')
+        TAG_DATE=${TAG_ROOT}:${REF_END}-${SHORT_TIME:0:13}
+        TAG_LATEST=${TAG_ROOT}:${REF_END}-latest
+        echo "TAG_DATE=${TAG_DATE}" >> ${GITHUB_ENV}
+        echo "TAG_LATEST=${TAG_LATEST}" >> ${GITHUB_ENV}
+        docker build --tag ${TAG_DATE} --tag ${TAG_LATEST} --build-arg CI_COMMIT_SHA=${GITHUB_SHA} --build-arg CI_COMMIT_TIMESTAMP=${TIMESTAMP} --file Dockerfile --target ssm-production "."
+
+    - name: Push Docker image to registry
+      run: | 
+        docker login -u ${{ vars.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_RW_SECRET }}
+        docker push ${TAG_DATE}
+        docker push ${TAG_LATEST}
+    
