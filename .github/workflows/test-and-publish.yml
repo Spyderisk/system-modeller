@@ -56,9 +56,10 @@ jobs:
   publish:
 
     # This job should only run if the test job succeeds
+    # Don't run this job if it's a pull request, otherwise we get an image with branch name "merge" for every PR
     needs: test
-    if: success()
-
+    if: success() && github.event_name != 'pull_request'
+ 
     runs-on: ubuntu-22.04
 
     steps:
