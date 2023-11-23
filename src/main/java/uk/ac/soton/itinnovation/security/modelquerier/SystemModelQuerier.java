@@ -2570,6 +2570,7 @@ public class SystemModelQuerier extends AModelQuerier {
 		(msID != null ? "		?ms core:hasID \"" + SparqlHelper.escapeLiteral(msID) + "\" .\n" : "") +
 		"		?ms core:locatedAt ?a .\n" +
 		"		?ms a core:MisbehaviourSet .\n" +
+		"		OPTIONAL { ?ms core:isNormalOpEffect ?isNormalOpEffect } \n" +
 		"	}\n" +
 		//the assetURI may be in the system or system-inf graph
 		"	{\n" +
@@ -2615,6 +2616,7 @@ public class SystemModelQuerier extends AModelQuerier {
 		"		OPTIONAL { ?m core:isVisible ?isVisible } \n" +
 		"	}\n" +
 		"	BIND(IF(BOUND(?isVisible),STR(?isVisible),\"true\") AS ?vis)\n" +
+		"	BIND(IF(BOUND(?isNormalOpEffect),STR(?isNormalOpEffect),\"false\") AS ?nop)\n" +
 		"}";
 	}
 
@@ -2726,9 +2728,12 @@ public class SystemModelQuerier extends AModelQuerier {
 			);
 			
 			//check for misbehaviour set visibility (via core#isVisible on the misbehaviour in domain model)
-			boolean visible = Boolean.valueOf(row.get("vis"));
-			//logger.debug("<{}> visible = {}", ms.getUri(), visible);
+			boolean visible = Boolean.parseBoolean(row.get("vis"));
 			ms.setVisible(visible);
+
+			//is MS a normal operation effect?
+			boolean nop = Boolean.parseBoolean(row.get("nop"));
+			ms.setNormalOpEffect(nop);
 			
 			if (row.containsKey("md") && row.get("md")!=null) {
 				ms.setDescription(row.get("md"));
