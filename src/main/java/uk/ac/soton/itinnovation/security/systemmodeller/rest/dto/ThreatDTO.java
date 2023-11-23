@@ -63,9 +63,6 @@ public class ThreatDTO extends SemanticEntityDTO {
 	//all misbehaviours that could possibly be caused by this threat
 	private final Set<String> misbehaviours;
 
-	//these are direct effects, as found to be caused by this threat through the secondary effect calculations
-	//private final Set<String> directEffects;
-
 	//these are all effects, including but not limited to direct effects
 	private final Set<String> indirectEffects;
 
@@ -90,7 +87,6 @@ public class ThreatDTO extends SemanticEntityDTO {
 	public ThreatDTO() {
 
 		misbehaviours = new HashSet<>();
-		//directEffects = new HashSet<>();
 		indirectEffects = new HashSet<>();
 		secondaryEffectConditions = new HashSet<>();
 		controlStrategies = new HashMap<>();
@@ -144,7 +140,6 @@ public class ThreatDTO extends SemanticEntityDTO {
 		this.resolved = threat.isResolved();
 		this.acceptanceJustification = threat.getAcceptanceJustification();
 		this.misbehaviours = threat.getMisbehaviours().keySet();
-		//this.directEffects = threat.getDirectEffects().keySet();
 		this.indirectEffects = threat.getIndirectEffects().keySet();
 		this.secondaryThreat = threat.isSecondaryThreat();
 		this.secondaryEffectConditions = threat.getSecondaryEffectConditions().keySet();
@@ -163,7 +158,6 @@ public class ThreatDTO extends SemanticEntityDTO {
 		setDescription(threat.getDescription());
 		
 		this.misbehaviours = new HashSet<>();
-		//this.directEffects = new HashSet<>();
 		this.indirectEffects = new HashSet<>();
 		this.secondaryThreat = false; //cannot be a secondary threat
 		this.secondaryEffectConditions = new HashSet<>();
@@ -209,10 +203,6 @@ public class ThreatDTO extends SemanticEntityDTO {
 			t += "\t- secondary effect conditions\n";
 			t = secondaryEffectConditions.stream().map(m -> "\t\t* " + m + "\n").reduce(t, String::concat);
 		}
-		//if (!directEffects.isEmpty()) {
-		//	t += "\t- direct effects\n";
-		//	t = directEffects.stream().map(m -> "\t\t* " + m + "\n").reduce(t, String::concat);
-		//}
 		if (!indirectEffects.isEmpty()) {
 			t += "\t- indirect effects\n";
 			t = indirectEffects.stream().map(m -> "\t\t* " + m + "\n").reduce(t, String::concat);
@@ -280,12 +270,6 @@ public class ThreatDTO extends SemanticEntityDTO {
 	public Set<String> getMisbehaviours() {
 		return misbehaviours;
 	}
-
-	/*
-	public Set<String> getDirectEffects() {
-		return directEffects;
-	}
-	*/
 
 	public Set<String> getIndirectEffects() {
 		return indirectEffects;

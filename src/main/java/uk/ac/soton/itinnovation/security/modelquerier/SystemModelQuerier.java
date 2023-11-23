@@ -1600,34 +1600,7 @@ public class SystemModelQuerier extends AModelQuerier {
 				throw new RuntimeException("Duplicate Threat with URI " + threatUri + " found.");
 			}
 		}
-		
-		/* KEM - this does not seem to be necessary, as causesDirectMisbehaviour triples are no longer created in the risk calculator
-		// ---- Get all direct misbehaviours ----
-		
-		query = String.format("SELECT DISTINCT * WHERE {\r\n" +
-				(threatURI != null ? "	BIND (<" + SparqlHelper.escapeURI(threatURI) + "> AS ?t) .\n" : "") +
-				"    GRAPH <%s> {\r\n" + 
-				(threatId != null ? "	?t core:hasID \"" + SparqlHelper.escapeLiteral(threatId) + "\" . \n" : "") +
-				"        ?t core:causesDirectMisbehaviour ?ms\r\n" + 
-				"    }\r\n" + 
-				"}", model.getGraph("system-inf"));
-		rows = store.translateSelectResult(store.querySelect(query, 
-				model.getGraph("system-inf")));
-		
-		for (Map<String, String> row : rows) {
-			String threatUri = row.get("t");
-			String effectUri = row.get("ms");
-			
-			MisbehaviourSet misbs = misbehaviourSets.get(effectUri);
-			if (misbs != null && threats.containsKey(threatUri)) {
-				if (threats.get(threatUri).getDirectEffects().put(effectUri, misbs) != null) {
-					throw new RuntimeException("Duplicate MisbehaviourSet with URI " + misbs.getUri() + 
-							 " associated with DirectEffect with URI " + effectUri + " for Threat with URI " + threatUri);
-				}
-			}
-		}
-		*/
-		
+				
 		// ----- Get indirect misbehaviours -----
 		
 		query = String.format("SELECT DISTINCT * WHERE {\r\n" +
