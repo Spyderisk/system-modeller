@@ -47,6 +47,8 @@ public class Threat extends AThreat {
 	//Flag to indicate if secondary threat, otherwise primary
 	private boolean secondaryThreat;
 
+	private boolean normalOperation;
+
 	private final Map<String, MisbehaviourSet> secondaryEffectConditions;
 
 	private final Map<String, TrustworthinessAttributeSet> entryPoints;
@@ -169,6 +171,14 @@ public class Threat extends AThreat {
 
 	public Map<String, MisbehaviourSet> getSecondaryEffectConditions() {
 		return secondaryEffectConditions;
+	}
+
+	public boolean isNormalOperation() {
+		return normalOperation;
+	}
+
+	public void setNormalOperation(boolean normalOperation) {
+		this.normalOperation = normalOperation;
 	}
 
 	public Map<String, TrustworthinessAttributeSet> getEntryPoints() {

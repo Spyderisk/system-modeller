@@ -1538,6 +1538,8 @@ public class SystemModelQuerier extends AModelQuerier {
 				"		?t core:parent ?genThreat .\r\n" + 
 				"		OPTIONAL { ?t core:isSecondaryThreat ?isSecondaryThreat }\r\n" + 
 				"		BIND(IF(BOUND(?isSecondaryThreat),STR(?isSecondaryThreat),\"false\") AS ?isST)\n" +
+				"		OPTIONAL { ?t core:isNormalOp ?isNormalOp }\r\n" + 
+				"		BIND(IF(BOUND(?isNormalOp),STR(?isNormalOp),\"false\") AS ?isNO)\n" +
 				(threatId != null ? "	?t core:hasID \"" + SparqlHelper.escapeLiteral(threatId) + "\" . \n" : "") +
 				"		?t core:threatens ?a .\r\n" + 
 				"		?t core:appliesTo ?matchingPattern .\r\n" + 
@@ -1574,7 +1576,10 @@ public class SystemModelQuerier extends AModelQuerier {
 			}
 
 			//is threat a secondary threat (otherwise primary)
-			boolean secondaryThreat = Boolean.valueOf(row.get("isST"));
+			boolean secondaryThreat = Boolean.parseBoolean(row.get("isST"));
+
+			//is threat a normal operation
+			boolean normalOperation = Boolean.parseBoolean(row.get("isNO"));
 
 			Threat threat = new Threat(threatUri,
 					row.get("l"),
@@ -1585,6 +1590,8 @@ public class SystemModelQuerier extends AModelQuerier {
 					secondaryThreat,
 					null, 
 					new HashMap<>(), new HashMap<>(), new HashMap<>());
+
+			threat.setNormalOperation(normalOperation);
 
 			//is threat a root cause of a misbehaviour set?
 			threat.setRootCause(Boolean.valueOf(row.get("isRC")));

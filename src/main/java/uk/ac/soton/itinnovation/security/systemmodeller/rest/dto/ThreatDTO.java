@@ -72,6 +72,8 @@ public class ThreatDTO extends SemanticEntityDTO {
 	//Flag to indicate if secondary threat, otherwise primary
 	private boolean secondaryThreat;
 
+	private boolean normalOperation;
+
 	private final Set<String> secondaryEffectConditions;
 
 	//Map of control strategies to their type
@@ -146,6 +148,7 @@ public class ThreatDTO extends SemanticEntityDTO {
 		this.indirectEffects = threat.getIndirectEffects().keySet();
 		this.secondaryThreat = threat.isSecondaryThreat();
 		this.secondaryEffectConditions = threat.getSecondaryEffectConditions().keySet();
+		this.normalOperation = threat.isNormalOperation();
 		this.controlStrategies = new HashMap<>();
 		extractControlStrategiesMap(threat.getControlStrategies());
 		this.entryPoints = threat.getEntryPoints().keySet();
@@ -164,6 +167,7 @@ public class ThreatDTO extends SemanticEntityDTO {
 		this.indirectEffects = new HashSet<>();
 		this.secondaryThreat = false; //cannot be a secondary threat
 		this.secondaryEffectConditions = new HashSet<>();
+		this.normalOperation = false; //cannot be a normal operation
 		this.entryPoints = new HashSet<>();
 
 		this.pattern = threat.getPattern();
@@ -297,6 +301,14 @@ public class ThreatDTO extends SemanticEntityDTO {
 
 	public Set<String> getSecondaryEffectConditions() {
 		return secondaryEffectConditions;
+	}
+
+	public boolean isNormalOperation() {
+		return normalOperation;
+	}
+
+	public void setNormalOperation(boolean normalOperation) {
+		this.normalOperation = normalOperation;
 	}
 
 	public Map<String, ControlStrategyType> getControlStrategies() {
