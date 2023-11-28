@@ -32,6 +32,7 @@ import java.util.HashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.AdditionalPropertyDTO;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.AssetDTO;
@@ -62,32 +63,34 @@ import com.bpodgursky.jbool_expressions.rules.RuleSet;
 import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
 import uk.ac.soton.itinnovation.security.modelvalidator.RiskCalculator;
 
+@Component
 public class RecommendationsAlgorithm {
+
     private static final Logger logger = LoggerFactory.getLogger(RecommendationsAlgorithm.class);
 
     private AttackPathDataset apd;
     private IQuerierDB querier;
-    private AttackTree threatTree;
     private String modelId;
     private int recCounter = 0;
     private RecommendationReportDTO report;
+    private String riskMode = "FUTURE";
 
     @Autowired
     private ModelObjectsHelper modelObjectsHelper;
 
-    public RecommendationsAlgorithm(IQuerierDB querier, String modelId) {
-
+    public RecommendationsAlgorithm(IQuerierDB querier, String modelId, String mode) {
         this.querier = querier;
         this.modelId = modelId;
-
+        this.riskMode = mode;
         this.report = new RecommendationReportDTO();
 
+        initializeAttackPathDataset();
+    }
+
+    private void initializeAttackPathDataset() {
         final long startTime = System.currentTimeMillis();
+        logger.debug("STARTING recommendations algorithm ...");
 
-        logger.debug("STARTING recommendations algortithm ...");
-
-        // TODO might have to delay initialisation of the dataset until risk
-        // mode is checked.
         apd = new AttackPathDataset(querier);
 
         List<String> msList = apd.filterMisbehaviours();
@@ -96,7 +99,6 @@ public class RecommendationsAlgorithm {
         final long endTime = System.currentTimeMillis();
         logger.info("RecommendationsAlgorithm.RecommendationsAlgorithm(IQuerierDB querier): execution time {} ms",
                 endTime - startTime);
-
     }
 
     public boolean checkRiskCalculationMode(String input) {
@@ -134,29 +136,33 @@ public class RecommendationsAlgorithm {
         return retVal;
     }
 
-    public AttackTree calculateAttackTree(List<String> targetUris, String riskCalculationMode, boolean allPaths,
-            boolean normalOperations) throws RuntimeException {
+    public AttackTree calcAttackTree() {
+        List<String> targetMSUris = apd.filterMisbehaviours();
+        logger.info("TARGET MS: {}", targetMSUris);
 
+        return calculateAttackTree(targetMSUris, riskMode, true, true);
+    }
+
+    public AttackTree calculateAttackTree(List<String> targetUris, String riskCalculationMode, boolean allPaths,
+                                        boolean normalOperations) throws RuntimeException {
         logger.debug("calculate attack tree with isFUTURE: {}, allPaths: {}, normalOperations: {}", riskCalculationMode,
                 allPaths, normalOperations);
         logger.debug("target URIs: {}", targetUris);
 
         checkRequestedRiskCalculationMode(riskCalculationMode);
-                boolean isFutureRisk = apd.isFutureRisk(riskCalculationMode);
 
+        return calculateAttackTreeInternal(targetUris, riskCalculationMode, !allPaths);
+    }
+
+    private AttackTree calculateAttackTreeInternal(List<String> targetUris, String riskCalculationMode, boolean singlePath)
+            throws RuntimeException {
+        boolean isFutureRisk = apd.isFutureRisk(riskCalculationMode);
         AttackTree attackTree = null;
 
         try {
             final long startTime = System.currentTimeMillis();
-
-            // calculate attack tree, allPath dictates one or two backtrace
-            // runs which is represented in AttackTree as boolean shortestPath
-            attackTree = new AttackTree(targetUris, isFutureRisk, !allPaths, apd);
-
+            attackTree = new AttackTree(targetUris, isFutureRisk, singlePath, apd);
             attackTree.stats();
-
-            //attackTree.logicalExpressions();
-
             final long endTime = System.currentTimeMillis();
             logger.info("AttackPathAlgorithm.calculateAttackTree: execution time {} ms", endTime - startTime);
 
@@ -221,36 +227,14 @@ public class RecommendationsAlgorithm {
             apd.applyCS(csSet, true);
 
             // Re-calculate risk now and create a recommendation
+            RiskVector riskResponse = null;
             try {
-                RiskVector riskResponse = apd.calculateRisk(this.modelId);
+                riskResponse = apd.calculateRisk(this.modelId);
                 logger.debug("RiskResponse: {}", riskResponse);
+                logger.debug("Overall risk: {}", riskResponse.getOverall());
                 StateDTO state = apd.getState();
 
-                // populate recommendation object
-                RecommendationDTO recommendation = new RecommendationDTO();
-                recommendation.setIdentifier(this.recCounter++);
-                recommendation.setCategory("unknown");
-
-                List<ControlStrategyDTO> recCSGList = new ArrayList<>();
-                for (String csgUri : csgList) {
-                    ControlStrategyDTO csgDto = new ControlStrategyDTO();
-                    csgDto.setUri(csgUri);
-                    csgDto.setDescription(apd.getCSGDescription(csgUri));
-                    recCSGList.add(csgDto);
-                }
-                recommendation.setControlStrategies(recCSGList);
-
-                List<ControlDTO> recControlList = new ArrayList<>();
-                for (String ctrlUri : csSet) {
-                    ControlDTO ctrl = new ControlDTO();
-                    ctrl.setUri(ctrlUri);
-                    recControlList.add(ctrl);
-                }
-                recommendation.setControls(recControlList);
-
-                recommendation.setState(state);
-
-                logger.debug("RECOMMENDATION: {}", recommendation);
+                RecommendationDTO recommendation = createRecommendation(csgList, csSet, state);
 
                 if (this.report.getRecommendations() == null) {
                     report.setRecommendations(new ArrayList<>());
@@ -265,19 +249,58 @@ public class RecommendationsAlgorithm {
             }
 
             // check if risk has improved or teminate loop
-            // logger.info("Termination condition");
+            logger.debug("check for termination condition ({})", recCounter);
+            if ((riskResponse != null) & (apd.compareOverallRisk(riskResponse.getOverall()))) {
+                logger.info("Termination condition");
+            } else {
+                logger.info("Recalculating threat tree ...");
+                AttackTree tt = calcAttackTree();
+                LogicalExpression nle = tt.attackMitigationCSG();
+                this.applyCSGs(nle, childNode);
+            }
 
             // undo CS changes in CS_set
             logger.debug("undo CS set");
             apd.applyCS(csSet, false);
         }
 
+        logger.debug("return from iteration");
+
         return myNode;
     }
 
-    public void recommendations(List<String> targetUris, String riskCalculationMode, boolean allPaths,
-            boolean normalOperations) throws RuntimeException {
-        logger.debug("Recommendations core part");
+    private RecommendationDTO createRecommendation(List<String> csgList, Set<String> csSet, StateDTO state) {
+        RecommendationDTO recommendation = new RecommendationDTO();
+        recommendation.setIdentifier(this.recCounter++);
+        recommendation.setCategory("unknown");
+
+        List<ControlStrategyDTO> recCSGList = new ArrayList<>();
+        for (String csgUri : csgList) {
+            ControlStrategyDTO csgDto = new ControlStrategyDTO();
+            csgDto.setUri(csgUri);
+            csgDto.setDescription(apd.getCSGDescription(csgUri));
+            recCSGList.add(csgDto);
+        }
+        recommendation.setControlStrategies(recCSGList);
+
+        List<ControlDTO> recControlList = new ArrayList<>();
+        for (String ctrlUri : csSet) {
+            ControlDTO ctrl = new ControlDTO();
+            ctrl.setUri(ctrlUri);
+            recControlList.add(ctrl);
+        }
+        recommendation.setControls(recControlList);
+
+        recommendation.setState(state);
+
+        logger.debug("RECOMMENDATION: {}", recommendation);
+
+        return recommendation;
+    }
+
+    public void recommendations(boolean allPaths, boolean normalOperations) throws RuntimeException {
+
+        logger.debug("Recommendations core part (risk mode: {})", riskMode);
         try {
 
             // get initial risk state
@@ -288,9 +311,8 @@ public class RecommendationsAlgorithm {
             state.setRisk(riskResponse.toString());
             report.setCurrent(state);
 
-            // calculate threat tree
-            threatTree = calculateAttackTree(targetUris,
-                    riskCalculationMode, allPaths, normalOperations);
+            //AttackTree threatTree = calculateAttackTree(targetUris, riskCalculationMode, allPaths, normalOperations);
+            AttackTree threatTree = calcAttackTree();
 
             // step: attackMitigationCSG?
             LogicalExpression attackMitigationCSG = threatTree.attackMitigationCSG();
@@ -309,6 +331,23 @@ public class RecommendationsAlgorithm {
     public void listMS() {
         List<String> msList = apd.filterMisbehaviours();
         logger.debug("TOP MS LIST: {}", msList);
+    }
+
+    public void changeCS() {
+        // change all CS to
+        logger.debug("Change CS test");
+        RiskVector riskResponse = apd.calculateRisk(this.modelId);
+
+        apd.applyCS(apd.getAllCS(), true);
+
+        RiskVector riskResponseAfter = apd.calculateRisk(this.modelId);
+
+        logger.debug("Initial Risk Vector: {}", riskResponse);
+        logger.debug("Latter Risk Vector : {}", riskResponseAfter);
+
+        logger.debug("Test RV {}", (riskResponse == riskResponseAfter));
+        logger.debug("Test RV {}", riskResponse.compareTo(riskResponseAfter));
+
     }
 }
 

@@ -76,7 +76,7 @@ public class RiskVector implements Comparable<RiskVector> {
 		return sb.toString();
 	}
 
-    public String overall() {
+    public String getOverall() {
         int overall = 0;
         String label = "";
         for (Map.Entry<String, RiskLevelCount> entry : riskVector.entrySet()) {

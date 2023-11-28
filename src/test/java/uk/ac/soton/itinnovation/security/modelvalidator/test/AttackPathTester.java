@@ -94,13 +94,23 @@ public class AttackPathTester extends TestCase {
                 "http://it-innovation.soton.ac.uk/system/63d9308f8f6a206408be9010");
         */
 
-        tester.addDomain(0, "modelvalidator/AttackPath/domain-network-6a3-2-3.nq.gz",
+        //tester.addDomain(0, "modelvalidator/AttackPath/domain-network-6a3-2-3.nq.gz",
+        tester.addDomain(0, "modelvalidator/AttackPath/domain.nq",
                 "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
 
-		tester.addSystem(1, "modelvalidator/AttackPath/FP_UC2_v6b-1019-Level_2-CURRENT_2023-11-21T1004.nq.gz",
+        tester.addDomain(0, "modelvalidator/AttackPath/DataFlow_Test-Singles-Some_CS-asserted_2023-11-28T11_54.nq.gz",
+                "http://it-innovation.soton.ac.uk/system/63d9308f8f6a206408be9010");
+
+		//tester.addSystem(0, "modelvalidator/AttackPath/FP_UC2_v6b-1019-Level_2-CURRENT_2023-11-21T1004.nq.gz",
+        //        "http://it-innovation.soton.ac.uk/system/634fbe62d3733e1bc2fae417");
+
+        /*
+		tester.addSystem(0, "modelvalidator/AttackPath/FP_UC2_v6b-1019-Level_2-CURRENT_2023-11-21T1004.nq.gz",
                 "http://it-innovation.soton.ac.uk/system/634fbe62d3733e1bc2fae417");
-		tester.addSystem(0, "modelvalidator/AttackPath/Steel_Mill_no_FWBlocks.nq.gz",
+		//tester.addSystem(0, "modelvalidator/AttackPath/Steel_Mill_2_blocks.nq.gz",
+		tester.addSystem(1, "modelvalidator/AttackPath/steelmill.nq.gz",
                 "http://it-innovation.soton.ac.uk/system/64dc9b524ccc6e0b7ca67da");
+        */
 
 		tester.setUp();
 
@@ -185,6 +195,7 @@ public class AttackPathTester extends TestCase {
 			logger.info("Calculating risks and generating attack graph");
 			RiskCalculator rc = new RiskCalculator(querierDB);
 			rc.calculateRiskLevels(RiskCalculationMode.FUTURE, true, new Progress(tester.getGraph("system"))); //save results, as queried below
+			//rc.calculateRiskLevels(RiskCalculationMode.CURRENT, true, new Progress(tester.getGraph("system"))); //save results, as queried below
             //RiskCalcResultsDB results = rc.getRiskCalcResults();
             //logger.debug("RiskResutlst: {}", results);
 		} catch (Exception e) {
@@ -196,24 +207,23 @@ public class AttackPathTester extends TestCase {
 		try {
 			logger.info("Gathering datasets for recommendations");
 
-			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(querierDB, tester.getGraph("system"));
+			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(querierDB, tester.getGraph("system"), "FUTURE");
 
             reca.listMS();
             //MS LIST from FP model: [system#MS-PhysicalShutdown-a0806d46, system#MS-LossOfReliability-a0806d46]
 
-			List<String> targetUris = new ArrayList<>();
+			//List<String> targetUris = new ArrayList<>();
 			//targetUris.add("system#MS-LossOfAuthenticity-7aca3a77");
 			// -> targetUris.add("system#MS-LossOfAuthenticity-a40e98cc");
             //targetUris.add("system#MS-LossOfConfidentiality-a40e98cc");
 
             // target MS from FP model
-            targetUris.add("system#MS-LossOfReliability-a0806d46");
+            //targetUris.add("system#MS-LossOfReliability-a0806d46");
 
-			Assert.assertTrue(reca.checkTargetUris(targetUris));
 
 			reca.checkRequestedRiskCalculationMode("FUTURE");
 
-			reca.recommendations(targetUris, "FUTURE", false, false);
+			reca.recommendations(false, false);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -254,4 +264,54 @@ public class AttackPathTester extends TestCase {
 		}
 	}
     */
+
+    @Test
+	public void testCS() {
+		logger.info("Switching to selected domain and system model test cases");
+		tester.switchModels(0, 0);
+
+		logger.info("Creating a querierDB object ");
+		IQuerierDB querierDB = new JenaQuerierDB(dataset, tester.getModel(), true);
+		querierDB.init();
+
+		querierDB.initForValidation();
+
+        try {
+            logger.info("Validating the model - ensures no dependence on bugs in older SSM validators");
+            Validator validator = new Validator(querierDB);
+            validator.validate(new Progress(tester.getGraph("system")));
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception thrown by validator preparing attack path test case");
+            return;
+		}
+
+        try {
+			logger.info("Calculating risks and generating attack graph");
+			RiskCalculator rc = new RiskCalculator(querierDB);
+			rc.calculateRiskLevels(RiskCalculationMode.FUTURE, true, new Progress(tester.getGraph("system"))); //save results, as queried below
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception thrown by risk level calculator");
+			return;
+		}
+
+
+		try {
+			logger.info("Gathering datasets for testing CS changes");
+
+			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(querierDB, tester.getGraph("system"), "FUTURE");
+
+            reca.listMS();
+            reca.changeCS();
+
+            reca.listMS();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception thrown by attack path recommendations");
+			return;
+		}
+	}
+
 }

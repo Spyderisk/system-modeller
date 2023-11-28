@@ -1424,7 +1424,7 @@ public class ModelController {
 
             logger.info("Calculating Recommendations");
 
-			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(querierDB, mId);
+			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(querierDB, mId, riskMode);
 
             if (!reca.checkRiskCalculationMode(riskMode)) {
                 logger.error("mismatch in risk calculation mode found");

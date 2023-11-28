@@ -732,6 +732,13 @@ public class AttackPathDataset {
         return rv;
     }
 
+    public boolean compareOverallRisk(String overall) {
+        int level = riLevels.get(overall).getLevelValue();
+        int threshold = riLevels.get("domain#RiskLevelMedium").getLevelValue();
+        logger.debug("OVERALL COMPARE: {} vs {}", level, threshold);
+        return  level >= threshold;
+    }
+
     public StateDTO getState() {
         // state is risk + list of consequences
 
@@ -768,7 +775,7 @@ public class AttackPathDataset {
         }
 
         RiskVector rv = new RiskVector(riskLevels, riskVector);
-        logger.debug("OVERALL: {}", rv.overall());
+        logger.debug("OVERALL: {}", rv.getOverall());
 
         StateDTO state = new StateDTO();
         state.setRisk(riskVector.toString());
@@ -777,5 +784,13 @@ public class AttackPathDataset {
 
         return state;
 
+    }
+
+    public Set<String> getAllCS() {
+        Set<String> css = new HashSet<>();
+        for(ControlSetDB cs : controlSets.values()){
+            css.add(cs.getUri());
+        }
+        return css;
     }
 }
