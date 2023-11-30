@@ -461,8 +461,8 @@ public class AttackPathDataset {
      * @param csgUri
      * @return
      */
-    public List<String> getCsgInactiveControlSets(String csgUri) throws RuntimeException {
-
+    public List<String> getCsgInactiveControlSets1(String csgUri) throws RuntimeException {
+        // check both mandatory amd optional
         try {
             List<String> csList = new ArrayList<>();
             for (String csUri : this.controlStrategies.get(csgUri).getMandatoryCS()) {
@@ -473,10 +473,36 @@ public class AttackPathDataset {
                     }
                 }
             }
-            return csList;
+            for (String csUri : this.controlStrategies.get(csgUri).getOptionalCS()) {
+                // TODO needs revisiting, CS object should be accessed directly
+                for (ControlSetDB cs : controlSets.values()) {
+                    if (cs.getUri().equals(csUri) && (!cs.isProposed())) {
+                        csList.add(csUri);
+                    }
+                }
+            }return csList;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public List<String> getCsgInactiveControlSets(String csgUri) {
+        try {
+            return controlSets.values().stream()
+                    .filter(cs -> !cs.isProposed() && (isMandatoryCS(csgUri, cs) || isOptionalCS(csgUri, cs)))
+                    .map(ControlSetDB::getUri)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private boolean isMandatoryCS(String csgUri, ControlSetDB cs) {
+        return controlStrategies.get(csgUri).getMandatoryCS().contains(cs.getUri());
+    }
+
+    private boolean isOptionalCS(String csgUri, ControlSetDB cs) {
+        return controlStrategies.get(csgUri).getOptionalCS().contains(cs.getUri());
     }
 
     /**
@@ -732,7 +758,7 @@ public class AttackPathDataset {
         return rv;
     }
 
-    public boolean compareOverallRisk(String overall) {
+    public boolean compareOverallRiskToMedium(String overall) {
         int level = riLevels.get(overall).getLevelValue();
         int threshold = riLevels.get("domain#RiskLevelMedium").getLevelValue();
         logger.debug("OVERALL COMPARE: {} vs {}", level, threshold);

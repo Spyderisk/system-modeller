@@ -98,7 +98,7 @@ public class AttackPathTester extends TestCase {
         tester.addDomain(0, "modelvalidator/AttackPath/domain.nq",
                 "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
 
-        tester.addDomain(0, "modelvalidator/AttackPath/DataFlow_Test-Singles-Some_CS-asserted_2023-11-28T11_54.nq.gz",
+        tester.addSystem(0, "modelvalidator/AttackPath/DataFlow_Test-Singles-Some_CS-asserted_2023-11-28T11_54.nq.gz",
                 "http://it-innovation.soton.ac.uk/system/63d9308f8f6a206408be9010");
 
 		//tester.addSystem(0, "modelvalidator/AttackPath/FP_UC2_v6b-1019-Level_2-CURRENT_2023-11-21T1004.nq.gz",
@@ -179,7 +179,6 @@ public class AttackPathTester extends TestCase {
 
 		querierDB.initForValidation();
 
-        /*
         try {
             logger.info("Validating the model - ensures no dependence on bugs in older SSM validators");
             Validator validator = new Validator(querierDB);
@@ -189,7 +188,6 @@ public class AttackPathTester extends TestCase {
             fail("Exception thrown by validator preparing attack path test case");
             return;
 		}
-        */
 
         try {
 			logger.info("Calculating risks and generating attack graph");

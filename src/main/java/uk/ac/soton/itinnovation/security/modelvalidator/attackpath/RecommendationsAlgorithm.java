@@ -75,6 +75,9 @@ public class RecommendationsAlgorithm {
     private RecommendationReportDTO report;
     private String riskMode = "FUTURE";
 
+    private List<String> nodes = new ArrayList<>();
+    private List<String> links = new ArrayList<>();
+
     @Autowired
     private ModelObjectsHelper modelObjectsHelper;
 
@@ -197,18 +200,25 @@ public class RecommendationsAlgorithm {
 
         // convert from CSG logical expression to list of CSG options
         List<Expression> csgOptions = le.getListFromOr();
-        logger.debug("list of options: {}", csgOptions.size());
-
+        logger.debug("list of OR CSG options: {}", csgOptions.size());
         for (Expression csgOption : csgOptions) {
-            logger.debug("examining CSG option {}", csgOption.getClass().getName());
+            logger.debug("└──> {}", csgOption);
+        }
+
+        // examine CSG options
+        for (Expression csgOption : csgOptions) {
+            logger.debug("examining CSG LE option: {}", csgOption);
+            logger.debug("CSG LE option type: {}", csgOption.getClass().getName());
 
             List<Variable> options = le.getListFromAnd(csgOption);
 
             List<String> csgList = new ArrayList<>();
+
             for (Variable va : options) {
                 logger.debug("variable -> {}, {}", va, va.getClass().getName());
                 csgList.add(va.toString());
             }
+            logger.debug("LE csgList: {}", csgList);
 
             CSGNode childNode = new CSGNode(csgList);
             myNode.addChild(childNode);
@@ -219,11 +229,12 @@ public class RecommendationsAlgorithm {
                     csSet.add(cs);
                 }
             }
-            logger.debug("CS set for CSG_option {}", csgOption);
-            logger.debug(" CS set: {}", csSet);
+            logger.debug("CS set for LE CSG_option {}", csgOption);
+            logger.debug("└──> {}", csSet);
 
             // apply all CS in the CS_set
             // TODO: I need to keep track of CS changes or roll them back later
+            // csSet is used for that.
             apd.applyCS(csSet, true);
 
             // Re-calculate risk now and create a recommendation
@@ -239,21 +250,24 @@ public class RecommendationsAlgorithm {
                 if (this.report.getRecommendations() == null) {
                     report.setRecommendations(new ArrayList<>());
                 }
-                report.getRecommendations().add(recommendation);
+                childNode.setRecommendation(recommendation);
 
             } catch (Exception e) {
                 logger.warn("failed to get risk calculation, restore model");
                 // restore model ...
                 // TODO: restore model controls
+                logger.debug("undo CS set");
+                apd.applyCS(csSet, false);
                 // raise exception since failed to run risk calculation
+                throw new RuntimeException(e);
             }
 
             // check if risk has improved or teminate loop
             logger.debug("check for termination condition ({})", recCounter);
-            if ((riskResponse != null) & (apd.compareOverallRisk(riskResponse.getOverall()))) {
+            if ((riskResponse != null) & (apd.compareOverallRiskToMedium(riskResponse.getOverall()))) {
                 logger.info("Termination condition");
             } else {
-                logger.info("Recalculating threat tree ...");
+                logger.info("Recalculate threat tree ...");
                 AttackTree tt = calcAttackTree();
                 LogicalExpression nle = tt.attackMitigationCSG();
                 this.applyCSGs(nle, childNode);
@@ -298,6 +312,47 @@ public class RecommendationsAlgorithm {
         return recommendation;
     }
 
+    private void makeRecommendations(CSGNode node) {
+        List<CSGNode> path = new ArrayList<CSGNode>();
+        makeRecommendations(node, path);
+    }
+
+    private void makeRecommendations(CSGNode node, List<CSGNode> path) {
+        // This method should not run more risk calculations, instead it will
+        // try to use recommendations stored in nodes
+        String rootCsgList = "";
+        if (node.getCsgList().isEmpty()) {
+            rootCsgList = "root";
+        } else {
+            rootCsgList = String.join(", ", node.getCsgList());
+        }
+        nodes.add(rootCsgList);
+
+        logger.debug("MAKE RECOMMENDATIONS TREE: {}", node.getCsgList());
+
+        path.add(node);
+
+        if (!node.getChildren().isEmpty()) {
+            for(CSGNode child : node.getChildren()) {
+                links.add(String.join(", ", child.getCsgList()));
+                makeRecommendations(child, path);
+            }
+        } else {
+            List<String> csgList = new ArrayList<>();
+            for (CSGNode p : path) {
+                for (String i : p.getCsgList()) {
+                    csgList.add(i);
+                }
+            }
+            logger.debug("adding cached path recommendation {}", node.getRecommendation());
+            // add cached recommendation
+            // TODO add copy of recommendation
+            if (node.getRecommendation() != null) {
+                report.getRecommendations().add(node.getRecommendation());
+            }
+        }
+    }
+
     public void recommendations(boolean allPaths, boolean normalOperations) throws RuntimeException {
 
         logger.debug("Recommendations core part (risk mode: {})", riskMode);
@@ -321,8 +376,10 @@ public class RecommendationsAlgorithm {
             CSGNode rootNode = applyCSGs(attackMitigationCSG, new CSGNode());
 
             // step: makeRecommendations on rootNode?
+            makeRecommendations(rootNode);
 
-            //logger.debug("REPORT has: {} recommendations", report.getRecommendations().size());
+            logger.debug("RECOMMENDATIONS REPORT: {}", report);
+            logger.debug("REPORT has: {} recommendations", report.getRecommendations().size());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

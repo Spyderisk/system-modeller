@@ -27,11 +27,13 @@ package uk.ac.soton.itinnovation.security.modelvalidator.attackpath;
 import java.util.ArrayList;
 import java.util.List;
 
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationDTO;
+
 public class CSGNode {
     //private List<CSGNode> csgList;
     private List<String> csgList;
     private List<CSGNode> children;
-    private CSGNode recommendation;
+    private RecommendationDTO recommendation;
 
     public CSGNode() {
         this(new ArrayList<>());
@@ -49,5 +51,21 @@ public class CSGNode {
 
     public void addChild(CSGNode child) {
         children.add(child);
+    }
+
+    public List<String> getCsgList() {
+        return this.csgList;
+    }
+
+    public List<CSGNode> getChildren() {
+        return this.children;
+    }
+
+    public RecommendationDTO getRecommendation() {
+        return this.recommendation;
+    }
+
+    public void setRecommendation(RecommendationDTO rec) {
+        this.recommendation = rec;
     }
 }
