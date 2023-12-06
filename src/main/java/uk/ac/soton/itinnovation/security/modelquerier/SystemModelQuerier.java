@@ -1533,28 +1533,28 @@ public class SystemModelQuerier extends AModelQuerier {
 		// ----- Get threats -----
 		
 		String query = String.format("SELECT DISTINCT * WHERE {\r\n" + 
-				(threatURI != null ? "	BIND (<" + SparqlHelper.escapeURI(threatURI) + "> AS ?t) .\n" : "") +
-				"	GRAPH <%s> {\r\n" + 
-				"		?t core:parent ?genThreat .\r\n" + 
-				"		OPTIONAL { ?t core:isSecondaryThreat ?isSecondaryThreat }\r\n" + 
-				"		BIND(IF(BOUND(?isSecondaryThreat),STR(?isSecondaryThreat),\"false\") AS ?isST)\n" +
-				"		OPTIONAL { ?t core:isNormalOp ?isNormalOp }\r\n" + 
-				"		BIND(IF(BOUND(?isNormalOp),STR(?isNormalOp),\"false\") AS ?isNO)\n" +
-				(threatId != null ? "	?t core:hasID \"" + SparqlHelper.escapeLiteral(threatId) + "\" . \n" : "") +
-				"		?t core:threatens ?a .\r\n" + 
-				"		?t core:appliesTo ?matchingPattern .\r\n" + 
-				"		OPTIONAL { ?t rdfs:comment ?tDesc }\r\n" + 
-				"		OPTIONAL { ?t rdfs:label ?l }\r\n" + 
-				"		OPTIONAL { ?t core:isRootCause ?isRootCause }\r\n" + 
-				"		BIND(IF(BOUND(?isRootCause),STR(?isRootCause),\"false\") AS ?isRC)\n" +
-				"	}\r\n" +
-				(assetURI != null ? "	FILTER (?a=<" + SparqlHelper.escapeURI(assetURI) + ">) .\n" : "") +
-				"	GRAPH <%s> {\r\n" + 
-				"		?genThreat a ?threat .\r\n" + 
-				"		?threat rdfs:subClassOf* core:Threat .\r\n" + 
-				"		OPTIONAL { ?genThreat rdfs:label ?gtl }\r\n" + 
-				"		OPTIONAL { ?genThreat rdfs:comment ?genDesc }\r\n" + 
-				"	}" +
+				(threatURI != null ? "    BIND (<" + SparqlHelper.escapeURI(threatURI) + "> AS ?t) .\n" : "") +
+				"    GRAPH <%s> {\r\n" + 
+				"        ?t core:parent ?genThreat .\r\n" + 
+				"        OPTIONAL { ?t core:isSecondaryThreat ?isSecondaryThreat }\r\n" + 
+				"        BIND(IF(BOUND(?isSecondaryThreat),STR(?isSecondaryThreat),\"false\") AS ?isST)\n" +
+				"        OPTIONAL { ?t core:isNormalOp ?isNormalOp }\r\n" + 
+				"        BIND(IF(BOUND(?isNormalOp),STR(?isNormalOp),\"false\") AS ?isNO)\n" +
+				(threatId != null ? "    ?t core:hasID \"" + SparqlHelper.escapeLiteral(threatId) + "\" . \n" : "") +
+				"        ?t core:threatens ?a .\r\n" + 
+				"        ?t core:appliesTo ?matchingPattern .\r\n" + 
+				"        OPTIONAL { ?t rdfs:comment ?tDesc }\r\n" + 
+				"        OPTIONAL { ?t rdfs:label ?l }\r\n" + 
+				"        OPTIONAL { ?t core:isRootCause ?isRootCause }\r\n" + 
+				"        BIND(IF(BOUND(?isRootCause),STR(?isRootCause),\"false\") AS ?isRC)\n" +
+				"    }\r\n" +
+				(assetURI != null ? "    FILTER (?a=<" + SparqlHelper.escapeURI(assetURI) + ">) .\n" : "") +
+				"    GRAPH <%s> {\r\n" + 
+				"        ?genThreat a ?threat .\r\n" + 
+				"        ?threat rdfs:subClassOf* core:Threat .\r\n" + 
+				"        OPTIONAL { ?genThreat rdfs:label ?gtl }\r\n" + 
+				"        OPTIONAL { ?genThreat rdfs:comment ?genDesc }\r\n" + 
+				"    }" +
 				"}", model.getGraph("system-inf"), 
 				model.getGraph("domain"));
 		List<Map<String, String>> rows = store.translateSelectResult(store.querySelect(query,
