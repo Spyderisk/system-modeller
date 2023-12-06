@@ -1,13 +1,11 @@
 import React from "react";
 import PropTypes from 'prop-types';
-import {FormControl} from 'react-bootstrap';
-import {updateTwasOnAsset, getRootCauses, revertAssertedTwasOnAsset} from "../../../../../actions/ModellerActions";
-//import {getRenderedLevelText, getLevelColour} from "../../../../util/Levels";
+import {Form, FormGroup, Checkbox} from 'react-bootstrap';
+import {updateTwasOnAsset, getRootCauses, revertAssertedTwasOnAsset, toggleFilter} from "../../../../../actions/ModellerActions";
 
 class TrustworthinessPanel extends React.Component {
 
     constructor(props) {
-        //console.log("constructor");
         super(props);
 
         this.getUpdatedState = this.getUpdatedState.bind(this);
@@ -16,11 +14,9 @@ class TrustworthinessPanel extends React.Component {
         this.openMisbehaviourExplorer = this.openMisbehaviourExplorer.bind(this);
 
         this.state = this.getUpdatedState(props);;
-        //console.log("constructor: this.state", this.state);
     }
     
     getUpdatedState(props) {
-        //console.log("getUpdatedState: ", props);
         let asset = props.asset;
 
         if (asset === undefined)
@@ -33,7 +29,6 @@ class TrustworthinessPanel extends React.Component {
         let twasArr = props.twas.sort(function (a, b) {
             return (a.attribute.label < b.attribute.label) ? -1 : (a.attribute.label > b.attribute.label) ? 1 : 0;
         });
-        //console.log("twasArr", twasArr);
 
         let attributes = [];
         let updating = {};
@@ -64,19 +59,16 @@ class TrustworthinessPanel extends React.Component {
             twas: twas
         };
         
-        //console.log("updatedState:", updatedState);
         return updatedState;
     }
        
     //N.B. this method is deprecated, so code will need to be refactored to use preferred methods!
     componentWillReceiveProps(nextProps) {
-        //console.log("componentWillReceiveProps: ", nextProps);
         let updatedState = this.getUpdatedState(nextProps);
         this.setState(updatedState);
     }
     
     render() {
-        //console.log("render: this.state", this.state);
         let asset = this.props.asset;
 
         return (
@@ -92,7 +84,6 @@ class TrustworthinessPanel extends React.Component {
     }
 
     renderTrustworthiness() {
-        //console.log("renderTrustworthiness");
         let self = this;
 
         let attributes = this.state.attributes;
@@ -100,13 +91,30 @@ class TrustworthinessPanel extends React.Component {
             attributes = [];
 
         let levels = this.state.levels;
-        //console.log("this.state:", this.state);
-        //console.log("self.state:", self.state);
         
-        //flag to hide TWAS where visible = false
-        let hideInvisibleTwas = true;
+        //flag to show TWAS where visible = false
+        let showInvisibleTwas = this.props.filters.assetDetails.twas.showInvisible;
         
-        return this.props.renderTrustworthinessAttributes(attributes, levels, self, hideInvisibleTwas);
+        return (
+            <div>
+                <Form>
+                    <FormGroup>
+                        <Checkbox
+                            checked={showInvisibleTwas}
+                            onChange={(e) => {
+                                this.setFilter(e.nativeEvent.target.checked)
+                            }}>
+                            Show hidden attributes
+                        </Checkbox>
+                    </FormGroup>
+                </Form>
+                {this.props.renderTrustworthinessAttributes(attributes, levels, self, showInvisibleTwas)}
+            </div>
+        )
+    }
+
+    setFilter(value) {
+        this.props.dispatch(toggleFilter("twas", "showInvisible", value));
     }
 
     twValueChanged(e) {
@@ -139,6 +147,7 @@ class TrustworthinessPanel extends React.Component {
         this.props.dispatch(updateTwasOnAsset(this.props.modelId, this.props.asset.id, twasForField));
     }
 
+    //Used via renderTrustworthinessAttributes method in Modeller.js
     onClickRevertTwasLevel(twas) {
         if (twas) {
             let twasLabel = twas.attribute.label;
@@ -176,7 +185,7 @@ TrustworthinessPanel.propTypes = {
     levels: PropTypes.array,
     asset: PropTypes.object,
     twas: PropTypes.array,
-    openMisbehaviourExplorer: PropTypes.func,
+    filters: PropTypes.object,
     renderTrustworthinessAttributes: PropTypes.func,
     dispatch: PropTypes.func
 };

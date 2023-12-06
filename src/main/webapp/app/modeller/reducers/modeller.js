@@ -73,6 +73,13 @@ const modelState = {
             twas: false
         }
     },
+    filters: {
+        assetDetails: {
+            twas: {
+                showInvisible: false
+            }
+        }
+    },
     misbehaviourTwas: {},
     isMisbehaviourExplorerVisible: false,
     isMisbehaviourExplorerActive: false,
@@ -1537,6 +1544,32 @@ export default function modeller(state = modelState, action) {
                 assetDetails: {
                     ...state.expanded.assetDetails,
                     twas: expanded
+                }
+            }
+        };
+    }
+
+    if (action.type === instr.TOGGLE_FILTER) {
+        let panel = action.payload.panel;
+        let filter = action.payload.filter;
+        let selected = action.payload.selected;
+
+        //TODO (if/when required): add support for toggling other filters
+        if (panel !== "twas" || filter !== "showInvisible") {
+            console.log("Panel/filter not known:", panel, filter);
+            return state;
+        }
+
+        return {
+            ...state,
+            filters: {
+                ...state.filters,
+                assetDetails: {
+                    ...state.filters.assetDetails,
+                    twas: {
+                        ...state.filters.assetDetails.twas,
+                        showInvisible: selected
+                    }
                 }
             }
         };

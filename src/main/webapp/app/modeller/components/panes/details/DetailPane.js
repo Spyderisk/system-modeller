@@ -6,7 +6,6 @@ import DetailsAccordion from "./accordion/DetailsAccordion";
 import SlidingPanel from "../../../../common/components/slidingpanel/SlidingPanel";
 import {Button, ButtonToolbar, OverlayTrigger, Tooltip, Panel} from "react-bootstrap";
 import * as Constants from "../../../../common/constants.js";
-import Input from "../../util/Input";
 import {Portal} from "react-portal";
 import ModelSummary from "./ModelSummary";
 import {
@@ -24,8 +23,6 @@ class DetailPane extends React.Component {
         super(props);
 
         this.isRelationExists = this.isRelationExists.bind(this);
-
-        //this.handleSlide = this.handleSlide.bind(this);
         this.handleAdd = this.handleAdd.bind(this);
         this.populationValueChanged = this.populationValueChanged.bind(this);
 
@@ -47,7 +44,6 @@ class DetailPane extends React.Component {
      */
 
     componentWillMount() {
-        //console.log("componentWillMount");
         this.setState({
             asset: {
                 id: "",
@@ -80,16 +76,10 @@ class DetailPane extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        //console.log("componentWillReceiveProps:", nextProps);
         if(this.refs!=null && this.refs.btnback!=null && this.refs.btnforward!=null){
             this.refs.btnback.disabled = !nextProps.backEnabled;
             this.refs.btnforward.disabled = !nextProps.forwardEnabled;
         }
-
-        //this.setState({
-        //    backEnabled: nextProps.backEnabled,
-        //    forwardEnabled: nextProps.forwardEnabled
-        //  })
         
         let hasSelectedAsset = (nextProps.selectedAsset["id"] !== "");
         let asset;
@@ -121,13 +111,10 @@ class DetailPane extends React.Component {
             return;
         }
         if (asset) {
-            //console.log("this.state:", this.state);
             let showAssetTypeModal = this.state.editAssetTypeModal.show;
-            //console.log("showssetTypeModal = " + showssetTypeModal);
             if (nextProps.loading.asset) {
                 console.log("Asset loading detected - closing asset type modal..");
                 showAssetTypeModal = false;
-                //console.log("showssetTypeModal = " + showssetTypeModal);
             }
             this.setState({
                 ...this.state,
@@ -144,60 +131,26 @@ class DetailPane extends React.Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        //console.log("DetailPane.shouldComponentUpdate");
         let shouldComponentUpdate = true;
-        //console.log("this.props:", this.props);
-        //console.log("nextProps: ", nextProps);
-        //console.log("this.state:", this.state);
-        //console.log("nextState: ", nextState);
-
-        //console.log("this.state.addRelationModal:", this.state.addRelationModal);
-        //console.log("nextState.addRelationModal: ", nextState.addRelationModal);
 
         if (nextProps.loading.model) {
-            //console.log("DetailPane.shouldComponentUpdate: false: (model loading)");
             return false;
         }
 
         if (nextProps.model.validating) {
-            //console.log("DetailPane.shouldComponentUpdate: false: (model validating)");
             return false;
         }
-
-        //If only the loading prop has changed, no need to update (as this is required on main data change)
-        /*
-        console.log("this.props.loading:");
-        console.log(this.props.loading);
-        console.log("nextProps.loading:");
-        console.log(nextProps.loading);
-        let shouldComponentUpdate = this.props.loading !== nextProps.loading;
-        console.log("DetailPane.shouldComponentUpdate: " + shouldComponentUpdate);
-        //return shouldComponentUpdate;
-        */
 
         //If we are loading causes and effects, no need to refresh DetailPane
-        //console.log("this.props.selectedAsset.loadingCausesAndEffects: " + this.props.selectedAsset.loadingCausesAndEffects);
-        //console.log("nextProps.selectedAsset.loadingCausesAndEffects: " + nextProps.selectedAsset.loadingCausesAndEffects);
         if (this.props.selectedAsset.loadingCausesAndEffects != nextProps.selectedAsset.loadingCausesAndEffects) {
-            //console.log("DetailPane.shouldComponentUpdate: false: (loadingCausesAndEffects changed)");
             return false;
         }
 
-        /*
-        console.log("this.props:");
-        console.log(this.props);
-        console.log("nextProps: ");
-        console.log(nextProps);
-        */
-
-        //console.log("DetailPane.shouldComponentUpdate: " + shouldComponentUpdate);
         return shouldComponentUpdate;
     }
 
     componentDidUpdate() {
-        //console.log("componentDidUpdate: loading.newFact = ", this.props.loading.newFact);
         if (this.props.loading.newFact.length > 0) {
-            //console.log("componentDidUpdate: calling closeAddRelationModal");
             this.closeAddRelationModal(); //is this sufficient? close all modals?
         }
     }
@@ -304,7 +257,7 @@ class DetailPane extends React.Component {
                                   selectedThreat={this.props.selectedThreat}
                                   selectedMisbehaviour={this.props.selectedMisbehaviour}
                                   expanded={this.props.expanded}
-                    //selectedThreatVisibility={this.props.selectedThreatVisibility}
+                                  filters={this.props.filters}
                                   getAssetType={this.props.getAssetType}
                                   getAssetsForType={this.props.getAssetsForType}
                                   getLink={this.props.getLink}
@@ -412,8 +365,6 @@ class DetailPane extends React.Component {
     }
 
     handleAdd(asset, isIncoming) {
-        //console.log("handleAdd for asset:", asset);
-        //console.log("isIncoming = " + isIncoming);
         var linkTypes = this.props.model.palette["links"];
         var assetType = this.props.getAssetType(asset["type"]);
         this.openAddRelationModal(asset, isIncoming ? linkTypes[assetType["id"]]["linksTo"] : linkTypes[assetType["id"]]["linksFrom"], isIncoming);
@@ -441,7 +392,6 @@ class DetailPane extends React.Component {
     }
 
     openAddRelationModal(host, links, isIncoming) {
-        //console.log("openAddRelationModal");
         this.setState({
             ...this.state,
             addRelationModal: {
@@ -455,13 +405,11 @@ class DetailPane extends React.Component {
     }
 
     submitAddRelationModal(assetFromId, assetToId, relType) {
-        //console.log("submitAddRelationModal");
         this.props.dispatch(postAssertedRelation(this.props.model["id"], assetFromId, assetToId, relType));
     }
 
     closeAddRelationModal() {
         if (this.state.addRelationModal.show) {
-            //console.log("closeAddRelationModal (closing)");
             this.setState({
                 ...this.state,
                 addRelationModal: {
@@ -470,9 +418,6 @@ class DetailPane extends React.Component {
                 }
             });
         }
-        //else {
-        //    console.log("closeAddRelationModal (already closed)");
-        //}
     }
 
     editType() {
@@ -485,23 +430,16 @@ class DetailPane extends React.Component {
             editAssetTypeModal: {
                 ...this.state.editAssetTypeModal,
                 show: true
-                //links: links,
-                //host: host,
-                //isIncoming: isIncoming
             }
         });
     }
 
     submitEditAssetTypeModal(assetType) {
-        //console.log("DetailPane: submitEditAssetTypeModal: " + assetType);
         let assetId = this.state.asset["id"];
         let updatedAsset = {
             ...this.state.asset,
             type: assetType
         };
-        //console.log("assetId: " + assetId);
-        //console.log("updatedAsset: ");
-        //console.log(updatedAsset);
         this.props.dispatch(putAssertedAssetType(this.props.model["id"], assetId, updatedAsset));
     }
 
@@ -532,12 +470,12 @@ DetailPane.propTypes = {
     selectedThreat: PropTypes.object,
     selectedMisbehaviour: PropTypes.object,
     expanded: PropTypes.object,
+    filters: PropTypes.object,
     assetHistory: PropTypes.array,
     historyPointer: PropTypes.number,
     backEnabled: PropTypes.bool,
     forwardEnabled: PropTypes.bool,
     sidePanelActivated: PropTypes.bool,
-    //selectedThreatVisibility: PropTypes.bool,
     getAssetType: PropTypes.func,
     getAssetsForType: PropTypes.func,
     getLink: PropTypes.func,

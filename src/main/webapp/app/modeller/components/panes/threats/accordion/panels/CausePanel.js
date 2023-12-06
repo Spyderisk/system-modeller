@@ -178,11 +178,11 @@ class CausePanel extends React.Component {
         
         let tw_levels = this.state.tw_levels;
         
-        //flag to hide TWAS where visible = false
-        //here, we set it to false, as we still want to display TWAS in the Cause panel
-        let hideInvisibleTwas = false;
+        //flag to show TWAS where visible = false
+        //here, we set it to true, as we still want to display TWAS in the Cause panel
+        let showInvisibleTwas = true;
         
-        return this.props.renderTrustworthinessAttributes(attributes, tw_levels, self, hideInvisibleTwas);
+        return this.props.renderTrustworthinessAttributes(attributes, tw_levels, self, showInvisibleTwas);
     }
 
     renderMisbehaviours(misbehaviours) {
