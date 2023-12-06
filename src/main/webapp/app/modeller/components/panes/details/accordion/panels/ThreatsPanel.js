@@ -608,9 +608,13 @@ class ThreatsPanel extends React.Component {
             */
 
             //Is threat a normal operation
-            let normalOperation = threat.normalOperation;
+            let normalOperation = threat.normalOperation !== undefined ? threat.normalOperation : false;
 
-            if (status === "BLOCKED") {
+            if (normalOperation) {
+                // For now, display a blank icon here, as a space filler
+                // TODO: display a better icon here, e.g. depending on a "isAdverseOp" - see issue #107
+                symbol = <span className="threat-icon" style={{borderStyle: "none"}}></span>
+            } else if (status === "BLOCKED") {
                 statusText += "Managed (" + threatColorAndBE.be.label + ")";
                 symbol = <span className="fa fa-check threat-icon" style={{backgroundColor: threatColorAndBE.color}}/>;
             } else if (status === "MITIGATED") {
@@ -669,7 +673,7 @@ class ThreatsPanel extends React.Component {
                     onMouseLeave={() => this.props.hoverThreat(false, threat)}
                 >
                     <span className="col-xs-1" style={{minWidth: "44px"}}>
-                        <OverlayTrigger delayShow={Constants.TOOLTIP_DELAY} placement="left"
+                        {!normalOperation ? <OverlayTrigger delayShow={Constants.TOOLTIP_DELAY} placement="left"
                             trigger={["hover"]}
                             overlay={
                                 <Tooltip id={`threats-stat-${index + 1}-tooltip`}
@@ -681,6 +685,7 @@ class ThreatsPanel extends React.Component {
                         >
                             {symbol}
                         </OverlayTrigger>
+                        : symbol } {/* tooltip temporarily disabled for normaol op threats - see issue #107 */}
                         {primary && root_cause ? <OverlayTrigger
                             delayShow={Constants.TOOLTIP_DELAY}
                             placement="left"
