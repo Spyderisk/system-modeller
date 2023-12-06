@@ -2570,7 +2570,7 @@ public class SystemModelQuerier extends AModelQuerier {
 		(msID != null ? "		?ms core:hasID \"" + SparqlHelper.escapeLiteral(msID) + "\" .\n" : "") +
 		"		?ms core:locatedAt ?a .\n" +
 		"		?ms a core:MisbehaviourSet .\n" +
-		"		OPTIONAL { ?ms core:isNormalOpEffect ?isNormalOpEffect } \n" +
+		"       OPTIONAL { ?ms core:isNormalOpEffect ?isNormalOpEffect } \n" +
 		"	}\n" +
 		//the assetURI may be in the system or system-inf graph
 		"	{\n" +
@@ -2615,8 +2615,8 @@ public class SystemModelQuerier extends AModelQuerier {
 		"		OPTIONAL { ?m rdfs:comment ?md } \n" +
 		"		OPTIONAL { ?m core:isVisible ?isVisible } \n" +
 		"	}\n" +
-		"	BIND(IF(BOUND(?isVisible),STR(?isVisible),\"true\") AS ?vis)\n" +
-		"	BIND(IF(BOUND(?isNormalOpEffect),STR(?isNormalOpEffect),\"false\") AS ?nop)\n" +
+		"   BIND(IF(BOUND(?isVisible),STR(?isVisible),\"true\") AS ?vis)\n" +
+		"   BIND(IF(BOUND(?isNormalOpEffect),STR(?isNormalOpEffect),\"false\") AS ?nop)\n" +
 		"}";
 	}
 
