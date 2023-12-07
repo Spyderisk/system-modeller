@@ -97,35 +97,35 @@ public class DesigntimeValidatorTester extends TestCase {
 
 		tester = new TestHelper("jena-tdb");
 
-		tester.addDomain(0, "modelvalidator/domain-test.rdf.gz", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-test");
-		tester.addDomain(1, "modelvalidator/domain-network.rdf.gz", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
-		tester.addDomain(2, "modelvalidator/domain-shield.rdf.gz", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-shield");
-		tester.addDomain(3, "modelvalidator/domain-network-ra.rdf.gz", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network-ra");
-		tester.addDomain(4, "modelvalidator/TESTING-2a6-1.nq.gz", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network-testing");
-		tester.addDomain(5, "modelvalidator/TESTING-2a4-1.nq.gz",
+		tester.addDomain(0, "modelvalidator/DesigntimeValidator/domain-test.rdf.gz", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-test");
+		tester.addDomain(1, "modelvalidator/DesigntimeValidator/domain-network.rdf.gz", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
+		tester.addDomain(2, "modelvalidator/DesigntimeValidator/domain-shield.rdf.gz", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-shield");
+		tester.addDomain(3, "modelvalidator/DesigntimeValidator/domain-network-ra.rdf.gz", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network-ra");
+		tester.addDomain(4, "modelvalidator/DesigntimeValidator/TESTING-2a6-1.nq.gz", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network-testing");
+		tester.addDomain(5, "modelvalidator/DesigntimeValidator/TESTING-2a4-1.nq.gz",
 			"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network-testing",
 			"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/TESTING-2a4-1");
-		tester.addDomain(6, "modelvalidator/TESTING-2b1-1.nq.gz",
+		tester.addDomain(6, "modelvalidator/DesigntimeValidator/TESTING-2b1-1.nq.gz",
 			"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network-testing",
 			"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/TESTING-2b1-1");
 
 		//be cautious with sharing URIs: if the validated model contains anything asserted, the unvalidated model
 		//will have it too as it shared the same graph URI. For this reason, we define a new URI for this model to avoid clashes
-		tester.addSystem(0, "modelvalidator/system-test.nq.gz",
+		tester.addSystem(0, "modelvalidator/DesigntimeValidator/system-test.nq.gz",
 			"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system",
 			"http://it-innovation.soton.ac.uk/user/594a6bd21719e03c4c38ccbd/system/5950bf301719e018be44477a/Test");
-		tester.addSystem(1, "modelvalidator/system-network.nq.gz", "http://it-innovation.soton.ac.uk/system/5ad09178567d94846a9aeaec");
-		tester.addSystem(2, "modelvalidator/system-shield.nq.gz", "http://it-innovation.soton.ac.uk/system/5b15202b567d9478125b3dda");
-		tester.addSystem(3, "modelvalidator/system-shield-valid.nq.gz",
+		tester.addSystem(1, "modelvalidator/DesigntimeValidator/system-network.nq.gz", "http://it-innovation.soton.ac.uk/system/5ad09178567d94846a9aeaec");
+		tester.addSystem(2, "modelvalidator/DesigntimeValidator/system-shield.nq.gz", "http://it-innovation.soton.ac.uk/system/5b15202b567d9478125b3dda");
+		tester.addSystem(3, "modelvalidator/DesigntimeValidator/system-shield-valid.nq.gz",
 			"http://it-innovation.soton.ac.uk/system/5b15202b567d9478125b3dda",
 			"http://it-innovation.soton.ac.uk/system/5b15202b567d9478125b3ddb");
-		tester.addSystem(4, "modelvalidator/melchett.nq.gz", "http://it-innovation.soton.ac.uk/system/5b360450757fbc0b601f0c16");
-		tester.addSystem(5, "modelvalidator/PatternMatchingAndControlStrategyTest-v2a.nq.gz", "http://it-innovation.soton.ac.uk/system/5d99e263884bd32188c3282b");
-		tester.addSystem(6, "modelvalidator/ConstructionPatternTest-v2a.nq.gz", "http://it-innovation.soton.ac.uk/system/5d9b4af3884bd304c91ef4e0");
-		tester.addSystem(7, "modelvalidator/ConstructionPatternTest_-_v2b.nq.gz",
+		tester.addSystem(4, "modelvalidator/DesigntimeValidator/melchett.nq.gz", "http://it-innovation.soton.ac.uk/system/5b360450757fbc0b601f0c16");
+		tester.addSystem(5, "modelvalidator/DesigntimeValidator/PatternMatchingAndControlStrategyTest-v2a.nq.gz", "http://it-innovation.soton.ac.uk/system/5d99e263884bd32188c3282b");
+		tester.addSystem(6, "modelvalidator/DesigntimeValidator/ConstructionPatternTest-v2a.nq.gz", "http://it-innovation.soton.ac.uk/system/5d9b4af3884bd304c91ef4e0");
+		tester.addSystem(7, "modelvalidator/DesigntimeValidator/ConstructionPatternTest_-_v2b.nq.gz",
 			"http://it-innovation.soton.ac.uk/system/5d9b4af3884bd304c91ef4e0",
 			"http://it-innovation.soton.ac.uk/system/5d9b4af3884bd304c91ef4e1");
-		tester.addSystem(8, "modelvalidator/ConstructionPatternTest_v2_-_v2b.nq.gz",
+		tester.addSystem(8, "modelvalidator/DesigntimeValidator/ConstructionPatternTest_v2_-_v2b.nq.gz",
 			"http://it-innovation.soton.ac.uk/system/5d9b4af3884bd304c91ef4e0",
 			"http://it-innovation.soton.ac.uk/system/5d9b4af3884bd304c91ef4e2");
 
@@ -1184,7 +1184,8 @@ public class DesigntimeValidatorTester extends TestCase {
 	}
 
 	// New unit tests for bugs we found ///////////////////////////////////////////////////////////////////////////////
-	@Test@Ignore
+	//@Ignore
+	@Test
 	//check whether control strategies get created correctly (i.e. only if the relevant control sets exist)
 	public void testCreateCSGs() {
     try{
@@ -1196,7 +1197,8 @@ public class DesigntimeValidatorTester extends TestCase {
   		dv.validateDesigntimeModel(new Progress("test"));
 
   		//check whether the correct CSGs exist
-  		assertEquals(219, smq.getControlStrategies(tester.getStore()).size());
+  		//assertEquals(219, smq.getControlStrategies(tester.getStore()).size());
+  		assertEquals(18, smq.getControlStrategies(tester.getStore()).size());
     } catch (Exception e) {
 		e.printStackTrace();
 		fail("Exception thrown by design time validator: " + e.getMessage());

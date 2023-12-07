@@ -75,10 +75,10 @@ public class AttackPathTester extends TestCase {
 		tester = new TestHelper("jena-tdb");
 
 		// Test domain model for shortest attack path
-		tester.addDomain(0, "modelvalidator/domain-network-6a1-3-5-auto-expanded-unfiltered.nq.gz",
+		tester.addDomain(0, "modelvalidator/AttackPath/domain-network-6a1-3-5-auto-expanded-unfiltered.nq.gz",
 				"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
 
-		tester.addSystem(0, "modelvalidator/system-dataflow-test-singles.nq.gz",
+		tester.addSystem(0, "modelvalidator/AttackPath/system-dataflow-test-singles.nq.gz",
 				"http://it-innovation.soton.ac.uk/system/63d9308f8f6a206408be9010");
 
 		tester.setUp();
