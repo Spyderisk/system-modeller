@@ -36,8 +36,10 @@ class ThreatsPanel extends React.Component {
             showOnlyRootCauseThreats: false,
             showOnlyThreatsWithCSG: false,
             showOnlyThreatsWithInactiveCSG: false,
+            showOnlyNormalOperationThreats: false,
             showPrimaryThreats: true,
             showSecondaryThreats: true,
+            showNormalOperationThreats: true,
             showUntriggeredThreats: false, //only used to filter compliance threats for now
             showFilters: false,
             sort: {
@@ -165,20 +167,23 @@ class ThreatsPanel extends React.Component {
             filteredThreats = filteredThreats.filter((t) => Object.keys(t.controlStrategies).length > 0);
         }
 
+        //Include only normal operation threats
+        if (this.state.showOnlyNormalOperationThreats) {
+            filteredThreats = filteredThreats.filter((t) => t.normalOperation);
+        }
+
         //Include only threats with one or more inactive control strategy (if flag is set)
         if (this.state.showOnlyThreatsWithInactiveCSG) {
             filteredThreats = filteredThreats.filter((t) => Object.values(t.controlStrategies).some((csg) => {
-                //console.log(csg);
                 return !csg.enabled;
             }));
         }
 
-        //Include primary/secondary threats, according to flags
-        filteredThreats = filteredThreats.filter((t) => (this.state.showPrimaryThreats && !t.secondaryThreat) ||
-                                                        (this.state.showSecondaryThreats && t.secondaryThreat)
+        //Include primary/secondary and normal threats, according to flags
+        filteredThreats = filteredThreats.filter((t) => ((this.state.showPrimaryThreats && !t.secondaryThreat) ||
+                                                         (this.state.showSecondaryThreats && t.secondaryThreat)) &&
+                                                        ((this.state.showNormalOperationThreats && t.normalOperation) || !t.normalOperation)
         );
-
-        //console.log("filtered threats: ", filteredThreats.length);
 
         let showFiltersDiv;
         if (threats.length > 0 && !this.state.showFilters) {
@@ -317,6 +322,14 @@ class ThreatsPanel extends React.Component {
                             Only threats with an inactive control strategy
                         </Checkbox>
 
+                        <Checkbox
+                            checked={this.state.showOnlyNormalOperationThreats}
+                            onChange={() => {
+                                this.setState({...this.state, showOnlyNormalOperationThreats: !this.state.showOnlyNormalOperationThreats})
+                            }}>
+                            Only normal operation threats
+                        </Checkbox>
+
                         {(!this.props.complianceSet && (this.props.name !== "root-causes")) && <Checkbox
                             checked={this.state.showPrimaryThreats}
                             onChange={() => {
@@ -331,6 +344,14 @@ class ThreatsPanel extends React.Component {
                                 this.setState({...this.state, showSecondaryThreats: !this.state.showSecondaryThreats})
                             }}>
                             Include secondary threats
+                        </Checkbox>}
+
+                        {(!this.props.complianceSet && (this.props.name !== "root-causes")) && <Checkbox
+                            checked={this.state.showNormalOperationThreats}
+                            onChange={() => {
+                                this.setState({...this.state, showNormalOperationThreats: !this.state.showNormalOperationThreats})
+                            }}>
+                            Include normal operation threats
                         </Checkbox>}
                     </FormGroup>}
                 </Form>
@@ -586,7 +607,14 @@ class ThreatsPanel extends React.Component {
             }
             */
 
-            if (status === "BLOCKED") {
+            //Is threat a normal operation
+            let normalOperation = threat.normalOperation !== undefined ? threat.normalOperation : false;
+
+            if (normalOperation) {
+                // For now, display a blank icon here, as a space filler
+                // TODO: display a better icon here, e.g. depending on a "isAdverseOp" - see issue #107
+                symbol = <span className="threat-icon" style={{borderStyle: "none"}}></span>
+            } else if (status === "BLOCKED") {
                 statusText += "Managed (" + threatColorAndBE.be.label + ")";
                 symbol = <span className="fa fa-check threat-icon" style={{backgroundColor: threatColorAndBE.color}}/>;
             } else if (status === "MITIGATED") {
@@ -645,7 +673,7 @@ class ThreatsPanel extends React.Component {
                     onMouseLeave={() => this.props.hoverThreat(false, threat)}
                 >
                     <span className="col-xs-1" style={{minWidth: "44px"}}>
-                        <OverlayTrigger delayShow={Constants.TOOLTIP_DELAY} placement="left"
+                        {!normalOperation ? <OverlayTrigger delayShow={Constants.TOOLTIP_DELAY} placement="left"
                             trigger={["hover"]}
                             overlay={
                                 <Tooltip id={`threats-stat-${index + 1}-tooltip`}
@@ -657,6 +685,7 @@ class ThreatsPanel extends React.Component {
                         >
                             {symbol}
                         </OverlayTrigger>
+                        : symbol } {/* tooltip temporarily disabled for normaol op threats - see issue #107 */}
                         {primary && root_cause ? <OverlayTrigger
                             delayShow={Constants.TOOLTIP_DELAY}
                             placement="left"
@@ -672,7 +701,7 @@ class ThreatsPanel extends React.Component {
                             <span className="threat-icon">1</span>
                         </OverlayTrigger>
                         : null }
-                        {primary && !root_cause ? <OverlayTrigger
+                        {primary && !normalOperation && !root_cause ? <OverlayTrigger
                             delayShow={Constants.TOOLTIP_DELAY}
                             placement="left"
                             trigger={["hover"]}
@@ -687,7 +716,7 @@ class ThreatsPanel extends React.Component {
                             <span className="threat-icon">1</span>
                         </OverlayTrigger>
                         : null }
-                        {secondary ? <OverlayTrigger
+                        {secondary && !normalOperation ? <OverlayTrigger
                             delayShow={Constants.TOOLTIP_DELAY}
                             placement="left"
                             trigger={["hover"]}
@@ -700,6 +729,21 @@ class ThreatsPanel extends React.Component {
                             }
                         >
                             <span className="threat-icon">2</span>
+                        </OverlayTrigger>
+                        : null }
+                        {normalOperation ? <OverlayTrigger
+                            delayShow={Constants.TOOLTIP_DELAY}
+                            placement="left"
+                            trigger={["hover"]}
+                            overlay={
+                                <Tooltip id={`threats-normalop-${index + 1}-tooltip`}
+                                    className="tooltip-overlay"
+                                >
+                                    Normal Operation
+                                </Tooltip>
+                            }
+                        >
+                            <span className="threat-icon">N</span>
                         </OverlayTrigger>
                         : null }
                         {!compliance && !root_cause && !primary && !secondary ? <span
