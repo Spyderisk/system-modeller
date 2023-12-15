@@ -88,6 +88,7 @@ import uk.ac.soton.itinnovation.security.modelvalidator.ModelValidator;
 import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackPathAlgorithm;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithm;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithmConfig;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.TreeJsonDoc;
 import uk.ac.soton.itinnovation.security.semanticstore.AStoreWrapper;
 import uk.ac.soton.itinnovation.security.semanticstore.IStoreWrapper;
@@ -1424,7 +1425,8 @@ public class ModelController {
 
             logger.info("Calculating Recommendations");
 
-			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(querierDB, mId, riskMode);
+			RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, mId, riskMode);
+			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(recaConfig);
 
             if (!reca.checkRiskCalculationMode(riskMode)) {
                 logger.error("mismatch in risk calculation mode found");

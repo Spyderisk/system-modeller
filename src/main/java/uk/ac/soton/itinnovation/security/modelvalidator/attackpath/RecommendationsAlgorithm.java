@@ -81,27 +81,19 @@ public class RecommendationsAlgorithm {
     @Autowired
     private ModelObjectsHelper modelObjectsHelper;
 
-    public RecommendationsAlgorithm(IQuerierDB querier, String modelId, String mode) {
-        this.querier = querier;
-        this.modelId = modelId;
-        this.riskMode = mode;
+    public RecommendationsAlgorithm(RecommendationsAlgorithmConfig config) {
+        this.querier = config.getQuerier();
+        this.modelId = config.getModelId();
+        this.riskMode = config.getRiskMode();
         this.report = new RecommendationReportDTO();
 
         initializeAttackPathDataset();
     }
 
     private void initializeAttackPathDataset() {
-        final long startTime = System.currentTimeMillis();
-        logger.debug("STARTING recommendations algorithm ...");
+        logger.debug("Preparing datasets ...");
 
         apd = new AttackPathDataset(querier);
-
-        List<String> msList = apd.filterMisbehaviours();
-        logger.debug("MS LIST: {}", msList);
-
-        final long endTime = System.currentTimeMillis();
-        logger.info("RecommendationsAlgorithm.RecommendationsAlgorithm(IQuerierDB querier): execution time {} ms",
-                endTime - startTime);
     }
 
     public boolean checkRiskCalculationMode(String input) {
@@ -176,20 +168,8 @@ public class RecommendationsAlgorithm {
         return attackTree;
     }
 
-    /*
-    private void calculateRisk() {
-		try {
-		    Progress validationProgress = modelObjectsHelper.getValidationProgressOfModel(model);
-			querier.initForRiskCalculation();
-			RiskCalculator rc = new RiskCalculator(querier);
-			rc.calculateRiskLevels(RiskCalculationMode.FUTURE, false, new Progress(tester.getGraph("system")));
-		} catch (Exception e) {
-			logger.error("Exception thrown by risk level calculator", e);
-		}
-    }
-    */
-
-    private CSGNode applyCSGs(LogicalExpression le, CSGNode myNode) {
+   // TODO: remove this method
+   private CSGNode applyCSGsOUT(LogicalExpression le, CSGNode myNode) {
         logger.debug("applyCSGs");
         if (myNode == null) {
             myNode = new CSGNode();
@@ -204,7 +184,27 @@ public class RecommendationsAlgorithm {
         for (Expression csgOption : csgOptions) {
             logger.debug("└──> {}", csgOption);
         }
+        logger.debug("eXit");
+        return null;
+   }
 
+    private CSGNode applyCSGs(LogicalExpression le, CSGNode myNode) {
+        logger.debug("applyCSGs()");
+        if (myNode == null) {
+            myNode = new CSGNode();
+        }
+
+        // convert LE to DNF
+        le.applyDNF(100);
+
+        // convert from CSG logical expression to list of CSG options
+        List<Expression> csgOptions = le.getListFromOr();
+        logger.debug("List of OR CSG options: {}", csgOptions.size());
+        for (Expression csgOption : csgOptions) {
+            logger.debug("└──> {}", csgOption);
+        }
+
+        logger.debug("list of OR CSG options: {}", csgOptions.size());
         // examine CSG options
         for (Expression csgOption : csgOptions) {
             logger.debug("examining CSG LE option: {}", csgOption);
@@ -304,10 +304,9 @@ public class RecommendationsAlgorithm {
             recControlList.add(ctrl);
         }
         recommendation.setControls(recControlList);
-
         recommendation.setState(state);
 
-        logger.debug("RECOMMENDATION: {}", recommendation);
+        logger.debug("Potential recommendation: {}", recommendation);
 
         return recommendation;
     }
@@ -320,7 +319,9 @@ public class RecommendationsAlgorithm {
     private void makeRecommendations(CSGNode node, List<CSGNode> path) {
         // This method should not run more risk calculations, instead it will
         // try to use recommendations stored in nodes
-        String rootCsgList = "";
+
+        String rootCsgList;
+
         if (node.getCsgList().isEmpty()) {
             rootCsgList = "root";
         } else {
@@ -339,14 +340,14 @@ public class RecommendationsAlgorithm {
             }
         } else {
             List<String> csgList = new ArrayList<>();
-            for (CSGNode p : path) {
-                for (String i : p.getCsgList()) {
-                    csgList.add(i);
+            for (CSGNode pNode : path) {
+                for (String csgUri : pNode.getCsgList()) {
+                    csgList.add(csgUri);
                 }
             }
-            logger.debug("adding cached path recommendation {}", node.getRecommendation());
-            // add cached recommendation
-            // TODO add copy of recommendation
+
+            logger.debug("adding cached path recommendation {}", node.getRecommendation().getIdentifier());
+
             if (node.getRecommendation() != null) {
                 report.getRecommendations().add(node.getRecommendation());
             }
@@ -356,6 +357,7 @@ public class RecommendationsAlgorithm {
     public void recommendations(boolean allPaths, boolean normalOperations) throws RuntimeException {
 
         logger.debug("Recommendations core part (risk mode: {})", riskMode);
+
         try {
 
             // get initial risk state
@@ -378,33 +380,15 @@ public class RecommendationsAlgorithm {
             // step: makeRecommendations on rootNode?
             makeRecommendations(rootNode);
 
-            logger.debug("RECOMMENDATIONS REPORT: {}", report);
+            //logger.debug("RECOMMENDATIONS REPORT: {}", report);
             logger.debug("REPORT has: {} recommendations", report.getRecommendations().size());
+            for (RecommendationDTO rec : report.getRecommendations()) {
+                logger.debug("  recommendation: {}", rec.getState().getRisk());
+            }
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public void listMS() {
-        List<String> msList = apd.filterMisbehaviours();
-        logger.debug("TOP MS LIST: {}", msList);
-    }
-
-    public void changeCS() {
-        // change all CS to
-        logger.debug("Change CS test");
-        RiskVector riskResponse = apd.calculateRisk(this.modelId);
-
-        apd.applyCS(apd.getAllCS(), true);
-
-        RiskVector riskResponseAfter = apd.calculateRisk(this.modelId);
-
-        logger.debug("Initial Risk Vector: {}", riskResponse);
-        logger.debug("Latter Risk Vector : {}", riskResponseAfter);
-
-        logger.debug("Test RV {}", (riskResponse == riskResponseAfter));
-        logger.debug("Test RV {}", riskResponse.compareTo(riskResponseAfter));
-
     }
 }
 

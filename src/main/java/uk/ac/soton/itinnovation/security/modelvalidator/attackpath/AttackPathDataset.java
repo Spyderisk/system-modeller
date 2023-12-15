@@ -753,7 +753,6 @@ public class AttackPathDataset {
         }
 
         RiskVector rv = new RiskVector(riskLevels, riskVector);
-        logger.debug("RISKVECTOR: {}", rv);
 
         return rv;
     }
@@ -784,7 +783,6 @@ public class AttackPathDataset {
             //logger.debug("CONSEQUENCE: {} ", ms);
             int threshold = riLevels.get("domain#RiskLevelHigh").getLevelValue();
             if (riLevels.get(ms.getRisk()).getLevelValue() >= threshold) {
-                logger.debug("CONSEQUENCE: {} ", ms);
                 ConsequenceDTO consequence = new ConsequenceDTO();
                 consequence.setUri(ms.getUri());
                 consequence.setRisk(ms.getRisk());
@@ -801,12 +799,10 @@ public class AttackPathDataset {
         }
 
         RiskVector rv = new RiskVector(riskLevels, riskVector);
-        logger.debug("OVERALL: {}", rv.getOverall());
 
         StateDTO state = new StateDTO();
         state.setRisk(riskVector.toString());
         state.setConsequences(consequences);
-        logger.debug("STATE: {}", riskVector);
 
         return state;
 
