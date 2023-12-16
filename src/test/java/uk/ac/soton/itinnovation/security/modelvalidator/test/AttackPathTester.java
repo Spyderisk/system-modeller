@@ -52,6 +52,7 @@ import uk.ac.soton.itinnovation.security.modelquerier.util.TestHelper;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackPathAlgorithm;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithm;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithmConfig;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationReportDTO;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.TreeJsonDoc;
 
 import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
@@ -241,7 +242,8 @@ public class AttackPathTester extends TestCase {
 
 			reca.checkRequestedRiskCalculationMode("FUTURE");
 
-			reca.recommendations(true, false);
+			RecommendationReportDTO report = reca.recommendations(true, false);
+            logger.debug("Recommendation report: {}", report);
 
 		} catch (Exception e) {
 			e.printStackTrace();

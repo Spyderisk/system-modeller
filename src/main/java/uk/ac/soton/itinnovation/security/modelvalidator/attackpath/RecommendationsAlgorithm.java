@@ -354,7 +354,7 @@ public class RecommendationsAlgorithm {
         }
     }
 
-    public void recommendations(boolean allPaths, boolean normalOperations) throws RuntimeException {
+    public RecommendationReportDTO recommendations(boolean allPaths, boolean normalOperations) throws RuntimeException {
 
         logger.debug("Recommendations core part (risk mode: {})", riskMode);
 
@@ -389,6 +389,9 @@ public class RecommendationsAlgorithm {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+        return report;
     }
+
 }
 

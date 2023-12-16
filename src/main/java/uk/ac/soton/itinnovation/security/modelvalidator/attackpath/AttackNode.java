@@ -177,6 +177,11 @@ public class AttackNode {
             this.allDirectCauseUris.retainAll(this.nodes.getBoundingUriRefs());
         }
 
+        // TODO debug only:
+        if (this.uri.substring(7).equals("MS-InService-a0826156")) {
+            logger.debug("XXX: {} all direct cause uris: {}", this.uri.substring(7), this.allDirectCauseUris);
+        }
+
         this.controlStrategies = this.getControlStrategies();
         this.controls = this.getControls();
         this.uriSymbol = this.makeSymbol(uri);
@@ -366,10 +371,16 @@ public class AttackNode {
             currentPath = new HashSet<>(cPath);
         }
 
+        // TODO debug only:
+        if (this.uri.substring(7).equals("MS-InService-a0826156")) {
+            logger.debug("DDD: currentPath: {}, self all: {}", currentPath, this.allDirectCauseUris);
+        }
+
         currentPath.add(this.uri);
         logger.debug(String.format("%1$"+ currentPath.size() +"s", "") +
                 " BACKTRACE for: " + this.uri.substring(7) + " (nodeID:" + this.id + ") "+
-                " current path length: " + (currentPath.size()-1));
+                " current path length: " + (currentPath.size()-1) +
+                " all direct cause uris: " + this.allDirectCauseUris.size());
 
         this.visits += 1;
 
@@ -463,8 +474,6 @@ public class AttackNode {
 
         boolean outerSuccess = true; // need this for try->except->ELSE* python equivalent
         try {
-
-            //this.allDirectCauseUris = this.getAllDirectCauseUris();
 
             if (this.allDirectCauseUris.isEmpty()) {
                 logger.debug(String.format("%1$"+ currentPath.size() +"s", "") +

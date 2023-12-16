@@ -89,6 +89,7 @@ import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackPathAlgorithm;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithm;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithmConfig;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationReportDTO;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.TreeJsonDoc;
 import uk.ac.soton.itinnovation.security.semanticstore.AStoreWrapper;
 import uk.ac.soton.itinnovation.security.semanticstore.IStoreWrapper;
@@ -1393,7 +1394,7 @@ public class ModelController {
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
 	@RequestMapping(value = "/models/{modelId}/recommendations", method = RequestMethod.GET)
-	public ResponseEntity<TreeJsonDoc> calculateRecommendations(
+	public ResponseEntity<RecommendationReportDTO> calculateRecommendations(
             @PathVariable String modelId,
             @RequestParam(defaultValue = "FUTURE") String riskMode) {
 
@@ -1433,9 +1434,9 @@ public class ModelController {
                 throw new BadRequestErrorException("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
             }
 
-            TreeJsonDoc treeDoc = null;
+            RecommendationReportDTO report = reca.recommendations(true, false);
 
-            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(treeDoc);
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(report);
 
         } catch (BadRequestErrorException e) {
             logger.error("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
