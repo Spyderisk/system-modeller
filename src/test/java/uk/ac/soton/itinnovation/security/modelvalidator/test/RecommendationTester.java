@@ -69,8 +69,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+
 @RunWith(JUnit4.class)
-public class AttackPathTester extends TestCase {
+public class RecommendationTester extends TestCase {
 
 	public static Logger logger = LoggerFactory.getLogger(RiskLevelCalculatorTester.class);
 
@@ -112,7 +113,6 @@ public class AttackPathTester extends TestCase {
         tester.addDomain(0, "modelvalidator/AttackPath/domain-6a3-3-1.nq.gz",
                 "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
 
-        //tester.addSystem(0, "modelvalidator/AttackPath/cyberkit4sme_demo_changed.nq.gz",
         tester.addSystem(0, "modelvalidator/AttackPath/cyberkit4sme_demo.nq.gz",
                 "http://it-innovation.soton.ac.uk/system/652fe5d3d20c015ba8f02fb6");
 
@@ -151,60 +151,6 @@ public class AttackPathTester extends TestCase {
 	}
 
 	// Tests //////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	@Test
-	public void testAttackPathGraph() {
-		logger.info("Switching to selected domain and system model test cases");
-		tester.switchModels(0, 0);
-
-		logger.info("Creating a querierDB object");
-		IQuerierDB querierDB = new JenaQuerierDB(dataset, tester.getModel(), true);
-		querierDB.init();
-
-		querierDB.initForValidation();
-
-        try {
-            logger.info("Validating the model - ensures no dependence on bugs in older SSM validators");
-            Validator validator = new Validator(querierDB);
-            validator.validate(new Progress(tester.getGraph("system")));
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail("Exception thrown by validator preparing attack path test case");
-            return;
-		}
-
-        try {
-			logger.info("Calculating risks and generating attack graph");
-			RiskCalculator rc = new RiskCalculator(querierDB);
-			rc.calculateRiskLevels(RiskCalculationMode.FUTURE, true, new Progress(tester.getGraph("system"))); //save results, as queried below
-            //RiskCalcResultsDB results = rc.getRiskCalcResults();
-            //logger.debug("RiskResutlst: {}", results);
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception thrown by risk level calculator");
-			return;
-		}
-
-		try {
-			logger.info("Gathering datasets for the attack graph");
-
-			AttackPathAlgorithm apa = new AttackPathAlgorithm(querierDB);
-
-			List<String> targetUris = new ArrayList<>();
-			targetUris.add("system#MS-LossOfAuthenticity-a40e98cc");
-
-			Assert.assertTrue(apa.checkTargetUris(targetUris));
-
-			apa.checkRequestedRiskCalculationMode("FUTURE");
-
-			TreeJsonDoc treeDoc = apa.calculateAttackTreeDoc(targetUris, "FUTURE", false, false);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail("Exception thrown by attack path dataset gathering");
-			return;
-		}
-	}
 
     @Test
 	public void testRecommendations() {
@@ -248,12 +194,12 @@ public class AttackPathTester extends TestCase {
 			reca.checkRequestedRiskCalculationMode("FUTURE");
 
 			RecommendationReportDTO report = reca.recommendations(true, false);
-            //logger.debug("Recommendation report: {}", report);
 
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
             String json = objectMapper.writeValueAsString(report);
             logger.debug("Recommendation report: {}", json);
+
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -261,5 +207,10 @@ public class AttackPathTester extends TestCase {
 			return;
 		}
 	}
+
+    @Test
+	public void testStoreRecommendation() {
+        logger.debug("Testing Store recommendations");
+    }
 
 }

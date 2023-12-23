@@ -118,6 +118,11 @@ import uk.ac.soton.itinnovation.security.systemmodeller.semantics.StoreModelMana
 import uk.ac.soton.itinnovation.security.systemmodeller.util.ReportGenerator;
 import uk.ac.soton.itinnovation.security.systemmodeller.util.SecureUrlHelper;
 
+import uk.ac.soton.itinnovation.security.systemmodeller.model.RecommendationEntity;
+import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.RecommendationRepository;
+import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.AsyncService.RecStatus;
+
+
 /**
  * Includes all operations of the Model Controller Service.
  */
@@ -125,6 +130,9 @@ import uk.ac.soton.itinnovation.security.systemmodeller.util.SecureUrlHelper;
 public class ModelController {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    @Autowired
+    private RecommendationRepository recRepository;
 
 	@Autowired
 	private IModelRepository modelRepository;
@@ -1426,6 +1434,10 @@ public class ModelController {
 
             logger.info("Calculating Recommendations");
 
+            String jobId = UUID.randomUUID().toString();
+            logger.info("submitting async job with id: {}", jobId);
+
+
 			RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, mId, riskMode);
 			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(recaConfig);
 
@@ -1435,6 +1447,16 @@ public class ModelController {
             }
 
             RecommendationReportDTO report = reca.recommendations(true, false);
+
+            // create recEntry and save it to mongo db
+            RecommendationEntity recEntity = new RecommendationEntity();
+            recEntity.setId(jobId);
+            recEntity.setModelId(mId);
+            recEntity.setStatus(RecStatus.STARTED);
+            recEntity.setReport(report);
+            recRepository.save(recEntity);
+            logger.debug("rec entity saved for {}", recEntity.getId());
+
 
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(report);
 
