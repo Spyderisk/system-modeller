@@ -109,7 +109,7 @@ public class RecommendationTester extends TestCase {
         //tester.addSystem(0, "modelvalidator/AttackPath/DataFlow_Test-Singles-Some_CS-asserted_2023-11-28T11_54.nq.gz",
         //        "http://it-innovation.soton.ac.uk/system/63d9308f8f6a206408be9010");
 
-        // cyberkit demo, 
+        // cyberkit demo,
         tester.addDomain(0, "modelvalidator/AttackPath/domain-6a3-3-1.nq.gz",
                 "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
 

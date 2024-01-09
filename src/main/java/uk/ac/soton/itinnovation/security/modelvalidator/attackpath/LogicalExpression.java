@@ -94,7 +94,8 @@ public class LogicalExpression {
                 this.cause = RuleSet.simplify(ors);
             }
         }
-
+        logger.debug("LE causes: size({})  {}", cList.size(), cList);
+        logger.debug("LE itself: {}", this.toString());
     }
 
     public String toString() {

@@ -360,6 +360,8 @@ public class AttackPathDataset {
                 for (String csgURI : csgURIs) {
                     if (hasExternalDependencies(csgURI)) {
                         csgToConsider.add(csgURI);
+                    } else {
+                        logger.debug("{} is NOT \"has_external_dependences\"", csgURI);
                     }
                 }
             } else {
@@ -367,7 +369,11 @@ public class AttackPathDataset {
                     if (isRuntimeChangable(csgURI)) {
                         if (!isContingencyActivation(csgURI)) {
                             csgToConsider.add(csgURI);
+                        } else {
+                            logger.debug("{} IS \"is_contingency_activation\"", csgURI);
                         }
+                    } else {
+                        logger.debug("{} is NOT \"is_runtime_changable\"", csgURI);
                     }
                 }
             }

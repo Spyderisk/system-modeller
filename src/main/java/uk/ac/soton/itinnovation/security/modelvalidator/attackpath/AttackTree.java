@@ -493,6 +493,18 @@ public class AttackTree {
         for (String uri : this.targetUris) {
             leList.add(this.nodeByUri.get(uri).getAttackTreeMitigationCSG());
         }
+        logger.debug("attackMitigationCSG target uris: {}", this.targetUris);
+        LogicalExpression le =  new LogicalExpression(this.apd, new ArrayList<Object>(leList), true);
+        logger.debug("attackMitigationCSG LE size: {}", leList.size());
+        logger.debug("attackMitigationCSG LE: {}", le);
+        return le;
+    }
+
+    public LogicalExpression attackMitigationCSGTMP() {
+        List<LogicalExpression> leList = new ArrayList<>();
+        for (String uri : this.targetUris) {
+            leList.add(this.nodeByUri.get(uri).getAttackTreeMitigationCSG());
+        }
         logger.debug("attackMitigationCSG LE size: {}", leList.size());
         return new LogicalExpression(this.apd, new ArrayList<Object>(leList), true);
     }

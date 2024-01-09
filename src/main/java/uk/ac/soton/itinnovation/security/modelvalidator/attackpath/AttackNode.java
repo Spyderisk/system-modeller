@@ -529,8 +529,8 @@ public class AttackNode {
                 logger.debug(String.format("%1$"+ currentPath.size() +"s", "") +
                         " " + sortedCauses.size() + " direct causes of threat");
 
-                //logger.debug(String.format("%1$"+ currentPath.size() +"s", "") +
-                //        " └─>" + sortedCauses);
+                logger.debug(String.format("%1$"+ currentPath.size() +"s", "") +
+                        " └─>" + sortedCauses);
 
                 for (String parentUri : sortedCauses) {
                     AttackNode parent = this.nodes.getOrCreateNode(parentUri);
