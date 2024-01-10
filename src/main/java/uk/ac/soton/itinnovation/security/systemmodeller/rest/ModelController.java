@@ -1406,8 +1406,8 @@ public class ModelController {
             @PathVariable String modelId,
             @RequestParam(defaultValue = "FUTURE") String riskMode) {
 
-        logger.info("Calculating threat graph for model {}", modelId);
-        logger.info(" riskMode: {}",riskMode);
+        logger.info("Calculating recommendations for model {}", modelId);
+        logger.info("riskMode: {}",riskMode);
 
 		try {
             RiskCalculationMode.valueOf(riskMode);
@@ -1428,15 +1428,14 @@ public class ModelController {
             logger.info("Initialising JenaQuerierDB");
 
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
-                    model.getModelStack(), false);
+                    model.getModelStack(), true);
 
             querierDB.init();
 
-            logger.info("Calculating Recommendations");
+            logger.info("Calculating recommendations");
 
             String jobId = UUID.randomUUID().toString();
-            logger.info("submitting async job with id: {}", jobId);
-
+            logger.info("Submitting synchronous job with id: {}", jobId);
 
 			RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, mId, riskMode);
 			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(recaConfig);
