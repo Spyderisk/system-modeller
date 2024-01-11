@@ -159,11 +159,18 @@ public class RecommendationTester extends TestCase {
 
 		logger.info("Creating a querierDB object ");
 		IQuerierDB querierDB = new JenaQuerierDB(dataset, tester.getModel(), true);
+		logger.info("Calling querierDB.init");
 		querierDB.init();
 
+		logger.info("Calling querierDB.initForValidation");
 		querierDB.initForValidation();
+		logger.info("Back from querierDB.initForValidation");
 
+<<<<<<< HEAD
         /*
+=======
+		/*
+>>>>>>> 961b9e2aa86d74c7485a18d2bd8dca844dbe047b
         try {
             logger.info("Validating the model - ensures no dependence on bugs in older SSM validators");
             Validator validator = new Validator(querierDB);
@@ -185,7 +192,11 @@ public class RecommendationTester extends TestCase {
 			fail("Exception thrown by risk level calculator");
 			return;
 		}
+<<<<<<< HEAD
         */
+=======
+		*/
+>>>>>>> 961b9e2aa86d74c7485a18d2bd8dca844dbe047b
 
 		try {
 			logger.info("Gathering datasets for recommendations");

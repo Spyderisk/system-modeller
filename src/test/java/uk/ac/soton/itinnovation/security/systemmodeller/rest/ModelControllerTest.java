@@ -1428,6 +1428,22 @@ public class ModelControllerTest extends CommonTestSetup{
 	}
 
 	/**
+	 * Test calculating recommendations for model
+	 * Asserts OK 200 status
+	 */
+	@Test
+	public void testRecommendations() {
+		switchToSystemModel(4, 12); //use recommendations domain and system model
+
+		given().
+			filter(userSession).
+		when().
+			get("/models/testModel/recommendations").
+		then().
+			assertThat().statusCode(HttpStatus.SC_OK);
+	}
+
+	/**
 	 * Test calculating current risks
 	 * Asserts flag is false before calling REST method
 	 * Asserts ACCEPTED 202 status
