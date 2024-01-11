@@ -24,17 +24,26 @@
 /////////////////////////////////////////////////////////////////////////
 package uk.ac.soton.itinnovation.security.modelvalidator.attackpath;
 
-import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Set;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
+import uk.ac.soton.itinnovation.security.model.system.RiskVector;
+import uk.ac.soton.itinnovation.security.modelquerier.IQuerierDB;
+import uk.ac.soton.itinnovation.security.modelquerier.dto.ControlSetDB;
+import uk.ac.soton.itinnovation.security.modelquerier.dto.ModelDB;
+import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
+import uk.ac.soton.itinnovation.security.modelvalidator.RiskCalculator;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.LogicalExpression;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.AdditionalPropertyDTO;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.AssetDTO;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ConsequenceDTO;
@@ -42,27 +51,16 @@ import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ControlDT
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ControlStrategyDTO;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationDTO;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationReportDTO;
-//import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RiskVectorDTO;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.StateDTO;
-
-import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
-import uk.ac.soton.itinnovation.security.model.system.RiskVector;
-import uk.ac.soton.itinnovation.security.modelquerier.IQuerierDB;
-import uk.ac.soton.itinnovation.security.modelquerier.dto.ModelDB;
-import uk.ac.soton.itinnovation.security.modelquerier.dto.ControlSetDB;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.LogicalExpression;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
 
-import com.bpodgursky.jbool_expressions.Expression;
 import com.bpodgursky.jbool_expressions.And;
-import com.bpodgursky.jbool_expressions.Or;
+import com.bpodgursky.jbool_expressions.Expression;
 import com.bpodgursky.jbool_expressions.Not;
+import com.bpodgursky.jbool_expressions.Or;
 import com.bpodgursky.jbool_expressions.Variable;
 import com.bpodgursky.jbool_expressions.parsers.ExprParser;
 import com.bpodgursky.jbool_expressions.rules.RuleSet;
-
-import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
-import uk.ac.soton.itinnovation.security.modelvalidator.RiskCalculator;
 
 @Component
 public class RecommendationsAlgorithm {
@@ -124,35 +122,37 @@ public class RecommendationsAlgorithm {
     }
 
     public boolean checkTargetUris(List<String> targetUris) {
-        boolean retVal = true;
         logger.debug("Checking submitted list of target URIs: {}", targetUris);
+
         if (!apd.checkMisbehaviourList(targetUris)) {
             logger.error("shortest path, target MS URI not valid");
-            retVal = false;
+            return false;
         }
-        return retVal;
+        return true;
+    }
+
+    public AttackTree calcAttackTree(String thresholdLevel) {
+        return calculateAttackTree(apd.filterMisbehaviours(thresholdLevel), riskMode, true, true);
     }
 
     public AttackTree calcAttackTree() {
-        List<String> targetMSUris = apd.filterMisbehaviours();
-        logger.info("TARGET MS: {}", targetMSUris);
-
-        return calculateAttackTree(targetMSUris, riskMode, true, true);
+        return calculateAttackTree(apd.filterMisbehaviours(), riskMode, true, true);
     }
 
     public AttackTree calculateAttackTree(List<String> targetUris, String riskCalculationMode, boolean allPaths,
                                         boolean normalOperations) throws RuntimeException {
-        logger.debug("calculate attack tree with isFUTURE: {}, allPaths: {}, normalOperations: {}", riskCalculationMode,
-                allPaths, normalOperations);
+        logger.debug("calculate attack tree with isFUTURE: {}, allPaths: {}, normalOperations: {}",
+                riskCalculationMode, allPaths, normalOperations);
         logger.debug("target URIs: {}", targetUris);
 
         checkRequestedRiskCalculationMode(riskCalculationMode);
 
-        return calculateAttackTreeInternal(targetUris, riskCalculationMode, !allPaths);
+        return calculateAttackTreeInternal(targetUris, riskCalculationMode, allPaths);
     }
 
     private AttackTree calculateAttackTreeInternal(List<String> targetUris, String riskCalculationMode, boolean singlePath)
             throws RuntimeException {
+
         boolean isFutureRisk = apd.isFutureRisk(riskCalculationMode);
         AttackTree attackTree = null;
 
@@ -162,7 +162,6 @@ public class RecommendationsAlgorithm {
             attackTree.stats();
             final long endTime = System.currentTimeMillis();
             logger.info("AttackPathAlgorithm.calculateAttackTree: execution time {} ms", endTime - startTime);
-
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -232,7 +231,7 @@ public class RecommendationsAlgorithm {
                 }
             }
             logger.debug("CS set for LE CSG_option {}", csgOption);
-            logger.debug("└──> {}", csSet);
+            logger.debug("  └──> {}", csSet);
 
             // apply all CS in the CS_set
             // TODO: I need to keep track of CS changes or roll them back later
@@ -258,7 +257,6 @@ public class RecommendationsAlgorithm {
                 logger.warn("failed to get risk calculation, restore model");
                 // restore model ...
                 // TODO: restore model controls
-                logger.debug("undo CS set");
                 apd.applyCS(csSet, false);
                 // raise exception since failed to run risk calculation
                 throw new RuntimeException(e);
@@ -269,14 +267,14 @@ public class RecommendationsAlgorithm {
             if ((riskResponse != null) & (apd.compareOverallRiskToMedium(riskResponse.getOverall()))) {
                 logger.info("Termination condition");
             } else {
+                logger.debug("Risk is till higher than Medium");
                 logger.info("Recalculate threat tree ...");
-                AttackTree tt = calcAttackTree();
+                AttackTree tt = calcAttackTree("domain#RiskLevelLow");
                 LogicalExpression nle = tt.attackMitigationCSG();
                 this.applyCSGs(nle, childNode);
             }
 
             // undo CS changes in CS_set
-            logger.debug("undo CS set");
             apd.applyCS(csSet, false);
         }
 
@@ -381,7 +379,7 @@ public class RecommendationsAlgorithm {
             makeRecommendations(rootNode);
 
             List<RecommendationDTO> recommendations = report.getRecommendations() != null ? report.getRecommendations() : Collections.emptyList();
-            logger.info("REPORT has: {} recommendations", recommendations.size());
+            logger.info("The Recommendations Report has: {} recommendations", recommendations.size());
             for (RecommendationDTO rec : recommendations) {
                 logger.debug("  recommendation: {}", rec.getState().getRisk());
             }
