@@ -361,7 +361,7 @@ public class AttackPathDataset {
                     if (hasExternalDependencies(csgURI)) {
                         csgToConsider.add(csgURI);
                     } else {
-                        logger.debug("{} is NOT \"has_external_dependences\"", csgURI);
+                        //logger.debug("{} is NOT \"has_external_dependences\"", csgURI);
                     }
                 }
             } else {
@@ -370,10 +370,10 @@ public class AttackPathDataset {
                         if (!isContingencyActivation(csgURI)) {
                             csgToConsider.add(csgURI);
                         } else {
-                            logger.debug("{} IS \"is_contingency_activation\"", csgURI);
+                            //logger.debug("{} IS \"is_contingency_activation\"", csgURI);
                         }
                     } else {
-                        logger.debug("{} is NOT \"is_runtime_changable\"", csgURI);
+                        //logger.debug("{} is NOT \"is_runtime_changable\"", csgURI);
                     }
                 }
             }
@@ -722,8 +722,9 @@ public class AttackPathDataset {
         for (String csURI : csSet) {
             String logMessage = enable ? "enabling CS {}" : "disabling CS {}";
             logger.debug(logMessage, csURI);
+            controlSets.get(csURI).setProposed(enable);
             ControlSetDB cs = controlSets.get(csURI);
-            cs.setProposed(enable);
+            //cs.setProposed(enable);
             querier.updateProposedStatus(true, cs, "system");
             querier.store(cs, "system");
         }

@@ -250,10 +250,10 @@ public class AttackPathTester extends TestCase {
 			RecommendationReportDTO report = reca.recommendations(true, false);
             //logger.debug("Recommendation report: {}", report);
 
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-            String json = objectMapper.writeValueAsString(report);
-            logger.debug("Recommendation report: {}", json);
+            //ObjectMapper objectMapper = new ObjectMapper();
+            //objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+            //String json = objectMapper.writeValueAsString(report);
+            //logger.debug("Recommendation report: {}", json);
 
 		} catch (Exception e) {
 			e.printStackTrace();

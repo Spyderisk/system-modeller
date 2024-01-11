@@ -286,7 +286,7 @@ public class AsyncController {
             logger.info("Initialising JenaQuerierDB");
 
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
-                    model.getModelStack(), false);
+                    model.getModelStack(), true);
 
             querierDB.init();
 

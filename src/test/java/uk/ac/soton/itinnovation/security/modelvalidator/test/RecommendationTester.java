@@ -195,11 +195,10 @@ public class RecommendationTester extends TestCase {
 
 			RecommendationReportDTO report = reca.recommendations(true, false);
 
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-            String json = objectMapper.writeValueAsString(report);
-            logger.debug("Recommendation report: {}", json);
-
+            //ObjectMapper objectMapper = new ObjectMapper();
+            //objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+            //String json = objectMapper.writeValueAsString(report);
+            //logger.debug("Recommendation report: {}", json);
 
 		} catch (Exception e) {
 			e.printStackTrace();
