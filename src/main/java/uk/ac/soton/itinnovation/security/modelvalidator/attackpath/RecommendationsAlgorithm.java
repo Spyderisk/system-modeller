@@ -26,6 +26,7 @@ package uk.ac.soton.itinnovation.security.modelvalidator.attackpath;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Set;
 import java.util.HashSet;
 
@@ -98,13 +99,14 @@ public class RecommendationsAlgorithm {
 
     public boolean checkRiskCalculationMode(String input) {
         ModelDB model = querier.getModelInfo("system");
-        logger.debug("model info: {}", model);
+        logger.info("Model info: {}", model);
 
         RiskCalculationMode modelRiskCalculationMode;
         RiskCalculationMode requestedMode;
 
         try {
-            modelRiskCalculationMode = RiskCalculationMode.valueOf(model.getRiskCalculationMode());
+            logger.info("riskCalculationMode: {}", model.getRiskCalculationMode());
+            modelRiskCalculationMode = model.getRiskCalculationMode() != null ? RiskCalculationMode.valueOf(model.getRiskCalculationMode()) : null;
             requestedMode = RiskCalculationMode.valueOf(input);
 
             return modelRiskCalculationMode == requestedMode;
@@ -346,9 +348,8 @@ public class RecommendationsAlgorithm {
                 }
             }
 
-            logger.debug("adding cached path recommendation {}", node.getRecommendation().getIdentifier());
-
             if (node.getRecommendation() != null) {
+                logger.debug("adding cached path recommendation {}", node.getRecommendation().getIdentifier());
                 report.getRecommendations().add(node.getRecommendation());
             }
         }
@@ -356,7 +357,7 @@ public class RecommendationsAlgorithm {
 
     public RecommendationReportDTO recommendations(boolean allPaths, boolean normalOperations) throws RuntimeException {
 
-        logger.debug("Recommendations core part (risk mode: {})", riskMode);
+        logger.info("Recommendations core part (risk mode: {})", riskMode);
 
         try {
 
@@ -368,7 +369,6 @@ public class RecommendationsAlgorithm {
             state.setRisk(riskResponse.toString());
             report.setCurrent(state);
 
-            //AttackTree threatTree = calculateAttackTree(targetUris, riskCalculationMode, allPaths, normalOperations);
             AttackTree threatTree = calcAttackTree();
 
             // step: attackMitigationCSG?
@@ -380,9 +380,9 @@ public class RecommendationsAlgorithm {
             // step: makeRecommendations on rootNode?
             makeRecommendations(rootNode);
 
-            //logger.debug("RECOMMENDATIONS REPORT: {}", report);
-            logger.debug("REPORT has: {} recommendations", report.getRecommendations().size());
-            for (RecommendationDTO rec : report.getRecommendations()) {
+            List<RecommendationDTO> recommendations = report.getRecommendations() != null ? report.getRecommendations() : Collections.emptyList();
+            logger.info("REPORT has: {} recommendations", recommendations.size());
+            for (RecommendationDTO rec : recommendations) {
                 logger.debug("  recommendation: {}", rec.getState().getRisk());
             }
 

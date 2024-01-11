@@ -11,12 +11,20 @@ class ModelList extends Component {
 
     render() {
         let {models, filter, dispatch, ontologies, user} = this.props;
+
+        models.map(model => {
+            model.name = model.name ? model.name : "null";
+            return model;
+        });
+
         let domainToFilter = []
+
         for (let i = 0; i < filter.domainModelFilters.length; i++) {
             if(filter.domainModelFilters[i].checked){
                 domainToFilter[i] = filter.domainModelFilters[i].name.toLowerCase();
             }
         }
+        
         return (
             <div className="minimum">
                 <Row className="model-list-row">
