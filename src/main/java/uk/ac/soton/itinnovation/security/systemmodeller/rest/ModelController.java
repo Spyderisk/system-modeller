@@ -1401,7 +1401,7 @@ public class ModelController {
 	 * @return A JSON report containing recommendations 
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/recommendationsb", method = RequestMethod.GET)
+	@RequestMapping(value = "/models/{modelId}/recommendations", method = RequestMethod.GET)
 	public ResponseEntity<RecommendationReportDTO> calculateRecommendations(
             @PathVariable String modelId,
             @RequestParam(defaultValue = "FUTURE") String riskMode) {

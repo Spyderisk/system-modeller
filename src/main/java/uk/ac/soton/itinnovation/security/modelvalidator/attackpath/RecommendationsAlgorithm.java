@@ -242,7 +242,7 @@ public class RecommendationsAlgorithm {
             // Re-calculate risk now and create a recommendation
             RiskVector riskResponse = null;
             try {
-                riskResponse = apd.calculateRisk(this.modelId);
+                riskResponse = apd.calculateRisk(this.modelId, RiskCalculationMode.valueOf(riskMode));
                 logger.debug("RiskResponse: {}", riskResponse);
                 logger.debug("Overall risk: {}", riskResponse.getOverall());
                 StateDTO state = apd.getState();
@@ -362,7 +362,7 @@ public class RecommendationsAlgorithm {
         try {
 
             // get initial risk state
-            RiskVector riskResponse = apd.calculateRisk(this.modelId);
+            RiskVector riskResponse = apd.calculateRisk(this.modelId, RiskCalculationMode.valueOf(riskMode));
             apd.getState();
 
             StateDTO state = new StateDTO();

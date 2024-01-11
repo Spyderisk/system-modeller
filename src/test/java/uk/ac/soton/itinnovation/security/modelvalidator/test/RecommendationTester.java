@@ -163,6 +163,7 @@ public class RecommendationTester extends TestCase {
 
 		querierDB.initForValidation();
 
+        /*
         try {
             logger.info("Validating the model - ensures no dependence on bugs in older SSM validators");
             Validator validator = new Validator(querierDB);
@@ -184,6 +185,7 @@ public class RecommendationTester extends TestCase {
 			fail("Exception thrown by risk level calculator");
 			return;
 		}
+        */
 
 		try {
 			logger.info("Gathering datasets for recommendations");

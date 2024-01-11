@@ -118,6 +118,16 @@ public class AttackPathDataset {
         // Load system model assets, matching patterns and nodes
         assets = querier.getAssets("system", "system-inf");
 
+        updateDatasets();
+
+        final long endTime = System.currentTimeMillis();
+        logger.info("AttackPathDataset.AttackPathDataset(IQuerierDB querier): execution time {} ms",
+                endTime - startTime);
+
+    }
+
+    private void updateDatasets() {
+
         // Load system model trustworthiness attribute sets
         trustworthinessAttributeSets = querier.getTrustworthinessAttributeSets("system-inf");
 
@@ -133,9 +143,13 @@ public class AttackPathDataset {
         // Load system model control strategies and determine whether they are enabled
         controlStrategies = querier.getControlStrategies("system-inf");
 
-        final long endTime = System.currentTimeMillis();
-        logger.info("AttackPathDataset.AttackPathDataset(IQuerierDB querier): execution time {} ms",
-                endTime - startTime);
+        // Create likelihood maps
+        for (ThreatDB threat : threats.values()) {
+            likelihoods.put(threat.getUri(), threat.getPrior());
+        }
+        for (MisbehaviourSetDB miss : misbehaviourSets.values()) {
+            likelihoods.put(miss.getUri(), miss.getPrior());
+        }
 
     }
 
@@ -730,11 +744,13 @@ public class AttackPathDataset {
         }
     }
 
-    public RiskVector calculateRisk(String modelId) throws RuntimeException {
+    public RiskVector calculateRisk(String modelId, RiskCalculationMode riskMode) throws RuntimeException {
         try {
 			logger.info("Calculating risks for APD");
 			RiskCalculator rc = new RiskCalculator(querier);
-			rc.calculateRiskLevels(RiskCalculationMode.FUTURE, true, new Progress(modelId));
+			rc.calculateRiskLevels(riskMode, true, new Progress(modelId));
+            // TODO: update maps!!!
+            updateDatasets();
             return getRiskVector();
 		} catch (Exception e) {
             logger.error("Error calculating risks for APD", e);
