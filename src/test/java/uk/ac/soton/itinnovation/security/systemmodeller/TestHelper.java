@@ -94,6 +94,10 @@ public class TestHelper extends uk.ac.soton.itinnovation.security.modelquerier.u
 		this.addSystem(11, "StoreTest/dataflow/DataFlow_Test_Singles.nq.gz",
 				"http://it-innovation.soton.ac.uk/system/63d9308f8f6a206408be9010");
 
-		
+		//Test models for recommenations
+		this.addDomain(4, "modelvalidator/AttackPath/domain-6a3-3-1.nq.gz", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
+		this.addSystem(12, "modelvalidator/AttackPath/cyberkit4sme_demo.nq.gz",
+				"http://it-innovation.soton.ac.uk/system/652fe5d3d20c015ba8f02fb6");
+				
 	}
 }
