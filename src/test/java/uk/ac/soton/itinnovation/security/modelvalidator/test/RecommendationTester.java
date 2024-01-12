@@ -69,7 +69,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
-
 @RunWith(JUnit4.class)
 public class RecommendationTester extends TestCase {
 
@@ -142,6 +141,16 @@ public class RecommendationTester extends TestCase {
 
         /*
         try {
+            logger.info("Validating the model - ensures no dependence on bugs in older SSM validators");
+            Validator validator = new Validator(querierDB);
+            validator.validate(new Progress(tester.getGraph("system")));
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception thrown by validator preparing attack path test case");
+            return;
+		}
+
+        try {
 			logger.info("Calculating risks and generating attack graph");
 			RiskCalculator rc = new RiskCalculator(querierDB);
 			rc.calculateRiskLevels(RiskCalculationMode.CURRENT, true, new Progress(tester.getGraph("system"))); //save results, as queried below
@@ -160,7 +169,7 @@ public class RecommendationTester extends TestCase {
 
 			reca.checkRequestedRiskCalculationMode("FUTURE");
 
-			RecommendationReportDTO report = reca.recommendations(true, false);
+			RecommendationReportDTO report = reca.recommendations();
 
             //ObjectMapper objectMapper = new ObjectMapper();
             //objectMapper.enable(SerializationFeature.INDENT_OUTPUT);

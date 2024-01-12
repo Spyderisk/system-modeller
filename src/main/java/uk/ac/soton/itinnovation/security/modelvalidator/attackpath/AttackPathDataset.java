@@ -627,7 +627,7 @@ public class AttackPathDataset {
 
     public void applyCS(Set<String> csSet, boolean enable) {
         String logMessage = enable ? "enabling" : "disabling";
-        logger.debug("{} CS for:", logMessage);
+        logger.debug("{} CS for {} controls:", logMessage, csSet.size());
         for (String csURI : csSet) {
             logger.debug("  └──> {}", csURI);
             controlSets.get(csURI).setProposed(enable);

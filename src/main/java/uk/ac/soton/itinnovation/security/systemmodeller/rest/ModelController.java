@@ -1445,7 +1445,7 @@ public class ModelController {
                 throw new BadRequestErrorException("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
             }
 
-            RecommendationReportDTO report = reca.recommendations(true, false);
+            RecommendationReportDTO report = reca.recommendations();
 
             // create recEntry and save it to mongo db
             RecommendationEntity recEntity = new RecommendationEntity();

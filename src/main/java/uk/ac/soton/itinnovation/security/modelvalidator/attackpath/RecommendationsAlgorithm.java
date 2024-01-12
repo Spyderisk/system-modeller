@@ -72,10 +72,13 @@ public class RecommendationsAlgorithm {
     private String modelId;
     private int recCounter = 0;
     private RecommendationReportDTO report;
-    private String riskMode = "FUTURE";
+    private String riskMode = "CURRENT";
 
     private List<String> nodes = new ArrayList<>();
     private List<String> links = new ArrayList<>();
+
+    // allPaths flag for single or double backtrace
+    private boolean allPaths = false;
 
     @Autowired
     private ModelObjectsHelper modelObjectsHelper;
@@ -132,17 +135,15 @@ public class RecommendationsAlgorithm {
     }
 
     public AttackTree calcAttackTree(String thresholdLevel) {
-        return calculateAttackTree(apd.filterMisbehaviours(thresholdLevel), riskMode, true, true);
+        return calculateAttackTree(apd.filterMisbehaviours(thresholdLevel), riskMode, this.allPaths);
     }
 
     public AttackTree calcAttackTree() {
-        return calculateAttackTree(apd.filterMisbehaviours(), riskMode, true, true);
+        return calculateAttackTree(apd.filterMisbehaviours(), riskMode, this.allPaths);
     }
 
-    public AttackTree calculateAttackTree(List<String> targetUris, String riskCalculationMode, boolean allPaths,
-                                        boolean normalOperations) throws RuntimeException {
-        logger.debug("calculate attack tree with isFUTURE: {}, allPaths: {}, normalOperations: {}",
-                riskCalculationMode, allPaths, normalOperations);
+    public AttackTree calculateAttackTree(List<String> targetUris, String riskCalculationMode, boolean allPaths) throws RuntimeException {
+        logger.debug("calculate attack tree with isFUTURE: {}, allPaths: {}", riskCalculationMode, allPaths);
         logger.debug("target URIs: {}", targetUris);
 
         checkRequestedRiskCalculationMode(riskCalculationMode);
@@ -267,14 +268,15 @@ public class RecommendationsAlgorithm {
             if ((riskResponse != null) & (apd.compareOverallRiskToMedium(riskResponse.getOverall()))) {
                 logger.info("Termination condition");
             } else {
-                logger.debug("Risk is till higher than Medium");
-                logger.info("Recalculate threat tree ...");
+                logger.debug("Risk is still higher than Medium");
+                logger.info("Recalculate threat tree for a lower level ...");
                 AttackTree tt = calcAttackTree("domain#RiskLevelLow");
                 LogicalExpression nle = tt.attackMitigationCSG();
                 this.applyCSGs(nle, childNode);
             }
 
             // undo CS changes in CS_set
+            logger.debug("Undoing CS controls ({})", csSet.size());
             apd.applyCS(csSet, false);
         }
 
@@ -353,7 +355,7 @@ public class RecommendationsAlgorithm {
         }
     }
 
-    public RecommendationReportDTO recommendations(boolean allPaths, boolean normalOperations) throws RuntimeException {
+    public RecommendationReportDTO recommendations() throws RuntimeException {
 
         logger.info("Recommendations core part (risk mode: {})", riskMode);
 
