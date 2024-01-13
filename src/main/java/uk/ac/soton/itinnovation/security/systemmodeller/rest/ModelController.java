@@ -1409,8 +1409,10 @@ public class ModelController {
         logger.info("Calculating recommendations for model {}", modelId);
         logger.info("riskMode: {}",riskMode);
 
+		RiskCalculationMode rcMode;
+
 		try {
-            RiskCalculationMode.valueOf(riskMode);
+            rcMode = RiskCalculationMode.valueOf(riskMode);
 		} catch (IllegalArgumentException e) {
 			logger.error("Found unexpected riskCalculationMode parameter value {}, valid values are: {}.",
 					riskMode, RiskCalculationMode.values());
@@ -1422,15 +1424,33 @@ public class ModelController {
 
 		String mId = model.getId();
 
-        AStoreWrapper store = storeModelManager.getStore();
+		//Keep initial model info, so we can restore some of these original values at the end
+		uk.ac.soton.itinnovation.security.model.system.Model modelInfo = model.getModelInfo();
+
+		if (model.isValidating()) {
+			logger.warn("Model {} is currently validating - ignoring calc risks request {}", modelId, modelId);
+			return ResponseEntity.status(HttpStatus.OK).body(new RecommendationReportDTO());
+		}
+
+		if (model.isCalculatingRisks()) {
+			logger.warn("Model {} is already calculating risks - ignoring request {}", modelId, modelId);
+			return ResponseEntity.status(HttpStatus.OK).body(new RecommendationReportDTO());
+		}
+
+		AStoreWrapper store = storeModelManager.getStore();
+		RecommendationReportDTO report = null;
 
         try {
+			logger.debug("Marking as calculating risks [{}] {}", modelId, model.getName());
+			model.markAsCalculatingRisks(rcMode, true);
+
             logger.info("Initialising JenaQuerierDB");
 
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), true);
 
-            querierDB.init();
+			//TODO: check that this is required
+            querierDB.initForRiskCalculation();
 
             logger.info("Calculating recommendations");
 
@@ -1445,7 +1465,7 @@ public class ModelController {
                 throw new BadRequestErrorException("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
             }
 
-            RecommendationReportDTO report = reca.recommendations(true, false);
+            report = reca.recommendations(true, false);
 
             // create recEntry and save it to mongo db
             RecommendationEntity recEntity = new RecommendationEntity();
@@ -1456,7 +1476,6 @@ public class ModelController {
             recRepository.save(recEntity);
             logger.debug("rec entity saved for {}", recEntity.getId());
 
-
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(report);
 
         } catch (BadRequestErrorException e) {
@@ -1466,7 +1485,12 @@ public class ModelController {
             logger.error("Threat path failed due to an error", e);
             throw new InternalServerErrorException(
                     "Finding recommendations failed. Please contact support for further assistance.");
-        }
-    }
+		} finally {
+			//always reset the flags even if the risk calculation crashes
+			model.setName(modelInfo.getLabel());
+			model.setDescription(modelInfo.getDescription());
+			model.finishedCalculatingRisks(report != null, rcMode, true);
+		}
+}
 
 }

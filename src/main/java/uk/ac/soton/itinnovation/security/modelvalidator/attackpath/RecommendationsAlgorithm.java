@@ -42,7 +42,6 @@ import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ControlDT
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ControlStrategyDTO;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationDTO;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationReportDTO;
-//import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RiskVectorDTO;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.StateDTO;
 
 import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
@@ -51,7 +50,6 @@ import uk.ac.soton.itinnovation.security.modelquerier.IQuerierDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ModelDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ControlSetDB;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.LogicalExpression;
-import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
 
 import com.bpodgursky.jbool_expressions.Expression;
 import com.bpodgursky.jbool_expressions.And;
@@ -78,9 +76,6 @@ public class RecommendationsAlgorithm {
 
     private List<String> nodes = new ArrayList<>();
     private List<String> links = new ArrayList<>();
-
-    @Autowired
-    private ModelObjectsHelper modelObjectsHelper;
 
     public RecommendationsAlgorithm(RecommendationsAlgorithmConfig config) {
         this.querier = config.getQuerier();
