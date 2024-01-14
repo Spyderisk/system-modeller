@@ -81,7 +81,7 @@ public class AsyncService {
                 throw new Exception("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
             }
 
-            RecommendationReportDTO report = reca.recommendations(true, false);
+            RecommendationReportDTO report = reca.recommendations();
 
             storeRecReport(jobId, report);
 

@@ -39,26 +39,10 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.AdditionalPropertyDTO;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.AssetDTO;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ConsequenceDTO;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ControlDTO;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ControlStrategyDTO;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationDTO;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationReportDTO;
-//import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RiskVectorDTO;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.StateDTO;
-
-
 import uk.ac.soton.itinnovation.security.model.Level;
-
 import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
-import uk.ac.soton.itinnovation.security.model.system.RiskVector;
 import uk.ac.soton.itinnovation.security.model.system.RiskLevelCount;
-
-import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
-import uk.ac.soton.itinnovation.security.modelvalidator.RiskCalculator;
-
+import uk.ac.soton.itinnovation.security.model.system.RiskVector;
 import uk.ac.soton.itinnovation.security.modelquerier.IQuerierDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.AssetDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ControlSetDB;
@@ -67,6 +51,17 @@ import uk.ac.soton.itinnovation.security.modelquerier.dto.LevelDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.MisbehaviourSetDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ThreatDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.TrustworthinessAttributeSetDB;
+import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
+import uk.ac.soton.itinnovation.security.modelvalidator.RiskCalculator;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.AdditionalPropertyDTO;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.AssetDTO;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ConsequenceDTO;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ControlDTO;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ControlStrategyDTO;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationDTO;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationReportDTO;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.StateDTO;
+
 
 public class AttackPathDataset {
     private static final Logger logger = LoggerFactory.getLogger(AttackPathDataset.class);
@@ -118,6 +113,16 @@ public class AttackPathDataset {
         // Load system model assets, matching patterns and nodes
         assets = querier.getAssets("system", "system-inf");
 
+        updateDatasets();
+
+        final long endTime = System.currentTimeMillis();
+        logger.info("AttackPathDataset.AttackPathDataset(IQuerierDB querier): execution time {} ms",
+                endTime - startTime);
+
+    }
+
+    private void updateDatasets() {
+
         // Load system model trustworthiness attribute sets
         trustworthinessAttributeSets = querier.getTrustworthinessAttributeSets("system-inf");
 
@@ -133,11 +138,16 @@ public class AttackPathDataset {
         // Load system model control strategies and determine whether they are enabled
         controlStrategies = querier.getControlStrategies("system-inf");
 
-        final long endTime = System.currentTimeMillis();
-        logger.info("AttackPathDataset.AttackPathDataset(IQuerierDB querier): execution time {} ms",
-                endTime - startTime);
+        // Create likelihood maps
+        for (ThreatDB threat : threats.values()) {
+            likelihoods.put(threat.getUri(), threat.getPrior());
+        }
+        for (MisbehaviourSetDB miss : misbehaviourSets.values()) {
+            likelihoods.put(miss.getUri(), miss.getPrior());
+        }
 
     }
+
 
     /*
      * Create maps required by the risk calculation to find TWAS, MS and their relationship to roles
@@ -154,20 +164,19 @@ public class AttackPathDataset {
             likelihoods.put(miss.getUri(), miss.getPrior());
         }
 
+        final long endTime = System.currentTimeMillis();
+
         logger.debug("*********CREATE MAPS*********");
         logger.debug("AttackPathDataset threats: {}", threats.size());
         logger.debug("AttackPathDataset MS: {}", misbehaviourSets.size());
         logger.debug("AttackPathDataset likelihoods: {}", likelihoods.size());
         logger.debug("*****************************");
-
-        final long endTime = System.currentTimeMillis();
         logger.info("AttackPathDataset.CreateMaps(): execution time {} ms", endTime - startTime);
     }
 
     public boolean isFutureRisk(String input) {
-        RiskCalculationMode requestedMode;
         try {
-            requestedMode = RiskCalculationMode.valueOf(input);
+            RiskCalculationMode requestedMode = RiskCalculationMode.valueOf(input);
             return requestedMode == RiskCalculationMode.FUTURE;
         } catch (IllegalArgumentException e) {
             // TODO: throw an exception
@@ -249,14 +258,10 @@ public class AttackPathDataset {
      * @param uri
      * @return
      */
-    // TODO MS will provide a direct call to get uris
     public List<String> getMisbehaviourDirectCauseUris(String misbUri) throws RuntimeException {
         try {
-            //logger.debug("MS DCUri: {}", misbUri);
             MisbehaviourSetDB ms = misbehaviourSets.get(misbUri);
-            //return new ArrayList<>(ms.getCausedBy());
             List<String> al = new ArrayList<>(ms.getCausedBy());
-            //logger.debug("caused by: {}", al);
             return al;
         } catch (Exception e) {
             return new ArrayList<String>();
@@ -361,7 +366,7 @@ public class AttackPathDataset {
                     if (hasExternalDependencies(csgURI)) {
                         csgToConsider.add(csgURI);
                     } else {
-                        logger.debug("{} is NOT \"has_external_dependences\"", csgURI);
+                        //logger.debug("{} is NOT \"has_external_dependences\"", csgURI);
                     }
                 }
             } else {
@@ -370,10 +375,10 @@ public class AttackPathDataset {
                         if (!isContingencyActivation(csgURI)) {
                             csgToConsider.add(csgURI);
                         } else {
-                            logger.debug("{} IS \"is_contingency_activation\"", csgURI);
+                            //logger.debug("{} IS \"is_contingency_activation\"", csgURI);
                         }
                     } else {
-                        logger.debug("{} is NOT \"is_runtime_changable\"", csgURI);
+                        //logger.debug("{} is NOT \"is_runtime_changable\"", csgURI);
                     }
                 }
             }
@@ -384,46 +389,6 @@ public class AttackPathDataset {
         return csgToConsider;
     }
 
-
-    /**
-     * get threat CSGs
-     *
-     * @param threatUri
-     * @return
-     */
-    public Set<String> getThreatControlStrategyUris1(String threatUri, boolean future) throws RuntimeException {
-        // Return list of control strategies (urirefs) that block a threat
-        // (uriref)
-
-        /*
-         * "blocks": means a CSG appropriate for current or future risk calc
-         * "mitigates": means a CSG appropriate for furture risk (often a
-         * contingency plan for a current risk CSG); excluded from likelihood
-         * calc in current risk
-         */
-
-        Set<String> csgURIs = new HashSet<String>();
-        Set<String> csgToConsider = new HashSet<>();
-        ThreatDB threat = this.threats.get(threatUri);
-        try {
-            csgURIs.addAll(threat.getBlockedByCSG());
-            logger.debug("GET BLOCKED by CSG: {}", csgURIs);
-            if (future) {
-                csgURIs.addAll(threat.getMitigatedByCSG());
-                logger.debug("GET MITIGATED by CSG: {}", csgURIs);
-            }
-            for (String csgURI : csgURIs) {
-                ControlStrategyDB csg = querier.getControlStrategy(csgURI, "system-inf");
-                if (csg.isCurrentRisk()) {
-                    csgToConsider.add(csgURI);
-                } 
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        logger.debug("getThreatCSGuris: {}, {}", threatUri, csgToConsider);
-        return csgToConsider;
-    }
 
     /**
      * get CSG control sets uris
@@ -467,31 +432,6 @@ public class AttackPathDataset {
      * @param csgUri
      * @return
      */
-    public List<String> getCsgInactiveControlSets1(String csgUri) throws RuntimeException {
-        // check both mandatory amd optional
-        try {
-            List<String> csList = new ArrayList<>();
-            for (String csUri : this.controlStrategies.get(csgUri).getMandatoryCS()) {
-                // TODO needs revisiting, CS object should be accessed directly
-                for (ControlSetDB cs : controlSets.values()) {
-                    if (cs.getUri().equals(csUri) && (!cs.isProposed())) {
-                        csList.add(csUri);
-                    }
-                }
-            }
-            for (String csUri : this.controlStrategies.get(csgUri).getOptionalCS()) {
-                // TODO needs revisiting, CS object should be accessed directly
-                for (ControlSetDB cs : controlSets.values()) {
-                    if (cs.getUri().equals(csUri) && (!cs.isProposed())) {
-                        csList.add(csUri);
-                    }
-                }
-            }return csList;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public List<String> getCsgInactiveControlSets(String csgUri) {
         try {
             return controlSets.values().stream()
@@ -531,8 +471,12 @@ public class AttackPathDataset {
         }
     }
 
-    // TODO filtering LevelValue should be a parameter
     public List<String> filterMisbehaviours() throws RuntimeException {
+        return filterMisbehaviours("domain#RiskLevelMedium");
+    }
+
+    // TODO filtering LevelValue should be a parameter
+    public List<String> filterMisbehaviours(String riskLevel) throws RuntimeException {
         /*
          * compare MS by risk then likelihood, and return MS with likelihood or risk >= MEDIUM
          */
@@ -549,10 +493,9 @@ public class AttackPathDataset {
 
             msSorted.sort(comparator);
 
-            int threshold = riLevels.get("domain#RiskLevelHigh").getLevelValue();
+            int threshold = riLevels.get(riskLevel).getLevelValue();
             List<MisbehaviourSetDB> msFiltered = msSorted.stream()
                     .filter(ms -> riLevels.get(ms.getRisk()).getLevelValue() >= threshold).collect(Collectors.toList());
-            
 
             for (MisbehaviourSetDB ms : msFiltered) {
                 AssetDB asset = assets.get(ms.getLocatedAt());
@@ -572,21 +515,14 @@ public class AttackPathDataset {
     }
 
     public boolean isExternalCause(String uri) {
-        boolean retVal = false;
-        // TODO: no need to check MS for external causes any more?
         if (misbehaviourSets.containsKey(uri)) {
             MisbehaviourSetDB ms = querier.getMisbehaviourSet(uri, "system-inf");
-            if (ms != null) {
-                retVal = ms.isExternalCause();
-            }
+            return (ms != null) && ms.isExternalCause();
         } else if (trustworthinessAttributeSets.containsKey(uri)) {
             TrustworthinessAttributeSetDB twa = trustworthinessAttributeSets.get(uri);
-            if (twa != null) {
-                retVal = twa.isExternalCause();
-            }
+            return (twa != null) && twa.isExternalCause();
         }
-
-        return retVal;
+        return false;
     }
 
     /**
@@ -596,67 +532,41 @@ public class AttackPathDataset {
      * @rerutn boolean
      */
     public boolean isNormalOp(String uri) {
-        boolean retVal = false;
 
         // check if we have to deal with a threat URI
         if (this.threats.containsKey(uri)) {
             ThreatDB threat = this.querier.getThreat(uri, "system-inf");
-            if (threat != null) {
-                retVal = threat.isNormalOperation();
-            }
+            return (threat != null) && threat.isNormalOperation();
         } else if (misbehaviourSets.containsKey(uri)) {
             MisbehaviourSetDB ms = querier.getMisbehaviourSet(uri, "system-inf");
-            if (ms != null) {
-                retVal = ms.isNormalOpEffect();
-            }
+            return (ms != null) && ms.isNormalOpEffect();
         } else if (trustworthinessAttributeSets.containsKey(uri)) {
-            retVal = false;
+            return false;
         } else {
             logger.warn("Not sure what is this: {}", uri);
+            return false;
         }
-
-        return retVal;
     }
 
     // describes if the URI refers to an initial cause misbehaviour
     public boolean isInitialCause(String uri) {
-        if (this.threats.keySet().contains(uri)) {
-            return threats.get(uri).isInitialCause();
-        } else {
-            return false;
-        }
+        return threats.containsKey(uri) && threats.get(uri).isInitialCause();
     }
 
     public boolean isThreatSimple(String uri) {
-        if (this.threats.keySet().contains(uri)) {
-            return true;
-        } else {
-            return false;
-        }
+        return this.threats.keySet().contains(uri);
     }
 
     public boolean isMisbehaviourSet(String uri) {
-        if (this.misbehaviourSets.keySet().contains(uri)) {
-            return true;
-        } else {
-            return false;
-        }
+        return this.misbehaviourSets.keySet().contains(uri);
     }
 
     public boolean isTrustworthinessAttributeSets(String uri) {
-        if (this.trustworthinessAttributeSets.keySet().contains(uri)) {
-            return true;
-        } else {
-            return false;
-        }
+        return this.trustworthinessAttributeSets.keySet().contains(uri);
     }
 
     public boolean isThreat(String uri) {
-        if (this.threats.keySet().contains(uri)) {
-            return true;
-        } else {
-            return false;
-        }
+        return this.threats.keySet().contains(uri);
     }
 
     public ThreatDB getThreat(String uri) {
@@ -670,10 +580,7 @@ public class AttackPathDataset {
     }
 
     public boolean isSecondaryThreat(String uri) {
-        if (threats.keySet().contains(uri) && (threats.get(uri).getSecondaryEffectConditions().size() > 0)) {
-            return true;
-        }
-        return false;
+        return threats.containsKey(uri) && threats.get(uri).getSecondaryEffectConditions().size() > 0;
     }
 
     public boolean isRootCause(String uri) {
@@ -719,26 +626,26 @@ public class AttackPathDataset {
     }
 
     public void applyCS(Set<String> csSet, boolean enable) {
+        String logMessage = enable ? "enabling" : "disabling";
+        logger.debug("{} CS for {} controls:", logMessage, csSet.size());
         for (String csURI : csSet) {
-            String logMessage = enable ? "enabling CS {}" : "disabling CS {}";
-            logger.debug(logMessage, csURI);
+            logger.debug("  └──> {}", csURI);
+            controlSets.get(csURI).setProposed(enable);
             ControlSetDB cs = controlSets.get(csURI);
-            cs.setProposed(enable);
             querier.updateProposedStatus(true, cs, "system");
             querier.store(cs, "system");
         }
     }
 
-    public RiskVector calculateRisk(String modelId) throws RuntimeException {
+    public RiskVector calculateRisk(String modelId, RiskCalculationMode riskMode) throws RuntimeException {
         try {
             //TODO: check if this is required. Also it has already been called when setting up the querier
             querier.initForRiskCalculation();
             
 			logger.info("Calculating risks for APD");
 			RiskCalculator rc = new RiskCalculator(querier);
-
-			rc.calculateRiskLevels(RiskCalculationMode.FUTURE, true, new Progress(modelId));
-
+			rc.calculateRiskLevels(riskMode, true, new Progress(modelId));
+            updateDatasets();
             return getRiskVector();
 		} catch (Exception e) {
             logger.error("Error calculating risks for APD", e);
@@ -771,8 +678,9 @@ public class AttackPathDataset {
     public boolean compareOverallRiskToMedium(String overall) {
         int level = riLevels.get(overall).getLevelValue();
         int threshold = riLevels.get("domain#RiskLevelMedium").getLevelValue();
-        logger.debug("OVERALL COMPARE: {} vs {}", level, threshold);
-        return  level >= threshold;
+        boolean retVal = threshold >= level;
+        logger.debug("Overall Risk Comparison: Medium >= {} --> {}", overall, retVal);
+        return  retVal;
     }
 
     public StateDTO getState() {

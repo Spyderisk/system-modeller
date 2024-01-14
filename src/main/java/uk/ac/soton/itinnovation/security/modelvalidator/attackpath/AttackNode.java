@@ -178,9 +178,9 @@ public class AttackNode {
         }
 
         // TODO debug only:
-        if (this.uri.substring(7).equals("MS-InService-a0826156")) {
-            logger.debug("XXX: {} all direct cause uris: {}", this.uri.substring(7), this.allDirectCauseUris);
-        }
+        //if (this.uri.substring(7).equals("MS-InService-a0826156")) {
+        //    logger.debug("XXX: {} all direct cause uris: {}", this.uri.substring(7), this.allDirectCauseUris);
+        //}
 
         this.controlStrategies = this.getControlStrategies();
         this.controls = this.getControls();
@@ -372,9 +372,9 @@ public class AttackNode {
         }
 
         // TODO debug only:
-        if (this.uri.substring(7).equals("MS-InService-a0826156")) {
-            logger.debug("DDD: currentPath: {}, self all: {}", currentPath, this.allDirectCauseUris);
-        }
+        //if (this.uri.substring(7).equals("MS-InService-a0826156")) {
+        //    logger.debug("DDD: currentPath: {}, self all: {}", currentPath, this.allDirectCauseUris);
+        //}
 
         currentPath.add(this.uri);
         logger.debug(String.format("%1$"+ currentPath.size() +"s", "") +
