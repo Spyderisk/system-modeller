@@ -263,6 +263,7 @@ public class RecommendationsAlgorithm {
             // undo CS changes in CS_set
             logger.debug("Undoing CS controls ({})", csSet.size());
             apd.changeCS(csSet, false);
+            apd.calculateRisk(this.modelId, RiskCalculationMode.valueOf(riskMode));
         }
 
         logger.debug("return from iteration");

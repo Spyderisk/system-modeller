@@ -96,7 +96,8 @@ public class RecommendationTester extends TestCase {
         tester.addDomain(0, "modelvalidator/AttackPath/domain-6a3-3-1.nq.gz",
                 "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
 
-        tester.addSystem(0, "modelvalidator/AttackPath/cyberkit4sme_demo.nq.gz",
+        //tester.addSystem(0, "modelvalidator/AttackPath/cyberkit4sme_demo.nq.gz",
+        tester.addSystem(0, "modelvalidator/AttackPath/Demo_both_state_reports.nq.gz",
                 "http://it-innovation.soton.ac.uk/system/652fe5d3d20c015ba8f02fb6");
 
 		tester.setUp();
@@ -135,12 +136,8 @@ public class RecommendationTester extends TestCase {
 		logger.info("Calling querierDB.init");
 		querierDB.init();
 
-		logger.info("Calling querierDB.initForValidation");
-		querierDB.initForValidation();
-		logger.info("Back from querierDB.initForValidation");
-
-        /*
         try {
+		    querierDB.initForValidation();
             logger.info("Validating the model - ensures no dependence on bugs in older SSM validators");
             Validator validator = new Validator(querierDB);
             validator.validate(new Progress(tester.getGraph("system")));
@@ -151,6 +148,7 @@ public class RecommendationTester extends TestCase {
 		}
 
         try {
+		    querierDB.initForRiskCalculation();
 			logger.info("Calculating risks and generating attack graph");
 			RiskCalculator rc = new RiskCalculator(querierDB);
 			rc.calculateRiskLevels(RiskCalculationMode.CURRENT, true, new Progress(tester.getGraph("system"))); //save results, as queried below
@@ -159,15 +157,14 @@ public class RecommendationTester extends TestCase {
 			fail("Exception thrown by risk level calculator");
 			return;
 		}
-        */
 
 		try {
 			logger.info("Gathering datasets for recommendations");
 
-			RecommendationsAlgorithmConfig config = new RecommendationsAlgorithmConfig(querierDB, tester.getGraph("system"), "FUTURE");
+			RecommendationsAlgorithmConfig config = new RecommendationsAlgorithmConfig(querierDB, tester.getGraph("system"), "CURRENT");
 			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(config);
 
-			reca.checkRequestedRiskCalculationMode("FUTURE");
+			reca.checkRequestedRiskCalculationMode("CURRENT");
 
 			RecommendationReportDTO report = reca.recommendations();
 

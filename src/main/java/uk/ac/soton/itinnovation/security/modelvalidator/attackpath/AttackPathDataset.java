@@ -641,7 +641,7 @@ public class AttackPathDataset {
         try {
             //TODO: check if this is required. Also it has already been called when setting up the querier
             querier.initForRiskCalculation();
-            
+
 			logger.info("Calculating risks for APD");
 			RiskCalculator rc = new RiskCalculator(querier);
 			rc.calculateRiskLevels(riskMode, true, new Progress(modelId));
