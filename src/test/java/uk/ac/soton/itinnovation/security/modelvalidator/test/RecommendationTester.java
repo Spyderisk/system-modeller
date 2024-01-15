@@ -96,9 +96,10 @@ public class RecommendationTester extends TestCase {
         tester.addDomain(0, "modelvalidator/AttackPath/domain-6a3-3-1.nq.gz",
                 "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
 
-        //tester.addSystem(0, "modelvalidator/AttackPath/cyberkit4sme_demo.nq.gz",
         tester.addSystem(0, "modelvalidator/AttackPath/Demo_both_state_reports.nq.gz",
-                "http://it-innovation.soton.ac.uk/system/652fe5d3d20c015ba8f02fb6");
+                "http://it-innovation.soton.ac.uk/system/65944381aa547a34a3a03f10");
+        //tester.addSystem(0, "modelvalidator/AttackPath/cyberkit4sme_demo.nq.gz",
+                //"http://it-innovation.soton.ac.uk/system/652fe5d3d20c015ba8f02fb6");
 
 		tester.setUp();
 
@@ -168,10 +169,10 @@ public class RecommendationTester extends TestCase {
 
 			RecommendationReportDTO report = reca.recommendations();
 
-            //ObjectMapper objectMapper = new ObjectMapper();
-            //objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-            //String json = objectMapper.writeValueAsString(report);
-            //logger.debug("Recommendation report: {}", json);
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+            String json = objectMapper.writeValueAsString(report);
+            logger.debug("Recommendation report: {}", json);
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Exception thrown by attack path recommendations");

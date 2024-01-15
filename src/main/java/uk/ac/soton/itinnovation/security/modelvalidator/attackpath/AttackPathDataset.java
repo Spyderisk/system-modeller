@@ -625,12 +625,12 @@ public class AttackPathDataset {
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
-    public void changeCS(Set<String> csSet, boolean enable) {
-        String logMessage = enable ? "enabling" : "disabling";
+    public void changeCS(Set<String> csSet, boolean proposed) {
+        String logMessage = proposed ? "enabling" : "disabling";
         logger.debug("{} CS for {} controls:", logMessage, csSet.size());
         for (String csURI : csSet) {
             logger.debug("  └──> {}", csURI);
-            controlSets.get(csURI).setProposed(enable);
+            controlSets.get(csURI).setProposed(proposed);
             ControlSetDB cs = controlSets.get(csURI);
             querier.updateProposedStatus(true, cs, "system");
             querier.store(cs, "system");
