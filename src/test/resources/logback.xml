@@ -36,7 +36,7 @@
     <logger name="uk.ac.soton.itinnovation.security" level="debug"><appender-ref ref="LOGGING"/></logger>
     <logger name="uk.ac.soton.itinnovation.security.systemmodeller" level="warn"></logger>
     <logger name="uk.ac.soton.itinnovation.security.semanticstore" level="warn"></logger>
-    <logger name="uk.ac.soton.itinnovation.security.modelvalidator" level="warn"></logger>
+    <logger name="uk.ac.soton.itinnovation.security.modelvalidator" level="debug"></logger>
     <logger name="uk.ac.soton.itinnovation.security.modelquerier" level="warn"></logger>
 
     <!-- Set log levels for 3rd party packages -->
