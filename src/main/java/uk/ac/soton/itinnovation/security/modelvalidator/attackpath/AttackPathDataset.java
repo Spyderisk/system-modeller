@@ -625,7 +625,7 @@ public class AttackPathDataset {
         return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
 
-    public void applyCS(Set<String> csSet, boolean enable) {
+    public void changeCS(Set<String> csSet, boolean enable) {
         String logMessage = enable ? "enabling" : "disabling";
         logger.debug("{} CS for {} controls:", logMessage, csSet.size());
         for (String csURI : csSet) {

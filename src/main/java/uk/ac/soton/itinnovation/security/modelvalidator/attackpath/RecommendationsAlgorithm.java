@@ -171,26 +171,6 @@ public class RecommendationsAlgorithm {
         return attackTree;
     }
 
-   // TODO: remove this method
-   private CSGNode applyCSGsOUT(LogicalExpression le, CSGNode myNode) {
-        logger.debug("applyCSGs");
-        if (myNode == null) {
-            myNode = new CSGNode();
-        }
-
-        // convert LE to DNF
-        le.applyDNF(100);
-
-        // convert from CSG logical expression to list of CSG options
-        List<Expression> csgOptions = le.getListFromOr();
-        logger.debug("list of OR CSG options: {}", csgOptions.size());
-        for (Expression csgOption : csgOptions) {
-            logger.debug("└──> {}", csgOption);
-        }
-        logger.debug("eXit");
-        return null;
-   }
-
     private CSGNode applyCSGs(LogicalExpression le, CSGNode myNode) {
         logger.debug("applyCSGs()");
         if (myNode == null) {
@@ -238,7 +218,11 @@ public class RecommendationsAlgorithm {
             // apply all CS in the CS_set
             // TODO: I need to keep track of CS changes or roll them back later
             // csSet is used for that.
-            apd.applyCS(csSet, true);
+            if (csSet.isEmpty()) {
+                logger.debug("EMPTY csSet is found, skipping iteration");
+                continue;
+            }
+            apd.changeCS(csSet, true);
 
             // Re-calculate risk now and create a recommendation
             RiskVector riskResponse = null;
@@ -259,7 +243,7 @@ public class RecommendationsAlgorithm {
                 logger.warn("failed to get risk calculation, restore model");
                 // restore model ...
                 // TODO: restore model controls
-                apd.applyCS(csSet, false);
+                apd.changeCS(csSet, false);
                 // raise exception since failed to run risk calculation
                 throw new RuntimeException(e);
             }
@@ -278,7 +262,7 @@ public class RecommendationsAlgorithm {
 
             // undo CS changes in CS_set
             logger.debug("Undoing CS controls ({})", csSet.size());
-            apd.applyCS(csSet, false);
+            apd.changeCS(csSet, false);
         }
 
         logger.debug("return from iteration");
