@@ -262,7 +262,7 @@ public class AsyncController {
 	@RequestMapping(value = "/models/{modelId}/recommendations", method = RequestMethod.POST)
     public ResponseEntity<JobResponseDTO> startRecommendationsTask(
             @PathVariable String modelId,
-            @RequestParam (defaultValue = "FUTURE") String riskMode) {
+            @RequestParam (defaultValue = "CURRENT") String riskMode) {
 
         logger.info("Calculating threat graph for model {}", modelId);
         logger.info(" riskMode: {}",riskMode);

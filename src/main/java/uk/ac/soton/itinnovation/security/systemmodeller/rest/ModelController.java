@@ -1404,7 +1404,7 @@ public class ModelController {
 	@RequestMapping(value = "/models/{modelId}/recommendations", method = RequestMethod.GET)
 	public ResponseEntity<RecommendationReportDTO> calculateRecommendations(
             @PathVariable String modelId,
-            @RequestParam(defaultValue = "FUTURE") String riskMode) {
+            @RequestParam(defaultValue = "CURRENT") String riskMode) {
 
         logger.info("Calculating recommendations for model {}", modelId);
         logger.info("riskMode: {}",riskMode);
