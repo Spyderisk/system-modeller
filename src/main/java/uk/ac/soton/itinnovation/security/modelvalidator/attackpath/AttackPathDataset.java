@@ -650,32 +650,51 @@ public class AttackPathDataset {
     }
 
     public void changeCS(Set<String> csSet, boolean proposed) {
+
         String logMessage = proposed ? "enabling" : "disabling";
         logger.debug("{} CS for {} controls:", logMessage, csSet.size());
+
         for (String csURI : csSet) {
+
             logger.debug("  └──> {}", csURI);
-            controlSets.get(csURI).setProposed(proposed);
-            ControlSetDB cs = controlSets.get(csURI);
-            querier.updateProposedStatus(true, cs, "system");
+
+            ControlSetDB cs = querier.getControlSet(csURI, "system");
+            if (cs == null) {
+                cs = new ControlSetDB();
+                cs.setUri(csURI);
+                // TODO need to complete the object (see the validator)
+            }
+            cs.setProposed(proposed);
+
+            // check the triplet values to be the same
+
             querier.store(cs, "system");
+
         }
+
     }
 
     public RiskVector calculateRisk(String modelId, RiskCalculationMode riskMode) throws RuntimeException {
         try {
-            //TODO: check if this is required. Also it has already been called when setting up the querier
-            querier.initForRiskCalculation();
 
 			logger.info("Calculating risks for APD");
+
 			RiskCalculator rc = new RiskCalculator(querier);
-			rc.calculateRiskLevels(riskMode, true, new Progress(modelId));
+			rc.calculateRiskLevels(riskMode, false, new Progress(modelId));
+
             updateDatasets();
+
             return getRiskVector();
+
 		} catch (Exception e) {
+
             logger.error("Error calculating risks for APD", e);
 			e.printStackTrace();
+
             throw new RuntimeException("Failed to calculate risk");
+
 		}
+
     }
 
     public RiskVector getRiskVector() {
