@@ -56,6 +56,7 @@ import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
 import uk.ac.soton.itinnovation.security.model.system.RiskVector;
 import uk.ac.soton.itinnovation.security.modelquerier.IQuerierDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ModelDB;
+import uk.ac.soton.itinnovation.security.modelquerier.dto.ControlDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ControlSetDB;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.LogicalExpression;
 import com.bpodgursky.jbool_expressions.And;
@@ -287,8 +288,7 @@ public class RecommendationsAlgorithm {
 
         List<ControlDTO> recControlList = new ArrayList<>();
         for (String ctrlUri : csSet) {
-            ControlDTO ctrl = new ControlDTO();
-            ctrl.setUri(ctrlUri);
+            ControlDTO ctrl = apd.fillControlDTO(ctrlUri);
             recControlList.add(ctrl);
         }
         recommendation.setControls(recControlList);

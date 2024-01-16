@@ -45,6 +45,7 @@ import uk.ac.soton.itinnovation.security.model.system.RiskLevelCount;
 import uk.ac.soton.itinnovation.security.model.system.RiskVector;
 import uk.ac.soton.itinnovation.security.modelquerier.IQuerierDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.AssetDB;
+import uk.ac.soton.itinnovation.security.modelquerier.dto.ControlDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ControlSetDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ControlStrategyDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.LevelDB;
@@ -623,6 +624,28 @@ public class AttackPathDataset {
      */
     private String capitaliseString(String str) {
         return str.substring(0, 1).toUpperCase() + str.substring(1);
+    }
+
+    public AssetDTO fillAssetDTO(String assetUri) {
+        AssetDB asset = assets.get(assetUri);
+        AssetDTO assetDTO = new AssetDTO();
+        assetDTO.setUri(asset.getUri());
+        assetDTO.setType(asset.getType());
+        assetDTO.setLabel(asset.getLabel());
+        assetDTO.setIdentifier(asset.getId());
+        return assetDTO;
+    }
+    public ControlDTO fillControlDTO(String csUri) {
+        ControlDTO ctrl = new ControlDTO();
+        ControlSetDB cs = controlSets.get(csUri);
+        ControlDB control = querier.getControl(cs.getControl(), "domain");
+
+        ctrl.setUri(csUri);
+        ctrl.setLabel(control.getLabel());
+        ctrl.setDescription(control.getDescription());
+        ctrl.setAsset(fillAssetDTO(cs.getLocatedAt()));
+
+        return ctrl;
     }
 
     public void changeCS(Set<String> csSet, boolean proposed) {
