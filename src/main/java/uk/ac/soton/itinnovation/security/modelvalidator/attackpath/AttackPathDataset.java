@@ -644,6 +644,7 @@ public class AttackPathDataset {
         ctrl.setLabel(control.getLabel());
         ctrl.setDescription(control.getDescription());
         ctrl.setAsset(fillAssetDTO(cs.getLocatedAt()));
+        ctrl.setAction("Enable control");
 
         return ctrl;
     }

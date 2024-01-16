@@ -275,7 +275,6 @@ public class RecommendationsAlgorithm {
     private RecommendationDTO createRecommendation(List<String> csgList, Set<String> csSet, StateDTO state) {
         RecommendationDTO recommendation = new RecommendationDTO();
         recommendation.setIdentifier(this.recCounter++);
-        recommendation.setCategory("unknown");
 
         List<ControlStrategyDTO> recCSGList = new ArrayList<>();
         for (String csgUri : csgList) {
@@ -283,6 +282,7 @@ public class RecommendationsAlgorithm {
             csgDto.setUri(csgUri);
             csgDto.setDescription(apd.getCSGDescription(csgUri));
             recCSGList.add(csgDto);
+            csgDto.setCategory(apd.hasExternalDependencies(csgUri) ? "Applicable" : "Conditional");
         }
         recommendation.setControlStrategies(recCSGList);
 

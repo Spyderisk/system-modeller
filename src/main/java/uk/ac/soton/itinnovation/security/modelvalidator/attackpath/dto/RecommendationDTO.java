@@ -31,7 +31,6 @@ import lombok.Data;
 @Data
 public class RecommendationDTO {
     private int identifier;
-    private String category;
     private List<ControlStrategyDTO> controlStrategies;
     private List<ControlDTO> controls;
     private StateDTO state;

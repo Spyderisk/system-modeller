@@ -30,4 +30,5 @@ import lombok.Data;
 public class ControlStrategyDTO {
     private String uri;
     private String description;
+    private String category;
 }
