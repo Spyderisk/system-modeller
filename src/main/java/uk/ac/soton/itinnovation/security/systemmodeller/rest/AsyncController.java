@@ -265,6 +265,7 @@ public class AsyncController {
             @RequestParam (defaultValue = "CURRENT") String riskMode) {
 
         logger.info("Calculating threat graph for model {}", modelId);
+		riskMode = riskMode.replaceAll("[\n\r]", "_");
         logger.info(" riskMode: {}",riskMode);
 
 		try {

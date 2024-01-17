@@ -1407,6 +1407,7 @@ public class ModelController {
             @RequestParam(defaultValue = "CURRENT") String riskMode) {
 
         logger.info("Calculating recommendations for model {}", modelId);
+		riskMode = riskMode.replaceAll("[\n\r]", "_");
         logger.info("riskMode: {}",riskMode);
 
 		RiskCalculationMode rcMode;
