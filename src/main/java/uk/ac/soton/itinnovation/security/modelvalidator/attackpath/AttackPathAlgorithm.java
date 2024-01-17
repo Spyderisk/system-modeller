@@ -99,31 +99,6 @@ public class AttackPathAlgorithm {
         return retVal;
     }
 
-    public AttackTree calculateAttack(List<String> targetUris, boolean allPaths, boolean normalOperations)
-            throws RuntimeException {
-
-        logger.debug("calculate attack tree with allPaths: {}, normalOperations: {}", allPaths, normalOperations);
-        logger.debug("target URIs: {}", targetUris);
-
-        AttackTree attackTree;
-
-        try {
-            final long startTime = System.currentTimeMillis();
-
-            // calculate attack tree, allPath dictates one or two backtrace
-            // AttackTree is initialised with FUTURE risk mode enabled
-            attackTree = new AttackTree(targetUris, true, !allPaths, apd);
-
-            final long endTime = System.currentTimeMillis();
-            logger.info("AttackPathAlgorithm.calculateAttackTree: execution time {} ms", endTime - startTime);
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        return attackTree;
-    }
-
     public TreeJsonDoc calculateAttackTreeDoc(List<String> targetUris, String riskCalculationMode, boolean allPaths,
             boolean normalOperations) throws RuntimeException {
 
