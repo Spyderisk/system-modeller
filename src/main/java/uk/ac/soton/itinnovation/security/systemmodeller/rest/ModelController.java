@@ -1420,39 +1420,41 @@ public class ModelController {
                         ", valid values are: " + Arrays.toString(RiskCalculationMode.values()));
 		}
 
-        final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
+		final Model model;
 
-		String mId = model.getId();
+		synchronized(this) {
+			model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
-		if (model.isValidating()) {
-			logger.warn("Model {} is currently validating - ignoring calc risks request {}", modelId, modelId);
-			return ResponseEntity.status(HttpStatus.OK).body(new RecommendationReportDTO());
-		}
+			if (model.isValidating()) {
+				logger.warn("Model {} is currently validating - ignoring calc risks request {}", modelId, modelId);
+				return ResponseEntity.status(HttpStatus.OK).body(new RecommendationReportDTO());
+			}
 
-		if (model.isCalculatingRisks()) {
-			logger.warn("Model {} is already calculating risks - ignoring request {}", modelId, modelId);
-			return ResponseEntity.status(HttpStatus.OK).body(new RecommendationReportDTO());
-		}
+			if (model.isCalculatingRisks()) {
+				logger.warn("Model {} is already calculating risks - ignoring request {}", modelId, modelId);
+				return ResponseEntity.status(HttpStatus.OK).body(new RecommendationReportDTO());
+			}
+
+			logger.debug("Marking as calculating risks [{}] {}", modelId, model.getName());
+			model.markAsCalculatingRisks(rcMode, false);
+		} //synchronized block
 
 		AStoreWrapper store = storeModelManager.getStore();
 		RecommendationReportDTO report = null;
 
-        try {
-			logger.debug("Marking as calculating risks [{}] {}", modelId, model.getName());
-			model.markAsCalculatingRisks(rcMode, false);
-
-            logger.info("Initialising JenaQuerierDB");
+		try {
+			logger.info("Initialising JenaQuerierDB");
 
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), true);
 
-			//TODO: check that this is required
             querierDB.initForRiskCalculation();
 
             logger.info("Calculating recommendations");
 
             String jobId = UUID.randomUUID().toString();
             logger.info("Submitting synchronous job with id: {}", jobId);
+			String mId = model.getId();
 
 			RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, mId, riskMode);
 			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(recaConfig);
