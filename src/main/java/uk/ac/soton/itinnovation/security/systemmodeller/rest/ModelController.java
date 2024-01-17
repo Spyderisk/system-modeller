@@ -1407,6 +1407,7 @@ public class ModelController {
             @RequestParam(defaultValue = "CURRENT") String riskMode) {
 
         logger.info("Calculating recommendations for model {}", modelId);
+		riskMode = riskMode.replaceAll("[\n\r]", "_");
         logger.info("riskMode: {}",riskMode);
 
 		RiskCalculationMode rcMode;
@@ -1420,42 +1421,41 @@ public class ModelController {
                         ", valid values are: " + Arrays.toString(RiskCalculationMode.values()));
 		}
 
-        final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
+		final Model model;
 
-		String mId = model.getId();
+		synchronized(this) {
+			model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 
-		//Keep initial model info, so we can restore some of these original values at the end
-		uk.ac.soton.itinnovation.security.model.system.Model modelInfo = model.getModelInfo();
+			if (model.isValidating()) {
+				logger.warn("Model {} is currently validating - ignoring calc risks request {}", modelId, modelId);
+				return ResponseEntity.status(HttpStatus.OK).body(new RecommendationReportDTO());
+			}
 
-		if (model.isValidating()) {
-			logger.warn("Model {} is currently validating - ignoring calc risks request {}", modelId, modelId);
-			return ResponseEntity.status(HttpStatus.OK).body(new RecommendationReportDTO());
-		}
+			if (model.isCalculatingRisks()) {
+				logger.warn("Model {} is already calculating risks - ignoring request {}", modelId, modelId);
+				return ResponseEntity.status(HttpStatus.OK).body(new RecommendationReportDTO());
+			}
 
-		if (model.isCalculatingRisks()) {
-			logger.warn("Model {} is already calculating risks - ignoring request {}", modelId, modelId);
-			return ResponseEntity.status(HttpStatus.OK).body(new RecommendationReportDTO());
-		}
+			logger.debug("Marking as calculating risks [{}] {}", modelId, model.getName());
+			model.markAsCalculatingRisks(rcMode, false);
+		} //synchronized block
 
 		AStoreWrapper store = storeModelManager.getStore();
 		RecommendationReportDTO report = null;
 
-        try {
-			logger.debug("Marking as calculating risks [{}] {}", modelId, model.getName());
-			model.markAsCalculatingRisks(rcMode, true);
-
-            logger.info("Initialising JenaQuerierDB");
+		try {
+			logger.info("Initialising JenaQuerierDB");
 
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), true);
 
-			//TODO: check that this is required
             querierDB.initForRiskCalculation();
 
             logger.info("Calculating recommendations");
 
             String jobId = UUID.randomUUID().toString();
             logger.info("Submitting synchronous job with id: {}", jobId);
+			String mId = model.getId();
 
 			RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, mId, riskMode);
 			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(recaConfig);
@@ -1487,9 +1487,7 @@ public class ModelController {
                     "Finding recommendations failed. Please contact support for further assistance.");
 		} finally {
 			//always reset the flags even if the risk calculation crashes
-			model.setName(modelInfo.getLabel());
-			model.setDescription(modelInfo.getDescription());
-			model.finishedCalculatingRisks(report != null, rcMode, true);
+			model.finishedCalculatingRisks(report != null, rcMode, false);
 		}
 }
 

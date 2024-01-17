@@ -43,8 +43,6 @@ import com.bpodgursky.jbool_expressions.Variable;
 public class AttackNode {
     private static final Logger logger = LoggerFactory.getLogger(AttackNode.class);
 
-    private static int instanceCount = 0; // Static counter variable
-
     private AttackPathDataset apd;
     private String uri = "";
     private AttackTree nodes;
@@ -160,8 +158,6 @@ public class AttackNode {
 
     public AttackNode(String uri, AttackPathDataset apd, AttackTree nodes, int id) {
 
-        instanceCount++;
-
         this.apd = apd;
         this.uri = uri;
         this.nodes = nodes;
@@ -176,11 +172,6 @@ public class AttackNode {
         if (!this.nodes.getBoundingUriRefs().isEmpty()) {
             this.allDirectCauseUris.retainAll(this.nodes.getBoundingUriRefs());
         }
-
-        // TODO debug only:
-        //if (this.uri.substring(7).equals("MS-InService-a0826156")) {
-        //    logger.debug("XXX: {} all direct cause uris: {}", this.uri.substring(7), this.allDirectCauseUris);
-        //}
 
         this.controlStrategies = this.getControlStrategies();
         this.controls = this.getControls();
@@ -370,11 +361,6 @@ public class AttackNode {
         if (!cPath.isEmpty()) {
             currentPath = new HashSet<>(cPath);
         }
-
-        // TODO debug only:
-        //if (this.uri.substring(7).equals("MS-InService-a0826156")) {
-        //    logger.debug("DDD: currentPath: {}, self all: {}", currentPath, this.allDirectCauseUris);
-        //}
 
         currentPath.add(this.uri);
         logger.debug(String.format("%1$"+ currentPath.size() +"s", "") +
@@ -675,7 +661,6 @@ public class AttackNode {
 
                     try {
                         pResult = parent.backtrace(currentPath, computeLogic);
-                        //logger.debug("pResult({}): {}", this.instanceCount, pResult);
                     } catch (TreeTraversalException error) {
                         success = false;
                         loopbackNodeUris.addAll(error.getLoopbackNodeUris());
@@ -696,7 +681,6 @@ public class AttackNode {
                                 parentAttackMitigationsCS.add(pResult.getData(ATTACK_MITIGATION_CS));
                                 parentAttackMitigationsCSG.add(pResult.getData(ATTACK_MITIGATION_CSG));
                                 parentAttackTrees.add(pResult.getData(ATTACK_TREE));
-                                //logger.debug("SSS({}): p_attack_tree {}", this.instanceCount, pResult.getData(ATTACK_TREE));
                             }
                         }
                     }
