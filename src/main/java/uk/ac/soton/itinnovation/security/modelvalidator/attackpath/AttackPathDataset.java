@@ -323,21 +323,15 @@ public class AttackPathDataset {
     public boolean isContingencyActivation(String csgUri) throws RuntimeException {
         try {
             String contingencyPlan;
-            if (this.hasExternalDependencies(csgUri)) {
+            //if (this.hasExternalDependencies(csgUri)) {
+            if (csgUri.contains("-Implementation")) {
                 contingencyPlan = csgUri.replaceAll("-Implementation-Runtime|-Implementation", "");
             } else {
                 return false;
             }
 
             if (controlStrategies.containsKey(contingencyPlan)) {
-                boolean activated = true;
-                for (String cs : controlStrategies.get(contingencyPlan).getMandatoryCS()) {
-                    if (!controlSets.get(cs).isProposed()) {
-                        activated = false;
-                        break;
-                    }
-                }
-                return activated;
+                return isCSGActivated(controlStrategies.get(contingencyPlan));
             }
             return true;
         } catch (Exception e) {
@@ -345,22 +339,94 @@ public class AttackPathDataset {
         }
     }
 
-    public Set<String> getThreatControlStrategyUris(String threatUri, boolean future) throws RuntimeException {
-        // Return list of control strategies (urirefs) that block a threat (uriref)
+    public boolean isCSGActivated(ControlStrategyDB csg) {
+        // check MANDATORY CS are proposed
+        return csg.getMandatoryCS().stream().allMatch(cs -> controlSets.get(cs).isProposed());
+    }
 
-        /*
-         * "blocks": means a CSG appropriate for current or future risk calc
-         * "mitigates": means a CSG appropriate for furture risk (often a contingency plan for a
-         * current risk CSG); excluded from likelihood calc in current risk
-         */
+    public boolean hasContingencyPlan(String csgUri) throws RuntimeException {
+        try {
+            String contingencyPlan;
+            if (csgUri.contains("-Implementation")) {
+                contingencyPlan = csgUri.replaceAll("-Implementation-Runtime|-Implementation", "");
+            } else {
+                return true;
+            }
+
+            if (controlStrategies.containsKey(contingencyPlan)) {
+                return isCSGActivated(controlStrategies.get(contingencyPlan));
+            }
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    Boolean considerCSG(ControlStrategyDB csg, Boolean future) {
+        if (future) {
+            if (!csg.isFutureRisk()) {
+                return false;   // this CSG has no effect in future risk calculations
+            }
+            return true;
+        } else {
+            if (!csg.isCurrentRisk()) {
+                return false;  // this CSG has no effect in current risk calculations
+            }
+            if (isRuntimeMalleable(csg)) {
+                return false;  // this CSG cannot be changed at runtime
+            }
+            return true;
+        }
+    }
+
+    Boolean isRuntimeMalleable(ControlStrategyDB csg) {
+        if (csg.getUri().contains("-Implementation")) {
+            return hasContingencyPlan(csg.getUri());
+        } else if (csg.getUri().contains("-Runtime")) {
+            return true;
+        }
+        return false;
+    }
+
+    public Set<String> getThreatControlStrategyUrisNEW(String threatUri, boolean future) throws RuntimeException {
+        // Return list of control strategies (urirefs) that block a threat (uriref)
 
         Set<String> csgURIs = new HashSet<String>();
         Set<String> csgToConsider = new HashSet<>();
         ThreatDB threat = this.threats.get(threatUri);
         try {
+            for (String csgURI : threat.getBlockedByCSG()) {
+                ControlStrategyDB csg = querier.getControlStrategy(csgURI, "system-inf");
+                if (considerCSG(csg, future)) {
+                    csgToConsider.add(csgURI);
+                } else {
+                    logger.debug("CSG {} is NOT considered", csgURI);
+                }
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        //logger.debug("getThreatCSGUris: {}, to consider: {}", threatUri, csgToConsider);
+        return csgToConsider;
+    }
+
+
+    public Set<String> getThreatControlStrategyUris(String threatUri, boolean future) throws RuntimeException {
+        // Return list of control strategies (urirefs) that block a threat (uriref)
+
+        Set<String> csgURIs = new HashSet<String>();
+        Set<String> csgToConsider = new HashSet<>();
+        ThreatDB threat = this.threats.get(threatUri);
+        logger.debug("CSG for threat: {} to be considered", threatUri);
+        try {
             csgURIs.addAll(threat.getBlockedByCSG());
             //logger.debug("GET BLOCKED by CSG: {}", csgURIs);
             if (future) {
+                // TODO: This block is wrong for FUTURE mode, in theory all CSGs
+                // should be considered, ideally we need to filter some in order to
+                // reduce the space. hasExternalDependencies should be renamed
+                // to considerForFutureRisk and do the appropriate filtering.
                 csgURIs.addAll(threat.getMitigatedByCSG());
                 //logger.debug("GET MITIGATED by CSG: {}", csgURIs);
                 for (String csgURI : csgURIs) {
@@ -372,6 +438,18 @@ public class AttackPathDataset {
                 }
             } else {
                 for (String csgURI : csgURIs) {
+                    if (!csgURI.contains("-Implementation-Runtime") && csgURI.contains("-Runtime")) {
+                        // Include CSG if it has "-Runtime" but not "-Implementation-Runtime"
+                        csgToConsider.add(csgURI);
+                        logger.debug("CSG {} is considered", csgURI);
+                    } else if (isContingencyActivation(csgURI)){
+                        // Include CSG if has "-Implementation" and its contingency plan is activated
+                        csgToConsider.add(csgURI);
+                        logger.debug("CSG {} is considered", csgURI);
+                    } else {
+                        logger.debug("CSG {} is not considered", csgURI);
+                    }
+                    /*
                     if (isRuntimeChangable(csgURI)) {
                         if (!isContingencyActivation(csgURI)) {
                             csgToConsider.add(csgURI);
@@ -381,6 +459,7 @@ public class AttackPathDataset {
                     } else {
                         //logger.debug("{} is NOT \"is_runtime_changable\"", csgURI);
                     }
+                    */
                 }
             }
         } catch (Exception e) {
@@ -660,8 +739,10 @@ public class AttackPathDataset {
 
             ControlSetDB cs = querier.getControlSet(csURI, "system");
             if (cs == null) {
+                logger.debug("TODO complete CS for {}", csURI);
                 cs = new ControlSetDB();
                 cs.setUri(csURI);
+                cs.setType("core#ControlSet");
                 // TODO need to complete the object (see the validator)
             }
             cs.setProposed(proposed);

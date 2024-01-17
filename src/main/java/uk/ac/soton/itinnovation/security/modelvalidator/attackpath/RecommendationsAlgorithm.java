@@ -256,9 +256,10 @@ public class RecommendationsAlgorithm {
             } else {
                 logger.debug("Risk is still higher than Medium");
                 logger.info("Recalculate threat tree for a lower level ...");
-                AttackTree tt = calcAttackTree("domain#RiskLevelLow");
-                LogicalExpression nle = tt.attackMitigationCSG();
-                this.applyCSGs(nle, childNode);
+                logger.info("DISABLED nested runs");
+                //AttackTree tt = calcAttackTree("domain#RiskLevelMedium");
+                //LogicalExpression nle = tt.attackMitigationCSG();
+                //this.applyCSGs(nle, childNode);
             }
 
             // undo CS changes in CS_set
@@ -282,7 +283,8 @@ public class RecommendationsAlgorithm {
             csgDto.setUri(csgUri);
             csgDto.setDescription(apd.getCSGDescription(csgUri));
             recCSGList.add(csgDto);
-            csgDto.setCategory(apd.hasExternalDependencies(csgUri) ? "Applicable" : "Conditional");
+            //csgDto.setCategory(apd.hasExternalDependencies(csgUri) ? "Applicable" : "Conditional");
+            csgDto.setCategory(csgUri.contains("-Runtime") ? "Applicable" : "Conditional");
         }
         recommendation.setControlStrategies(recCSGList);
 
@@ -370,6 +372,9 @@ public class RecommendationsAlgorithm {
             logger.info("The Recommendations Report has: {} recommendations", recommendations.size());
             for (RecommendationDTO rec : recommendations) {
                 logger.debug("  recommendation: {}", rec.getState().getRisk());
+                for (ControlStrategyDTO csgDTO : rec.getControlStrategies()) {
+                    logger.debug("  └──> csgs: {}", csgDTO.getUri().substring(7));
+                }
             }
 
         } catch (Exception e) {
