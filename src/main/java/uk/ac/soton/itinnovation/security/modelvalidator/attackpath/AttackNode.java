@@ -177,11 +177,6 @@ public class AttackNode {
             this.allDirectCauseUris.retainAll(this.nodes.getBoundingUriRefs());
         }
 
-        // TODO debug only:
-        //if (this.uri.substring(7).equals("MS-InService-a0826156")) {
-        //    logger.debug("XXX: {} all direct cause uris: {}", this.uri.substring(7), this.allDirectCauseUris);
-        //}
-
         this.controlStrategies = this.getControlStrategies();
         this.controls = this.getControls();
         this.uriSymbol = this.makeSymbol(uri);
