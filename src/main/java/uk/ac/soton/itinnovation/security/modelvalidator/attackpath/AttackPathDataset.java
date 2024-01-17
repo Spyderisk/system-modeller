@@ -676,7 +676,6 @@ public class AttackPathDataset {
 
     public RiskVector calculateRisk(String modelId, RiskCalculationMode riskMode) throws RuntimeException {
         try {
-
 			logger.info("Calculating risks for APD");
 
 			RiskCalculator rc = new RiskCalculator(querier);
@@ -685,14 +684,9 @@ public class AttackPathDataset {
             updateDatasets();
 
             return getRiskVector();
-
 		} catch (Exception e) {
-
             logger.error("Error calculating risks for APD", e);
-			e.printStackTrace();
-
-            throw new RuntimeException("Failed to calculate risk");
-
+            throw new RuntimeException("Failed to calculate risk", e);
 		}
 
     }
