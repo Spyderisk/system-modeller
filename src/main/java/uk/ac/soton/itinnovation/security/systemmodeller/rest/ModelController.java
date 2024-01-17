@@ -1424,9 +1424,6 @@ public class ModelController {
 
 		String mId = model.getId();
 
-		//Keep initial model info, so we can restore some of these original values at the end
-		uk.ac.soton.itinnovation.security.model.system.Model modelInfo = model.getModelInfo();
-
 		if (model.isValidating()) {
 			logger.warn("Model {} is currently validating - ignoring calc risks request {}", modelId, modelId);
 			return ResponseEntity.status(HttpStatus.OK).body(new RecommendationReportDTO());
@@ -1442,7 +1439,7 @@ public class ModelController {
 
         try {
 			logger.debug("Marking as calculating risks [{}] {}", modelId, model.getName());
-			model.markAsCalculatingRisks(rcMode, true);
+			model.markAsCalculatingRisks(rcMode, false);
 
             logger.info("Initialising JenaQuerierDB");
 
@@ -1487,9 +1484,7 @@ public class ModelController {
                     "Finding recommendations failed. Please contact support for further assistance.");
 		} finally {
 			//always reset the flags even if the risk calculation crashes
-			model.setName(modelInfo.getLabel());
-			model.setDescription(modelInfo.getDescription());
-			model.finishedCalculatingRisks(report != null, rcMode, true);
+			model.finishedCalculatingRisks(report != null, rcMode, false);
 		}
 }
 
