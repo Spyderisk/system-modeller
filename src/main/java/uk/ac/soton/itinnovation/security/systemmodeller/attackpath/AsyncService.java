@@ -57,7 +57,8 @@ public class AsyncService {
             Thread.sleep(50000);
             logger.debug("finished long running job");
         } catch (InterruptedException e) {
-            logger.debug("performRecommendationCalculation interrupted");
+            logger.debug("performRecommendationCalculation interrupted", e);
+            Thread.currentThread().interrupt();
         }
     }
 
