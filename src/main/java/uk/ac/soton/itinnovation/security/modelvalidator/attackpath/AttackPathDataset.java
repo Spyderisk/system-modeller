@@ -32,8 +32,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -41,7 +39,6 @@ import org.slf4j.LoggerFactory;
 
 import uk.ac.soton.itinnovation.security.model.Level;
 import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
-import uk.ac.soton.itinnovation.security.model.system.RiskLevelCount;
 import uk.ac.soton.itinnovation.security.model.system.RiskVector;
 import uk.ac.soton.itinnovation.security.modelquerier.IQuerierDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.AssetDB;
@@ -52,17 +49,13 @@ import uk.ac.soton.itinnovation.security.modelquerier.dto.LevelDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.MisbehaviourSetDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ThreatDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.TrustworthinessAttributeSetDB;
+import uk.ac.soton.itinnovation.security.modelquerier.util.QuerierUtils;
 import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
 import uk.ac.soton.itinnovation.security.modelvalidator.RiskCalculator;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.AdditionalPropertyDTO;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.AssetDTO;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ConsequenceDTO;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ControlDTO;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ControlStrategyDTO;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationDTO;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationReportDTO;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.StateDTO;
-
 
 public class AttackPathDataset {
     private static final Logger logger = LoggerFactory.getLogger(AttackPathDataset.class);
@@ -627,27 +620,33 @@ public class AttackPathDataset {
     }
 
     public void changeCS(Set<String> csSet, boolean proposed) {
+        logger.info("changeCS list: {}", csSet);
 
         String logMessage = proposed ? "enabling" : "disabling";
         logger.debug("{} CS for {} controls:", logMessage, csSet.size());
 
-        for (String csURI : csSet) {
+        for (String csURIa : csSet) {
 
-            logger.debug("  └──> {}", csURI);
+            logger.debug("  └──> {}", csURIa);
 
-            ControlSetDB cs = querier.getControlSet(csURI, "system");
-            if (cs == null) {
-                logger.debug("TODO complete CS for {}", csURI);
-                cs = new ControlSetDB();
-                cs.setUri(csURI);
-                cs.setType("core#ControlSet");
-                // TODO need to complete the object (see the validator)
+            Set<String> csTriplet = QuerierUtils.getControlTriplet(csURIa);
+
+            for (String csURI : csTriplet) {
+                ControlSetDB cs = querier.getControlSet(csURI, "system");
+                if (cs == null) {
+                    logger.debug("TODO complete CS for {}", csURI);
+                    cs = new ControlSetDB();
+                    cs.setUri(csURI);
+                    cs.setType("core#ControlSet");
+                    // TODO need to complete the object (see the validator)
+                }
+                logger.debug("Set {}: {}", csURI, proposed);
+                cs.setProposed(proposed);
+
+                // check the triplet values to be the same
+
+                querier.store(cs, "system");
             }
-            cs.setProposed(proposed);
-
-            // check the triplet values to be the same
-
-            querier.store(cs, "system");
 
         }
 
