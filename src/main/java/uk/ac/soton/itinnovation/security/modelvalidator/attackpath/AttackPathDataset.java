@@ -372,7 +372,7 @@ public class AttackPathDataset {
             if (!csg.isCurrentRisk()) {
                 return false;  // this CSG has no effect in current risk calculations
             }
-            if (isRuntimeMalleable(csg)) {
+            if (!isRuntimeMalleable(csg)) {
                 return false;  // this CSG cannot be changed at runtime
             }
             return true;
