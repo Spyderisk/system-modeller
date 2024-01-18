@@ -72,7 +72,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 @RunWith(JUnit4.class)
 public class RecommendationTester extends TestCase {
 
-	public static Logger logger = LoggerFactory.getLogger(RiskLevelCalculatorTester.class);
+	public static Logger logger = LoggerFactory.getLogger(RecommendationTester.class);
 
 	private static TestHelper tester;
 	private static Dataset dataset;
