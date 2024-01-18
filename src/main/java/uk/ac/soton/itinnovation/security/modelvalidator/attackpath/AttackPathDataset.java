@@ -285,66 +285,20 @@ public class AttackPathDataset {
     }
 
     /**
-     * check if CSG ends in -Runtime or -Implementation
-     *
-     * @param csgUri
-     * @return
-     */
-    public boolean isRuntimeChangable(String csgUri) {
-        return !csgUri.contains("-Implementation-Runtime") & (csgUri.contains("-Runtime") || csgUri.contains("-Implementation"));
-    }
-
-    private boolean checkImplementationRuntime(String csgUri) {
-        Pattern pattern = Pattern.compile("\\b-Implementation-Runtime\\b|\\b-Implementation\\b");
-        Matcher matcher = pattern.matcher(csgUri);
-        if (matcher.find()) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * check if CSG ends in -Implementation-Runtime or -Implementation
-     *
-     * @param csgUri
-     * @return
-     */
-    public boolean hasExternalDependencies(String csgUri) {
-        return !(csgUri.contains("-Implementation-Runtime") || csgUri.contains("-Implementation"));
-    }
-
-    /**
-     * check if CSG has a contingency plan
-     *
-     * @param csgUri
-     * @return
-     */
-    public boolean isContingencyActivation(String csgUri) throws RuntimeException {
-        try {
-            String contingencyPlan;
-            //if (this.hasExternalDependencies(csgUri)) {
-            if (csgUri.contains("-Implementation")) {
-                contingencyPlan = csgUri.replaceAll("-Implementation-Runtime|-Implementation", "");
-            } else {
-                return false;
-            }
-
-            if (controlStrategies.containsKey(contingencyPlan)) {
-                return isCSGActivated(controlStrategies.get(contingencyPlan));
-            }
-            return true;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
+    * Check if a Control Strategy Group (CSG) is activated.
+    *
+    * This method evaluates whether all mandatory Control Sets (CS) associated with
+    * the given CSG are proposed.
+    *
+    * @param csg The Control Strategy Group to be checked.
+    * @return {@code true} if all mandatory Control Sets are proposed, otherwise {@code false}.
+    */
     public boolean isCSGActivated(ControlStrategyDB csg) {
-        // check MANDATORY CS are proposed
         return csg.getMandatoryCS().stream().allMatch(cs -> controlSets.get(cs).isProposed());
     }
 
     public boolean hasContingencyPlan(String csgUri) throws RuntimeException {
+        // TODO: need to have a different way checking for contingency plans
         try {
             String contingencyPlan;
             if (csgUri.contains("-Implementation")) {
@@ -381,14 +335,17 @@ public class AttackPathDataset {
 
     Boolean isRuntimeMalleable(ControlStrategyDB csg) {
         if (csg.getUri().contains("-Implementation")) {
-            return hasContingencyPlan(csg.getUri());
+            //TODO: assume all -Implementation, -Implementation-Runtime CSGs
+            //have contingency plans activated
+            return true;
+            //return hasContingencyPlan(csg.getUri());
         } else if (csg.getUri().contains("-Runtime")) {
             return true;
         }
         return false;
     }
 
-    public Set<String> getThreatControlStrategyUrisNEW(String threatUri, boolean future) throws RuntimeException {
+    public Set<String> getThreatControlStrategyUris(String threatUri, boolean future) throws RuntimeException {
         // Return list of control strategies (urirefs) that block a threat (uriref)
 
         Set<String> csgURIs = new HashSet<String>();
@@ -407,65 +364,6 @@ public class AttackPathDataset {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        //logger.debug("getThreatCSGUris: {}, to consider: {}", threatUri, csgToConsider);
-        return csgToConsider;
-    }
-
-
-    public Set<String> getThreatControlStrategyUris(String threatUri, boolean future) throws RuntimeException {
-        // Return list of control strategies (urirefs) that block a threat (uriref)
-
-        Set<String> csgURIs = new HashSet<String>();
-        Set<String> csgToConsider = new HashSet<>();
-        ThreatDB threat = this.threats.get(threatUri);
-        logger.debug("CSG for threat: {} to be considered", threatUri);
-        try {
-            csgURIs.addAll(threat.getBlockedByCSG());
-            //logger.debug("GET BLOCKED by CSG: {}", csgURIs);
-            if (future) {
-                // TODO: This block is wrong for FUTURE mode, in theory all CSGs
-                // should be considered, ideally we need to filter some in order to
-                // reduce the space. hasExternalDependencies should be renamed
-                // to considerForFutureRisk and do the appropriate filtering.
-                csgURIs.addAll(threat.getMitigatedByCSG());
-                //logger.debug("GET MITIGATED by CSG: {}", csgURIs);
-                for (String csgURI : csgURIs) {
-                    if (hasExternalDependencies(csgURI)) {
-                        csgToConsider.add(csgURI);
-                    } else {
-                        //logger.debug("{} is NOT \"has_external_dependences\"", csgURI);
-                    }
-                }
-            } else {
-                for (String csgURI : csgURIs) {
-                    if (!csgURI.contains("-Implementation-Runtime") && csgURI.contains("-Runtime")) {
-                        // Include CSG if it has "-Runtime" but not "-Implementation-Runtime"
-                        csgToConsider.add(csgURI);
-                        logger.debug("CSG {} is considered", csgURI);
-                    } else if (isContingencyActivation(csgURI)){
-                        // Include CSG if has "-Implementation" and its contingency plan is activated
-                        csgToConsider.add(csgURI);
-                        logger.debug("CSG {} is considered", csgURI);
-                    } else {
-                        logger.debug("CSG {} is not considered", csgURI);
-                    }
-                    /*
-                    if (isRuntimeChangable(csgURI)) {
-                        if (!isContingencyActivation(csgURI)) {
-                            csgToConsider.add(csgURI);
-                        } else {
-                            //logger.debug("{} IS \"is_contingency_activation\"", csgURI);
-                        }
-                    } else {
-                        //logger.debug("{} is NOT \"is_runtime_changable\"", csgURI);
-                    }
-                    */
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        //logger.debug("getThreatCSGUris: {}, to consider: {}", threatUri, csgToConsider);
         return csgToConsider;
     }
 

@@ -256,10 +256,9 @@ public class RecommendationsAlgorithm {
             } else {
                 logger.debug("Risk is still higher than Medium");
                 logger.info("Recalculate threat tree for a lower level ...");
-                logger.info("DISABLED nested runs");
-                //AttackTree tt = calcAttackTree("domain#RiskLevelMedium");
-                //LogicalExpression nle = tt.attackMitigationCSG();
-                //this.applyCSGs(nle, childNode);
+                AttackTree tt = calcAttackTree("domain#RiskLevelMedium");
+                LogicalExpression nle = tt.attackMitigationCSG();
+                this.applyCSGs(nle, childNode);
             }
 
             // undo CS changes in CS_set

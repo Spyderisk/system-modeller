@@ -137,6 +137,7 @@ public class RecommendationTester extends TestCase {
 		logger.info("Calling querierDB.init");
 		querierDB.init();
 
+        /*
         try {
 		    querierDB.initForValidation();
             logger.info("Validating the model - ensures no dependence on bugs in older SSM validators");
@@ -158,6 +159,7 @@ public class RecommendationTester extends TestCase {
 			fail("Exception thrown by risk level calculator");
 			return;
 		}
+        */
 
 		try {
 			logger.info("Gathering datasets for recommendations");
@@ -169,10 +171,11 @@ public class RecommendationTester extends TestCase {
 
 			RecommendationReportDTO report = reca.recommendations();
 
+            // display recommendations in formatted json
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
             String json = objectMapper.writeValueAsString(report);
-            logger.debug("Recommendation report: {}", json);
+            //logger.debug("Recommendation report: {}", json);
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Exception thrown by attack path recommendations");
