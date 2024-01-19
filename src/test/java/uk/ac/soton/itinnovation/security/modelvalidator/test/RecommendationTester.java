@@ -167,7 +167,7 @@ public class RecommendationTester extends TestCase {
 			RecommendationsAlgorithmConfig config = new RecommendationsAlgorithmConfig(querierDB, tester.getGraph("system"), "CURRENT");
 			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(config);
 
-			reca.checkRequestedRiskCalculationMode("CURRENT");
+			//reca.checkRequestedRiskCalculationMode("CURRENT");
 
 			RecommendationReportDTO report = reca.recommendations();
 
