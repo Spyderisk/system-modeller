@@ -169,7 +169,7 @@ public class RecommendationTester extends TestCase {
 
 			reca.checkRequestedRiskCalculationMode("CURRENT");
 
-			RecommendationReportDTO report = reca.recommendations();
+			RecommendationReportDTO report = reca.recommendations(new Progress(config.getModelId()));
 
             // display recommendations in formatted json
             ObjectMapper objectMapper = new ObjectMapper();

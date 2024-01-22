@@ -372,7 +372,8 @@ public class ModelObjectsHelper {
 			modelValidationProgress.put(modelId, validationProgress);
 		}
 
-		//logger.info("Validation progress status: {}", validationProgress.getStatus());
+		//TODO: remove this logging, once recommendations are working
+		logger.info("Validation progress status: {}", validationProgress.getStatus());
 		
 		// No need to check execution if not yet running
 		if (! "running".equals(validationProgress.getStatus())) {

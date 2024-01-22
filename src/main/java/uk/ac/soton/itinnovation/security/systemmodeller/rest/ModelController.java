@@ -1257,6 +1257,23 @@ public class ModelController {
 	}
 
 	/**
+	 *  Get an update on the progress of the recommendations operation, given the ID of the model.
+	 *
+	 * @param modelId
+	 * @return recommendations progress
+	 * @throws java.rmi.UnexpectedException
+	 */
+	@RequestMapping(value = "/models/{modelId}/recommendationsprogress", method = RequestMethod.GET)
+	public ResponseEntity<Progress> getRecommendationsProgress(@PathVariable String modelId) throws UnexpectedException {
+		logger.info("Called REST method to GET recommendations progress for model {}", modelId);
+
+		synchronized(this) {
+			final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
+			return ResponseEntity.status(HttpStatus.OK).body(modelObjectsHelper.getValidationProgressOfModel(model));
+		}
+	}
+
+	/**
 	 *  Get an update on loading the model given the ID and loadingID of the model.
 	 *
 	 * @param modelId
@@ -1422,6 +1439,7 @@ public class ModelController {
 		}
 
 		final Model model;
+		Progress validationProgress;
 
 		synchronized(this) {
 			model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
@@ -1435,6 +1453,9 @@ public class ModelController {
 				logger.warn("Model {} is already calculating risks - ignoring request {}", modelId, modelId);
 				return ResponseEntity.status(HttpStatus.OK).body(new RecommendationReportDTO());
 			}
+
+			validationProgress = modelObjectsHelper.getValidationProgressOfModel(model);
+			validationProgress.updateProgress(0d, "Recommendations starting");
 
 			logger.debug("Marking as calculating risks [{}] {}", modelId, model.getName());
 			model.markAsCalculatingRisks(rcMode, false);
@@ -1465,7 +1486,7 @@ public class ModelController {
                 throw new BadRequestErrorException("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
             }
 
-            report = reca.recommendations();
+            report = reca.recommendations(validationProgress);
 
             // create recEntry and save it to mongo db
             RecommendationEntity recEntity = new RecommendationEntity();

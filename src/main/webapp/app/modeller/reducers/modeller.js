@@ -26,6 +26,7 @@ const modelState = {
         //riskLevelsValid: true,  //don't set this initially (button will be coloured blue)
         saved: true,
         calculatingRisks: false,
+        calculatingRecommendations: false,
         controlsReset: false,
         canBeEdited: true,
         canBeShared: true,
@@ -204,6 +205,7 @@ export default function modeller(state = modelState, action) {
 
         let model = action.payload;
         model.saved = true; //must be true if reloaded
+        model.calculatingRecommendations = false; //flag is not currently returned in model
 
         let groups = model.groups;
 
@@ -403,10 +405,45 @@ export default function modeller(state = modelState, action) {
         };
     }
 
-    if (action.type === instr.UPDATE_LOADING_PROGRESS) {
-        //console.log("UPDATE_LOADING_PROGRESS:", action.payload);
+    if (action.type === instr.UPDATE_RECOMMENDATIONS_PROGRESS) {
         if (action.payload.waitingForUpdate) {
-            //console.log("poll: UPDATE_LOADING_PROGRESS: (waiting for progress)");
+            return {
+                ...state, validationProgress: {
+                    ...state.validationProgress,
+                    waitingForUpdate: action.payload.waitingForUpdate
+                }
+            };
+        }
+
+        let status = "running";
+
+        if (action.payload.status) {
+            status = action.payload.status;
+        }
+        else if (action.payload.message.indexOf("failed") != -1) {
+            console.log("Recommendations failed (detected from message)");
+            status = "failed";
+        }
+        else if (action.payload.message.indexOf("complete") != -1) {
+            console.log("Recommendations completed (detected from message)");
+            status = "completed";
+        }
+
+        let error = action.payload.error != null ? action.payload.error : "";
+
+        return {
+            ...state, validationProgress: {
+                status: status,
+                progress: action.payload.progress,
+                message: action.payload.message,
+                error: error,
+                waitingForUpdate: action.payload.waitingForUpdate
+            }
+        };
+    }
+
+    if (action.type === instr.UPDATE_LOADING_PROGRESS) {
+        if (action.payload.waitingForUpdate) {
             return {
                 ...state, loadingProgress: {
                     ...state.loadingProgress,
@@ -922,6 +959,19 @@ export default function modeller(state = modelState, action) {
         };
     }
 
+    if (action.type === instr.RECOMMENDATIONS_FAILED) {
+
+        console.log("modellerReducer: recommendationsc failed");
+
+        return {
+            ...state,
+            model: {
+                ...state.model,
+                calculatingRecommendations: false
+            },
+        };
+    }
+
     if (action.type === instr.IS_CALCULATING_RISKS) {
 
         console.log("modellerReducer: calculating risks for model");
@@ -1131,6 +1181,40 @@ export default function modeller(state = modelState, action) {
             //}
         };
 
+    }
+
+    if (action.type === instr.IS_CALCULATING_RECOMMENDATIONS) {
+        return {
+            ...state,
+            model: {
+                ...state.model,
+                calculatingRecommendations: true
+            },
+            validationProgress: { //TODO: change to recommendationsProgress?
+                status: "starting",
+                progress: 0.0,
+                message: "Starting calculation",
+                error: "",
+                waitingForUpdate: false
+            }
+        };
+    }
+
+    if (action.type === instr.IS_NOT_CALCULATING_RECOMMENDATIONS) {
+        return {
+            ...state,
+            model: {
+                ...state.model,
+                calculatingRecommendations: false
+            },
+            validationProgress: { //TODO: change to recommendationsProgress?
+                status: "inactive",
+                progress: 0.0,
+                message: "",
+                error: "",
+                waitingForUpdate: false
+            },
+        };
     }
 
     if (action.type === instr.IS_DROPPING_INFERRED_GRAPH) {
@@ -2300,6 +2384,7 @@ export default function modeller(state = modelState, action) {
         };
     }
 
+    console.log("Unhandled action.type: ", action.type);
     return state;
 }
 

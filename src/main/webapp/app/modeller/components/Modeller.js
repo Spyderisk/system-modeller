@@ -177,7 +177,6 @@ class Modeller extends React.Component {
         }
 
         let threats = this.getSystemThreats();
-        //console.log("Modeller render: threats:", threats);
         let complianceSetsData = this.getComplianceSetsData();
         let hasModellingErrors = this.getHasModellingErrors();
 
@@ -190,6 +189,7 @@ class Modeller extends React.Component {
                                 isValid={this.props.model.valid} validationProgress={this.props.validationProgress}
                                 hasModellingErrors={hasModellingErrors}
                                 isCalculatingRisks={this.props.model.calculatingRisks}
+                                isCalculatingRecommendations={this.props.model.calculatingRecommendations}
                                 isDroppingInferredGraph={this.props.isDroppingInferredGraph}
                                 isLoading={this.props.loading.model} loadingProgress={this.props.loadingProgress}
                                 dispatch={this.props.dispatch}/>
@@ -1034,8 +1034,6 @@ var mapStateToProps = function (state) {
         view: state.modeller.view,
         suppressCanvasRefresh: state.modeller.suppressCanvasRefresh,
         redrawRelations: state.modeller.redrawRelations,
-        //isValidating: state.modeller.isValidating,
-        //isCalculatingRisks: state.modeller.isCalculatingRisks,
         isDroppingInferredGraph: state.modeller.isDroppingInferredGraph,
         validationProgress: state.modeller.validationProgress,
         loadingProgress: state.modeller.loadingProgress,
@@ -1086,8 +1084,6 @@ Modeller.propTypes = {
     suppressCanvasRefresh: PropTypes.bool,
     redrawRelations: PropTypes.number,
     dispatch: PropTypes.func,
-    //isValidating: PropTypes.bool,
-    //isCalculatingRisks: PropTypes.bool,
     isDroppingInferredGraph: PropTypes.bool,
     validationProgress: PropTypes.object,
     loadingProgress: PropTypes.object,
