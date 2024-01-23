@@ -1292,6 +1292,22 @@ export function closeControlStrategyExplorer() {
     };
 }
 
+export function openRecommendationsExplorer(csg, context) {
+    return function (dispatch) {
+        dispatch({
+            type: instr.OPEN_RECOMMENDATIONS_EXPLORER,
+        });
+    };
+}
+
+export function closeRecommendationsExplorer() {
+    return function (dispatch) {
+        dispatch({
+            type: instr.CLOSE_RECOMMENDATIONS_EXPLORER
+        });
+    };
+}
+
 export function openReportDialog(reportType) {
     return function (dispatch) {
         dispatch({
@@ -1677,13 +1693,10 @@ export function getRecommendations(modelId, riskMode) {
                 dispatch({
                     type: instr.IS_NOT_CALCULATING_RECOMMENDATIONS,
                 });
-                console.log("Recommendations:");
-                console.log(response.data);
-                //TODO: do something with the results data
-                //dispatch({
-                //    type: instr.IS_NOT_CALCULATING_RECOMMENDATIONS,
-                //    payload: {saved: saveResults, results: response.data}
-                //});
+                dispatch({
+                    type: instr.RECOMMENDATIONS_RESULTS,
+                    payload: response.data
+                });
             })
             .catch((error) => {
                 console.log("Error:", error);

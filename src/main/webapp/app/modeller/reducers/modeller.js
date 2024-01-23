@@ -33,6 +33,7 @@ const modelState = {
         risksValid: false,
         riskCalculationMode: ""
     },
+    recommendations: {},
     // Rayna: TODO - when the backend for groups is implemented, put this array in the model above.
     groups: [],
     grouping: {
@@ -90,6 +91,8 @@ const modelState = {
     isControlExplorerActive: false,
     isControlStrategyExplorerVisible: false,
     isControlStrategyExplorerActive: false,
+    isRecommendationsExplorerVisible: false,
+    isRecommendationsExplorerActive: false,
     isReportDialogVisible: false,
     isReportDialogActive: false,
     isDroppingInferredGraph: false,
@@ -1013,6 +1016,16 @@ export default function modeller(state = modelState, action) {
         };
     }
 
+    if (action.type === instr.RECOMMENDATIONS_RESULTS) {
+        let recommendations = action.payload;
+        return {
+            ...state,
+            recommendations: recommendations,
+            isRecommendationsExplorerVisible: true,
+            isRecommendationsExplorerActive: true,
+        };
+    }
+
     if (action.type === instr.RISK_CALC_RESULTS) {
         let results = action.payload["results"];
         let saved = action.payload["saved"];
@@ -1190,6 +1203,7 @@ export default function modeller(state = modelState, action) {
                 ...state.model,
                 calculatingRecommendations: true
             },
+            recommendations: null, //clear previous results
             validationProgress: { //TODO: change to recommendationsProgress?
                 status: "starting",
                 progress: 0.0,
@@ -1732,6 +1746,22 @@ export default function modeller(state = modelState, action) {
             ...state,
             isControlStrategyExplorerVisible: false,
             isControlStrategyExplorerActive: false,
+        };
+    }
+
+    if (action.type === instr.OPEN_RECOMMENDATIONS_EXPLORER) {
+        return {
+            ...state,            
+            isRecommendationsExplorerVisible: true,
+            isRecommendationsExplorerActive: true,
+        };
+    }
+
+    if (action.type === instr.CLOSE_RECOMMENDATIONS_EXPLORER) {
+        return {
+            ...state,
+            isRecommendationsExplorerVisible: false,
+            isRecommendationsExplorerActive: false,
         };
     }
 
@@ -2384,7 +2414,6 @@ export default function modeller(state = modelState, action) {
         };
     }
 
-    console.log("Unhandled action.type: ", action.type);
     return state;
 }
 
