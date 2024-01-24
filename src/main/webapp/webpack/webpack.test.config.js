@@ -5,6 +5,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const ROOT = path.resolve(__dirname, '../');
 const SRC = path.resolve(ROOT, 'app');
+const NODE_MODULES = path.resolve(ROOT, "node_modules");
 const BUILD = path.resolve(ROOT, 'dist');
 
 module.exports = {
@@ -63,6 +64,21 @@ module.exports = {
                         loader: "sass-loader"  // compiles SASS to CSS
                     }
                 ]
+            },
+            {
+                test: /\.css$/,
+                include: [SRC, NODE_MODULES],
+                use: [
+                    {
+                        loader: MiniCssExtractPlugin.loader,  // extracts CSS into CSS files so they can be loaded in parallel
+                    },
+                    {
+                        loader: 'css-loader',  // converts from CSS to CommonJS
+                    },
+                    {
+                        loader: "postcss-loader"
+                    }
+                ],
             }
         ]
     },
