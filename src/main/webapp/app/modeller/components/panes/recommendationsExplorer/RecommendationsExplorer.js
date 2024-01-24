@@ -4,6 +4,8 @@ import {Rnd} from "../../../../../node_modules/react-rnd/lib/index";
 import {bringToFrontWindow} from "../../../actions/ViewActions";
 import {connect} from "react-redux";
 import {openDocumentation} from "../../../../common/documentation/documentation"
+import {JsonView, defaultStyles} from 'react-json-view-lite';
+import 'react-json-view-lite/dist/index.css';
 
 class RecommendationsExplorer extends React.Component {
 
@@ -96,7 +98,7 @@ class RecommendationsExplorer extends React.Component {
                    </div>
 
                     <div className="content">
-                        {recommendations && <pre>{JSON.stringify(recommendations, null, 2) }</pre>}
+                        {recommendations && <JsonView data={recommendations} shouldExpandNode={shouldExpandRecommendationsNode} style={defaultStyles} />}
                    </div>
                </div>
 
@@ -104,6 +106,10 @@ class RecommendationsExplorer extends React.Component {
         );
     }
 
+}
+
+function shouldExpandRecommendationsNode(level) {
+    return level <= 1;
 }
 
 RecommendationsExplorer.propTypes = {
