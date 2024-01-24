@@ -12,8 +12,6 @@ class RecommendationsExplorer extends React.Component {
     constructor(props) {
         super(props);
 
-        this.rnd = null;
-
         this.state = {
         }
     }
@@ -41,8 +39,6 @@ class RecommendationsExplorer extends React.Component {
     }
 
     render() {
-        const {model, dispatch, loading, ...modalProps} = this.props;
-
         if (!this.props.show) {
             return null;
         }
@@ -50,8 +46,7 @@ class RecommendationsExplorer extends React.Component {
         let recommendations = this.props.recommendations;
 
         return (
-          <Rnd ref={ c => {this.rnd = c;} }
-               bounds={ '#view-boundary' }
+          <Rnd bounds={ '#view-boundary' }
                default={{
                    x: window.outerWidth * 0.20,
                    y: (100 / window.innerHeight) * window.devicePixelRatio,
