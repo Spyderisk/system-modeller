@@ -205,6 +205,7 @@ public class RecommendationsAlgorithm {
             logger.debug("LE csgList: {}", csgList);
 
             CSGNode childNode = new CSGNode(csgList);
+            logger.debug("adding a child node with {} csgs", csgList.size());
             myNode.addChild(childNode);
 
             Set<String> csSet = new HashSet<>();
@@ -213,6 +214,7 @@ public class RecommendationsAlgorithm {
                     csSet.add(cs);
                 }
             }
+            childNode.setCsList(csSet);
             logger.debug("CS set for LE CSG_option {}", csgOption);
             logger.debug("  └──> {}", csSet);
 
@@ -232,6 +234,9 @@ public class RecommendationsAlgorithm {
                 logger.debug("RiskResponse: {}", riskResponse);
                 logger.debug("Overall risk: {}", riskResponse.getOverall());
                 StateDTO state = apd.getState();
+
+                //logger.debug("Creating RECOMMENDATATION: node csgList {}, rec csgList {}",
+                //        myNode.getCsgList().size(), csgList.size());
 
                 RecommendationDTO recommendation = createRecommendation(csgList, csSet, state);
 
@@ -256,9 +261,9 @@ public class RecommendationsAlgorithm {
             } else {
                 logger.debug("Risk is still higher than Medium");
                 logger.info("Recalculate threat tree for a lower level ...");
-                AttackTree tt = calcAttackTree("domain#RiskLevelMedium");
-                LogicalExpression nle = tt.attackMitigationCSG();
-                this.applyCSGs(nle, childNode);
+                //AttackTree tt = calcAttackTree("domain#RiskLevelMedium");
+                //LogicalExpression nle = tt.attackMitigationCSG();
+                //this.applyCSGs(nle, childNode);
             }
 
             // undo CS changes in CS_set
@@ -272,32 +277,56 @@ public class RecommendationsAlgorithm {
         return myNode;
     }
 
+    private ControlStrategyDTO createControlStrategyDTO(String csgUri) {
+        ControlStrategyDTO csgDto = new ControlStrategyDTO();
+        csgDto.setUri(csgUri);
+        csgDto.setDescription(apd.getCSGDescription(csgUri));
+        csgDto.setCategory(csgUri.contains("-Runtime") ? "Applicable" : "Conditional");
+        return csgDto;
+    }
+
+    private Set<ControlStrategyDTO> createCSGDTO(List<String> csgList) {
+        Set<ControlStrategyDTO> recCSGSet = new HashSet<>();
+        for (String csgUri : csgList) {
+            recCSGSet.add(createControlStrategyDTO(csgUri));
+        }
+        return recCSGSet;
+    }
+
+    private ControlDTO createControlDTO(String ctrlUri) {
+        return apd.fillControlDTO(ctrlUri);
+    }
+
+    private Set<ControlDTO> createCSDTO(Set<String> csSet) {
+        Set<ControlDTO> recControlSet = new HashSet<>();
+        for (String ctrlUri : csSet) {
+            recControlSet.add(createControlDTO(ctrlUri));
+        }
+        return recControlSet;
+    }
+
     private RecommendationDTO createRecommendation(List<String> csgList, Set<String> csSet, StateDTO state) {
         RecommendationDTO recommendation = new RecommendationDTO();
         recommendation.setIdentifier(this.recCounter++);
-
-        List<ControlStrategyDTO> recCSGList = new ArrayList<>();
-        for (String csgUri : csgList) {
-            ControlStrategyDTO csgDto = new ControlStrategyDTO();
-            csgDto.setUri(csgUri);
-            csgDto.setDescription(apd.getCSGDescription(csgUri));
-            recCSGList.add(csgDto);
-            //csgDto.setCategory(apd.hasExternalDependencies(csgUri) ? "Applicable" : "Conditional");
-            csgDto.setCategory(csgUri.contains("-Runtime") ? "Applicable" : "Conditional");
-        }
-        recommendation.setControlStrategies(recCSGList);
-
-        List<ControlDTO> recControlList = new ArrayList<>();
-        for (String ctrlUri : csSet) {
-            ControlDTO ctrl = apd.fillControlDTO(ctrlUri);
-            recControlList.add(ctrl);
-        }
-        recommendation.setControls(recControlList);
         recommendation.setState(state);
+        logger.debug("Potential recommendation: {}", recommendation.getIdentifier());
 
-        logger.debug("Potential recommendation: {}", recommendation);
+        Set<ControlStrategyDTO> csgDTOs = createCSGDTO(csgList);
+        Set<ControlDTO> controlDTOs = createCSDTO(csSet);
 
+        recommendation.setControlStrategies(csgDTOs);
+        recommendation.setControls(controlDTOs);
+
+        // N.B. the list of CSG and CS will be updated later if the recommendation is nested.
         return recommendation;
+    }
+
+    private void updateRecommendation(RecommendationDTO recommendation, List<String> csgList, Set<String> csSet) {
+        Set<ControlStrategyDTO> csgDTOs = createCSGDTO(csgList);
+        Set<ControlDTO> controlDTOs = createCSDTO(csSet);
+
+        recommendation.setControlStrategies(csgDTOs);
+        recommendation.setControls(controlDTOs);
     }
 
     private void makeRecommendations(CSGNode node) {
@@ -309,6 +338,70 @@ public class RecommendationsAlgorithm {
         // This method should not run more risk calculations, instead it will
         // try to use recommendations stored in nodes
 
+        // if path is undefined, initalise it as empty list
+        if (path == null) {
+            path = new ArrayList<>();
+        }
+
+        // Create a new instance of the path list for the current recursive call
+        List<CSGNode> currentPath = new ArrayList<>(path);
+        currentPath.add(node);
+
+        if (node.getChildren().isEmpty()) {
+            if (node.getRecommendation() != null) {
+                Set<String> csgSet = reconstructCSGs(currentPath);
+                Set<String> csSet = reconstructCSs(currentPath);
+                updateRecommendation(node.getRecommendation(), new ArrayList<>(csgSet), csSet);
+                report.getRecommendations().add(node.getRecommendation());
+            }
+        } else {
+            for (CSGNode child : node.getChildren()){
+                makeRecommendations(child, currentPath);
+            }
+        }
+    }
+
+    private Set<String> reconstructCSGs(List<CSGNode> nodeList) {
+        Set<String> csgSet = new HashSet<>();
+        for (CSGNode node : nodeList) {
+            for (String csg : node.getCsgList()) {
+                csgSet.add(csg);
+            }
+        }
+        return csgSet;
+    }
+
+    private Set<String> reconstructCSs(List<CSGNode> nodeList) {
+        Set<String> csSet = new HashSet<>();
+        for (CSGNode node : nodeList) {
+            for (String cs : node.getCsList()) {
+                csSet.add(cs);
+            }
+        }
+        return csSet;
+    }
+
+
+    private void outputRecommendation(List<CSGNode> nodeList) {
+        Set<String> csgSet = new HashSet<>();
+        Set<String> csSet = new HashSet<>();
+        for (CSGNode node : nodeList) {
+            for (String csg : node.getCsgList()) {
+                csgSet.add(csg);
+            }
+            for (String cs : node.getCsList()) {
+                csSet.add(cs);
+            }
+        }
+        logger.debug("outputRecommendation....csgList: {}, csList: {}", csgSet.size(), csSet.size());
+    }
+
+    private void makeRecommendationsTEST(CSGNode node, List<CSGNode> path) {
+        // This method should not run more risk calculations, instead it will
+        // try to use recommendations stored in nodes
+
+        logger.debug("MAKE RECOMMENDATIONS TREE: path {} children {} ", path.size(), node.getChildren().size());
+
         String rootCsgList;
 
         if (node.getCsgList().isEmpty()) {
@@ -318,11 +411,10 @@ public class RecommendationsAlgorithm {
         }
         nodes.add(rootCsgList);
 
-        logger.debug("MAKE RECOMMENDATIONS TREE: {}", node.getCsgList());
-
         path.add(node);
 
         if (!node.getChildren().isEmpty()) {
+            logger.debug("  found {} children", node.getChildren().size());
             for(CSGNode child : node.getChildren()) {
                 links.add(String.join(", ", child.getCsgList()));
                 makeRecommendations(child, path);
@@ -334,12 +426,17 @@ public class RecommendationsAlgorithm {
                     csgList.add(csgUri);
                 }
             }
+            Set<String> csgSet = new HashSet<>(csgList);
 
             if (node.getRecommendation() != null) {
-                logger.debug("adding cached path recommendation {}", node.getRecommendation().getIdentifier());
+                logger.debug("adding cached path recommendationID {} path: {} csgSet: {}",
+                        node.getRecommendation().getIdentifier(), csgList.size(), csgSet.size());
+                logger.debug("RecommendationDTO csg list: {}", node.getRecommendation().getControlStrategies().size());
+                // TODO: add csgList
                 report.getRecommendations().add(node.getRecommendation());
             }
         }
+        logger.debug("Exit MAKE REC");
     }
 
     public RecommendationReportDTO recommendations() throws RuntimeException {
@@ -365,6 +462,7 @@ public class RecommendationsAlgorithm {
             CSGNode rootNode = applyCSGs(attackMitigationCSG, new CSGNode());
 
             // step: makeRecommendations on rootNode?
+            logger.debug("MAKE RECOMMENDATIONS");
             makeRecommendations(rootNode);
 
             List<RecommendationDTO> recommendations = report.getRecommendations() != null ? report.getRecommendations() : Collections.emptyList();
