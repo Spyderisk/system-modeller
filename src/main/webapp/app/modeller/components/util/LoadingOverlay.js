@@ -189,10 +189,7 @@ class LoadingOverlay extends React.Component {
     }
 
     getRecommendationsTimeout() {
-        let min = this.state.bounds.riskcalc.min;
-        let max = this.state.bounds.riskcalc.max;
-        let progress = this.props.validationProgress.progress;
-        return this.getTimeout(min, max, progress);
+        return getRiskCalcTimeout();
     }
 
     getLoadingTimeout() {
