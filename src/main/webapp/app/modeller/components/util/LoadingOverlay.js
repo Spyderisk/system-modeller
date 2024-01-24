@@ -271,7 +271,6 @@ class LoadingOverlay extends React.Component {
             else if (this.props.validationProgress.progress >= 1.0) {
                 if (this.props.validationProgress.status === "completed") {
                     console.warn("LoadingOverlay: recommendations progress completed");
-                    //this.props.dispatch(riskCalcCompleted(this.props.modelId)); //TODO: replacement for this?
                 }
                 else if (this.props.validationProgress.status === "failed") {
                     console.warn("LoadingOverlay: recommendations progress failed");

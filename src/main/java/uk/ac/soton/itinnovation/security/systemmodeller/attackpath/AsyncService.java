@@ -63,7 +63,7 @@ public class AsyncService {
         }
     }
 
-    public void startRecommendationTask(String jobId, RecommendationsAlgorithmConfig config) {
+    public void startRecommendationTask(String jobId, RecommendationsAlgorithmConfig config, Progress progress) {
 
         logger.debug("startRecommendationTask for {}", jobId);
 
@@ -83,7 +83,7 @@ public class AsyncService {
                 throw new Exception("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
             }
 
-            RecommendationReportDTO report = reca.recommendations(new Progress(config.getModelId())); //TODO: pass in progress object
+            RecommendationReportDTO report = reca.recommendations(progress);
 
             storeRecReport(jobId, report);
 

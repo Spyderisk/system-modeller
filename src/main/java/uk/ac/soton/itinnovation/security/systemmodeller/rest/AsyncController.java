@@ -129,6 +129,9 @@ public class AsyncController {
     @Autowired
     private StoreModelManager storeModelManager;
 
+	@Autowired
+	private ModelObjectsHelper modelObjectsHelper;
+
     @Autowired
     private SecureUrlHelper secureUrlHelper;
 
@@ -178,6 +181,8 @@ public class AsyncController {
 		}
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
+        Progress validationProgress = modelObjectsHelper.getValidationProgressOfModel(model);
+        validationProgress.updateProgress(0d, "Recommendations starting");
 
 		String mId = model.getId();
 
@@ -199,9 +204,7 @@ public class AsyncController {
             logger.info("submitting async job with id: {}", jobId);
 
 			RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, mId, riskMode);
-            CompletableFuture.runAsync(() -> asyncService.startRecommendationTask(jobId, recaConfig));
-            //asyncService.startRecommendationTask(jobId, recaConfig);
-
+            CompletableFuture.runAsync(() -> asyncService.startRecommendationTask(jobId, recaConfig, validationProgress));
 
             JobResponseDTO response = new JobResponseDTO(jobId, "CREATED");
 

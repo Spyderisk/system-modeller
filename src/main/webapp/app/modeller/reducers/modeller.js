@@ -1204,7 +1204,7 @@ export default function modeller(state = modelState, action) {
                 calculatingRecommendations: true
             },
             recommendations: null, //clear previous results
-            validationProgress: { //TODO: change to recommendationsProgress?
+            validationProgress: {
                 status: "starting",
                 progress: 0.0,
                 message: "Starting calculation",
@@ -1221,7 +1221,7 @@ export default function modeller(state = modelState, action) {
                 ...state.model,
                 calculatingRecommendations: false
             },
-            validationProgress: { //TODO: change to recommendationsProgress?
+            validationProgress: {
                 status: "inactive",
                 progress: 0.0,
                 message: "",

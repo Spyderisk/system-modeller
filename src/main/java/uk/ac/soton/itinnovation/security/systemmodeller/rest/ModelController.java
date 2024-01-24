@@ -67,6 +67,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -1263,7 +1264,7 @@ public class ModelController {
 	 * @return recommendations progress
 	 * @throws java.rmi.UnexpectedException
 	 */
-	@RequestMapping(value = "/models/{modelId}/recommendationsprogress", method = RequestMethod.GET)
+	@GetMapping(value = "/models/{modelId}/recommendationsprogress")
 	public ResponseEntity<Progress> getRecommendationsProgress(@PathVariable String modelId) throws UnexpectedException {
 		logger.info("Called REST method to GET recommendations progress for model {}", modelId);
 
@@ -1418,7 +1419,7 @@ public class ModelController {
 	 * @return A JSON report containing recommendations 
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/recommendations", method = RequestMethod.GET)
+	@GetMapping(value = "/models/{modelId}/recommendations")
 	public ResponseEntity<RecommendationReportDTO> calculateRecommendations(
             @PathVariable String modelId,
             @RequestParam(defaultValue = "CURRENT") String riskMode) {
