@@ -174,6 +174,7 @@ public class RecommendationsAlgorithm {
 
     private CSGNode applyCSGs(LogicalExpression le, CSGNode myNode) {
         logger.debug("applyCSGs()");
+
         if (myNode == null) {
             myNode = new CSGNode();
         }
@@ -183,12 +184,12 @@ public class RecommendationsAlgorithm {
 
         // convert from CSG logical expression to list of CSG options
         List<Expression> csgOptions = le.getListFromOr();
+
         logger.debug("List of OR CSG options: {}", csgOptions.size());
         for (Expression csgOption : csgOptions) {
             logger.debug("└──> {}", csgOption);
         }
 
-        logger.debug("list of OR CSG options: {}", csgOptions.size());
         // examine CSG options
         for (Expression csgOption : csgOptions) {
             logger.debug("examining CSG LE option: {}", csgOption);
@@ -219,8 +220,6 @@ public class RecommendationsAlgorithm {
             logger.debug("  └──> {}", csSet);
 
             // apply all CS in the CS_set
-            // TODO: I need to keep track of CS changes or roll them back later
-            // csSet is used for that.
             if (csSet.isEmpty()) {
                 logger.debug("EMPTY csSet is found, skipping iteration");
                 continue;
@@ -247,23 +246,24 @@ public class RecommendationsAlgorithm {
 
             } catch (Exception e) {
                 logger.warn("failed to get risk calculation, restore model");
+
                 // restore model ...
-                // TODO: restore model controls
                 apd.changeCS(csSet, false);
+
                 // raise exception since failed to run risk calculation
                 throw new RuntimeException(e);
             }
 
-            // check if risk has improved or teminate loop
+            // check if risk has improved or teminate iteration?
             logger.debug("check for termination condition ({})", recCounter);
             if ((riskResponse != null) & (apd.compareOverallRiskToMedium(riskResponse.getOverall()))) {
                 logger.info("Termination condition");
             } else {
                 logger.debug("Risk is still higher than Medium");
-                logger.info("Recalculate threat tree for a lower level ...");
-                //AttackTree tt = calcAttackTree("domain#RiskLevelMedium");
-                //LogicalExpression nle = tt.attackMitigationCSG();
-                //this.applyCSGs(nle, childNode);
+                logger.info("Recalculate nexted attack path tree for a lower level ...");
+                AttackTree nestedAttackTree = calcAttackTree("domain#RiskLevelMedium");
+                LogicalExpression nestedLogicalExpression = nestedAttackTree.attackMitigationCSG();
+                this.applyCSGs(nestedLogicalExpression, childNode);
             }
 
             // undo CS changes in CS_set
@@ -272,7 +272,7 @@ public class RecommendationsAlgorithm {
             apd.calculateRisk(this.modelId, RiskCalculationMode.valueOf(riskMode));
         }
 
-        logger.debug("return from iteration");
+        logger.debug("return from applyCSGs() iteration");
 
         return myNode;
     }
@@ -381,63 +381,6 @@ public class RecommendationsAlgorithm {
         return csSet;
     }
 
-
-    private void outputRecommendation(List<CSGNode> nodeList) {
-        Set<String> csgSet = new HashSet<>();
-        Set<String> csSet = new HashSet<>();
-        for (CSGNode node : nodeList) {
-            for (String csg : node.getCsgList()) {
-                csgSet.add(csg);
-            }
-            for (String cs : node.getCsList()) {
-                csSet.add(cs);
-            }
-        }
-        logger.debug("outputRecommendation....csgList: {}, csList: {}", csgSet.size(), csSet.size());
-    }
-
-    private void makeRecommendationsTEST(CSGNode node, List<CSGNode> path) {
-        // This method should not run more risk calculations, instead it will
-        // try to use recommendations stored in nodes
-
-        logger.debug("MAKE RECOMMENDATIONS TREE: path {} children {} ", path.size(), node.getChildren().size());
-
-        String rootCsgList;
-
-        if (node.getCsgList().isEmpty()) {
-            rootCsgList = "root";
-        } else {
-            rootCsgList = String.join(", ", node.getCsgList());
-        }
-        nodes.add(rootCsgList);
-
-        path.add(node);
-
-        if (!node.getChildren().isEmpty()) {
-            logger.debug("  found {} children", node.getChildren().size());
-            for(CSGNode child : node.getChildren()) {
-                links.add(String.join(", ", child.getCsgList()));
-                makeRecommendations(child, path);
-            }
-        } else {
-            List<String> csgList = new ArrayList<>();
-            for (CSGNode pNode : path) {
-                for (String csgUri : pNode.getCsgList()) {
-                    csgList.add(csgUri);
-                }
-            }
-            Set<String> csgSet = new HashSet<>(csgList);
-
-            if (node.getRecommendation() != null) {
-                logger.debug("adding cached path recommendationID {} path: {} csgSet: {}",
-                        node.getRecommendation().getIdentifier(), csgList.size(), csgSet.size());
-                logger.debug("RecommendationDTO csg list: {}", node.getRecommendation().getControlStrategies().size());
-                // TODO: add csgList
-                report.getRecommendations().add(node.getRecommendation());
-            }
-        }
-        logger.debug("Exit MAKE REC");
-    }
 
     public RecommendationReportDTO recommendations() throws RuntimeException {
 
