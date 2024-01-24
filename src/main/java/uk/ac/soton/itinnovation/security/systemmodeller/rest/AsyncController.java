@@ -129,9 +129,6 @@ public class AsyncController {
     @Autowired
     private StoreModelManager storeModelManager;
 
-	@Autowired
-	private ModelObjectsHelper modelObjectsHelper;
-
     @Autowired
     private SecureUrlHelper secureUrlHelper;
 
@@ -140,6 +137,8 @@ public class AsyncController {
 
     @Autowired
     private AsyncService asyncService;
+
+	private final ModelObjectsHelper modelObjectsHelper;
 
     public static class JobResponseDTO {
         private String jobId;
@@ -152,6 +151,11 @@ public class AsyncController {
         public void setJobId(String jobid) { this.jobId = jobid; }
         public String getMessage() { return this.message; }
         public void setMessage(String msg) { this.message = msg; }
+    }
+
+    @Autowired
+    public AsyncController(ModelObjectsHelper modelObjectsHelper) {
+        this.modelObjectsHelper = modelObjectsHelper;
     }
 
 	/**
