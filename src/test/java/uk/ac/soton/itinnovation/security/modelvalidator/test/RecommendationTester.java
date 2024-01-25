@@ -99,7 +99,7 @@ public class RecommendationTester extends TestCase {
         tester.addSystem(0, "modelvalidator/AttackPath/Demo_both_state_reports.nq.gz",
                 "http://it-innovation.soton.ac.uk/system/65944381aa547a34a3a03f10");
         //tester.addSystem(0, "modelvalidator/AttackPath/cyberkit4sme_demo.nq.gz",
-                //"http://it-innovation.soton.ac.uk/system/652fe5d3d20c015ba8f02fb6");
+        //        "http://it-innovation.soton.ac.uk/system/652fe5d3d20c015ba8f02fb6");
 
 		tester.setUp();
 
@@ -153,7 +153,7 @@ public class RecommendationTester extends TestCase {
 		    querierDB.initForRiskCalculation();
 			logger.info("Calculating risks and generating attack graph");
 			RiskCalculator rc = new RiskCalculator(querierDB);
-			rc.calculateRiskLevels(RiskCalculationMode.CURRENT, true, new Progress(tester.getGraph("system"))); //save results, as queried below
+			rc.calculateRiskLevels(RiskCalculationMode.FUTURE, true, new Progress(tester.getGraph("system"))); //save results, as queried below
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Exception thrown by risk level calculator");
@@ -166,8 +166,6 @@ public class RecommendationTester extends TestCase {
 
 			RecommendationsAlgorithmConfig config = new RecommendationsAlgorithmConfig(querierDB, tester.getGraph("system"), "CURRENT");
 			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(config);
-
-			//reca.checkRequestedRiskCalculationMode("CURRENT");
 
 			RecommendationReportDTO report = reca.recommendations();
 

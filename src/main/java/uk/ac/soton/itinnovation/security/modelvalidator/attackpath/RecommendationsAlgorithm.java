@@ -83,7 +83,7 @@ public class RecommendationsAlgorithm {
     private List<String> links = new ArrayList<>();
 
     // allPaths flag for single or double backtrace
-    private boolean allPaths = false;
+    private boolean allPaths = true;
 
     public RecommendationsAlgorithm(RecommendationsAlgorithmConfig config) {
         this.querier = config.getQuerier();
@@ -180,7 +180,7 @@ public class RecommendationsAlgorithm {
         }
 
         // convert LE to DNF
-        le.applyDNF(100);
+        le.applyDNF(300);
 
         // convert from CSG logical expression to list of CSG options
         List<Expression> csgOptions = le.getListFromOr();
@@ -335,8 +335,6 @@ public class RecommendationsAlgorithm {
     }
 
     private void makeRecommendations(CSGNode node, List<CSGNode> path) {
-        // This method should not run more risk calculations, instead it will
-        // try to use recommendations stored in nodes
 
         // if path is undefined, initalise it as empty list
         if (path == null) {
@@ -400,6 +398,7 @@ public class RecommendationsAlgorithm {
 
             // step: attackMitigationCSG?
             LogicalExpression attackMitigationCSG = threatTree.attackMitigationCSG();
+            attackMitigationCSG.displayExpression();
 
             // step: rootNode?
             CSGNode rootNode = applyCSGs(attackMitigationCSG, new CSGNode());

@@ -119,8 +119,10 @@ public class AttackTree {
             this.backtrace(true);
         } else {
             /*
-             * If the shortest path is required then we get the URIRefs of the shortest path nodes from the first pass at the ThreatTree then discard all TreeNodes and
-             * create a new ThreatTree which is bounded by the shortest path URIRefs.
+             * If the shortest path is required then we get the URIRefs of the
+             * shortest path nodes from the first pass at the ThreatTree then
+             * discard all TreeNodes and create a new ThreatTree which is
+             * bounded by the shortest path URIRefs.
              */
             logger.info("***********************");
             logger.info("RUNNING FIRST backtrace");

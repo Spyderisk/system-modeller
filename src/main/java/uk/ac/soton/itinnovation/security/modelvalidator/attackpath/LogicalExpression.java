@@ -213,4 +213,42 @@ public class LogicalExpression {
         */
         return csgUris;
     }
+
+    public void displayExpression() {
+        logger.debug("CSG LogicalExpression has the followng terms:");
+        parse(this.cause, 0);
+    }
+
+    private void parse(Expression<String> expression, int depth) {
+        StringBuilder indent = new StringBuilder();
+        for (int i = 0; i < depth; i++) {
+            indent.append("   ");
+        }
+
+        if (expression instanceof And) {
+            // Handle the 'And' expression
+            And<String> andExpression = (And<String>) expression;
+            logger.debug("{} AND(#{}", indent.toString(), andExpression.getChildren().size());
+            for (Expression<String> subExpr : andExpression.getChildren()) {
+                parse(subExpr, depth + 1);  // Recursive call
+            }
+            logger.debug("{} )", indent.toString());
+        } else if (expression instanceof Or) {
+            // Handle the 'Or' expression
+            Or<String> orExpression = (Or<String>) expression;
+            logger.debug("{} OR(#{}", indent.toString(), orExpression.getChildren().size());
+            for (Expression<String> subExpr : orExpression.getChildren()) {
+                parse(subExpr, depth + 1);  // Recursive call
+            }
+            logger.debug("{} )", indent.toString());
+        } else if (expression instanceof Variable) {
+            // Handle the 'Variable' expression
+            Variable<String> variableExpression = (Variable<String>) expression;
+            // Do something with the variable, e.g., print it
+            logger.debug("{} {}", indent.toString(), variableExpression.getValue().substring(11));
+        } else {
+            // Handle other types of expressions if any
+            logger.warn("LE PARSER: unkown expression {}", expression);
+        }
+    }
 }
