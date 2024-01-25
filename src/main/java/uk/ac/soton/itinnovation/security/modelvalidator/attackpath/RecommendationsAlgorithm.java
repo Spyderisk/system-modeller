@@ -173,7 +173,7 @@ public class RecommendationsAlgorithm {
     }
 
     private CSGNode applyCSGs(LogicalExpression le, CSGNode myNode) {
-        logger.debug("applyCSGs()");
+        logger.debug("applyCSGs() recursive method");
 
         if (myNode == null) {
             myNode = new CSGNode();
@@ -185,28 +185,28 @@ public class RecommendationsAlgorithm {
         // convert from CSG logical expression to list of CSG options
         List<Expression> csgOptions = le.getListFromOr();
 
-        logger.debug("List of OR CSG options: {}", csgOptions.size());
+        logger.debug("Derived DNF (OR) CSG expressions: {} (options).", csgOptions.size());
         for (Expression csgOption : csgOptions) {
-            logger.debug("└──> {}", csgOption);
+            logger.debug("   └──> {}", csgOption);
         }
 
         // examine CSG options
         for (Expression csgOption : csgOptions) {
             logger.debug("examining CSG LE option: {}", csgOption);
-            logger.debug("CSG LE option type: {}", csgOption.getClass().getName());
+            //logger.debug("CSG LE option type: {}", csgOption.getClass().getName());
 
             List<Variable> options = le.getListFromAnd(csgOption);
 
             List<String> csgList = new ArrayList<>();
 
             for (Variable va : options) {
-                logger.debug("variable -> {}, {}", va, va.getClass().getName());
+                //logger.debug("variable -> {}, {}", va, va.getClass().getName());
                 csgList.add(va.toString());
             }
-            logger.debug("LE csgList: {}", csgList);
+            logger.debug("CSG flattened list: {}", csgList);
 
+            logger.debug("adding a child CSGNode with {} csgs", csgList.size());
             CSGNode childNode = new CSGNode(csgList);
-            logger.debug("adding a child node with {} csgs", csgList.size());
             myNode.addChild(childNode);
 
             Set<String> csSet = new HashSet<>();
@@ -215,7 +215,11 @@ public class RecommendationsAlgorithm {
                     csSet.add(cs);
                 }
             }
+
+            // store CS set in the node to reconstruct the final CS list
+            // correctly in the Recommendation report for nested iterations.
             childNode.setCsList(csSet);
+
             logger.debug("CS set for LE CSG_option {}", csgOption);
             logger.debug("  └──> {}", csSet);
 
@@ -226,18 +230,16 @@ public class RecommendationsAlgorithm {
             }
             apd.changeCS(csSet, true);
 
-            // Re-calculate risk now and create a recommendation
+            // Re-calculate risk now and create a potential recommendation
             RiskVector riskResponse = null;
+            RecommendationDTO recommendation = null;
             try {
                 riskResponse = apd.calculateRisk(this.modelId, RiskCalculationMode.valueOf(riskMode));
-                logger.debug("RiskResponse: {}", riskResponse);
-                logger.debug("Overall risk: {}", riskResponse.getOverall());
+                logger.debug("Risk calculation response: {}", riskResponse);
+                logger.debug("Overall model risk: {}", riskResponse.getOverall());
                 StateDTO state = apd.getState();
 
-                //logger.debug("Creating RECOMMENDATATION: node csgList {}, rec csgList {}",
-                //        myNode.getCsgList().size(), csgList.size());
-
-                RecommendationDTO recommendation = createRecommendation(csgList, csSet, state);
+                recommendation = createRecommendation(csgList, csSet, state);
 
                 if (this.report.getRecommendations() == null) {
                     report.setRecommendations(new ArrayList<>());
@@ -245,7 +247,7 @@ public class RecommendationsAlgorithm {
                 childNode.setRecommendation(recommendation);
 
             } catch (Exception e) {
-                logger.warn("failed to get risk calculation, restore model");
+                logger.error("failed to get risk calculation, restore model");
 
                 // restore model ...
                 apd.changeCS(csSet, false);
@@ -255,21 +257,23 @@ public class RecommendationsAlgorithm {
             }
 
             // check if risk has improved or teminate iteration?
-            logger.debug("check for termination condition ({})", recCounter);
+            logger.debug("check for a termination condition for ID {}", recommendation.getIdentifier());
             if ((riskResponse != null) & (apd.compareOverallRiskToMedium(riskResponse.getOverall()))) {
-                logger.info("Termination condition");
+                logger.info("Termination condition reached");
             } else {
                 logger.debug("Risk is still higher than Medium");
-                logger.info("Recalculate nexted attack path tree for a lower level ...");
+                logger.info("Recalculate nested attack path tree (for a lower level?) ...");
                 AttackTree nestedAttackTree = calcAttackTree("domain#RiskLevelMedium");
                 LogicalExpression nestedLogicalExpression = nestedAttackTree.attackMitigationCSG();
                 this.applyCSGs(nestedLogicalExpression, childNode);
             }
 
             // undo CS changes in CS_set
-            logger.debug("Undoing CS controls ({})", csSet.size());
+            logger.debug("Undo CS controls ({})", csSet.size());
             apd.changeCS(csSet, false);
             apd.calculateRisk(this.modelId, RiskCalculationMode.valueOf(riskMode));
+
+            logger.debug("return from examining CSG LE option: {}", csgOption);
         }
 
         logger.debug("return from applyCSGs() iteration");
@@ -309,7 +313,7 @@ public class RecommendationsAlgorithm {
         RecommendationDTO recommendation = new RecommendationDTO();
         recommendation.setIdentifier(this.recCounter++);
         recommendation.setState(state);
-        logger.debug("Potential recommendation: {}", recommendation.getIdentifier());
+        logger.debug("Creating a potential recommendation ID: {}", recommendation.getIdentifier());
 
         Set<ControlStrategyDTO> csgDTOs = createCSGDTO(csgList);
         Set<ControlDTO> controlDTOs = createCSDTO(csSet);

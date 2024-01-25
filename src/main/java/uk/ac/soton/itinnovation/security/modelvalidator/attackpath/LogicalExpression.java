@@ -244,10 +244,11 @@ public class LogicalExpression {
         } else if (expression instanceof Variable) {
             // Handle the 'Variable' expression
             Variable<String> variableExpression = (Variable<String>) expression;
-            // Do something with the variable, e.g., print it
+            // Display the variable, e.g., print it
             logger.debug("{} {}", indent.toString(), variableExpression.getValue().substring(11));
         } else {
-            // Handle other types of expressions if any
+            // Handle other types of expressions if any, we should not reach
+            // here!!!
             logger.warn("LE PARSER: unkown expression {}", expression);
         }
     }

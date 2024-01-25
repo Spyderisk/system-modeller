@@ -169,7 +169,7 @@ public class RecommendationTester extends TestCase {
 
 			RecommendationReportDTO report = reca.recommendations();
 
-            // display recommendations in formatted json
+            // display recommendations in readable json format
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
             String json = objectMapper.writeValueAsString(report);
