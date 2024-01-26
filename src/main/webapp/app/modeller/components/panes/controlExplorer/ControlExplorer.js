@@ -69,22 +69,6 @@ class ControlExplorer extends React.Component {
                    e.cancelBubble = true;
                    e.returnValue = false;
                }}
-               // onDragStart={(e) => {
-               //     let elName = $(e.target)[0].localName;
-               //     //console.log("onDragStart: element: " + elName);
-               //
-               //     /*
-               //     if (elName === "input") {
-               //         return false;
-               //     }
-               //     */
-               //     if (this.props.isActive) {
-               //         return;
-               //     }
-               //
-               //     this.bringWindowToFront(true);
-               //     this.props.dispatch(activateControlExplorer(this.props.selectedControl));
-               // }}
                onDrag={(e) => {
                    if (e.stopPropagation) e.stopPropagation();
                    if (e.preventDefault) e.preventDefault();
