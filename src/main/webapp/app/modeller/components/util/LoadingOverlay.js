@@ -189,7 +189,7 @@ class LoadingOverlay extends React.Component {
     }
 
     getRecommendationsTimeout() {
-        return getRiskCalcTimeout();
+        return this.getRiskCalcTimeout();
     }
 
     getLoadingTimeout() {
