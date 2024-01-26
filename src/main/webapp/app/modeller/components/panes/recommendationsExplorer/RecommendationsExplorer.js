@@ -115,13 +115,11 @@ function shouldExpandRecommendationsNode(level) {
 RecommendationsExplorer.propTypes = {
     selectedAsset: PropTypes.object,
     isActive: PropTypes.bool, // is in front of other panels
-    model: PropTypes.object,
     recommendations: PropTypes.object,
     show: PropTypes.bool,
     onHide: PropTypes.func,
     loading: PropTypes.object,
     dispatch: PropTypes.func,
-    authz: PropTypes.object,
     windowOrder: PropTypes.object,
 };
 

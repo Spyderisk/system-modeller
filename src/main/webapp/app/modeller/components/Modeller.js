@@ -281,13 +281,11 @@ class Modeller extends React.Component {
                 <RecommendationsExplorer
                     selectedAsset={this.props.selectedAsset}
                     isActive={this.props.isRecommendationsExplorerActive} // is window displayed at front
-                    model={this.props.model}
                     recommendations={this.props.recommendations}
                     show={this.props.isRecommendationsExplorerVisible}
                     onHide={this.closeRecommendationsExplorer}
                     loading={this.props.loading}
                     dispatch={this.props.dispatch}
-                    authz={this.props.authz}
                 />
 
                 <Canvas ref="tile-canvas"
