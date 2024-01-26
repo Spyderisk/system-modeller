@@ -320,7 +320,6 @@ export default function modeller(state = modelState, action) {
 
     if (action.type === instr.EDIT_MODEL) {
         let updatedModel = action.payload;
-        //console.log("EDIT_MODEL:", updatedModel);
         return {
             ...state,
             model: {
@@ -332,117 +331,15 @@ export default function modeller(state = modelState, action) {
     }
 
     if (action.type === instr.UPDATE_VALIDATION_PROGRESS) {
-        if (action.payload.waitingForUpdate) {
-            //console.log("poll: UPDATE_VALIDATION_PROGRESS: (waiting for progress)");
-            return {
-                ...state, validationProgress: {
-                    ...state.validationProgress,
-                    waitingForUpdate: action.payload.waitingForUpdate
-                }
-            };
-        }
-
-        let status = "running";
-
-        if (action.payload.status) {
-            status = action.payload.status;
-        }
-        else if (action.payload.message.indexOf("failed") != -1) {
-            console.log("Validation failed (detected from message)");
-            status = "failed";
-        }
-        else if (action.payload.message.indexOf("complete") != -1) {
-            console.log("Validation completed (detected from message)");
-            status = "completed";
-        }
-
-        let error = action.payload.error != null ? action.payload.error : "";
-
-        return {
-            ...state, validationProgress: {
-                status: status,
-                progress: action.payload.progress,
-                message: action.payload.message,
-                error: error,
-                waitingForUpdate: action.payload.waitingForUpdate
-            }
-        };
+        return updateProgress("Validation", state, action);
     }
 
     if (action.type === instr.UPDATE_RISK_CALC_PROGRESS) {
-        //console.log("UPDATE_RISK_CALC_PROGRESS", action.payload);
-        if (action.payload.waitingForUpdate) {
-            //console.log("poll: UPDATE_RISK_CALC_PROGRESS: (waiting for progress)");
-            return {
-                ...state, validationProgress: {
-                    ...state.validationProgress,
-                    waitingForUpdate: action.payload.waitingForUpdate
-                }
-            };
-        }
-
-        let status = "running";
-
-        if (action.payload.status) {
-            status = action.payload.status;
-        }
-        else if (action.payload.message.indexOf("failed") != -1) {
-            console.log("Risk calc failed (detected from message)");
-            status = "failed";
-        }
-        else if (action.payload.message.indexOf("complete") != -1) {
-            console.log("Risk calc completed (detected from message)");
-            status = "completed";
-        }
-
-        let error = action.payload.error != null ? action.payload.error : "";
-
-        return {
-            ...state, validationProgress: {
-                status: status,
-                progress: action.payload.progress,
-                message: action.payload.message,
-                error: error,
-                waitingForUpdate: action.payload.waitingForUpdate
-            }
-        };
+        return updateProgress("Risk calc", state, action);
     }
 
     if (action.type === instr.UPDATE_RECOMMENDATIONS_PROGRESS) {
-        if (action.payload.waitingForUpdate) {
-            return {
-                ...state, validationProgress: {
-                    ...state.validationProgress,
-                    waitingForUpdate: action.payload.waitingForUpdate
-                }
-            };
-        }
-
-        let status = "running";
-
-        if (action.payload.status) {
-            status = action.payload.status;
-        }
-        else if (action.payload.message.indexOf("failed") != -1) {
-            console.log("Recommendations failed (detected from message)");
-            status = "failed";
-        }
-        else if (action.payload.message.indexOf("complete") != -1) {
-            console.log("Recommendations completed (detected from message)");
-            status = "completed";
-        }
-
-        let error = action.payload.error != null ? action.payload.error : "";
-
-        return {
-            ...state, validationProgress: {
-                status: status,
-                progress: action.payload.progress,
-                message: action.payload.message,
-                error: error,
-                waitingForUpdate: action.payload.waitingForUpdate
-            }
-        };
+        return updateProgress("Recommendations", state, action);
     }
 
     if (action.type === instr.UPDATE_LOADING_PROGRESS) {
@@ -2415,6 +2312,43 @@ export default function modeller(state = modelState, action) {
     }
 
     return state;
+}
+
+function updateProgress(task, state, action) {
+    if (action.payload.waitingForUpdate) {
+        return {
+            ...state, validationProgress: {
+                ...state.validationProgress,
+                waitingForUpdate: action.payload.waitingForUpdate
+            }
+        };
+    }
+
+    let status = "running";
+
+    if (action.payload.status) {
+        status = action.payload.status;
+    }
+    else if (action.payload.message.indexOf("failed") != -1) {
+        console.log(task + " failed (detected from message)");
+        status = "failed";
+    }
+    else if (action.payload.message.indexOf("complete") != -1) {
+        console.log(task + " completed (detected from message)");
+        status = "completed";
+    }
+
+    let error = action.payload.error != null ? action.payload.error : "";
+
+    return {
+        ...state, validationProgress: {
+            status: status,
+            progress: action.payload.progress,
+            message: action.payload.message,
+            error: error,
+            waitingForUpdate: action.payload.waitingForUpdate
+        }
+    };
 }
 
 function getAttackPathThreatRefs(attackPathData) {
