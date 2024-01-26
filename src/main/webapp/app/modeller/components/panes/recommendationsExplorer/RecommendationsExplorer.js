@@ -71,26 +71,32 @@ class RecommendationsExplorer extends React.Component {
                }}
                className={!this.props.show ? "hidden" : null}>
                <div className="recommendations-explorer">
-
-                   <div className="header" onMouseDown={() => {
-                       this.props.dispatch(bringToFrontWindow("recommendationsExplorer"));
-                   }}>
-                       <h1>
-                           <div className={"doc-help-explorer"}>
-                               <div>
-                                   {"Recommendations Explorer"}
-                               </div>
-                           </div>
-                       </h1>
-                       <span classID="rel-delete"
-                             className="menu-close fa fa-times"
-                             onClick={() => {
-                                 this.props.onHide();
-                             }}>
-                       </span>
-                       <span className="menu-close fa fa-question" 
-                             onClick={e => openDocumentation(e, "redirect/recommendations-explorer")} />
-                   </div>
+                    <button className="header"
+                        onMouseDown={() => {
+                            this.props.dispatch(bringToFrontWindow("recommendationsExplorer"));
+                        }}
+                    >
+                        <div className="header header-no-padding">
+                            <h1>
+                                <div className={"doc-help-explorer"}>
+                                    <div className="title">
+                                        {"Recommendations Explorer"}
+                                    </div>
+                                </div>
+                            </h1>
+                            <span classID="recommendations-close"
+                                  className="button">
+                                <button onClick={e => this.props.onHide()}>
+                                    <i className="fa fa-times"/>
+                                </button>
+                            </span>
+                            <span className="button">
+                                <button onClick={e => openDocumentation(e, "redirect/recommendations-explorer")}>
+                                    <i className="fa fa-question"/>
+                                </button>
+                            </span>
+                        </div>
+                    </button>
 
                     <div className="content">
                         {recommendations && <JsonView data={recommendations} shouldExpandNode={shouldExpandRecommendationsNode} style={defaultStyles} />}
@@ -99,8 +105,7 @@ class RecommendationsExplorer extends React.Component {
 
           </Rnd>
         );
-    }
-
+    }   
 }
 
 function shouldExpandRecommendationsNode(level) {
