@@ -1,25 +1,21 @@
 import React from "react";
 import PropTypes from 'prop-types';
-//import ControlStrategyAccordion from "./ControlStrategyAccordion";
-import {Rnd} from "../../../../../node_modules/react-rnd/lib/index";
-import {bringToFrontWindow, closeWindow} from "../../../actions/ViewActions";
 import renderControlStrategy from "./ControlStrategyRenderer";
 import {
     updateControlOnAsset,
     updateThreat
 } from "../../../../modeller/actions/ModellerActions";
 import {connect} from "react-redux";
-import {openDocumentation} from "../../../../common/documentation/documentation"
+import Explorer from "../common/Explorer"
 
 class ControlStrategyExplorer extends React.Component {
 
     constructor(props) {
         super(props);
 
+        this.renderContent = this.renderContent.bind(this);
         this.updateThreat = this.updateThreat.bind(this);
         this.getCsgControlSets = this.getCsgControlSets.bind(this);
-
-        this.rnd = null;
 
         this.state = {
             updatingControlSets: {},
@@ -146,91 +142,32 @@ class ControlStrategyExplorer extends React.Component {
     }
 
     render() {
-        const {model, hoverThreat, dispatch, loading, ...modalProps} = this.props;
-
-        //TODO: for now we take the overall CSG label/desc from the first element in the CSG array,
-        //however the desc will be specific for a particular CSG (threat at asset)
-        var csg = this.props.selectedControlStrategy.length > 0 ? this.props.selectedControlStrategy[0] : null;
-        var label = (csg != null ? csg.label : "");
-        let context = this.props.csgExplorerContext;
-
         if (!this.props.show) {
             return null;
         }
 
+        let rndParams = {
+            xScale: 0.20,
+            width: 500,
+            height: 600
+        }
+        
         return (
-          <Rnd ref={ c => {this.rnd = c;} }
-               bounds={ '#view-boundary' }
-               default={{
-                   x: window.outerWidth * 0.20,
-                   y: (100 / window.innerHeight) * window.devicePixelRatio,
-                   width: 500,
-                   height: 600,
-               }}
-               style={{ zIndex: this.props.windowOrder }}
-               minWidth={150}
-               minHeight={200}
-               cancel={".content, .text-primary, strong, span"}
-               onResize={(e) => {
-                   if (e.stopPropagation) e.stopPropagation();
-                   if (e.preventDefault) e.preventDefault();
-                   e.cancelBubble = true;
-                   e.returnValue = false;
-               }}
-               onDrag={(e) => {
-                   if (e.stopPropagation) e.stopPropagation();
-                   if (e.preventDefault) e.preventDefault();
-                   e.cancelBubble = true;
-                   e.returnValue = false;
-               }}
-               className={!this.props.show ? "hidden" : null}>
-               <div className="control-strategy-explorer">
-
-                   <div className="header" onMouseDown={() => {
-                       this.props.dispatch(bringToFrontWindow("controlStrategyExplorer"));
-                   }}>
-                       <h1>
-                           <div className={"doc-help-explorer"}>
-                               <div>
-                                   {"Control Strategy Explorer"}
-                               </div>
-                           </div>
-                       </h1>
-                       <span classID="rel-delete"
-                             className="menu-close fa fa-times"
-                             onClick={() => {
-                                 this.props.dispatch(closeWindow("controlStrategyExplorer"));
-                                 this.props.onHide();
-                             }}>
-                       </span>
-                       <span className="menu-close fa fa-question" onClick={e => openDocumentation(e, "redirect/control-strategy-explorer")} />
-                   </div>
-
-                    <div className="content">
-                        <div className="desc">
-                            <div className="descriptor">
-                                {this.renderDescription(csg, context)}
-                            </div>
-                        </div>
-
-                        {/* TODO: remove this if we are sure we don't need expandable panels */}
-                        {/* <ControlStrategyAccordion dispatch={dispatch}
-                                              selectedControlStrategy={this.props.selectedControlStrategy}
-                                              model={model}
-                                              controlSets={propControlSets}
-                                              assets={model.assets}
-                                              threats={model.threats}
-                                              hoverThreat={this.props.hoverThreat}
-                                              updateThreat={this.updateThreat}
-                                              authz={this.props.authz}
-                            /> */}
-
-                        {this.renderCsgs()}
-                   </div>
-               </div>
-
-          </Rnd>
-        );
+            <Explorer
+                title={"Control Strategy Explorer"}
+                windowName={"controlStrategyExplorer"}
+                documentationLink={"redirect/control-strategy-explorer"}
+                rndParams={rndParams}
+                selectedAsset={this.props.selectedAsset}
+                isActive={this.props.isActive}
+                show={this.props.show}
+                onHide={this.props.onHide}
+                loading={this.props.loading}
+                dispatch={this.props.dispatch}
+                renderContent={this.renderContent}
+                windowOrder={this.props.windowOrder}
+            />
+        )
     }
 
     renderCsgs() {
@@ -250,11 +187,33 @@ class ControlStrategyExplorer extends React.Component {
         let threat = null; //list all threats
         return renderControlStrategy(csgName, csg, csgKey, threat, this.state, this.props, this, "csg-explorer");
     }
+
+    renderContent() {
+        const {model, hoverThreat, dispatch, loading, ...modalProps} = this.props;
+
+        //TODO: for now we take the overall CSG label/desc from the first element in the CSG array,
+        //however the desc will be specific for a particular CSG (threat at asset)
+        var csg = this.props.selectedControlStrategy.length > 0 ? this.props.selectedControlStrategy[0] : null;
+        var label = (csg != null ? csg.label : "");
+        let context = this.props.csgExplorerContext;
+
+        return (
+            <div className="content">
+                <div className="desc">
+                    <div className="descriptor">
+                        {this.renderDescription(csg, context)}
+                    </div>
+                </div>
+
+                {this.renderCsgs()}
+            </div>
+        )
+    }
 }
 
 ControlStrategyExplorer.propTypes = {
     selectedAsset: PropTypes.object,
-    selectedControlStrategy: PropTypes.object,
+    selectedControlStrategy: PropTypes.array,
     isActive: PropTypes.bool, // is in front of other panels
     model: PropTypes.object,
     controlSets: PropTypes.object,
