@@ -1697,6 +1697,10 @@ export function getRecommendations(modelId, riskMode) {
                     type: instr.RECOMMENDATIONS_RESULTS,
                     payload: response.data
                 });
+                dispatch({
+                    type: instr.OPEN_WINDOW,
+                    payload: "recommendationsExplorer"
+                });
             })
             .catch((error) => {
                 console.log("Error:", error);
