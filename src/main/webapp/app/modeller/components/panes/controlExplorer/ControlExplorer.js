@@ -30,7 +30,7 @@ class ControlExplorer extends React.Component {
                 documentationLink={"redirect/control-explorer"}
                 rndParams={rndParams}
                 selectedAsset={this.props.selectedAsset}
-                isActive={this.props.isActive}
+                //isActive={this.props.isActive}
                 show={this.props.show}
                 onHide={this.props.onHide}
                 loading={this.props.loading}
@@ -82,7 +82,7 @@ class ControlExplorer extends React.Component {
 
 ControlExplorer.propTypes = {
     selectedAsset: PropTypes.object,
-    isActive: PropTypes.bool, // is in front of other panels
+    //isActive: PropTypes.bool, // is in front of other panels
     model: PropTypes.object,
     show: PropTypes.bool,
     onHide: PropTypes.func,

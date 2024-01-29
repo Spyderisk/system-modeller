@@ -16,15 +16,7 @@ class Explorer extends React.Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        if ((!this.props.show) && (!nextProps.show)) {
-            return false;
-        }
-
-        if (nextProps.loading.model) {
-            return false;
-        }
-
-        return true;
+        return !nextProps.loading.model;
     }
 
     renderRnd() {
@@ -102,8 +94,7 @@ Explorer.propTypes = {
     windowName: PropTypes.string,
     documentationLink: PropTypes.string,
     rndParams: PropTypes.object,
-    selectedAsset: PropTypes.object,
-    isActive: PropTypes.bool, // is in front of other panels
+    //isActive: PropTypes.bool, // is in front of other panels
     show: PropTypes.bool,
     onHide: PropTypes.func,
     loading: PropTypes.object,

@@ -249,7 +249,7 @@ class Modeller extends React.Component {
 
                 <ControlExplorer
                     selectedAsset={this.props.selectedAsset}
-                    isActive={this.props.isControlExplorerActive} // is window displayed at front
+                    //isActive={this.props.isControlExplorerActive} // is window displayed at front
                     model={this.props.model}
                     show={this.props.isControlExplorerVisible}
                     onHide={this.closeControlExplorer}
