@@ -12,28 +12,6 @@ class ControlExplorer extends React.Component {
         this.renderContent = this.renderContent.bind(this);
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
-        let shouldComponentUpdate = true;
-
-        if ((!this.props.show) && (!nextProps.show)) {
-            return false;
-        }
-
-        if (nextProps.loading.model) {
-            return false;
-        }
-
-        if (this.props.isActive != nextProps.isActive) {
-            return true;
-        }
-
-        if(this.props.selectedAsset != nextProps.selectedAsset) {
-            return true;
-        }
-
-        return shouldComponentUpdate;
-    }
-
     render() {
         if (!this.props.show) {
             return null;

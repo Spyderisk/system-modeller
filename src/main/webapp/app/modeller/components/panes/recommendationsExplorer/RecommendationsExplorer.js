@@ -16,28 +16,6 @@ class RecommendationsExplorer extends React.Component {
         }
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
-        let shouldComponentUpdate = true;
-
-        if ((!this.props.show) && (!nextProps.show)) {
-            return false;
-        }
-
-        if (nextProps.loading.model) {
-            return false;
-        }
-
-        if (this.props.isActive != nextProps.isActive) {
-            return true;
-        }
-
-        if (this.props.selectedAsset != nextProps.selectedAsset) {
-            return true;
-        }
-
-        return shouldComponentUpdate;
-    }
-
     render() {
         if (!this.props.show) {
             return null;
@@ -48,7 +26,7 @@ class RecommendationsExplorer extends React.Component {
             width: 700,
             height: 600
         }
-        
+
         return (
             <Explorer
                 title={"Recommendations Explorer"}

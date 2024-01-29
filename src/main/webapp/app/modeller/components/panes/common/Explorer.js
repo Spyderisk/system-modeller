@@ -16,8 +16,6 @@ class Explorer extends React.Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        let shouldComponentUpdate = true;
-
         if ((!this.props.show) && (!nextProps.show)) {
             return false;
         }
@@ -26,15 +24,7 @@ class Explorer extends React.Component {
             return false;
         }
 
-        if (this.props.isActive != nextProps.isActive) {
-            return true;
-        }
-
-        if (this.props.selectedAsset != nextProps.selectedAsset) {
-            return true;
-        }
-
-        return shouldComponentUpdate;
+        return true;
     }
 
     renderRnd() {
