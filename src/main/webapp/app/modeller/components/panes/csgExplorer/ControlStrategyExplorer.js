@@ -124,18 +124,12 @@ class ControlStrategyExplorer extends React.Component {
             return null;
         }
 
-        let rndParams = {
-            xScale: 0.20,
-            width: 500,
-            height: 600
-        }
-        
         return (
             <Explorer
                 title={"Control Strategy Explorer"}
                 windowName={"controlStrategyExplorer"}
                 documentationLink={"redirect/control-strategy-explorer"}
-                rndParams={rndParams}
+                rndParams={{xScale: 0.20, width: 500, height: 600}}
                 selectedAsset={this.props.selectedAsset}
                 isActive={this.props.isActive}
                 show={this.props.show}

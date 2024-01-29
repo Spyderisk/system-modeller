@@ -21,18 +21,12 @@ class RecommendationsExplorer extends React.Component {
             return null;
         }
 
-        let rndParams = {
-            xScale: 0.20,
-            width: 700,
-            height: 600
-        }
-
         return (
             <Explorer
                 title={"Recommendations Explorer"}
                 windowName={"recommendationsExplorer"}
                 documentationLink={"redirect/recommendations-explorer"}
-                rndParams={rndParams}
+                rndParams={{xScale: 0.20, width: 700, height: 600}}
                 selectedAsset={this.props.selectedAsset}
                 isActive={this.props.isActive}
                 show={this.props.show}

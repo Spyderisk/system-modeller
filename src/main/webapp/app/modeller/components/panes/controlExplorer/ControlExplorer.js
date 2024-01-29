@@ -17,18 +17,12 @@ class ControlExplorer extends React.Component {
             return null;
         }
 
-        let rndParams = {
-            xScale: 0.15,
-            width: 360,
-            height: 600
-        }
-        
         return (
             <Explorer
                 title={"Control Explorer"}
                 windowName={"controlExplorer"}
                 documentationLink={"redirect/control-explorer"}
-                rndParams={rndParams}
+                rndParams={{xScale: 0.15, width: 360, height: 600}}
                 selectedAsset={this.props.selectedAsset}
                 //isActive={this.props.isActive}
                 show={this.props.show}
