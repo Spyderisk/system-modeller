@@ -106,11 +106,14 @@ ControlExplorer.propTypes = {
     selectedAsset: PropTypes.object,
     isActive: PropTypes.bool, // is in front of other panels
     model: PropTypes.object,
+    show: PropTypes.bool,
     onHide: PropTypes.func,
-    loading: PropTypes.object,
     hoverThreat: PropTypes.func,
     getAssetType: PropTypes.func,
+    loading: PropTypes.object,
+    dispatch: PropTypes.func,
     authz: PropTypes.object,
+    windowOrder: PropTypes.number,
 };
 
 let mapStateToProps = function (state) {

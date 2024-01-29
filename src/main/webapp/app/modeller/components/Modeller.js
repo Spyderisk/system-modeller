@@ -250,14 +250,13 @@ class Modeller extends React.Component {
                 <ControlExplorer
                     selectedAsset={this.props.selectedAsset}
                     isActive={this.props.isControlExplorerActive} // is window displayed at front
-                    threatFiltersActive={this.props.threatFiltersActive}
-                    dispatch={this.props.dispatch}
                     model={this.props.model}
                     show={this.props.isControlExplorerVisible}
                     onHide={this.closeControlExplorer}
                     hoverThreat={this.hoverThreat}
                     getAssetType={this.getAssetType}
                     loading={this.props.loading}
+                    dispatch={this.props.dispatch}
                     authz={this.props.authz}
                 />
 
