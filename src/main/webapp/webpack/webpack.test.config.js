@@ -26,6 +26,21 @@ module.exports = {
     module: {
         rules: [
             {
+                test: /\.css$/,
+                include: [SRC, NODE_MODULES],
+                use: [
+                    {
+                        loader: MiniCssExtractPlugin.loader,  // extracts CSS into CSS files so they can be loaded in parallel
+                    },
+                    {
+                        loader: 'css-loader',  // converts from CSS to CommonJS
+                    },
+                    {
+                        loader: "postcss-loader"
+                    }
+                ],
+            },
+            {
                 test: /\.jsx?$/,
                 include: SRC,
                 exclude: /node_modules/,
@@ -64,21 +79,6 @@ module.exports = {
                         loader: "sass-loader"  // compiles SASS to CSS
                     }
                 ]
-            },
-            {
-                test: /\.css$/,
-                include: [SRC, NODE_MODULES],
-                use: [
-                    {
-                        loader: MiniCssExtractPlugin.loader,  // extracts CSS into CSS files so they can be loaded in parallel
-                    },
-                    {
-                        loader: 'css-loader',  // converts from CSS to CommonJS
-                    },
-                    {
-                        loader: "postcss-loader"
-                    }
-                ],
             }
         ]
     },
