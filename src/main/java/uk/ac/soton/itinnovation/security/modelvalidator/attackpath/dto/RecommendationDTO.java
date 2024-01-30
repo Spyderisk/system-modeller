@@ -24,14 +24,14 @@
 /////////////////////////////////////////////////////////////////////////
 package uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto;
 
-import java.util.List;
+import java.util.Set;
 
 import lombok.Data;
 
 @Data
 public class RecommendationDTO {
     private int identifier;
-    private List<ControlStrategyDTO> controlStrategies;
-    private List<ControlDTO> controls;
+    private Set<ControlStrategyDTO> controlStrategies;
+    private Set<ControlDTO> controls;
     private StateDTO state;
 }

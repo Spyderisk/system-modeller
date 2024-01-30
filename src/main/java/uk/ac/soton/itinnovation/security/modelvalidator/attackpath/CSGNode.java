@@ -25,13 +25,15 @@
 package uk.ac.soton.itinnovation.security.modelvalidator.attackpath;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationDTO;
 
 public class CSGNode {
-    //private List<CSGNode> csgList;
     private List<String> csgList;
+    private Set<String> csList;
     private List<CSGNode> children;
     private RecommendationDTO recommendation;
 
@@ -39,7 +41,6 @@ public class CSGNode {
         this(new ArrayList<>());
     }
 
-    //public CSGNode(List<CSGNode> csgList) {
     public CSGNode(List<String> csgList) {
         if (csgList == null) {
             csgList = new ArrayList<>();
@@ -47,14 +48,23 @@ public class CSGNode {
         this.csgList = csgList;
         this.children = new ArrayList<>();
         this.recommendation = null;
+        this.csList = new HashSet<>();
     }
 
     public void addChild(CSGNode child) {
         children.add(child);
     }
 
+    public Set<String> getCsList() {
+        return this.csList;
+    }
+
     public List<String> getCsgList() {
         return this.csgList;
+    }
+
+    public void setCsList(Set<String> csList) {
+        this.csList = csList;
     }
 
     public List<CSGNode> getChildren() {

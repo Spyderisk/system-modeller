@@ -35,6 +35,9 @@ import java.util.zip.GZIPOutputStream;
 import javax.naming.SizeLimitExceededException;
 import javax.servlet.http.HttpServletRequest;
 
+import java.net.URI;
+import java.util.UUID;
+
 import org.keycloak.representations.idm.UserRepresentation;
 
 import org.slf4j.Logger;
@@ -111,6 +114,10 @@ import uk.ac.soton.itinnovation.security.systemmodeller.semantics.StoreModelMana
 import uk.ac.soton.itinnovation.security.systemmodeller.util.ReportGenerator;
 import uk.ac.soton.itinnovation.security.systemmodeller.util.SecureUrlHelper;
 
+import java.util.concurrent.CompletionStage;
+import java.util.Optional;
+
+
 @RestController
 @RequestMapping("/async")
 public class AsyncController {
@@ -156,6 +163,78 @@ public class AsyncController {
     @Autowired
     public AsyncController(ModelObjectsHelper modelObjectsHelper) {
         this.modelObjectsHelper = modelObjectsHelper;
+    }
+
+	/**
+	 * This REST method generates a recommendation report
+	 *
+	 * @param modelId the String representation of the model object to seacrh
+	 * @param riskMode string indicating the prefered risk calculation mode
+	 * @return A JSON report containing recommendations
+     * @throws InternalServerErrorException   if an error occurs during report generation
+	 */
+	@RequestMapping(value = "/models/{modelId}/recommendations202", method = RequestMethod.POST)
+    public ResponseEntity<JobResponseDTO> startRecommendationsTaskRed(
+            @PathVariable String modelId,
+            @RequestParam (defaultValue = "CURRENT") String riskMode) {
+
+        logger.info("Calculating threat graph for model {}", modelId);
+		riskMode = riskMode.replaceAll("[\n\r]", "_");
+        logger.info(" riskMode: {}",riskMode);
+
+		try {
+            RiskCalculationMode.valueOf(riskMode);
+		} catch (IllegalArgumentException e) {
+			logger.error("Found unexpected riskCalculationMode parameter value {}, valid values are: {}.",
+					riskMode, RiskCalculationMode.values());
+			throw new BadRequestErrorException("Invalid 'riskMode' parameter value " + riskMode +
+                        ", valid values are: " + Arrays.toString(RiskCalculationMode.values()));
+		}
+
+        final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
+
+		String mId = model.getId();
+
+        AStoreWrapper store = storeModelManager.getStore();
+
+        try {
+            logger.info("Initialising JenaQuerierDB");
+
+            JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
+                    model.getModelStack(), true);
+
+            querierDB.init();
+
+            logger.info("Calculating Recommendations");
+
+            logger.info("Creating async job for {}", modelId);
+
+            String jobId = UUID.randomUUID().toString();
+            logger.info("submitting async job with id: {}", jobId);
+
+			RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, mId, riskMode);
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() ->
+                    asyncService.startRecommendationTask(jobId, recaConfig));
+
+            // Build the Location URI for the job status
+            URI locationUri = URI.create("/models/"+modelId + "/recommendations/status/" + jobId);
+
+             // Return 202 Accepted with a Location header
+            HttpHeaders headers = new HttpHeaders();
+            headers.setLocation(locationUri);
+
+            JobResponseDTO response = new JobResponseDTO(jobId, "CREATED");
+
+            return ResponseEntity.accepted().headers(headers).body(response);
+        } catch (BadRequestErrorException e) {
+            logger.error("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
+            throw e;
+        } catch (Exception e) {
+            logger.error("Threat path failed due to an error", e);
+            throw new InternalServerErrorException(
+                    "Finding recommendations failed. Please contact support for further assistance.");
+        }
+
     }
 
 	/**
