@@ -167,7 +167,9 @@ public class RecommendationTester extends TestCase {
 			RecommendationsAlgorithmConfig config = new RecommendationsAlgorithmConfig(querierDB, tester.getGraph("system"), "CURRENT");
 			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(config);
 
-			RecommendationReportDTO report = reca.recommendations();
+			reca.checkRequestedRiskCalculationMode("CURRENT");
+
+			RecommendationReportDTO report = reca.recommendations(new Progress(config.getModelId()));
 
             // display recommendations in readable json format
             ObjectMapper objectMapper = new ObjectMapper();

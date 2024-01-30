@@ -145,6 +145,8 @@ public class AsyncController {
     @Autowired
     private AsyncService asyncService;
 
+	private final ModelObjectsHelper modelObjectsHelper;
+
     public static class JobResponseDTO {
         private String jobId;
         private String message;
@@ -156,6 +158,11 @@ public class AsyncController {
         public void setJobId(String jobid) { this.jobId = jobid; }
         public String getMessage() { return this.message; }
         public void setMessage(String msg) { this.message = msg; }
+    }
+
+    @Autowired
+    public AsyncController(ModelObjectsHelper modelObjectsHelper) {
+        this.modelObjectsHelper = modelObjectsHelper;
     }
 
 	/**
@@ -185,6 +192,8 @@ public class AsyncController {
 		}
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
+        Progress progress = modelObjectsHelper.getValidationProgressOfModel(model);
+        progress.updateProgress(0d, "Recommendations starting");
 
 		String mId = model.getId();
 
@@ -206,8 +215,7 @@ public class AsyncController {
             logger.info("submitting async job with id: {}", jobId);
 
 			RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, mId, riskMode);
-            CompletableFuture<Void> future = CompletableFuture.runAsync(() ->
-                    asyncService.startRecommendationTask(jobId, recaConfig));
+            CompletableFuture.runAsync(() -> asyncService.startRecommendationTask(jobId, recaConfig, progress));
 
             // Build the Location URI for the job status
             URI locationUri = URI.create("/models/"+modelId + "/recommendations/status/" + jobId);
@@ -257,6 +265,8 @@ public class AsyncController {
 		}
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
+        Progress progress = modelObjectsHelper.getValidationProgressOfModel(model);
+        progress.updateProgress(0d, "Recommendations starting");
 
 		String mId = model.getId();
 
@@ -278,9 +288,7 @@ public class AsyncController {
             logger.info("submitting async job with id: {}", jobId);
 
 			RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, mId, riskMode);
-            CompletableFuture.runAsync(() -> asyncService.startRecommendationTask(jobId, recaConfig));
-            //asyncService.startRecommendationTask(jobId, recaConfig);
-
+            CompletableFuture.runAsync(() -> asyncService.startRecommendationTask(jobId, recaConfig, progress));
 
             JobResponseDTO response = new JobResponseDTO(jobId, "CREATED");
 

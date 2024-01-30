@@ -2,7 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import {Modal, Button, ProgressBar} from "react-bootstrap";
 import {
-    loadingCompleted, pollForLoadingProgress, pollForValidationProgress, pollForRiskCalcProgress,
+    pollForLoadingProgress, pollForValidationProgress, pollForRiskCalcProgress, pollForRecommendationsProgress,
     validationCompleted, validationFailed,
     riskCalcCompleted, riskCalcFailed, changeSelectedAsset
     //resetValidation
@@ -38,12 +38,15 @@ class LoadingOverlay extends React.Component {
         this.checkProgress = this.checkProgress.bind(this);
         this.pollValidationProgress = this.pollValidationProgress.bind(this);
         this.pollRiskCalcProgress = this.pollRiskCalcProgress.bind(this);
+        this.pollRecommendationsProgress = this.pollRecommendationsProgress.bind(this);
         this.pollLoadingProgress = this.pollLoadingProgress.bind(this);
         this.pollDroppingInfGraphProgress = this.pollDroppingInfGraphProgress.bind(this);
         this.getValidationTimeout = this.getValidationTimeout.bind(this);
         this.getRiskCalcTimeout = this.getRiskCalcTimeout.bind(this);
+        this.getRecommendationsTimeout = this.getRecommendationsTimeout.bind(this);
         this.getLoadingTimeout = this.getLoadingTimeout.bind(this);
         this.getTimeout = this.getTimeout.bind(this);
+        this.getHeaderText = this.getHeaderText.bind(this);
 
     }
 
@@ -52,7 +55,6 @@ class LoadingOverlay extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        //console.log("LoadingOverlay: componentWillReceiveProps", this.props.isValidating, nextProps.isValidating);
         let showModal = this.state.showModal;
         let timeout = this.state.timeout;
         let progress = this.state.progress;
@@ -69,12 +71,18 @@ class LoadingOverlay extends React.Component {
         
         // If risk calc has completed, show modal
         if (this.props.isCalculatingRisks && !nextProps.isCalculatingRisks) {
-            //console.log("LoadingOverlay: setting showModal true");
             stage = "Risk calculation";
             if (nextProps.validationProgress.status !== "inactive") showModal = true;
             stateChanged = true;
         }
         
+        // If risk calc has completed, show modal
+        if (this.props.isCalculatingRecommendations && !nextProps.isCalculatingRecommendations) {
+            stage = "Recommendations";
+            if (nextProps.validationProgress.status !== "inactive") showModal = true;
+            stateChanged = true;
+        }
+
         // Show modal (error dialog) if loading has failed
         if (this.props.loadingProgress.status !== "failed" && nextProps.loadingProgress.status === "failed") {
             showModal = true;
@@ -89,7 +97,6 @@ class LoadingOverlay extends React.Component {
         }        
 
         if (this.props.isDroppingInferredGraph && !nextProps.isDroppingInferredGraph) {
-            //console.log("Dropped inferred graph - progress complete");
             stage = "DroppingInferredGraph";
             progress = 1.0;
             stateChanged = true;
@@ -97,22 +104,25 @@ class LoadingOverlay extends React.Component {
 
         // If loading has started, start polling
         if (!this.props.isLoading && nextProps.isLoading) {
-            //console.log("LoadingOverlay: loading started. Initialising timeout");
             stage = "Loading";
             timeout = 0;
             stateChanged = true;
         }
         // If validation has started, start polling
         else if (!this.props.isValidating && nextProps.isValidating) {
-            //console.log("LoadingOverlay: validation started. Initialising timeout");
             stage = "Validation";
             timeout = 0;
             stateChanged = true;
         }
         // If risk calc has started, start polling
         else if (!this.props.isCalculatingRisks && nextProps.isCalculatingRisks) {
-            console.log("LoadingOverlay: risk calc started. Initialising timeout");
             stage = "Risk calculation";
+            timeout = 0;
+            stateChanged = true;
+        }
+        // If recommendations has started, start polling
+        else if (!this.props.isCalculatingRecommendations && nextProps.isCalculatingRecommendations) {
+            stage = "Recommendations";
             timeout = 0;
             stateChanged = true;
         }
@@ -130,9 +140,6 @@ class LoadingOverlay extends React.Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        //console.log("LoadingOverlay: componentDidUpdate: state: ", prevState, this.state);
-        //console.log("LoadingOverlay: showModal = " + this.state.showModal);
-
         // If loading has started, start polling
         if (!prevProps.isLoading && this.props.isLoading) {
             if (this.props.loadingId) {
@@ -148,11 +155,12 @@ class LoadingOverlay extends React.Component {
             this.checkProgress();
         }
         else if (!prevProps.isValidating && this.props.isValidating) {
-            //console.log("LoadingOverlay: validation started. Start polling");
             this.checkProgress();
         }
         else if (!prevProps.isCalculatingRisks && this.props.isCalculatingRisks) {
-            console.log("LoadingOverlay: risk calc started. Start polling");
+            this.checkProgress();
+        }
+        else if (!prevProps.isCalculatingRecommendations && this.props.isCalculatingRecommendations) {
             this.checkProgress();
         }
         else if (prevProps.loadingProgress.waitingForUpdate && !this.props.loadingProgress.waitingForUpdate) {
@@ -163,9 +171,6 @@ class LoadingOverlay extends React.Component {
         }
         else if (this.props.isDroppingInferredGraph) {
             this.checkProgress();
-        }
-        else {
-            //console.log("LoadingOverlay: polling componentDidUpdate (nothing to do)");
         }
     }
 
@@ -183,6 +188,10 @@ class LoadingOverlay extends React.Component {
         return this.getTimeout(min, max, progress);
     }
 
+    getRecommendationsTimeout() {
+        return this.getRiskCalcTimeout();
+    }
+
     getLoadingTimeout() {
         let min = this.state.bounds.loading.min;
         let max = this.state.bounds.loading.max;
@@ -194,12 +203,6 @@ class LoadingOverlay extends React.Component {
         let timeout = this.state.timeout;
         let increment = this.state.increment;
 
-        //console.log("current timeout: ", timeout);
-        //console.log("min: ", min);
-        //console.log("max: ", max);
-        //console.log("increment: ", increment);
-        //console.log("progress: ", progress);
-
         // increment timeout initially, then decrement towards end
         if (progress < 0.4) {
             timeout += increment;
@@ -208,12 +211,8 @@ class LoadingOverlay extends React.Component {
             timeout -= increment;
         }
 
-        //console.log("provisional timeout (before bounds check): ", timeout);
-
         // check within min/max bounds
         timeout = (timeout < min) ? min : (timeout > max) ? max : timeout;
-
-        //console.log("LoadingOverlay: setting timeout: ", timeout);
 
         //update state
         this.setState({...this.state,
@@ -224,7 +223,6 @@ class LoadingOverlay extends React.Component {
 
     checkProgress() {
         if (this.props.isValidating) {
-            //console.log("LoadingOverlay: validation progress: ", Math.round(this.props.validationProgress.progress * 100));
             if (this.props.validationProgress.progress >= 1.0) {
                 if (this.props.validationProgress.status === "completed") {
                     console.log("LoadingOverlay: validation progress completed");
@@ -239,8 +237,6 @@ class LoadingOverlay extends React.Component {
             }
         }
         else if (this.props.isCalculatingRisks) {
-            console.log(this.props);
-            console.log("LoadingOverlay: risk calc progress: ", Math.round(this.props.validationProgress.progress * 100));
             if (this.props.validationProgress.status === "inactive") {
                 console.log("WARNING: isCalculatingRisks is true, but status is inactive");
                 this.props.dispatch(riskCalcFailed(this.props.modelId));
@@ -263,13 +259,33 @@ class LoadingOverlay extends React.Component {
                 setTimeout(this.pollRiskCalcProgress, this.getRiskCalcTimeout());
             }
         }
+        else if (this.props.isCalculatingRecommendations) {
+            if (this.props.validationProgress.status === "inactive") {
+                console.log("WARNING: isCalculatingRecommendations is true, but status is inactive");
+                this.props.dispatch(recommendationsFailed(this.props.modelId));
+                return;
+            }
+            else if (this.props.validationProgress.progress >= 1.0) {
+                if (this.props.validationProgress.status === "completed") {
+                    console.warn("LoadingOverlay: recommendations progress completed");
+                }
+                else if (this.props.validationProgress.status === "failed") {
+                    console.warn("LoadingOverlay: recommendations progress failed");
+                    this.props.dispatch(recommendationsFailed(this.props.modelId));
+                }
+                else {
+                    //This should not be necessary, but if server has not yet set completed state..
+                    setTimeout(this.pollRecommendationsProgress, this.getRecommendationsTimeout());
+                }
+            } else {
+                setTimeout(this.pollRecommendationsProgress, this.getRecommendationsTimeout());
+            }
+        }
         else if (this.props.isLoading) {
-            //console.log("LoadingOverlay: loading progress: ", Math.round(this.props.loadingProgress.progress * 100));
             if (this.props.loadingProgress.progress >= 1.0) {
                 //console.log("LoadingOverlay: loading progress completed");
             } else {
                 let timeout = this.getLoadingTimeout();
-                //console.log("Calling setTimeout: " + timeout);
                 setTimeout(this.pollLoadingProgress, timeout);
             }
         }
@@ -295,8 +311,18 @@ class LoadingOverlay extends React.Component {
         }
     }
 
+    pollRecommendationsProgress() {
+        // While synchronous recommendations is running, the isCalculatingRecommendations flag is true, so poll for progress
+        // Once the recommendations call returns, the flag is set to false, so we avoid an unnecessary progress request below
+        if (this.props.isCalculatingRecommendations) {
+            this.props.dispatch(pollForRecommendationsProgress(this.props.modelId));
+        }
+        else {
+            console.log("Recommendations complete. Cancel polling for progress");
+        }
+    }
+
     pollLoadingProgress() {
-        //console.log("LoadingOverlay: pollLoadingProgress: this.props.loadingId = " + this.props.loadingId);
         if (this.props.loadingId) {
             this.props.dispatch(pollForLoadingProgress($("meta[name='_model']").attr("content"), this.props.loadingId));
         }
@@ -314,19 +340,35 @@ class LoadingOverlay extends React.Component {
         }
     }
 
+    getHeaderText() {
+        let header = "";
+
+        if (this.props.isValidating) {
+            header = "The model is currently validating";
+        }
+        else if (this.props.isCalculatingRisks) {
+            header = "Calculating risks";
+        }
+        else if (this.props.isCalculatingRecommendations) {
+            header = "Calculating recommendations";
+        }
+
+        return header;
+    }
+
     render() {
         let isCalculatingRisks = this.props.isCalculatingRisks && this.props.validationProgress.status !== "inactive";
-        //console.log("isCalculatingRisks:", isCalculatingRisks);
+        let isCalculatingRecommendations = this.props.isCalculatingRecommendations && this.props.validationProgress.status !== "inactive";
         let isDroppingInferredGraph = this.props.isDroppingInferredGraph;
-        //console.log("isDroppingInferredGraph", this.props.isDroppingInferredGraph);
-        var clazz = "loading-overlay " + (this.props.isValidating || isCalculatingRisks || isDroppingInferredGraph || this.props.isLoading ? "visible" : "invisible");
+        let clazz = "loading-overlay " + (this.props.isValidating || isCalculatingRisks || isCalculatingRecommendations || isDroppingInferredGraph || this.props.isLoading ? "visible" : "invisible");
         let stage = this.state.stage;
+        let headerText = this.getHeaderText();
         
         return (
             <div className={clazz}>
-                {(this.props.isValidating || isCalculatingRisks) &&
+                {(this.props.isValidating || isCalculatingRisks || isCalculatingRecommendations) &&
                     <div>
-                        <h1>{this.props.isValidating ? "The model is currently validating" : "Calculating risks"}...</h1>
+                        <h1>{headerText}...</h1>
                         <span className="fa fa-cog fa-spin fa-4x fa-fw"/>
                         <div style={{width: "100%"}}>
                             <h2>{this.props.validationProgress.message}...</h2>
@@ -426,10 +468,11 @@ LoadingOverlay.propTypes = {
     modelId: PropTypes.string,
     loadingId: PropTypes.string,
     isValidating: PropTypes.bool,
+    isCalculatingRisks: PropTypes.bool,
+    isCalculatingRecommendations: PropTypes.bool,
     isValid: PropTypes.bool,
     hasModellingErrors: PropTypes.bool,
     validationProgress: PropTypes.object,
-    isCalculatingRisks: PropTypes.bool,
     isLoading: PropTypes.bool,
     isDroppingInferredGraph: PropTypes.bool,
     loadingProgress: PropTypes.object,

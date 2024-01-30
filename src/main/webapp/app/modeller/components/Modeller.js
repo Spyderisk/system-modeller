@@ -7,6 +7,7 @@ import {
     closeComplianceExplorer,
     closeControlExplorer,
     closeControlStrategyExplorer,
+    closeRecommendationsExplorer,
     closeMisbehaviourExplorer,
     closeReportDialog,
     getModel,
@@ -25,6 +26,7 @@ import RootCausesEditor from "./panes/details/popups/RootCausesEditor";
 import ComplianceExplorer from "./panes/compliance/ComplianceExplorer";
 import ControlExplorer from "./panes/controlExplorer/ControlExplorer";
 import ControlStrategyExplorer from "./panes/csgExplorer/ControlStrategyExplorer";
+import RecommendationsExplorer from "./panes/recommendationsExplorer/RecommendationsExplorer";
 import ControlPane from "./panes/controls/controlPane/ControlPane";
 import OverviewPane from "./panes/controls/overviewPane/OverviewPane";
 import Canvas from "./canvas/Canvas";
@@ -67,6 +69,7 @@ class Modeller extends React.Component {
         this.closeComplianceExplorer = this.closeComplianceExplorer.bind(this);
         this.closeControlExplorer = this.closeControlExplorer.bind(this);
         this.closeControlStrategyExplorer = this.closeControlStrategyExplorer.bind(this);
+        this.closeRecommendationsExplorer = this.closeRecommendationsExplorer.bind(this);
         this.closeReportDialog = this.closeReportDialog.bind(this);
         this.populateThreatMisbehaviours = this.populateThreatMisbehaviours.bind(this);
         this.getSystemThreats = this.getSystemThreats.bind(this);
@@ -177,7 +180,6 @@ class Modeller extends React.Component {
         }
 
         let threats = this.getSystemThreats();
-        //console.log("Modeller render: threats:", threats);
         let complianceSetsData = this.getComplianceSetsData();
         let hasModellingErrors = this.getHasModellingErrors();
 
@@ -190,6 +192,7 @@ class Modeller extends React.Component {
                                 isValid={this.props.model.valid} validationProgress={this.props.validationProgress}
                                 hasModellingErrors={hasModellingErrors}
                                 isCalculatingRisks={this.props.model.calculatingRisks}
+                                isCalculatingRecommendations={this.props.model.calculatingRecommendations}
                                 isDroppingInferredGraph={this.props.isDroppingInferredGraph}
                                 isLoading={this.props.loading.model} loadingProgress={this.props.loadingProgress}
                                 dispatch={this.props.dispatch}/>
@@ -246,15 +249,14 @@ class Modeller extends React.Component {
 
                 <ControlExplorer
                     selectedAsset={this.props.selectedAsset}
-                    isActive={this.props.isControlExplorerActive} // is window displayed at front
-                    threatFiltersActive={this.props.threatFiltersActive}
-                    dispatch={this.props.dispatch}
+                    //isActive={this.props.isControlExplorerActive} // is window displayed at front
                     model={this.props.model}
                     show={this.props.isControlExplorerVisible}
                     onHide={this.closeControlExplorer}
                     hoverThreat={this.hoverThreat}
                     getAssetType={this.getAssetType}
                     loading={this.props.loading}
+                    dispatch={this.props.dispatch}
                     authz={this.props.authz}
                 />
 
@@ -273,6 +275,16 @@ class Modeller extends React.Component {
                     getAssetType={this.getAssetType}
                     loading={this.props.loading}
                     authz={this.props.authz}
+                />
+
+                <RecommendationsExplorer
+                    selectedAsset={this.props.selectedAsset}
+                    isActive={this.props.isRecommendationsExplorerActive} // is window displayed at front
+                    recommendations={this.props.recommendations}
+                    show={this.props.isRecommendationsExplorerVisible}
+                    onHide={this.closeRecommendationsExplorer}
+                    loading={this.props.loading}
+                    dispatch={this.props.dispatch}
                 />
 
                 <Canvas ref="tile-canvas"
@@ -689,6 +701,10 @@ class Modeller extends React.Component {
         this.props.dispatch(closeControlStrategyExplorer());
     }
 
+    closeRecommendationsExplorer() {
+        this.props.dispatch(closeRecommendationsExplorer());
+    }
+
     closeMisbehaviourExplorer() {
         this.props.dispatch(closeMisbehaviourExplorer());
     }
@@ -999,6 +1015,7 @@ class Modeller extends React.Component {
 var mapStateToProps = function (state) {
     return {
         model: state.modeller.model,
+        recommendations: state.modeller.recommendations,
         movedAsset: state.modeller.movedAsset,
         groups: state.modeller.groups,
         grouping: state.modeller.grouping,
@@ -1023,6 +1040,8 @@ var mapStateToProps = function (state) {
         isControlExplorerActive: state.modeller.isControlExplorerActive,
         isControlStrategyExplorerVisible: state.modeller.isControlStrategyExplorerVisible,
         isControlStrategyExplorerActive: state.modeller.isControlStrategyExplorerActive,
+        isRecommendationsExplorerVisible: state.modeller.isRecommendationsExplorerVisible,
+        isRecommendationsExplorerActive: state.modeller.isRecommendationsExplorerActive,
         isReportDialogVisible: state.modeller.isReportDialogVisible,
         isReportDialogActive: state.modeller.isReportDialogActive,
         threatFiltersActive: state.modeller.threatFiltersActive,
@@ -1034,8 +1053,6 @@ var mapStateToProps = function (state) {
         view: state.modeller.view,
         suppressCanvasRefresh: state.modeller.suppressCanvasRefresh,
         redrawRelations: state.modeller.redrawRelations,
-        //isValidating: state.modeller.isValidating,
-        //isCalculatingRisks: state.modeller.isCalculatingRisks,
         isDroppingInferredGraph: state.modeller.isDroppingInferredGraph,
         validationProgress: state.modeller.validationProgress,
         loadingProgress: state.modeller.loadingProgress,
@@ -1052,6 +1069,7 @@ var mapStateToProps = function (state) {
  */
 Modeller.propTypes = {
     model: PropTypes.object,
+    recommendations: PropTypes.object,
     movedAsset: PropTypes.bool,
     groups: PropTypes.array,
     grouping: PropTypes.object,
@@ -1073,6 +1091,8 @@ Modeller.propTypes = {
     isControlStrategyExplorerVisible: PropTypes.bool,
     isControlStrategyExplorerActive: PropTypes.bool,
     isMisbehaviourExplorerVisible: PropTypes.bool,
+    isRecommendationsExplorerVisible: PropTypes.bool,
+    isRecommendationsExplorerActive: PropTypes.bool,
     isMisbehaviourExplorerActive: PropTypes.bool,
     isReportDialogVisible: PropTypes.bool,
     isReportDialogActive: PropTypes.bool,
@@ -1086,8 +1106,6 @@ Modeller.propTypes = {
     suppressCanvasRefresh: PropTypes.bool,
     redrawRelations: PropTypes.number,
     dispatch: PropTypes.func,
-    //isValidating: PropTypes.bool,
-    //isCalculatingRisks: PropTypes.bool,
     isDroppingInferredGraph: PropTypes.bool,
     validationProgress: PropTypes.object,
     loadingProgress: PropTypes.object,

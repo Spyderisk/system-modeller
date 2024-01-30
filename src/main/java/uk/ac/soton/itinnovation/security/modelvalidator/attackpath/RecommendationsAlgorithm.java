@@ -383,13 +383,12 @@ public class RecommendationsAlgorithm {
         return csSet;
     }
 
-
-    public RecommendationReportDTO recommendations() throws RuntimeException {
+    public RecommendationReportDTO recommendations(Progress progress) throws RuntimeException {
 
         logger.info("Recommendations core part (risk mode: {})", riskMode);
 
         try {
-
+            progress.updateProgress(0.1, "Getting initial risk state");
             // get initial risk state
             RiskVector riskResponse = apd.calculateRisk(this.modelId, RiskCalculationMode.valueOf(riskMode));
             apd.getState();
@@ -398,6 +397,7 @@ public class RecommendationsAlgorithm {
             state.setRisk(riskResponse.toString());
             report.setCurrent(state);
 
+            progress.updateProgress(0.2, "Calculating attack tree");
             AttackTree threatTree = calcAttackTree();
 
             // step: attackMitigationCSG?
@@ -405,12 +405,15 @@ public class RecommendationsAlgorithm {
             attackMitigationCSG.displayExpression();
 
             // step: rootNode?
+            progress.updateProgress(0.3, "Applying control strategies");
             CSGNode rootNode = applyCSGs(attackMitigationCSG, new CSGNode());
 
             // step: makeRecommendations on rootNode?
             logger.debug("MAKE RECOMMENDATIONS");
+            progress.updateProgress(0.4, "Making recommendations");
             makeRecommendations(rootNode);
 
+            progress.updateProgress(0.9, "Preparing report");
             List<RecommendationDTO> recommendations = report.getRecommendations() != null ? report.getRecommendations() : Collections.emptyList();
             logger.info("The Recommendations Report has: {} recommendations", recommendations.size());
             for (RecommendationDTO rec : recommendations) {

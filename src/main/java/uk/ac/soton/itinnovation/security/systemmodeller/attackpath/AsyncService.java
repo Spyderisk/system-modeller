@@ -37,6 +37,7 @@ import java.util.concurrent.CompletableFuture;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithm;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithmConfig;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationReportDTO;
@@ -62,7 +63,7 @@ public class AsyncService {
         }
     }
 
-    public void startRecommendationTask(String jobId, RecommendationsAlgorithmConfig config) {
+    public void startRecommendationTask(String jobId, RecommendationsAlgorithmConfig config, Progress progress) {
 
         logger.debug("startRecommendationTask for {}", jobId);
 
@@ -82,7 +83,7 @@ public class AsyncService {
                 throw new Exception("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
             }
 
-            RecommendationReportDTO report = reca.recommendations();
+            RecommendationReportDTO report = reca.recommendations(progress);
 
             storeRecReport(jobId, report);
 
