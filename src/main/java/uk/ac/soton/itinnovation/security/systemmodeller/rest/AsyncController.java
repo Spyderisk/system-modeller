@@ -192,6 +192,8 @@ public class AsyncController {
 		}
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
+        Progress progress = modelObjectsHelper.getValidationProgressOfModel(model);
+        progress.updateProgress(0d, "Recommendations starting");
 
 		String mId = model.getId();
 
@@ -213,8 +215,7 @@ public class AsyncController {
             logger.info("submitting async job with id: {}", jobId);
 
 			RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, mId, riskMode);
-            CompletableFuture<Void> future = CompletableFuture.runAsync(() ->
-                    asyncService.startRecommendationTask(jobId, recaConfig));
+            CompletableFuture.runAsync(() -> asyncService.startRecommendationTask(jobId, recaConfig, progress));
 
             // Build the Location URI for the job status
             URI locationUri = URI.create("/models/"+modelId + "/recommendations/status/" + jobId);
@@ -264,8 +265,8 @@ public class AsyncController {
 		}
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
-        Progress validationProgress = modelObjectsHelper.getValidationProgressOfModel(model);
-        validationProgress.updateProgress(0d, "Recommendations starting");
+        Progress progress = modelObjectsHelper.getValidationProgressOfModel(model);
+        progress.updateProgress(0d, "Recommendations starting");
 
 		String mId = model.getId();
 
@@ -287,7 +288,7 @@ public class AsyncController {
             logger.info("submitting async job with id: {}", jobId);
 
 			RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, mId, riskMode);
-            CompletableFuture.runAsync(() -> asyncService.startRecommendationTask(jobId, recaConfig, validationProgress));
+            CompletableFuture.runAsync(() -> asyncService.startRecommendationTask(jobId, recaConfig, progress));
 
             JobResponseDTO response = new JobResponseDTO(jobId, "CREATED");
 
