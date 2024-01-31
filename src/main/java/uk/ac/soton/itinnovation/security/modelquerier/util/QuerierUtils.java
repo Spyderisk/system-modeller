@@ -67,10 +67,6 @@ public class QuerierUtils {
 		String csMin = uriPrefix + "#" + control + "_Min" + "-" + assetId;
 		String csMax = uriPrefix + "#" + control + "_Max" + "-" + assetId;
 
-		//logger.debug("csAvg: {}", csAvg);
-		//logger.debug("csMin: {}", csMin);
-		//logger.debug("csMax: {}", csMax);
-
 		return new HashSet<>(Arrays.asList(csAvg, csMin, csMax));
 	}
 

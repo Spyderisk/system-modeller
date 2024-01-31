@@ -179,63 +179,10 @@ public class AttackPathDataset {
         }
     }
 
-    public boolean calculateAttackPath() throws RuntimeException {
-        try {
-            createMaps();
-            return true;
-        } catch (Exception e) {
-            logger.error("calculating attack path dataset failed", e);
-            throw new RuntimeException(e);
-        }
-    }
 
     public String getCSGDescription(String uri) {
         ControlStrategyDB csg = controlStrategies.get(uri);
         return csg.getDescription();
-    }
-
-    private void printAttackPathDataset() {
-        logger.debug("*******************************************************");
-        logger.debug("*******************************************************");
-        logger.debug("Threat CSGs:");
-        for (ThreatDB threat : threats.values()) {
-            int csgsSize = threat.getBlockedByCSG().size() + threat.getMitigatedByCSG().size();
-            if (csgsSize > 0) {
-                logger.debug(" {}, blocked: {} mitigated: {}", threat.getUri(), threat.getBlockedByCSG().size(),
-                        threat.getMitigatedByCSG().size());
-            }
-            Collection<String> csgsBlocked = threat.getBlockedByCSG();
-            if (csgsBlocked.size() > 0) {
-                for (String csg : csgsBlocked) {
-                    List<String> css = this.controlStrategies.get(csg).getMandatoryCS();
-                    logger.debug("      CSG blocked: {}, cs: {}", csg, css.size());
-                    for (String cs : css) {
-                        logger.debug("      cs: {}", cs);
-                    }
-                }
-            }
-        }
-
-        logger.debug("Control Strategies");
-        for (ControlStrategyDB csg : controlStrategies.values()) {
-            logger.debug("CSG: {} cs: {}", csg.getUri(), csg.getMandatoryCS().size());
-            for (String cs : csg.getMandatoryCS()) {
-                logger.debug("      cs: {}", cs);
-            }
-        }
-
-        logger.debug("ContolSets:");
-        for (ControlSetDB cs : controlSets.values()) {
-            logger.debug("ControlSet: {}, proposed {}", cs.getUri(), cs.isProposed());
-        }
-        logger.debug("Misbehaviours");
-        for (MisbehaviourSetDB ms : misbehaviourSets.values()) {
-            AssetDB asset = assets.get(ms.getLocatedAt());
-            logger.debug("  MS {}, likelihood: {}, risk: {}, asset: {}", ms.getUri(), ms.getPrior(), ms.getRisk(),
-                    asset.getLabel());
-        }
-        logger.debug("*******************************************************");
-        logger.debug("*******************************************************");
     }
 
     public Map<String, String> getLikelihoods() {
@@ -255,8 +202,7 @@ public class AttackPathDataset {
     public List<String> getMisbehaviourDirectCauseUris(String misbUri) throws RuntimeException {
         try {
             MisbehaviourSetDB ms = misbehaviourSets.get(misbUri);
-            List<String> al = new ArrayList<>(ms.getCausedBy());
-            return al;
+            return new ArrayList<>(ms.getCausedBy());
         } catch (Exception e) {
             return new ArrayList<String>();
         }
@@ -290,8 +236,14 @@ public class AttackPathDataset {
         return csg.getMandatoryCS().stream().allMatch(cs -> controlSets.get(cs).isProposed());
     }
 
+    /**
+     * Check if control strategy plan exists and is activated
+     * need to have a different way checking for contingency plans
+     * @param csg the control stragegy
+     * @return {@code true} if contingency plan exists and is activated,
+     * otherwise {@code false}
+     */
     public boolean hasContingencyPlan(String csgUri) throws RuntimeException {
-        // TODO: need to have a different way checking for contingency plans
         try {
             String contingencyPlan;
             if (csgUri.contains("-Implementation")) {
@@ -326,10 +278,15 @@ public class AttackPathDataset {
         }
     }
 
+    /**
+     * Check if CS is runtime malleable
+     * assume all -Implementation, -Implementation-Runtime CSGs have
+     * contingency plans activated.
+     * @param csg
+     * @return boolean
+     */
     Boolean isRuntimeMalleable(ControlStrategyDB csg) {
         if (csg.getUri().contains("-Implementation")) {
-            //TODO: assume all -Implementation, -Implementation-Runtime CSGs
-            //have contingency plans activated
             return true;
             //return hasContingencyPlan(csg.getUri());
         } else if (csg.getUri().contains("-Runtime")) {
@@ -341,7 +298,6 @@ public class AttackPathDataset {
     public Set<String> getThreatControlStrategyUris(String threatUri, boolean future) throws RuntimeException {
         // Return list of control strategies (urirefs) that block a threat (uriref)
 
-        Set<String> csgURIs = new HashSet<String>();
         Set<String> csgToConsider = new HashSet<>();
         ThreatDB threat = this.threats.get(threatUri);
         try {
@@ -446,7 +402,6 @@ public class AttackPathDataset {
         return filterMisbehaviours("domain#RiskLevelMedium");
     }
 
-    // TODO filtering LevelValue should be a parameter
     public List<String> filterMisbehaviours(String riskLevel) throws RuntimeException {
         /*
          * compare MS by risk then likelihood, and return MS with likelihood or risk >= MEDIUM
@@ -586,16 +541,6 @@ public class AttackPathDataset {
         return retVal;
     }
 
-    /**
-     * capitilise string
-     *
-     * @param str
-     * @return
-     */
-    private String capitaliseString(String str) {
-        return str.substring(0, 1).toUpperCase() + str.substring(1);
-    }
-
     public AssetDTO fillAssetDTO(String assetUri) {
         AssetDB asset = assets.get(assetUri);
         AssetDTO assetDTO = new AssetDTO();
@@ -672,20 +617,20 @@ public class AttackPathDataset {
     public RiskVector getRiskVector() {
 
         Map<String, Integer> riskVector = new HashMap<>();
-        Collection<Level> riskLevels = new ArrayList<>();
+        Collection<Level> rvRiskLevels = new ArrayList<>();
         for (LevelDB level : riLevels.values()) {
             riskVector.put(level.getUri(), 0);
             Level l = new Level();
             l.setValue(Integer.valueOf(level.getLevelValue()));
             l.setUri(level.getUri());
-            riskLevels.add(l);
+            rvRiskLevels.add(l);
         }
 
         for (MisbehaviourSetDB ms : misbehaviourSets.values()) {
             riskVector.put(ms.getRisk(), riskVector.get(ms.getRisk()) + 1);
         }
 
-        RiskVector rv = new RiskVector(riskLevels, riskVector);
+        RiskVector rv = new RiskVector(rvRiskLevels, riskVector);
 
         return rv;
     }
@@ -702,19 +647,18 @@ public class AttackPathDataset {
         // state is risk + list of consequences
 
         Map<String, Integer> riskVector = new HashMap<>();
-        Collection<Level> riskLevels = new ArrayList<>();
+        Collection<Level> rvRiskLevels = new ArrayList<>();
         for (LevelDB level : riLevels.values()) {
             riskVector.put(level.getUri(), 0);
             Level l = new Level();
             l.setValue(Integer.valueOf(level.getLevelValue()));
             l.setUri(level.getUri());
-            riskLevels.add(l);
+            rvRiskLevels.add(l);
         }
 
         List<ConsequenceDTO> consequences = new ArrayList<>();
         for (MisbehaviourSetDB ms : misbehaviourSets.values()) {
             riskVector.put(ms.getRisk(), riskVector.get(ms.getRisk()) + 1);
-            //logger.debug("CONSEQUENCE: {} ", ms);
             int threshold = riLevels.get("domain#RiskLevelHigh").getLevelValue();
             if (riLevels.get(ms.getRisk()).getLevelValue() >= threshold) {
                 ConsequenceDTO consequence = new ConsequenceDTO();
@@ -731,8 +675,6 @@ public class AttackPathDataset {
                 consequences.add(consequence);
             }
         }
-
-        RiskVector rv = new RiskVector(riskLevels, riskVector);
 
         StateDTO state = new StateDTO();
         state.setRisk(riskVector.toString());

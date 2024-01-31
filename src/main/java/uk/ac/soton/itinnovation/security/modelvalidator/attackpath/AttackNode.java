@@ -222,7 +222,7 @@ public class AttackNode {
     }
 
     public String getVisitsStats() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(" Visits: " + this.visits);
         sb.append(" noCauseV: " + this.noCauseVisits);
         sb.append(" causeV: " + this.causeVisits);
@@ -231,7 +231,7 @@ public class AttackNode {
     }
 
     public String toString(String pad) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(pad + " ID(");
         sb.append(this.id);
         sb.append(") --> ");
@@ -243,7 +243,7 @@ public class AttackNode {
     }
 
     public String toString() {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("\nNode (");
         sb.append(this.id);
         sb.append(") URI: ");

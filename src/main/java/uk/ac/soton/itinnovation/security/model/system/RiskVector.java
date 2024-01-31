@@ -83,11 +83,9 @@ public class RiskVector implements Comparable<RiskVector> {
             String riskLevelLabel = entry.getValue().getLevel().getUri();
             int riskLevelValue = entry.getValue().getLevel().getValue();
             int riskCount = entry.getValue().getCount();
-            if (riskCount > 0) {
-                if (riskLevelValue >= overall) {
-                    overall = riskLevelValue;
-                    label = riskLevelLabel;
-                }
+            if (riskCount > 0 && riskLevelValue >= overall) {
+                overall = riskLevelValue;
+                label = riskLevelLabel;
             }
         }
         return label;

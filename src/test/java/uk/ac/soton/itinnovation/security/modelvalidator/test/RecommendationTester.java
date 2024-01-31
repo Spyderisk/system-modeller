@@ -162,7 +162,7 @@ public class RecommendationTester extends TestCase {
         */
 
 		try {
-			logger.info("Gathering datasets for recommendations");
+			logger.info("Gathering datasets for Recommendations");
 
 			RecommendationsAlgorithmConfig config = new RecommendationsAlgorithmConfig(querierDB, tester.getGraph("system"), "CURRENT");
 			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(config);
@@ -175,7 +175,7 @@ public class RecommendationTester extends TestCase {
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
             String json = objectMapper.writeValueAsString(report);
-            //logger.debug("Recommendation report: {}", json);
+            logger.info("Recommendation report: {}", json);
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Exception thrown by attack path recommendations");
