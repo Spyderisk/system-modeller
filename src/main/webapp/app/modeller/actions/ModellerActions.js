@@ -1681,7 +1681,7 @@ export function getShortestPathPlot(modelId, riskMode) {
     };
 }
 
-export function getRecommendations(modelId, riskMode) {
+export function getRecommendationsBlocking(modelId, riskMode) {
     return function(dispatch) {
         dispatch({
             type: instr.IS_CALCULATING_RECOMMENDATIONS
@@ -1701,6 +1701,26 @@ export function getRecommendations(modelId, riskMode) {
                     type: instr.OPEN_WINDOW,
                     payload: "recommendationsExplorer"
                 });
+            })
+            .catch((error) => {
+                console.log("Error:", error);
+                dispatch({
+                    type: instr.IS_NOT_CALCULATING_RECOMMENDATIONS //fix
+                });
+            });
+    };
+}
+
+export function getRecommendations(modelId, riskMode) {
+    return function(dispatch) {
+        dispatch({
+            type: instr.IS_CALCULATING_RECOMMENDATIONS
+        });
+
+        axiosInstance
+            .get("/async/models/" + modelId + "/recommendations202", {params: {riskMode: riskMode}})
+            .then((response) => {
+                console.log("Recommendations job submitted: ", response.data);
             })
             .catch((error) => {
                 console.log("Error:", error);
