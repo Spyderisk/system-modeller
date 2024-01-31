@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -130,7 +131,7 @@ public class AttackTree {
 
             this.backtrace(false);
 
-            this.boundingUriRefs = new HashSet<String>();
+            this.boundingUriRefs = new HashSet<>();
             for (AttackNode node : this.shortestPathNodes()) {
                 this.boundingUriRefs.add(node.getUri());
             }
@@ -221,8 +222,6 @@ public class AttackTree {
          * ones which have at least one child further away than the node, remove the others and iterate until no change.
          */
 
-        // TODO: review this as it looks liek it's not quite working
-
         Set<AttackNode> spn = this.nodes().stream().collect(Collectors.toSet());
         while (true) {
             Set<AttackNode> goodNodes = new HashSet<>();
@@ -267,22 +266,10 @@ public class AttackTree {
         return filteredSet;
     }
 
-    /**
-     * Gets a list of all the AttackNodes in the AttackTree that are not in the error state, i.e. not not-a-cause.
-     *
-     * @return A list of all the AttackNodes in the AttackTree.
-     */
-    private List<AttackNode> excludedNodes() {
-        // Don't return the nodes that are the error state
-        List<AttackNode> filteredList;
-        filteredList = this.nodeByUri.values().stream().filter(node -> node.getNotACause())
-                .collect(Collectors.toList());
-        return filteredList;
-    }
 
     private void addMaxDistanceFromTarget(String uriRef, List<String> currentPath) {
         if (currentPath == null) {
-            currentPath = new ArrayList<String>();
+            currentPath = new ArrayList<>();
         }
 
         List<String> copyCP = new ArrayList<>();
@@ -316,25 +303,6 @@ public class AttackTree {
         return filteredList;
     }
 
-    private Set<String> rootCauses() {
-        Set<String> uriSet = new HashSet<>();
-        for (AttackNode an : this.nodes()) {
-            if (an.isRootCause()) {
-                uriSet.add(an.getUri());
-            }
-        }
-        return uriSet;
-    }
-
-    private Set<String> externalCauses() {
-        Set<String> uriSet = new HashSet<>();
-        for (AttackNode an : this.nodes()) {
-            if (an.isExternalCause()) {
-                uriSet.add(an.getUri());
-            }
-        }
-        return uriSet;
-    }
 
     private Set<String> normalOperations() {
         Set<String> uriSet = new HashSet<>();
@@ -375,7 +343,7 @@ public class AttackTree {
 
     private void followPath(String uri, List<String> cPath, Map<String, Integer> pathNodes) {
         if (cPath == null) {
-            cPath = new ArrayList<String>();
+            cPath = new ArrayList<>();
         }
         cPath.add(uri);
         AttackNode cNode = this.nodeByUri.get(uri);
@@ -415,7 +383,8 @@ public class AttackTree {
         List<List<String>> treeLinks = new ArrayList<>();
 
         // create nodes lists
-        for (String nodeUri : fNodes.keySet()) {
+        for (Iterator<String> it = fNodes.keySet().iterator(); it.hasNext();) {
+            String nodeUri = it.next();
             AttackNode node = this.nodeByUri.get(nodeUri);
             if (node.isThreat()) {
                 threats.put(nodeUri, fNodes.get(nodeUri));
@@ -438,10 +407,8 @@ public class AttackTree {
             }
         }
 
-        Graph graph = new Graph(this.sortedMap(threats), this.sortedMap(misbehaviours), this.sortedMap(twas),
+        return new Graph(this.sortedMap(threats), this.sortedMap(misbehaviours), this.sortedMap(twas),
                 treeLinks);
-
-        return graph;
     }
 
     /**
@@ -485,9 +452,7 @@ public class AttackTree {
             graphs.put(targetMS, graph);
         }
 
-        TreeJsonDoc treeJsonDoc = new TreeJsonDoc(graphs);
-
-        return treeJsonDoc;
+        return new TreeJsonDoc(graphs);
     }
 
     public LogicalExpression attackMitigationCSG() {
@@ -495,20 +460,9 @@ public class AttackTree {
         for (String uri : this.targetUris) {
             leList.add(this.nodeByUri.get(uri).getAttackTreeMitigationCSG());
         }
-        //return new LogicalExpression(this.apd, new ArrayList<Object>(leList), true);
+        
         logger.debug("attackMitigationCSG target uris: {}", this.targetUris);
-        LogicalExpression le =  new LogicalExpression(this.apd, new ArrayList<Object>(leList), true);
-        logger.debug("attackMitigationCSG LE size: {}", leList.size());
-        //logger.debug("attackMitigationCSG LE: {}", le);
-        return le;
-    }
-
-    private LogicalExpression attackMitigationCS() {
-        List<LogicalExpression> leList = new ArrayList<>();
-        for (String uri : this.targetUris) {
-            leList.add(this.nodeByUri.get(uri).getControls());
-        }
-        return new LogicalExpression(this.apd, new ArrayList<Object>(leList), true);
+        return new LogicalExpression(new ArrayList<Object>(leList), true);
     }
 
     private Set<InnerLink> createLinks(Set<AttackNode> nodes) {
@@ -540,9 +494,7 @@ public class AttackTree {
             this.rankByUri.put(nodeUri, ranks);
         }
 
-        if (ranks.contains(rank)) {
-            return;
-        } else {
+        if (!ranks.contains(rank)) {
             ranks.add(rank);
             for (String causeUri : this.nodeByUri.get(nodeUri).getDirectCauseUris()) {
                 this.setRank(causeUri, rank + 1);
@@ -577,41 +529,7 @@ public class AttackTree {
         logger.debug("CSGs...............: {}", csgs.size());
         logger.debug("CS.................: {}", controls.size());
         logger.info("#################################");
-        /*
-        for (AttackNode an : this.nodeByUri.values()) {
-            logger.debug("  attack node: {}", an.getUri());
-        }
-        */
+        
     }
 
-    public void logicalExpressions() {
-        logger.info("#################################");
-        logger.info("LogicalExpressions test start");
-
-        for (String uri : this.attackMitigationCSG().uris()) {
-            logger.info("LE s: {}");
-        }
-
-        logger.info("LogicalExpressions test end");
-    }
-
-    public void addMinPrimaryThreatDistances() {
-        for (AttackNode an : this.nodes()) {
-            if (an.isExternalCause()) {
-                
-            }
-        }
-    }
-
-    private void addMinPrimaryThreatDistance(String uriRef, Set<String> currentPath) {
-        if (currentPath == null) {
-            currentPath = new HashSet<>();
-        }
-        currentPath.add(uriRef);
-        AttackNode currentNode = this.nodeByUri.get(uriRef);
-        String parentDistances = "";
-        if (currentNode.isThreat()) {
-
-        }
-    }
 }

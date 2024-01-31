@@ -79,9 +79,6 @@ public class RecommendationsAlgorithm {
     private RecommendationReportDTO report;
     private String riskMode = "CURRENT";
 
-    private List<String> nodes = new ArrayList<>();
-    private List<String> links = new ArrayList<>();
-
     // allPaths flag for single or double backtrace
     private boolean allPaths = true;
 
@@ -193,14 +190,12 @@ public class RecommendationsAlgorithm {
         // examine CSG options
         for (Expression csgOption : csgOptions) {
             logger.debug("examining CSG LE option: {}", csgOption);
-            //logger.debug("CSG LE option type: {}", csgOption.getClass().getName());
 
             List<Variable> options = le.getListFromAnd(csgOption);
 
             List<String> csgList = new ArrayList<>();
 
             for (Variable va : options) {
-                //logger.debug("variable -> {}, {}", va, va.getClass().getName());
                 csgList.add(va.toString());
             }
             logger.debug("CSG flattened list: {}", csgList);
@@ -334,7 +329,7 @@ public class RecommendationsAlgorithm {
     }
 
     private void makeRecommendations(CSGNode node) {
-        List<CSGNode> path = new ArrayList<CSGNode>();
+        List<CSGNode> path = new ArrayList<>();
         makeRecommendations(node, path);
     }
 
