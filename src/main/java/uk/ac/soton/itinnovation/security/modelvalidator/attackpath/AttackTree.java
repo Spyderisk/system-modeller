@@ -532,14 +532,4 @@ public class AttackTree {
         
     }
 
-    public void logicalExpressions() {
-        logger.info("#################################");
-        logger.info("LogicalExpressions test start");
-
-        for (String uri : this.attackMitigationCSG().uris()) {
-            logger.info("LE s: {}");
-        }
-
-        logger.info("LogicalExpressions test end");
-    }
 }

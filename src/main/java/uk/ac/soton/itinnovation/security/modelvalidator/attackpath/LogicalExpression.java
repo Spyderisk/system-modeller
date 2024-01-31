@@ -193,20 +193,20 @@ public class LogicalExpression {
             for (Expression<String> subExpr : andExpression.getChildren()) {
                 parse(subExpr, depth + 1);  // Recursive call
             }
-            logger.debug("{} )", indent.toString());
+            logger.debug("{} )", indent);
         } else if (expression instanceof Or) {
             // Handle the 'Or' expression
             Or<String> orExpression = (Or<String>) expression;
-            logger.debug("{} OR(#{}", indent.toString(), orExpression.getChildren().size());
+            logger.debug("{} OR(#{}", indent, orExpression.getChildren().size());
             for (Expression<String> subExpr : orExpression.getChildren()) {
                 parse(subExpr, depth + 1);  // Recursive call
             }
-            logger.debug("{} )", indent.toString());
+            logger.debug("{} )", indent);
         } else if (expression instanceof Variable) {
             // Handle the 'Variable' expression
             Variable<String> variableExpression = (Variable<String>) expression;
             // Display the variable, e.g., print it
-            logger.debug("{} {}", indent.toString(), variableExpression.getValue().substring(11));
+            logger.debug("{} {}", indent, variableExpression.getValue().substring(11));
         } else {
             // Handle other types of expressions if any, we should not reach
             // here!!!

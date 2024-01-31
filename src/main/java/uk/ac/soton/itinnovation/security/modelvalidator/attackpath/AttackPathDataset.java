@@ -58,6 +58,7 @@ import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ControlDT
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.StateDTO;
 
 public class AttackPathDataset {
+
     private static final Logger logger = LoggerFactory.getLogger(AttackPathDataset.class);
 
     protected IQuerierDB querier;
@@ -179,7 +180,6 @@ public class AttackPathDataset {
         }
     }
 
-
     public String getCSGDescription(String uri) {
         ControlStrategyDB csg = controlStrategies.get(uri);
         return csg.getDescription();
@@ -224,21 +224,23 @@ public class AttackPathDataset {
     }
 
     /**
-    * Check if a Control Strategy Group (CSG) is activated.
-    *
-    * This method evaluates whether all mandatory Control Sets (CS) associated with
-    * the given CSG are proposed.
-    *
-    * @param csg The Control Strategy Group to be checked.
-    * @return {@code true} if all mandatory Control Sets are proposed, otherwise {@code false}.
-    */
+     * Check if a Control Strategy Group (CSG) is activated.
+     *
+     * This method evaluates whether all mandatory Control Sets (CS) associated
+     * with the given CSG are proposed.
+     *
+     * @param csg The Control Strategy Group to be checked.
+     * @return {@code true} if all mandatory Control Sets are proposed,
+     * otherwise {@code false}.
+     */
     public boolean isCSGActivated(ControlStrategyDB csg) {
         return csg.getMandatoryCS().stream().allMatch(cs -> controlSets.get(cs).isProposed());
     }
 
     /**
-     * Check if control strategy plan exists and is activated
-     * need to have a different way checking for contingency plans
+     * Check if control strategy plan exists and is activated need to have a
+     * different way checking for contingency plans
+     *
      * @param csg the control stragegy
      * @return {@code true} if contingency plan exists and is activated,
      * otherwise {@code false}
@@ -261,27 +263,27 @@ public class AttackPathDataset {
         }
     }
 
-    Boolean considerCSG(ControlStrategyDB csg, Boolean future) {
+    /**
+     * return false when this CSG
+     *  - has no effect in future risk calculations
+     *  - has no effect in current risk calculations
+     *  - cannot be changed at runtime
+     * @param csg
+     * @param future
+     * @return 
+     */
+    boolean considerCSG(ControlStrategyDB csg, boolean future) {
         if (future) {
-            if (!csg.isFutureRisk()) {
-                return false;   // this CSG has no effect in future risk calculations
-            }
-            return true;
+            return csg.isFutureRisk();
         } else {
-            if (!csg.isCurrentRisk()) {
-                return false;  // this CSG has no effect in current risk calculations
-            }
-            if (!isRuntimeMalleable(csg)) {
-                return false;  // this CSG cannot be changed at runtime
-            }
-            return true;
+            return csg.isCurrentRisk() && isRuntimeMalleable(csg);
         }
     }
 
     /**
-     * Check if CS is runtime malleable
-     * assume all -Implementation, -Implementation-Runtime CSGs have
-     * contingency plans activated.
+     * Check if CS is runtime malleable assume all -Implementation,
+     * -Implementation-Runtime CSGs have contingency plans activated.
+     *
      * @param csg
      * @return boolean
      */
@@ -315,7 +317,6 @@ public class AttackPathDataset {
         }
         return csgToConsider;
     }
-
 
     /**
      * get CSG control sets uris
@@ -550,6 +551,7 @@ public class AttackPathDataset {
         assetDTO.setIdentifier(asset.getId());
         return assetDTO;
     }
+
     public ControlDTO fillControlDTO(String csUri) {
         ControlDTO ctrl = new ControlDTO();
         ControlSetDB cs = controlSets.get(csUri);
@@ -589,7 +591,6 @@ public class AttackPathDataset {
                 cs.setProposed(proposed);
 
                 // check the triplet values to be the same
-
                 querier.store(cs, "system");
             }
 
@@ -599,18 +600,18 @@ public class AttackPathDataset {
 
     public RiskVector calculateRisk(String modelId, RiskCalculationMode riskMode) throws RuntimeException {
         try {
-			logger.info("Calculating risks for APD");
+            logger.info("Calculating risks for APD");
 
-			RiskCalculator rc = new RiskCalculator(querier);
-			rc.calculateRiskLevels(riskMode, false, new Progress(modelId));
+            RiskCalculator rc = new RiskCalculator(querier);
+            rc.calculateRiskLevels(riskMode, false, new Progress(modelId));
 
             updateDatasets();
 
             return getRiskVector();
-		} catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Error calculating risks for APD", e);
             throw new RuntimeException("Failed to calculate risk", e);
-		}
+        }
 
     }
 
@@ -638,7 +639,7 @@ public class AttackPathDataset {
         int threshold = riLevels.get("domain#RiskLevelMedium").getLevelValue();
         boolean retVal = threshold >= level;
         logger.debug("Overall Risk Comparison: Medium >= {} --> {}", overall, retVal);
-        return  retVal;
+        return retVal;
     }
 
     public StateDTO getState() {
@@ -684,7 +685,7 @@ public class AttackPathDataset {
 
     public Set<String> getAllCS() {
         Set<String> css = new HashSet<>();
-        for(ControlSetDB cs : controlSets.values()){
+        for (ControlSetDB cs : controlSets.values()) {
             css.add(cs.getUri());
         }
         return css;
