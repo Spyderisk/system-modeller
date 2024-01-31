@@ -1419,7 +1419,7 @@ public class ModelController {
 	 * @return A JSON report containing recommendations 
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@GetMapping(value = "/models/{modelId}/recommendations")
+	@GetMapping(value = "/models/{modelId}/recommendations_blocking")
 	public ResponseEntity<RecommendationReportDTO> calculateRecommendations(
             @PathVariable String modelId,
             @RequestParam(defaultValue = "CURRENT") String riskMode) {
@@ -1440,23 +1440,24 @@ public class ModelController {
 		}
 
 		final Model model;
-		Progress validationProgress;
+		Progress progress;
 
 		synchronized(this) {
 			model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
-
+			String mId = model.getId();
+			
 			if (model.isValidating()) {
-				logger.warn("Model {} is currently validating - ignoring calc risks request {}", modelId, modelId);
+				logger.warn("Model {} is currently validating - ignoring calc risks request {}", mId, modelId);
 				return ResponseEntity.status(HttpStatus.OK).body(new RecommendationReportDTO());
 			}
 
 			if (model.isCalculatingRisks()) {
-				logger.warn("Model {} is already calculating risks - ignoring request {}", modelId, modelId);
+				logger.warn("Model {} is already calculating risks - ignoring request {}", mId, modelId);
 				return ResponseEntity.status(HttpStatus.OK).body(new RecommendationReportDTO());
 			}
 
-			validationProgress = modelObjectsHelper.getValidationProgressOfModel(model);
-			validationProgress.updateProgress(0d, "Recommendations starting");
+			progress = modelObjectsHelper.getValidationProgressOfModel(model);
+			progress.updateProgress(0d, "Recommendations starting");
 
 			logger.debug("Marking as calculating risks [{}] {}", modelId, model.getName());
 			model.markAsCalculatingRisks(rcMode, false);
@@ -1487,7 +1488,7 @@ public class ModelController {
                 throw new BadRequestErrorException("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
             }
 
-            report = reca.recommendations(validationProgress);
+            report = reca.recommendations(progress);
 
             // create recEntry and save it to mongo db
             RecommendationEntity recEntity = new RecommendationEntity();
@@ -1504,13 +1505,13 @@ public class ModelController {
             logger.error("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
             throw e;
         } catch (Exception e) {
-            logger.error("Threat path failed due to an error", e);
+            logger.error("Recommendations failed due to an error", e);
             throw new InternalServerErrorException(
                     "Finding recommendations failed. Please contact support for further assistance.");
 		} finally {
 			//always reset the flags even if the risk calculation crashes
 			model.finishedCalculatingRisks(report != null, rcMode, false);
 		}
-}
+	}
 
 }
