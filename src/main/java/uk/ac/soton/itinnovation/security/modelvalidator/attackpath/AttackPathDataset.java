@@ -204,7 +204,7 @@ public class AttackPathDataset {
             MisbehaviourSetDB ms = misbehaviourSets.get(misbUri);
             return new ArrayList<>(ms.getCausedBy());
         } catch (Exception e) {
-            return new ArrayList<String>();
+            return new ArrayList<>();
         }
     }
 
@@ -219,7 +219,7 @@ public class AttackPathDataset {
             ThreatDB threat = threats.get(threatUri);
             return new ArrayList<>(threat.getCausedBy());
         } catch (Exception e) {
-            return new ArrayList<String>();
+            return new ArrayList<>();
         }
     }
 
@@ -343,9 +343,9 @@ public class AttackPathDataset {
      */
     public List<ControlSetDB> getCsgControlSets(String csgUri) throws RuntimeException {
         try {
-            List<ControlSetDB> csList = new ArrayList<ControlSetDB>();
+            List<ControlSetDB> csList = new ArrayList<>();
             for (String csUri : controlStrategies.get(csgUri).getMandatoryCS()) {
-                csList.add(controlSets.get(csgUri));
+                csList.add(controlSets.get(csUri));
             }
             return csList;
         } catch (Exception e) {
@@ -386,7 +386,7 @@ public class AttackPathDataset {
      */
     public List<String> getThreatInactiveCSGs(String threatUri, boolean future) throws RuntimeException {
         try {
-            List<String> csgUriList = new ArrayList<String>();
+            List<String> csgUriList = new ArrayList<>();
             for (String csgUri : getThreatControlStrategyUris(threatUri, future)) {
                 if (!getCsgInactiveControlSets(csgUri).isEmpty()) {
                     csgUriList.add(csgUri);

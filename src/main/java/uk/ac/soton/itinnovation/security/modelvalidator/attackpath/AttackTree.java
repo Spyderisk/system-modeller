@@ -462,7 +462,7 @@ public class AttackTree {
         }
         
         logger.debug("attackMitigationCSG target uris: {}", this.targetUris);
-        return new LogicalExpression(this.apd, new ArrayList<Object>(leList), true);
+        return new LogicalExpression(new ArrayList<Object>(leList), true);
     }
 
     private Set<InnerLink> createLinks(Set<AttackNode> nodes) {

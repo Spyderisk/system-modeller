@@ -285,9 +285,7 @@ public class AttackNode {
             csgSymbols.add(this.makeSymbol(csgUri));
         }
 
-        LogicalExpression leCSG = new LogicalExpression(this.apd, csgSymbols, false);
-
-        return leCSG;
+        return new LogicalExpression(csgSymbols, false);
     }
 
     public LogicalExpression getControls() {
@@ -312,9 +310,9 @@ public class AttackNode {
             for (String csUri : csUris) {
                 csSymbols.add(this.makeSymbol(csUri));
             }
-            leCSGs.add(new LogicalExpression(this.apd, csSymbols, true));
+            leCSGs.add(new LogicalExpression(csSymbols, true));
         }
-        return new LogicalExpression(this.apd, new ArrayList<Object>(leCSGs), false);
+        return new LogicalExpression(new ArrayList<Object>(leCSGs), false);
     }
 
     public int getId() {
@@ -349,7 +347,6 @@ public class AttackNode {
     }
 
     private Expression<String> makeSymbol(String uri) {
-        // TODO need to find equivalent of symbol->algebra.definition
         return Variable.of(uri);
     }
 
@@ -480,10 +477,10 @@ public class AttackNode {
                 tmpMinDistanceFromRoot = -1;
                 tmpMaxDistanceFromRoot = -1;
 
-                List<Object> tmpObjList = new ArrayList<Object>();
+                List<Object> tmpObjList = new ArrayList<>();
                 tmpObjList.add(this.makeSymbol(this.uri));
 
-                tmpRootCause = new LogicalExpression(this.apd, tmpObjList, true);
+                tmpRootCause = new LogicalExpression(tmpObjList, true);
 
                 if (this.isThreat()) {
                     String err = "There should not be a threat with no parents: " + this.uri;
@@ -493,7 +490,6 @@ public class AttackNode {
                     logger.error(err);
                     throw new Exception(err); // TODO: put error in exception and choose a better Exception class
                 } else {
-
                     attackMitigatedByCS = null;
                     threatMitigatedByCS = null;
                     attackMitigatedByCSG = null;
@@ -506,7 +502,7 @@ public class AttackNode {
 
                 Set<String> intersection = new HashSet<>(this.allDirectCauseUris);
                 intersection.retainAll(currentPath);
-                if (intersection.size() > 0) {
+                if (!intersection.isEmpty()) {
                     // For a threat we require all parents.
                     // If even one is on the current path then the threat is triggered by its own consequence which is useless.
                     List<String> consequence = new ArrayList<>();
@@ -577,14 +573,14 @@ public class AttackNode {
                     parentMaxDistancesFromRoot = new ArrayList<>();
                     parentMaxDistancesFromRoot.add(-1);
 
-                    List<Object> tmpObjList = new ArrayList<Object>();
+                    List<Object> tmpObjList = new ArrayList<>();
                     tmpObjList.add(this.makeSymbol(this.uri));
-                    parentRootCauses.add(new LogicalExpression(this.apd, tmpObjList, true));
+                    parentRootCauses.add(new LogicalExpression(tmpObjList, true));
                 }
 
                 // The root cause of a threat is all (AND) of the rout
                 // causes of its parents
-                tmpRootCause = new LogicalExpression(this.apd, parentRootCauses, true);
+                tmpRootCause = new LogicalExpression(parentRootCauses, true);
 
                 // The distance from a root cause therefore is the maximum
                 // of the parent distances +1
@@ -606,11 +602,11 @@ public class AttackNode {
                         parentAttackTrees.add(this.uriSymbol);
                     }
 
-                    bsAttackTree = new LogicalExpression(this.apd, parentAttackTrees, true);
+                    bsAttackTree = new LogicalExpression(parentAttackTrees, true);
 
                     // All threats are on the threat path
                     parentThreatTrees.add(this.uriSymbol);
-                    threatTree = new LogicalExpression(this.apd, parentThreatTrees, true);
+                    threatTree = new LogicalExpression(parentThreatTrees, true);
 
                     /*
                      * A threat can be mitigated by OR( inactive control strategies located at itself mitigations of any of its parents )
@@ -627,13 +623,13 @@ public class AttackNode {
                     parentThreatMitigationsCS.add(this.controls);
                     parentThreatMitigationsCSG.add(this.controlStrategies);
 
-                    attackMitigatedByCS = new LogicalExpression(this.apd,
+                    attackMitigatedByCS = new LogicalExpression(
                             new ArrayList<Object>(parentAttackMitigationsCS), false);
-                    threatMitigatedByCS = new LogicalExpression(this.apd,
+                    threatMitigatedByCS = new LogicalExpression(
                             new ArrayList<Object>(parentThreatMitigationsCS), false);
-                    attackMitigatedByCSG = new LogicalExpression(this.apd,
+                    attackMitigatedByCSG = new LogicalExpression(
                             new ArrayList<Object>(parentAttackMitigationsCSG), false);
-                    threatMitigatedByCSG = new LogicalExpression(this.apd,
+                    threatMitigatedByCSG = new LogicalExpression(
                             new ArrayList<Object>(parentThreatMitigationsCSG), false);
                 }
             } else {
@@ -695,7 +691,7 @@ public class AttackNode {
 
                 // The rootCause of a misbehaviour is any (OR) of the root
                 // cause of its parents
-                rootCause = new LogicalExpression(this.apd, parentRootCauses, false);
+                rootCause = new LogicalExpression(parentRootCauses, false);
 
                 // The distance from a root cause is therefore the minimum of
                 // the parent distances
@@ -707,19 +703,19 @@ public class AttackNode {
                         + tmpMinDistanceFromRoot + " " + tmpMaxDistanceFromRoot);
 
                 if (computeLogic) {
-                    bsAttackTree = new LogicalExpression(this.apd, parentAttackTrees, false);
-                    bsThreatTree = new LogicalExpression(this.apd, parentThreatTrees, false);
+                    bsAttackTree = new LogicalExpression(parentAttackTrees, false);
+                    bsThreatTree = new LogicalExpression(parentThreatTrees, false);
                     // Misbehaviours can be miticated by
                     // AND(
                     // mitigations of their parents
                     // )
-                    attackMitigatedByCS = new LogicalExpression(this.apd,
+                    attackMitigatedByCS = new LogicalExpression(
                             new ArrayList<Object>(parentAttackMitigationsCS), true);
-                    threatMitigatedByCS = new LogicalExpression(this.apd,
+                    threatMitigatedByCS = new LogicalExpression(
                             new ArrayList<Object>(parentThreatMitigationsCS), true);
-                    attackMitigatedByCSG = new LogicalExpression(this.apd,
+                    attackMitigatedByCSG = new LogicalExpression(
                             new ArrayList<Object>(parentAttackMitigationsCSG), true);
-                    threatMitigatedByCSG = new LogicalExpression(this.apd,
+                    threatMitigatedByCSG = new LogicalExpression(
                             new ArrayList<Object>(parentThreatMitigationsCSG), true);
                 }
             }
@@ -731,7 +727,7 @@ public class AttackNode {
             //        " Error " + this.uri + " (nodeID:" + this.id + ")");
             loopbackNodeUris = error.getLoopbackNodeUris();
 
-            Set<String> loopbackNodeUrisOnPath = new HashSet<String>(currentPath);
+            Set<String> loopbackNodeUrisOnPath = new HashSet<>(currentPath);
             loopbackNodeUrisOnPath.retainAll(loopbackNodeUris);
             loopbackNodeUrisOnPath.remove(this.uri);
 
@@ -771,7 +767,7 @@ public class AttackNode {
              * combining cause over different paths, the logic is reversed.
              */
             List<Object> tmpObjList = new ArrayList<>(Arrays.asList(this.rootCause, tmpRootCause));
-            this.rootCause = new LogicalExpression(this.apd, tmpObjList, false);
+            this.rootCause = new LogicalExpression(tmpObjList, false);
 
             // Save the max and min distance from this root_cause
             // The max is useful to spread things out for display
@@ -787,25 +783,25 @@ public class AttackNode {
             if (computeLogic) {
                 List<LogicalExpression> aCsList = new ArrayList<>(
                         Arrays.asList(this.attackTreeMitigationCS, attackMitigatedByCS));
-                this.attackTreeMitigationCS = new LogicalExpression(this.apd, new ArrayList<Object>(aCsList), true);
+                this.attackTreeMitigationCS = new LogicalExpression(new ArrayList<Object>(aCsList), true);
 
                 List<LogicalExpression> tCsList = new ArrayList<>(
                         Arrays.asList(this.threatTreeMitigationCS, threatMitigatedByCS));
-                this.threatTreeMitigationCS = new LogicalExpression(this.apd, new ArrayList<Object>(tCsList), true);
+                this.threatTreeMitigationCS = new LogicalExpression(new ArrayList<Object>(tCsList), true);
 
                 List<LogicalExpression> aCsgList = new ArrayList<>(
                         Arrays.asList(this.attackTreeMitigationCSG, attackMitigatedByCSG));
-                this.attackTreeMitigationCSG = new LogicalExpression(this.apd, new ArrayList<Object>(aCsgList), true);
+                this.attackTreeMitigationCSG = new LogicalExpression(new ArrayList<Object>(aCsgList), true);
 
                 List<LogicalExpression> tCsgList = new ArrayList<>(
                         Arrays.asList(this.threatTreeMitigationCSG, threatMitigatedByCSG));
-                this.threatTreeMitigationCSG = new LogicalExpression(this.apd, new ArrayList<Object>(tCsgList), true);
+                this.threatTreeMitigationCSG = new LogicalExpression(new ArrayList<Object>(tCsgList), true);
 
                 List<LogicalExpression> atList = new ArrayList<>(Arrays.asList(this.attackTree, bsAttackTree));
-                this.attackTree = new LogicalExpression(this.apd, new ArrayList<Object>(atList), false);
+                this.attackTree = new LogicalExpression(new ArrayList<Object>(atList), false);
 
                 List<LogicalExpression> ttList = new ArrayList<>(Arrays.asList(this.threatTree, bsThreatTree));
-                this.threatTree = new LogicalExpression(this.apd, new ArrayList<Object>(ttList), false);
+                this.threatTree = new LogicalExpression(new ArrayList<Object>(ttList), false);
             }
 
             InnerResult iResult = new InnerResult();

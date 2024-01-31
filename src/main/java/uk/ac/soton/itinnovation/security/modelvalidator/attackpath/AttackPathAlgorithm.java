@@ -53,9 +53,7 @@ public class AttackPathAlgorithm {
         final long startTime = System.currentTimeMillis();
 
         logger.debug("STARTING Shortest Path Attack algortithm ...");
-
-        // TODO might have to delay initialisation of the dataset until risk
-        // mode is checked.
+        
         apd = new AttackPathDataset(querier);
 
         final long endTime = System.currentTimeMillis();

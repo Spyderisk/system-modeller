@@ -49,7 +49,7 @@ public class LogicalExpression {
     private List<Expression<String>> allCauses = new ArrayList<>();
     private Expression<String> cause;
 
-    public LogicalExpression(AttackPathDataset ds, List<Object> cList, boolean ar) {
+    public LogicalExpression(List<Object> cList, boolean ar) {
 
         instanceCount++;
 

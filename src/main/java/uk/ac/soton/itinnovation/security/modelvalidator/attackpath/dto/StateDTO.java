@@ -30,7 +30,6 @@ import lombok.Data;
 
 @Data
 public class StateDTO {
-    //private RiskDTO risk;
     private String risk;
     private List<ConsequenceDTO> consequences;
 }
