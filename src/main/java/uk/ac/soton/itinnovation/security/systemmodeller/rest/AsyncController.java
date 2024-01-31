@@ -14,7 +14,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -93,12 +92,12 @@ public class AsyncController {
 	 * @return A JSON report containing recommendations
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@PostMapping(value = "/models/{modelId}/recommendations202")
+	@GetMapping(value = "/models/{modelId}/recommendations202")
     public ResponseEntity<JobResponseDTO> startRecommendationsTaskRed(
             @PathVariable String modelId,
             @RequestParam (defaultValue = "CURRENT") String riskMode) {
 
-        logger.info("Calculating threat graph for model {}", modelId);
+        logger.info("Calculating recommendations for model {}", modelId);
 		riskMode = riskMode.replaceAll("[\n\r]", "_");
         logger.info(" riskMode: {}",riskMode);
 
@@ -138,7 +137,7 @@ public class AsyncController {
             CompletableFuture.runAsync(() -> asyncService.startRecommendationTask(jobId, recaConfig, progress));
 
             // Build the Location URI for the job status
-            URI locationUri = URI.create("/models/"+modelId + "/recommendations/status/" + jobId);
+            URI locationUri = URI.create("/models/" + modelId + "/recommendations/status/" + jobId);
 
              // Return 202 Accepted with a Location header
             HttpHeaders headers = new HttpHeaders();
@@ -166,12 +165,12 @@ public class AsyncController {
 	 * @return A JSON report containing recommendations
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@PostMapping(value = "/models/{modelId}/recommendations")
+	@GetMapping(value = "/models/{modelId}/recommendations")
     public ResponseEntity<JobResponseDTO> startRecommendationsTask(
             @PathVariable String modelId,
             @RequestParam (defaultValue = "CURRENT") String riskMode) {
 
-        logger.info("Calculating threat graph for model {}", modelId);
+        logger.info("Calculating recommendations for model {}", modelId);
 		riskMode = riskMode.replaceAll("[\n\r]", "_");
         logger.info(" riskMode: {}",riskMode);
 
