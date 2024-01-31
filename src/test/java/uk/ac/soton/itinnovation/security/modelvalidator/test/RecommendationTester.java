@@ -175,7 +175,7 @@ public class RecommendationTester extends TestCase {
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
             String json = objectMapper.writeValueAsString(report);
-            logger.info("Recommendation report: {}", json);
+            //logger.info("Recommendation report: {}", json);
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Exception thrown by attack path recommendations");

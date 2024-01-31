@@ -41,6 +41,7 @@ import com.bpodgursky.jbool_expressions.Expression;
 import com.bpodgursky.jbool_expressions.Variable;
 
 public class AttackNode {
+
     private static final Logger logger = LoggerFactory.getLogger(AttackNode.class);
 
     private AttackPathDataset apd;
@@ -96,6 +97,7 @@ public class AttackNode {
     private static final String ATTACK_MITIGATION_CSG = "attack_mitigation_csg";
 
     private class InnerResult {
+
         Set<String> loopbackNodeUris = new HashSet<>();
         Set<String> allCauseUris = new HashSet<>();
         int minDistance = 0;
@@ -189,12 +191,19 @@ public class AttackNode {
 
     @Override
     public boolean equals(Object obj) {
-        AttackNode an = (AttackNode) obj;
-        if (this.uri.equals(an.getUri())) {
+        // Check for self-comparison
+        if (this == obj) {
             return true;
-        } else {
+        }
+
+        // Use instanceof to check for null and ensure the correct type
+        if (!(obj instanceof AttackNode)) {
             return false;
         }
+
+        AttackNode an = (AttackNode) obj;
+
+        return java.util.Objects.equals(this.uri, an.getUri());
     }
 
     public void setMaxDistanceFromTargetByTarget(String uri, int value) {
@@ -293,7 +302,6 @@ public class AttackNode {
          *
          * So we will end up with something like: OR(AND(c1, c1), AND(c3), AND(c1, c4))
          */
-
         Set<String> csgUris = this.apd.getThreatControlStrategyUris(this.uri, this.nodes.getIsFutureRisk());
 
         List<LogicalExpression> leCSGs = new ArrayList<>();
@@ -348,11 +356,12 @@ public class AttackNode {
     /**
      * Performs a backtrace from the current AttackNode to its ancestors
      *
-     * @param cPath        the current path to the AttackNode being traced
+     * @param cPath the current path to the AttackNode being traced
      * @param computeLogic compute the logical result of the backtrace
      * @return an object containing the results of the backtrace
-     * @throws TreeTraversalException if an error occurs during traversal of the AttackNode tree
-     * @throws Exception              if an unexpected error occurs
+     * @throws TreeTraversalException if an error occurs during traversal of the
+     * AttackNode tree
+     * @throws Exception if an unexpected error occurs
      */
     public InnerResult backtrace(Set<String> cPath, boolean computeLogic) throws TreeTraversalException, Exception {
 
@@ -363,10 +372,10 @@ public class AttackNode {
         }
 
         currentPath.add(this.uri);
-        logger.debug(String.format("%1$"+ currentPath.size() +"s", "") +
-                " BACKTRACE for: " + this.uri.substring(7) + " (nodeID:" + this.id + ") "+
-                " current path length: " + (currentPath.size()-1) +
-                " all direct cause uris: " + this.allDirectCauseUris.size());
+        logger.debug(String.format("%1$" + currentPath.size() + "s", "")
+                + " BACKTRACE for: " + this.uri.substring(7) + " (nodeID:" + this.id + ") "
+                + " current path length: " + (currentPath.size() - 1)
+                + " all direct cause uris: " + this.allDirectCauseUris.size());
 
         this.visits += 1;
 
@@ -386,8 +395,8 @@ public class AttackNode {
             intersection.retainAll(currentPath);
             if (intersection.size() == result.getLoopbackNodeUris().size()) {
                 this.cacheHitVisits += 1;
-                logger.debug(String.format("%1$"+ currentPath.size() +"s", "") +
-                        " Cache hit, no cause");
+                logger.debug(String.format("%1$" + currentPath.size() + "s", "")
+                        + " Cache hit, no cause");
                 throw new TreeTraversalException(result.getLoopbackNodeUris());
             }
         }
@@ -417,8 +426,8 @@ public class AttackNode {
                     continue;
                 } else {
                     // then in this case there is more to explore
-                    logger.debug(String.format("%1$"+ currentPath.size() +"s", "") +
-                            " Cache hit: node can be cause, but more to explore");
+                    logger.debug(String.format("%1$" + currentPath.size() + "s", "")
+                            + " Cache hit: node can be cause, but more to explore");
                     useCache = false;
                     break;
                 }
@@ -426,8 +435,8 @@ public class AttackNode {
 
             if (useCache) {
                 this.cacheHitVisits += 1;
-                logger.debug(String.format("%1$"+ currentPath.size() +"s", "") +
-                        " Cache hit, node can be caused, cache can be used");
+                logger.debug(String.format("%1$" + currentPath.size() + "s", "")
+                        + " Cache hit, node can be caused, cache can be used");
                 return res;
             }
         }
@@ -462,13 +471,12 @@ public class AttackNode {
         try {
 
             if (this.allDirectCauseUris.isEmpty()) {
-                logger.debug(String.format("%1$"+ currentPath.size() +"s", "") +
-                        " No direct causes");
+                logger.debug(String.format("%1$" + currentPath.size() + "s", "")
+                        + " No direct causes");
 
                 // This will be top of tree misbehaviours (normal-op, external
                 // cause). Not root causes as they have parents in normal-ops.
                 // TODO: can this just move to the end of the function?
-
                 tmpMinDistanceFromRoot = -1;
                 tmpMaxDistanceFromRoot = -1;
 
@@ -505,18 +513,18 @@ public class AttackNode {
                     for (String item : intersection) {
                         consequence.add(item.substring(7));
                     }
-                    logger.debug(String.format("%1$"+ currentPath.size() +"s", "") +
-                            " threat is dependent on its own consequence: " + consequence);
+                    logger.debug(String.format("%1$" + currentPath.size() + "s", "")
+                            + " threat is dependent on its own consequence: " + consequence);
                     throw new TreeTraversalException(intersection);
                 }
 
                 List<String> sortedCauses = new ArrayList<>(this.allDirectCauseUris);
                 Collections.sort(sortedCauses);
-                logger.debug(String.format("%1$"+ currentPath.size() +"s", "") +
-                        " " + sortedCauses.size() + " direct causes of threat");
+                logger.debug(String.format("%1$" + currentPath.size() + "s", "")
+                        + " " + sortedCauses.size() + " direct causes of threat");
 
-                logger.debug(String.format("%1$"+ currentPath.size() +"s", "") +
-                        " └─>" + sortedCauses);
+                logger.debug(String.format("%1$" + currentPath.size() + "s", "")
+                        + " └─>" + sortedCauses);
 
                 for (String parentUri : sortedCauses) {
                     AttackNode parent = this.nodes.getOrCreateNode(parentUri);
@@ -538,12 +546,10 @@ public class AttackNode {
                         // We could collect all the p_results from the try
                         // block and then iterate through them instead of
                         // executing immediately.
-
                         validParentUris.add(parentUri);
                         loopbackNodeUris.addAll(pResult.getLoopbackNodeUris());
                         allCauseUris.addAll(pResult.getAllCauseUris());
 
-                        // if (this.isNormalOp() == parent.isNormalOp()) {
                         if (Objects.equals(this.isNormalOp(), parent.isNormalOp()) && !parent.isExternalCause()) {
                             parentMinDistancesFromRoot.add(pResult.getMinDistance());
                             parentMaxDistancesFromRoot.add(pResult.getMaxDistance());
@@ -585,8 +591,8 @@ public class AttackNode {
                 tmpMinDistanceFromRoot = Collections.max(parentMinDistancesFromRoot) + 1;
                 tmpMaxDistanceFromRoot = Collections.max(parentMaxDistancesFromRoot) + 1;
 
-                logger.debug(String.format("%1$"+ currentPath.size() +"s", "") +
-                        " Finished looking at threat causes (nodeID:" + this.id + ")");
+                logger.debug(String.format("%1$" + currentPath.size() + "s", "")
+                        + " Finished looking at threat causes (nodeID:" + this.id + ")");
 
                 if (computeLogic == true) {
                     // The attack/threat tree is
@@ -620,7 +626,6 @@ public class AttackNode {
                     // path
                     parentThreatMitigationsCS.add(this.controls);
                     parentThreatMitigationsCSG.add(this.controlStrategies);
-                    //logger.debug("PTM_CSG1: {}", this.controlStrategies);
 
                     attackMitigatedByCS = new LogicalExpression(this.apd,
                             new ArrayList<Object>(parentAttackMitigationsCS), false);
@@ -634,23 +639,17 @@ public class AttackNode {
             } else {
                 // we are a misbehaviour with direct causes
                 loopbackNodeUris = new HashSet<>(this.allDirectCauseUris);
-                //logger.debug("allDirectCauseURIs: {}", loopbackNodeUris);
-                //logger.debug("current path: {}", currentPath);
                 loopbackNodeUris.retainAll(currentPath);
-                //logger.debug("allDirectCauseURIsB: {}", loopbackNodeUris);
 
                 List<String> sortedCauses = new ArrayList<>(allDirectCauseUris);
-                //logger.debug("sortedCauses: {}", sortedCauses);
                 sortedCauses.removeAll(currentPath);
-                //logger.debug("sortedCausesA: {}", sortedCauses);
                 Collections.sort(sortedCauses);
-                //logger.debug("sortedCausesB: {}", sortedCauses);
 
-                logger.debug(String.format("%1$"+ currentPath.size() +"s", "") +
-                        " " + sortedCauses.size() + " direct causes of MS");
+                logger.debug(String.format("%1$" + currentPath.size() + "s", "")
+                        + " " + sortedCauses.size() + " direct causes of MS");
 
-                logger.debug(String.format("%1$"+ currentPath.size() +"s", "") +
-                        " └─>" + sortedCauses);
+                logger.debug(String.format("%1$" + currentPath.size() + "s", "")
+                        + " └─>" + sortedCauses);
 
                 for (String parentUri : sortedCauses) {
                     AttackNode parent = this.nodes.getOrCreateNode(parentUri);
@@ -689,8 +688,8 @@ public class AttackNode {
                 if (validParentUris.isEmpty()) {
                     // Then all parents have thrown exceptions or were on the
                     // current path
-                    logger.debug(String.format("%1$"+ currentPath.size() +"s", "") +
-                            " misbehaviour with all parents invalid: " + this.uri + " (nodeID:" + this.id + ")");
+                    logger.debug(String.format("%1$" + currentPath.size() + "s", "")
+                            + " misbehaviour with all parents invalid: " + this.uri + " (nodeID:" + this.id + ")");
                     throw new TreeTraversalException(loopbackNodeUris);
                 }
 
@@ -703,9 +702,9 @@ public class AttackNode {
                 tmpMinDistanceFromRoot = Collections.min(parentMinDistancesFromRoot) + 1;
                 tmpMaxDistanceFromRoot = Collections.min(parentMaxDistancesFromRoot) + 1;
 
-                logger.debug(String.format("%1$"+ currentPath.size() +"s", "") +
-                 " Finished looking at MS causes (nodeID:" + this.id + ") distance: " +
-                 tmpMinDistanceFromRoot + " " + tmpMaxDistanceFromRoot);
+                logger.debug(String.format("%1$" + currentPath.size() + "s", "")
+                        + " Finished looking at MS causes (nodeID:" + this.id + ") distance: "
+                        + tmpMinDistanceFromRoot + " " + tmpMaxDistanceFromRoot);
 
                 if (computeLogic) {
                     bsAttackTree = new LogicalExpression(this.apd, parentAttackTrees, false);
@@ -730,7 +729,6 @@ public class AttackNode {
 
             //logger.error(String.format("%1$"+ currentPath.size() +"s", "") +
             //        " Error " + this.uri + " (nodeID:" + this.id + ")");
-
             loopbackNodeUris = error.getLoopbackNodeUris();
 
             Set<String> loopbackNodeUrisOnPath = new HashSet<String>(currentPath);
@@ -740,12 +738,12 @@ public class AttackNode {
             InnerResult result = new InnerResult();
             if (loopbackNodeUrisOnPath.isEmpty()) {
                 this.cannotBeCaused = true;
-                logger.error(String.format("%1$"+ currentPath.size() +"s", "") +
-                        " Error " + this.uri + " can never be caused (nodeID:" + this.id + ")");
+                logger.error(String.format("%1$" + currentPath.size() + "s", "")
+                        + " Error " + this.uri + " can never be caused (nodeID:" + this.id + ")");
             } else {
                 result.setLoopbackNodeUris(loopbackNodeUrisOnPath);
-                logger.error(String.format("%1$"+ currentPath.size() +"s", "") +
-                        " Error " + this.uri + " caused by node on path: (nodeID:" + this.id + ")");
+                logger.error(String.format("%1$" + currentPath.size() + "s", "")
+                        + " Error " + this.uri + " caused by node on path: (nodeID:" + this.id + ")");
             }
 
             this.noCauseResults.add(result);
@@ -772,7 +770,6 @@ public class AttackNode {
              * this node, but before that we need to merge the results with any others that have previously been found from other paths to this node. Interestingly, when
              * combining cause over different paths, the logic is reversed.
              */
-
             List<Object> tmpObjList = new ArrayList<>(Arrays.asList(this.rootCause, tmpRootCause));
             this.rootCause = new LogicalExpression(this.apd, tmpObjList, false);
 
@@ -787,7 +784,6 @@ public class AttackNode {
             // although tempting to calculate the distance from target here, we
             // can't because we don't know if the current tree is going to be
             // successful all the way back to the target.
-
             if (computeLogic) {
                 List<LogicalExpression> aCsList = new ArrayList<>(
                         Arrays.asList(this.attackTreeMitigationCS, attackMitigatedByCS));

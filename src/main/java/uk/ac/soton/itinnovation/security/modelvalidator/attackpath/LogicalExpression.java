@@ -59,26 +59,14 @@ public class LogicalExpression {
             if (causeObj instanceof LogicalExpression) {
                 LogicalExpression leObj = (LogicalExpression) causeObj;
                 if (leObj.getCause() != null) {
-                    //logger.debug("Looks like {} a LE : {}", instanceCount, leObj.getCause().toString().substring(7));
                     allCauses.add(leObj.getCause());
-                } else {
-                    //logger.debug("Looks like {} a LE : None", instanceCount);
                 }
             } else {
                 Expression exprObj = (Expression) causeObj;
                 if (exprObj != null) {
-                    //logger.debug("Looks like {} a string : {} {}", instanceCount, causeObj, causeObj.getClass().getName());
-                    //logger.debug("Looks like {} a string : {}", instanceCount, causeObj.toString().substring(7));
-
                     allCauses.add(exprObj);
-                } else {
-                    //logger.debug("Looks like {} a string : None", instanceCount);
                 }
             }
-        }
-
-        if (allCauses.isEmpty()) {
-            //logger.debug("ATTENTION LE has a empty cause {}, {}, {}", cList.size(), cList, allCauses.size());
         }
 
         if (allCauses.size() == 0) {
@@ -94,8 +82,6 @@ public class LogicalExpression {
                 this.cause = RuleSet.simplify(ors);
             }
         }
-        //logger.debug("LE causes: size({})  {}", cList.size(), cList);
-        //logger.debug("LE itself: {}", this.toString());
     }
 
     public String toString() {
@@ -119,7 +105,6 @@ public class LogicalExpression {
 
     public Expression getCause() {
         if (this.cause == null) {
-            //logger.debug("Return a null cause");
             return this.cause;
         } else {
             return RuleSet.simplify(this.cause);
@@ -138,7 +123,7 @@ public class LogicalExpression {
     }
 
     public Set<String> uris() {
-        Set<String> symbolSetUris = new HashSet<String>();
+        Set<String> symbolSetUris = new HashSet<>();
         if (this.cause != null) {
             for (Expression<String> symbol : this.cause.getChildren()) {
                 symbolSetUris.add(symbol.toString());
@@ -151,13 +136,7 @@ public class LogicalExpression {
         return symbolSetUris;
     }
 
-    public String getCsgComment(String dummyUri) {
-        if (!dummyUri.startsWith("system#")) {
-            dummyUri = "system#" + dummyUri;
-        }
-        // MyControlStrategy myCSG = new MyControlStrategy("", "", "");
-        return "";
-    }
+
     public List<Expression> getListFromOr() {
         List<Expression> retVal = new ArrayList<>();
         if (this.cause == null) {
@@ -165,7 +144,6 @@ public class LogicalExpression {
         } else if (this.cause instanceof Or) {
             for (Expression expr : this.cause.getChildren()) {
                 retVal.add(expr);
-                //logger.debug("convert CSG Or option, adding {} type: {}", expr, expr.getClass().getName());
             }
         } else if (this.cause instanceof And) {
             for (Expression expr : this.cause.getChildren()) {
@@ -191,28 +169,11 @@ public class LogicalExpression {
         } else if (expression instanceof Variable) {
            retVal.add((Variable)expression);
         } else {
-            logger.debug("convert_CSG_options: Logical Expression operator not supported");
+            logger.debug("convert_CSG_options: Logical Expression operator {} not supported", expression);
         }
         return retVal;
     }
 
-    public List<Expression> convertCSGSymbols(List<Expression> leList) {
-        List<Expression> csgUris = new ArrayList<>();
-        /*
-        for (Expression expr : leList) {
-            if (expr instanceof Expression)  {
-                csgUris.add(expr);
-            } else if (expr instanceof And) {
-                for (Expression expr : expr) {
-                    csgUris.add(expr);
-                }
-            } else {
-                logger.debug("Logical operator not supported {}", le);
-            }
-        }
-        */
-        return csgUris;
-    }
 
     public void displayExpression() {
         logger.debug("CSG LogicalExpression has the followng terms:");

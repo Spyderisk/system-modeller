@@ -630,9 +630,7 @@ public class AttackPathDataset {
             riskVector.put(ms.getRisk(), riskVector.get(ms.getRisk()) + 1);
         }
 
-        RiskVector rv = new RiskVector(rvRiskLevels, riskVector);
-
-        return rv;
+        return new RiskVector(rvRiskLevels, riskVector);
     }
 
     public boolean compareOverallRiskToMedium(String overall) {
