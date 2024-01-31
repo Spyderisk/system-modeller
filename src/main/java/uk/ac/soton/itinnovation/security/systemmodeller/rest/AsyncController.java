@@ -14,8 +14,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
@@ -93,7 +93,7 @@ public class AsyncController {
 	 * @return A JSON report containing recommendations
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/recommendations202", method = RequestMethod.POST)
+	@PostMapping(value = "/models/{modelId}/recommendations202")
     public ResponseEntity<JobResponseDTO> startRecommendationsTaskRed(
             @PathVariable String modelId,
             @RequestParam (defaultValue = "CURRENT") String riskMode) {
@@ -166,7 +166,7 @@ public class AsyncController {
 	 * @return A JSON report containing recommendations
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@RequestMapping(value = "/models/{modelId}/recommendations", method = RequestMethod.POST)
+	@PostMapping(value = "/models/{modelId}/recommendations")
     public ResponseEntity<JobResponseDTO> startRecommendationsTask(
             @PathVariable String modelId,
             @RequestParam (defaultValue = "CURRENT") String riskMode) {
