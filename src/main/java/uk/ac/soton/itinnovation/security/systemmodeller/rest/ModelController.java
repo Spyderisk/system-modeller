@@ -1426,7 +1426,7 @@ public class ModelController {
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
 	@GetMapping(value = "/models/{modelId}/recommendations_blocking")
-	public ResponseEntity<RecommendationReportDTO> calculateRecommendations(
+	public ResponseEntity<RecommendationReportDTO> calculateRecommendationsBlocking(
             @PathVariable String modelId,
             @RequestParam(defaultValue = "CURRENT") String riskMode) {
 
@@ -1530,7 +1530,7 @@ public class ModelController {
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
 	@GetMapping(value = "/models/{modelId}/recommendations")
-    public ResponseEntity<JobResponseDTO> startRecommendationsTaskRed(
+    public ResponseEntity<JobResponseDTO> calculateRecommendations(
             @PathVariable String modelId,
             @RequestParam (defaultValue = "CURRENT") String riskMode) {
 
