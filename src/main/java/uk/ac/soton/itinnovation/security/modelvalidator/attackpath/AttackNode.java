@@ -158,6 +158,13 @@ public class AttackNode {
         }
     };
 
+    /**
+     * Attack Node
+     * @param uri
+     * @param apd
+     * @param nodes
+     * @param id 
+     */
     public AttackNode(String uri, AttackPathDataset apd, AttackTree nodes, int id) {
 
         this.apd = apd;
@@ -831,10 +838,18 @@ public class AttackNode {
         return new InnerResult();
     }
 
+    /**
+     * Get direct cause URIs
+     * @return 
+     */
     public Set<String> getDirectCauseUris() {
         return this.directCauseUris;
     }
 
+    /**
+     * Add direct cause URIs to directCauseUris
+     * @param uris 
+     */
     public void addDirectCauseUris(Set<String> uris) {
         this.directCauseUris.addAll(uris);
         for (String causeUri : uris) {

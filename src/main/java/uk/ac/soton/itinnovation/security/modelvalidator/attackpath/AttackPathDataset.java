@@ -57,6 +57,7 @@ import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.Consequen
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ControlDTO;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.StateDTO;
 
+
 public class AttackPathDataset {
 
     private static final Logger logger = LoggerFactory.getLogger(AttackPathDataset.class);
@@ -581,14 +582,13 @@ public class AttackPathDataset {
             for (String csURI : csTriplet) {
                 ControlSetDB cs = querier.getControlSet(csURI, "system");
                 if (cs == null) {
-                    logger.debug("     TODO complete CS for {}", csURI);
                     cs = new ControlSetDB();
                     cs.setUri(csURI);
-                    cs.setType("core#ControlSet");
-                    // TODO need to complete the object (see the validator)
                 }
                 logger.debug("     Set triplet {}: proposed -> {}", csURI, proposed);
                 cs.setProposed(proposed);
+
+                //querier.updateProposedStatus(proposed, cs, "system");
 
                 // check the triplet values to be the same
                 querier.store(cs, "system");

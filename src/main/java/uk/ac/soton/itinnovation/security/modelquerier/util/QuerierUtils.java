@@ -24,7 +24,11 @@
 /////////////////////////////////////////////////////////////////////////
 package uk.ac.soton.itinnovation.security.modelquerier.util;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class QuerierUtils {
     
@@ -69,5 +73,21 @@ public class QuerierUtils {
 
 		return new HashSet<>(Arrays.asList(csAvg, csMin, csMax));
 	}
+
+    /**
+     * get domain Control URI given a CS URI
+     * @param CS URI
+     * @return control URI
+     */
+    public static String getDomainControlUri(String csuri) {
+        Pattern pattern = Pattern.compile("system#CS-(.*?)-[0-9a-f]+");
+        Matcher matcher = pattern.matcher(csuri);
+
+        if (matcher.find()) {
+            String extractedPart = matcher.group(1); // "CS-DisabledProcess"
+            return "domain#" + extractedPart;
+        }
+        return "";
+    }
 
 }

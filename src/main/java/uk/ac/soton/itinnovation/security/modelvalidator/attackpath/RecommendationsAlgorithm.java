@@ -97,6 +97,11 @@ public class RecommendationsAlgorithm {
         apd = new AttackPathDataset(querier);
     }
 
+    /**
+     * Check risk calculation mode is the same as the requested one
+     * @param input
+     * @return 
+     */
     public boolean checkRiskCalculationMode(String input) {
         ModelDB model = querier.getModelInfo("system");
         logger.info("Model info: {}", model);
@@ -116,6 +121,10 @@ public class RecommendationsAlgorithm {
         }
     }
 
+    /**
+     * wrapper method for check existing risk calculation mode
+     * @param requestedRiskMode 
+     */
     public void checkRequestedRiskCalculationMode(String requestedRiskMode) {
         if (!checkRiskCalculationMode(requestedRiskMode)) {
             logger.debug("mismatch between the stored risk calculation mode and the requested one");
@@ -123,24 +132,31 @@ public class RecommendationsAlgorithm {
         }
     }
 
-    public boolean checkTargetUris(List<String> targetUris) {
-        logger.debug("Checking submitted list of target URIs: {}", targetUris);
-
-        if (!apd.checkMisbehaviourList(targetUris)) {
-            logger.error("shortest path, target MS URI not valid");
-            return false;
-        }
-        return true;
-    }
-
+    /**
+     * Calculate the attack path graph using an MS threshold
+     * @param thresholdLevel
+     * @return 
+     */
     public AttackTree calcAttackTree(String thresholdLevel) {
         return calculateAttackTree(apd.filterMisbehaviours(thresholdLevel), riskMode, this.allPaths);
     }
 
+    /**
+     * Calculate the attack path graph
+     * @return 
+     */
     public AttackTree calcAttackTree() {
         return calculateAttackTree(apd.filterMisbehaviours(), riskMode, this.allPaths);
     }
 
+    /**
+     * Calculate the attack path graph
+     * @param targetUris
+     * @param riskCalculationMode
+     * @param allPaths
+     * @return
+     * @throws RuntimeException 
+     */
     public AttackTree calculateAttackTree(List<String> targetUris, String riskCalculationMode, boolean allPaths) throws RuntimeException {
         logger.debug("calculate attack tree with isFUTURE: {}, allPaths: {}", riskCalculationMode, allPaths);
         logger.debug("target URIs: {}", targetUris);
@@ -169,6 +185,12 @@ public class RecommendationsAlgorithm {
         return attackTree;
     }
 
+    /**
+     * Build CSG recommendations tree
+     * @param le
+     * @param myNode
+     * @return 
+     */
     private CSGNode applyCSGs(LogicalExpression le, CSGNode myNode) {
         logger.debug("applyCSGs() recursive method");
 
@@ -254,7 +276,7 @@ public class RecommendationsAlgorithm {
             // check if risk has improved or teminate iteration?
             logger.debug("check for a termination condition for ID {}", recommendation.getIdentifier());
             if ((riskResponse != null) & (apd.compareOverallRiskToMedium(riskResponse.getOverall()))) {
-                logger.info("Termination condition reached");
+                logger.info("Termination condition reached for this option");
             } else {
                 logger.debug("Risk is still higher than Medium");
                 logger.info("Recalculate nested attack path tree (for a lower level?) ...");
@@ -276,6 +298,11 @@ public class RecommendationsAlgorithm {
         return myNode;
     }
 
+    /**
+     * Create control strategy DTO object
+     * @param csgUri
+     * @return 
+     */
     private ControlStrategyDTO createControlStrategyDTO(String csgUri) {
         ControlStrategyDTO csgDto = new ControlStrategyDTO();
         csgDto.setUri(csgUri);
@@ -284,6 +311,11 @@ public class RecommendationsAlgorithm {
         return csgDto;
     }
 
+    /**
+     * Crete CSG DTO object
+     * @param csgList
+     * @return 
+     */
     private Set<ControlStrategyDTO> createCSGDTO(List<String> csgList) {
         Set<ControlStrategyDTO> recCSGSet = new HashSet<>();
         for (String csgUri : csgList) {
@@ -292,10 +324,20 @@ public class RecommendationsAlgorithm {
         return recCSGSet;
     }
 
+    /**
+     * create control DTO
+     * @param ctrlUri
+     * @return 
+     */
     private ControlDTO createControlDTO(String ctrlUri) {
         return apd.fillControlDTO(ctrlUri);
     }
 
+    /**
+     * Crete control set DTO
+     * @param csSet
+     * @return 
+     */
     private Set<ControlDTO> createCSDTO(Set<String> csSet) {
         Set<ControlDTO> recControlSet = new HashSet<>();
         for (String ctrlUri : csSet) {
@@ -304,6 +346,13 @@ public class RecommendationsAlgorithm {
         return recControlSet;
     }
 
+    /**
+     * Create recommendation DTO object
+     * @param csgList
+     * @param csSet
+     * @param state
+     * @return 
+     */
     private RecommendationDTO createRecommendation(List<String> csgList, Set<String> csSet, StateDTO state) {
         RecommendationDTO recommendation = new RecommendationDTO();
         recommendation.setIdentifier(this.recCounter++);
@@ -320,6 +369,12 @@ public class RecommendationsAlgorithm {
         return recommendation;
     }
 
+    /**
+     * Update recommendation DTO object
+     * @param recommendation
+     * @param csgList
+     * @param csSet 
+     */
     private void updateRecommendation(RecommendationDTO recommendation, List<String> csgList, Set<String> csSet) {
         Set<ControlStrategyDTO> csgDTOs = createCSGDTO(csgList);
         Set<ControlDTO> controlDTOs = createCSDTO(csSet);
@@ -328,11 +383,20 @@ public class RecommendationsAlgorithm {
         recommendation.setControls(controlDTOs);
     }
 
+    /**
+     * Parse the CSGNode tree and find recommendations
+     * @param node 
+     */
     private void makeRecommendations(CSGNode node) {
         List<CSGNode> path = new ArrayList<>();
         makeRecommendations(node, path);
     }
 
+    /**
+     * Parse the CSGNode tree and find recommendations
+     * @param node
+     * @param path 
+     */
     private void makeRecommendations(CSGNode node, List<CSGNode> path) {
 
         // if path is undefined, initalise it as empty list
@@ -358,6 +422,11 @@ public class RecommendationsAlgorithm {
         }
     }
 
+    /**
+     * Reconstruct CSGs for nested recommendations
+     * @param nodeList
+     * @return 
+     */
     private Set<String> reconstructCSGs(List<CSGNode> nodeList) {
         Set<String> csgSet = new HashSet<>();
         for (CSGNode node : nodeList) {
@@ -368,6 +437,11 @@ public class RecommendationsAlgorithm {
         return csgSet;
     }
 
+    /**
+     * Reconstruct CS for nested recommendations
+     * @param nodeList
+     * @return 
+     */
     private Set<String> reconstructCSs(List<CSGNode> nodeList) {
         Set<String> csSet = new HashSet<>();
         for (CSGNode node : nodeList) {
@@ -378,6 +452,12 @@ public class RecommendationsAlgorithm {
         return csSet;
     }
 
+    /**
+     * Start recommendations algorithm
+     * @param progress
+     * @return
+     * @throws RuntimeException 
+     */
     public RecommendationReportDTO recommendations(Progress progress) throws RuntimeException {
 
         logger.info("Recommendations core part (risk mode: {})", riskMode);

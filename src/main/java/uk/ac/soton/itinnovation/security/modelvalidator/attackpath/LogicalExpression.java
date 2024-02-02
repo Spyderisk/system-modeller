@@ -111,6 +111,10 @@ public class LogicalExpression {
         }
     }
 
+    /**
+     * Apply DNF to logical expression
+     * @param maxComplexity 
+     */
     public void applyDNF(int maxComplexity) {
         // apply DNF
         if (this.cause == null) {
@@ -137,6 +141,10 @@ public class LogicalExpression {
     }
 
 
+    /**
+     * Get list of OR terms
+     * @return 
+     */
     public List<Expression> getListFromOr() {
         List<Expression> retVal = new ArrayList<>();
         if (this.cause == null) {
@@ -157,6 +165,11 @@ public class LogicalExpression {
         return retVal;
     }
 
+    /**
+     * Extract AND terms from logical expression
+     * @param expression
+     * @return 
+     */
     public List<Variable> getListFromAnd(Expression expression) {
         List<Variable> retVal = new ArrayList<>();
 
@@ -174,12 +187,19 @@ public class LogicalExpression {
         return retVal;
     }
 
-
+    /**
+     * Display logical expression in terms of Variables
+     */
     public void displayExpression() {
         logger.debug("CSG LogicalExpression has the followng terms:");
         parse(this.cause, 0);
     }
 
+    /**
+     * Parse Expression terms
+     * @param expression
+     * @param depth 
+     */
     private void parse(Expression<String> expression, int depth) {
         StringBuilder indent = new StringBuilder();
         for (int i = 0; i < depth; i++) {
