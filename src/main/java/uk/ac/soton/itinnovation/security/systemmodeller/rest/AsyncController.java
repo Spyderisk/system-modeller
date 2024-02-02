@@ -4,14 +4,11 @@ package uk.ac.soton.itinnovation.security.systemmodeller.rest;
 import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.net.URI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -93,105 +90,6 @@ public class AsyncController {
 	 * @return A JSON report containing recommendations
      * @throws InternalServerErrorException   if an error occurs during report generation
 	 */
-	@GetMapping(value = "/models/{modelId}/recommendations202")
-    public ResponseEntity<JobResponseDTO> startRecommendationsTaskRed(
-            @PathVariable String modelId,
-            @RequestParam (defaultValue = "CURRENT") String riskMode) {
-
-        logger.info("Calculating recommendations for model {}", modelId);
-		riskMode = riskMode.replaceAll("[\n\r]", "_");
-        logger.info(" riskMode: {}",riskMode);
-
-        RiskCalculationMode rcMode;
-
-		try {
-            rcMode = RiskCalculationMode.valueOf(riskMode);
-		} catch (IllegalArgumentException e) {
-			logger.error("Found unexpected riskCalculationMode parameter value {}, valid values are: {}.",
-					riskMode, RiskCalculationMode.values());
-			throw new BadRequestErrorException("Invalid 'riskMode' parameter value " + riskMode +
-                        ", valid values are: " + Arrays.toString(RiskCalculationMode.values()));
-		}
-
-		final Model model;
-		Progress progress;
-
-		synchronized(this) {
-			model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
-            String mId = model.getId();
-
-			if (model.isValidating()) {
-				logger.warn("Model {} is currently validating - ignoring request {}", mId, modelId);
-				return new ResponseEntity<>(HttpStatus.ACCEPTED);
-			}
-
-			if (model.isCalculatingRisks()) {
-				logger.warn("Model {} is already calculating risks - ignoring request {}", mId, modelId);
-				return new ResponseEntity<>(HttpStatus.ACCEPTED);
-			}
-
-			progress = modelObjectsHelper.getValidationProgressOfModel(model);
-			progress.updateProgress(0d, "Recommendations starting");
-
-			logger.debug("Marking as calculating risks [{}] {}", mId, model.getName());
-			model.markAsCalculatingRisks(rcMode, false);
-		} //synchronized block
-
-		AStoreWrapper store = storeModelManager.getStore();
-        boolean success = false;
-
-        try {
-            logger.info("Initialising JenaQuerierDB");
-
-            JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
-                    model.getModelStack(), true);
-
-            querierDB.initForRiskCalculation();
-
-            logger.info("Calculating Recommendations");
-
-            logger.info("Creating async job for {}", modelId);
-            String jobId = UUID.randomUUID().toString();
-            logger.info("Submitting async job with id: {}", jobId);
-
-			RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, model.getId(), riskMode);
-            CompletableFuture.runAsync(() -> asyncService.startRecommendationTask(jobId, recaConfig, progress));
-
-            // Build the Location URI for the job status
-            URI locationUri = URI.create("/models/" + modelId + "/recommendations/status/" + jobId);
-
-             // Return 202 Accepted with a Location header
-            HttpHeaders headers = new HttpHeaders();
-            headers.setLocation(locationUri);
-
-            success = true;
-
-            JobResponseDTO response = new JobResponseDTO(jobId, "CREATED");
-
-            return ResponseEntity.accepted().headers(headers).body(response);
-
-        } catch (BadRequestErrorException e) {
-            logger.error("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
-            throw e;
-        } catch (Exception e) {
-            logger.error("Recommendations failed due to an error", e);
-            throw new InternalServerErrorException(
-                    "Finding recommendations failed. Please contact support for further assistance.");
-        } finally {
-            //always reset the flags even if the risk calculation crashes
-            model.finishedCalculatingRisks(success, rcMode, false);
-        }
-        
-    }
-
-	/**
-	 * This REST method generates a recommendation report
-	 *
-	 * @param modelId the String representation of the model object to seacrh
-	 * @param riskMode string indicating the prefered risk calculation mode
-	 * @return A JSON report containing recommendations
-     * @throws InternalServerErrorException   if an error occurs during report generation
-	 */
 	@GetMapping(value = "/models/{modelId}/recommendations")
     public ResponseEntity<JobResponseDTO> startRecommendationsTask(
             @PathVariable String modelId,
@@ -211,7 +109,7 @@ public class AsyncController {
 		}
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
-        Progress progress = modelObjectsHelper.getValidationProgressOfModel(model);
+        Progress progress = modelObjectsHelper.getTaskProgressOfModel("Recommendations", model);
         progress.updateProgress(0d, "Recommendations starting");
 
 		String mId = model.getId();
