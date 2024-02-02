@@ -217,8 +217,11 @@ public interface IQuerierDB {
      */
     void repairAssertedAssetPopulations();
     void repairCardinalityConstraints();
+    boolean updateAssertedLevel(LevelDB level, String twasURI, String model);
     boolean updateAssertedLevel(LevelDB level, TrustworthinessAttributeSetDB twas, String model);
+    boolean updateCoverageLevel(LevelDB level, String csURI, String model);
     boolean updateCoverageLevel(LevelDB level, ControlSetDB cs, String model);
+    boolean updateProposedStatus(Boolean status, String csURI, String model);
     boolean updateProposedStatus(Boolean status, ControlSetDB cs, String model);
 
     /**
