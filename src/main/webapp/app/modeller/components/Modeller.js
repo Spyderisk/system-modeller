@@ -193,6 +193,7 @@ class Modeller extends React.Component {
                                 hasModellingErrors={hasModellingErrors}
                                 isCalculatingRisks={this.props.model.calculatingRisks}
                                 isCalculatingRecommendations={this.props.model.calculatingRecommendations}
+                                recommendationsJobId={this.props.recommendationsJobId}
                                 isDroppingInferredGraph={this.props.isDroppingInferredGraph}
                                 isLoading={this.props.loading.model} loadingProgress={this.props.loadingProgress}
                                 dispatch={this.props.dispatch}/>
@@ -1015,6 +1016,7 @@ class Modeller extends React.Component {
 var mapStateToProps = function (state) {
     return {
         model: state.modeller.model,
+        recommendationsJobId: state.modeller.recommendationsJobId,
         recommendations: state.modeller.recommendations,
         movedAsset: state.modeller.movedAsset,
         groups: state.modeller.groups,
@@ -1069,6 +1071,7 @@ var mapStateToProps = function (state) {
  */
 Modeller.propTypes = {
     model: PropTypes.object,
+    recommendationsJobId: PropTypes.string,
     recommendations: PropTypes.object,
     movedAsset: PropTypes.bool,
     groups: PropTypes.array,

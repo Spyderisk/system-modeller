@@ -443,6 +443,30 @@ export function riskCalcFailed(modelId) {
     };
 }
 
+export function recommendationsCompleted(modelId, jobId) {
+    console.log("recommendationsCompleted");
+    return function (dispatch) {
+        dispatch({
+            type: instr.IS_NOT_CALCULATING_RECOMMENDATIONS,
+        });
+        axiosInstance
+            .get("/async/models/" + modelId + "/recommendations/result/" + jobId)
+            .then((response) => { 
+                dispatch({
+                    type: instr.RECOMMENDATIONS_RESULTS,
+                    payload: response.data
+                });
+                dispatch({
+                    type: instr.OPEN_WINDOW,
+                    payload: "recommendationsExplorer"
+                });
+            })
+            .catch((error) => {
+                console.log("Error:", error);
+            });
+    };
+}
+
 export function recommendationsFailed(modelId) {
     console.log("recommendationsFailed");
     return function (dispatch) {
@@ -1718,9 +1742,12 @@ export function getRecommendations(modelId, riskMode) {
         });
 
         axiosInstance
-            .get("/async/models/" + modelId + "/recommendations202", {params: {riskMode: riskMode}})
+            .get("/models/" + modelId + "/recommendations", {params: {riskMode: riskMode}})
             .then((response) => {
-                console.log("Recommendations job submitted: ", response.data);
+                dispatch({
+                    type: instr.RECOMMENDATIONS_JOB_STARTED,
+                    payload: response.data
+                });
             })
             .catch((error) => {
                 console.log("Error:", error);
