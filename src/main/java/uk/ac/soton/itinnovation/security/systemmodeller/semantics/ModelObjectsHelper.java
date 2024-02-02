@@ -339,7 +339,7 @@ public class ModelObjectsHelper {
 			}
 		}
 
-		logger.debug("Registering validation execution for model: {}", modelId);
+		logger.debug("Registering task execution for model: {}", modelId);
 		validationFutures.put(modelId, future);
 		return true;
 	}
@@ -362,7 +362,12 @@ public class ModelObjectsHelper {
 		return true;
 	}
 
-	public Progress getValidationProgressOfModel(Model model){
+	//Default method retuns validation progress
+	public Progress getValidationProgressOfModel(Model model) {
+		return getTaskProgressOfModel("Validation", model);
+	}
+
+	public Progress getTaskProgressOfModel(String name, Model model) {
 		String modelId = model.getId();
 		Progress validationProgress;
 		if (modelValidationProgress.containsKey(modelId)){
@@ -374,7 +379,7 @@ public class ModelObjectsHelper {
 
 		// No need to check execution if not yet running
 		if (! "running".equals(validationProgress.getStatus())) {
-			logger.info("Validation not running - not checking execution status");
+			logger.info("{} not running - not checking execution status", name);
 			return validationProgress;
 		}
 
@@ -385,23 +390,23 @@ public class ModelObjectsHelper {
 
 				try {
 					result = validationExecution.get();
-					logger.debug("Validation result: {}", result != null ? result.toString() : "null");
+					logger.debug("{} result: {}", name, result != null ? result.toString() : "null");
 					if ( (result == null) || (result.equals(false)) ) {
-						validationProgress.updateProgress(1.0, "Validation failed", "failed", "Unknown error");
+						validationProgress.updateProgress(1.0, name + " failed", "failed", "Unknown error");
 					}
 					else {
-						validationProgress.updateProgress(1.0, "Validation complete", "completed");
+						validationProgress.updateProgress(1.0, name + " complete", "completed");
 					}
 				} catch (InterruptedException ex) {
 					logger.error("Could not get validation progress", ex);
-					validationProgress.updateProgress(1.0, "Validation cancelled", "cancelled");
+					validationProgress.updateProgress(1.0, name + " cancelled", "cancelled");
 				} catch (ExecutionException ex) {
 					logger.error("Could not get validation progress", ex);
-					validationProgress.updateProgress(1.0, "Validation failed", "failed", ex.getMessage());
+					validationProgress.updateProgress(1.0, name + " failed", "failed", ex.getMessage());
 				}
 				
 				// Finally, remove the execution from the list
-				logger.debug("Unregistering validation execution for model: {}", modelId);
+				logger.info("Unregistering task execution for model: {}", modelId);
 				validationFutures.remove(modelId);
 				//KEM - don't remove the progress object here, as others requests still need access to this
 				//(e.g. another user may monitor validation progress)
@@ -409,10 +414,9 @@ public class ModelObjectsHelper {
 			}
 		}
 		else {
-			logger.warn("No registered execution for model validation: {}", modelId);
+			logger.warn("No registered execution for model {}: {}", name.toLowerCase(), modelId);
 		}
 
-		//logger.info("Validation progress: {}", validationProgress);
 		return validationProgress;
 	}
 	

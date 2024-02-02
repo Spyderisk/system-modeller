@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -53,8 +54,6 @@ import java.util.zip.GZIPOutputStream;
 
 import javax.naming.SizeLimitExceededException;
 import javax.servlet.http.HttpServletRequest;
-
-//import org.apache.jena.query.Dataset;
 
 import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
@@ -101,6 +100,7 @@ import uk.ac.soton.itinnovation.security.systemmodeller.model.Model;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.ModelFactory;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.WebKeyRole;
 import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.IModelRepository;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.AsyncController.JobResponseDTO;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.LoadingProgress;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.LoadingProgressResponse;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.ModelDTO;
@@ -121,6 +121,7 @@ import uk.ac.soton.itinnovation.security.systemmodeller.util.SecureUrlHelper;
 
 import uk.ac.soton.itinnovation.security.systemmodeller.model.RecommendationEntity;
 import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.RecommendationRepository;
+import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.AsyncService;
 import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.AsyncService.RecStatus;
 
 
@@ -152,6 +153,9 @@ public class ModelController {
 
 	@Autowired
 	private SecureUrlHelper secureUrlHelper;
+
+    @Autowired
+    private AsyncService asyncService;
 
 	@Value("${admin-role}")
 	public String adminRole;
@@ -754,7 +758,7 @@ public class ModelController {
 							RiskCalculationMode.values());
 		}
 		
-		Progress validationProgress = modelObjectsHelper.getValidationProgressOfModel(model);
+        Progress validationProgress = modelObjectsHelper.getTaskProgressOfModel("Risk calculation", model);
 		validationProgress.updateProgress(0d, "Risk calculation starting");
 		
 		logger.debug("Marking as calculating risks [{}] {}", modelId, model.getName());
@@ -839,7 +843,7 @@ public class ModelController {
 				return ResponseEntity.status(HttpStatus.OK).body(new RiskCalcResultsDB()); //TODO: may need to improve this
 			}
 
-			validationProgress = modelObjectsHelper.getValidationProgressOfModel(model);
+			validationProgress = modelObjectsHelper.getTaskProgressOfModel("Risk calculation", model);
 			validationProgress.updateProgress(0d, "Risk calculation starting");
 			
 			logger.debug("Marking as calculating risks [{}] {}", modelId, model.getName());
@@ -1253,7 +1257,7 @@ public class ModelController {
 
 		synchronized(this) {
 			final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
-			return ResponseEntity.status(HttpStatus.OK).body(modelObjectsHelper.getValidationProgressOfModel(model));
+			return ResponseEntity.status(HttpStatus.OK).body(modelObjectsHelper.getTaskProgressOfModel("Risk calculation", model));
 		}
 	}
 
@@ -1270,7 +1274,9 @@ public class ModelController {
 
 		synchronized(this) {
 			final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
-			return ResponseEntity.status(HttpStatus.OK).body(modelObjectsHelper.getValidationProgressOfModel(model));
+			Progress progress = modelObjectsHelper.getTaskProgressOfModel("Recommendations", model);
+			logger.info("{}", progress);
+			return ResponseEntity.status(HttpStatus.OK).body(progress);
 		}
 	}
 
@@ -1412,7 +1418,7 @@ public class ModelController {
 
 
 	/**
-	 * This REST method generates a recommendation report 
+	 * This REST method generates a recommendation report, as a blocking call
 	 *
 	 * @param modelId the String representation of the model object to seacrh
 	 * @param riskMode string indicating the prefered risk calculation mode
@@ -1456,7 +1462,7 @@ public class ModelController {
 				return ResponseEntity.status(HttpStatus.OK).body(new RecommendationReportDTO());
 			}
 
-			progress = modelObjectsHelper.getValidationProgressOfModel(model);
+			progress = modelObjectsHelper.getTaskProgressOfModel("Recommendations", model);
 			progress.updateProgress(0d, "Recommendations starting");
 
 			logger.debug("Marking as calculating risks [{}] {}", modelId, model.getName());
@@ -1513,5 +1519,112 @@ public class ModelController {
 			model.finishedCalculatingRisks(report != null, rcMode, false);
 		}
 	}
+
+	/**
+	 * This REST method generates a recommendation report, as an asynchronous call.
+	 * Results may be downloaded once this task has completed.
+	 *
+	 * @param modelId the String representation of the model object to seacrh
+	 * @param riskMode string indicating the prefered risk calculation mode
+	 * @return ACCEPTED status and jobId for the background task
+     * @throws InternalServerErrorException   if an error occurs during report generation
+	 */
+	@GetMapping(value = "/models/{modelId}/recommendations")
+    public ResponseEntity<JobResponseDTO> startRecommendationsTaskRed(
+            @PathVariable String modelId,
+            @RequestParam (defaultValue = "CURRENT") String riskMode) {
+
+        logger.info("Calculating recommendations for model {}", modelId);
+		riskMode = riskMode.replaceAll("[\n\r]", "_");
+        logger.info(" riskMode: {}",riskMode);
+
+        RiskCalculationMode rcMode;
+
+		try {
+            rcMode = RiskCalculationMode.valueOf(riskMode);
+		} catch (IllegalArgumentException e) {
+			logger.error("Found unexpected riskCalculationMode parameter value {}, valid values are: {}.",
+					riskMode, RiskCalculationMode.values());
+			throw new BadRequestErrorException("Invalid 'riskMode' parameter value " + riskMode +
+                        ", valid values are: " + Arrays.toString(RiskCalculationMode.values()));
+		}
+
+        final String rm = riskMode;
+
+		final Model model;
+		Progress progress;
+
+		synchronized(this) {
+			model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
+            String mId = model.getId();
+
+			if (model.isValidating()) {
+				logger.warn("Model {} is currently validating - ignoring request {}", mId, modelId);
+				return new ResponseEntity<>(HttpStatus.ACCEPTED);
+			}
+
+			if (model.isCalculatingRisks()) {
+				logger.warn("Model {} is already calculating risks - ignoring request {}", mId, modelId);
+				return new ResponseEntity<>(HttpStatus.ACCEPTED);
+			}
+
+			progress = modelObjectsHelper.getTaskProgressOfModel("Recommendations", model);
+			progress.updateProgress(0d, "Recommendations starting");
+
+			logger.debug("Marking as calculating risks [{}] {}", mId, model.getName());
+			model.markAsCalculatingRisks(rcMode, false);
+		} //synchronized block
+
+		AStoreWrapper store = storeModelManager.getStore();
+
+        logger.info("Creating async job for {}", modelId);
+        String jobId = UUID.randomUUID().toString();
+        logger.info("Submitting async job with id: {}", jobId);
+
+        ScheduledFuture<?> future = Executors.newScheduledThreadPool(1).schedule(() -> {
+            boolean success = false;
+
+            try {
+                logger.info("Initialising JenaQuerierDB");
+
+                JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
+                        model.getModelStack(), true);
+
+                querierDB.initForRiskCalculation();
+
+                logger.info("Calculating recommendations");
+
+                RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, model.getId(), rm);
+                asyncService.startRecommendationTask(jobId, recaConfig, progress);
+
+                success = true;
+            } catch (BadRequestErrorException e) {
+                logger.error("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
+                throw e;
+            } catch (Exception e) {
+                logger.error("Recommendations failed due to an error", e);
+                throw new InternalServerErrorException(
+                        "Finding recommendations failed. Please contact support for further assistance.");
+            } finally {
+                //always reset the flags even if the risk calculation crashes
+                model.finishedCalculatingRisks(success, rcMode, false);
+                progress.updateProgress(1.0, "Recommendations complete");
+            }
+			return true;
+		}, 0, TimeUnit.SECONDS);
+        
+		modelObjectsHelper.registerValidationExecution(model.getId(), future);
+
+        // Build the Location URI for the job status
+        URI locationUri = URI.create("/models/" + modelId + "/recommendations/status/" + jobId);
+
+        // Return 202 Accepted with a Location header
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(locationUri);
+
+        JobResponseDTO response = new JobResponseDTO(jobId, "CREATED");
+
+        return ResponseEntity.accepted().headers(headers).body(response);
+    }
 
 }
