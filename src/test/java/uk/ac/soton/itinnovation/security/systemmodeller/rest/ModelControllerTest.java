@@ -1428,7 +1428,7 @@ public class ModelControllerTest extends CommonTestSetup{
 	}
 
 	/**
-	 * Test calculating recommendations for model
+	 * Test calculating recommendations for model (blocking call)
 	 * Asserts OK 200 status
 	 */
 	@Test
@@ -1438,7 +1438,7 @@ public class ModelControllerTest extends CommonTestSetup{
 		given().
 			filter(userSession).
 		when().
-			get("/models/testModel/recommendations").
+			get("/models/testModel/recommendations_blocking").
 		then().
 			assertThat().statusCode(HttpStatus.SC_OK);
 	}
