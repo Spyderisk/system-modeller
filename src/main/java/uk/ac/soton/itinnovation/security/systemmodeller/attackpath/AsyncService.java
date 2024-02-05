@@ -43,6 +43,7 @@ import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.Recommendatio
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationReportDTO;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.RecommendationEntity;
 import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.RecommendationRepository;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.RiskModeMismatchException;
 
 @Service
 public class AsyncService {
@@ -79,8 +80,7 @@ public class AsyncService {
 			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(config);
 
             if (!reca.checkRiskCalculationMode(config.getRiskMode())) {
-                logger.error("mismatch in risk calculation mode found");
-                throw new Exception("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
+                throw new RiskModeMismatchException();
             }
 
             RecommendationReportDTO report = reca.recommendations(progress);

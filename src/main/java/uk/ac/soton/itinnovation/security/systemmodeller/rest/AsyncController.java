@@ -135,7 +135,6 @@ public class AsyncController {
             return ResponseEntity.ok(response);
 
         } catch (BadRequestErrorException e) {
-            logger.error("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
             throw e;
         } catch (Exception e) {
             logger.error("Threat path failed due to an error", e);

@@ -113,6 +113,7 @@ import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.ModelExc
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.ModelInvalidException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.NotAcceptableErrorException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.NotFoundErrorException;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.RiskModeMismatchException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.UnprocessableEntityException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.UserForbiddenFromDomainException;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
@@ -1400,8 +1401,7 @@ public class ModelController {
             }
 
             if (!apa.checkRiskCalculationMode(riskMode)) {
-                logger.error("mismatch in risk calculation mode found");
-                throw new BadRequestErrorException("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
+                throw new RiskModeMismatchException();
             }
 
             TreeJsonDoc treeDoc = apa.calculateAttackTreeDoc(targetURIs, riskMode, allPaths, normalOperations);
@@ -1412,7 +1412,7 @@ public class ModelController {
             logger.error("Threat graph calculation failed due to invalid misbehaviour set", e);
             throw e;
         } catch (BadRequestErrorException e) {
-            logger.error("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
+            logger.error(e.getMessage());
             throw e;
         } catch (Exception e) {
             logger.error("Threat path failed due to an error", e);
@@ -1488,8 +1488,7 @@ public class ModelController {
 			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(recaConfig);
 
             if (!reca.checkRiskCalculationMode(riskMode)) {
-                logger.error("mismatch in risk calculation mode found");
-                throw new BadRequestErrorException("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
+                throw new RiskModeMismatchException();
             }
 
             report = reca.recommendations(progress);
@@ -1506,7 +1505,7 @@ public class ModelController {
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(report);
 
         } catch (BadRequestErrorException e) {
-            logger.error("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
+            logger.error(e.getMessage());
             throw e;
         } catch (Exception e) {
             logger.error("Recommendations failed due to an error", e);
@@ -1590,7 +1589,7 @@ public class ModelController {
 
                 success = true;
             } catch (BadRequestErrorException e) {
-                logger.error("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
+				logger.error(e.getMessage());
                 throw e;
             } catch (Exception e) {
                 logger.error("Recommendations failed due to an error", e);
