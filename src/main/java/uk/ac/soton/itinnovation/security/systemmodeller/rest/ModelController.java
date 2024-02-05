@@ -1385,8 +1385,6 @@ public class ModelController {
         AStoreWrapper store = storeModelManager.getStore();
 
         try {
-            logger.info("Initialising JenaQuerierDB");
-
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), false);
 
@@ -1475,8 +1473,6 @@ public class ModelController {
 		RecommendationReportDTO report = null;
 
 		try {
-			logger.info("Initialising JenaQuerierDB");
-
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), true);
 
@@ -1582,8 +1578,6 @@ public class ModelController {
             boolean success = false;
 
             try {
-                logger.info("Initialising JenaQuerierDB");
-
                 JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                         model.getModelStack(), true);
 
