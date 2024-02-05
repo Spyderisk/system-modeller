@@ -106,6 +106,7 @@ import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.LoadingProgress
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.ModelDTO;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.UpdateModelResponse;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.BadRequestErrorException;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.BadRiskModeException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.InternalServerErrorException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.MisbehaviourSetInvalidException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.ModelException;
@@ -1376,10 +1377,7 @@ public class ModelController {
 		try {
             RiskCalculationMode.valueOf(riskMode);
 		} catch (IllegalArgumentException e) {
-			logger.error("Found unexpected riskCalculationMode parameter value {}, valid values are: {}.",
-					riskMode, RiskCalculationMode.values());
-			throw new BadRequestErrorException("Invalid 'riskMode' parameter value " + riskMode +
-                        ", valid values are: " + Arrays.toString(RiskCalculationMode.values()));
+			throw new BadRiskModeException(riskMode);
 		}
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
@@ -1448,10 +1446,7 @@ public class ModelController {
 		try {
             rcMode = RiskCalculationMode.valueOf(riskMode);
 		} catch (IllegalArgumentException e) {
-			logger.error("Found unexpected riskCalculationMode parameter value {}, valid values are: {}.",
-					riskMode, RiskCalculationMode.values());
-			throw new BadRequestErrorException("Invalid 'riskMode' parameter value " + riskMode +
-                        ", valid values are: " + Arrays.toString(RiskCalculationMode.values()));
+			throw new BadRiskModeException(riskMode);
 		}
 
 		final Model model;
@@ -1550,10 +1545,7 @@ public class ModelController {
 		try {
             rcMode = RiskCalculationMode.valueOf(riskMode);
 		} catch (IllegalArgumentException e) {
-			logger.error("Found unexpected riskCalculationMode parameter value {}, valid values are: {}.",
-					riskMode, RiskCalculationMode.values());
-			throw new BadRequestErrorException("Invalid 'riskMode' parameter value " + riskMode +
-                        ", valid values are: " + Arrays.toString(RiskCalculationMode.values()));
+			throw new BadRiskModeException(riskMode);
 		}
 
         final String rm = riskMode;

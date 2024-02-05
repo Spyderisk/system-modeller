@@ -30,6 +30,7 @@ import uk.ac.soton.itinnovation.security.systemmodeller.model.ModelFactory;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.WebKeyRole;
 import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.IModelRepository;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.BadRequestErrorException;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.BadRiskModeException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.InternalServerErrorException;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.StoreModelManager;
@@ -102,10 +103,7 @@ public class AsyncController {
 		try {
             RiskCalculationMode.valueOf(riskMode);
 		} catch (IllegalArgumentException e) {
-			logger.error("Found unexpected riskCalculationMode parameter value {}, valid values are: {}.",
-					riskMode, RiskCalculationMode.values());
-			throw new BadRequestErrorException("Invalid 'riskMode' parameter value " + riskMode +
-                        ", valid values are: " + Arrays.toString(RiskCalculationMode.values()));
+			throw new BadRiskModeException(riskMode);
 		}
 
         final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
