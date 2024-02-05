@@ -374,13 +374,8 @@ public class ModelObjectsHelper {
 
 	public Progress getTaskProgressOfModel(String name, Model model) {
 		String modelId = model.getId();
-		Progress progress;
-		if (taskProgress.containsKey(modelId)){
-			progress = taskProgress.get(modelId);
-		} else {
-			progress = new Progress(modelId);
-			taskProgress.put(modelId, progress);
-		}
+
+		Progress progress = getOrCreateTaskProgress(modelId);
 
 		// No need to check execution if not yet running
 		if (! "running".equals(progress.getStatus())) {
@@ -389,34 +384,8 @@ public class ModelObjectsHelper {
 		}
 
 		if (taskFutures.containsKey(modelId)) {
-			ScheduledFuture<?> validationExecution = taskFutures.get(modelId);
-			if (validationExecution.isDone()) {
-				Object result;
-
-				try {
-					result = validationExecution.get();
-					logger.debug("{} result: {}", name, result != null ? result.toString() : "null");
-					if ( (result == null) || (result.equals(false)) ) {
-						progress.updateProgress(1.0, name + " failed", FAILED, "Unknown error");
-					}
-					else {
-						progress.updateProgress(1.0, name + " complete", COMPLETED);
-					}
-				} catch (InterruptedException ex) {
-					logger.error("Could not get validation progress", ex);
-					progress.updateProgress(1.0, name + " cancelled", CANCELLED);
-				} catch (ExecutionException ex) {
-					logger.error("Could not get validation progress", ex);
-					progress.updateProgress(1.0, name + " failed", FAILED, ex.getMessage());
-				}
-				
-				// Finally, remove the execution from the list
-				logger.info("Unregistering task execution for model: {}", modelId);
-				taskFutures.remove(modelId);
-				//KEM - don't remove the progress object here, as others requests still need access to this
-				//(e.g. another user may monitor validation progress)
-				//modelValidationProgress.remove(modelId);
-			}
+			ScheduledFuture<?> taskExecution = taskFutures.get(modelId);
+			updateProgressWithTaskResult(taskExecution, name, modelId, progress);
 		}
 		else {
 			String lowerName = name.toLowerCase();
@@ -425,6 +394,49 @@ public class ModelObjectsHelper {
 
 		return progress;
 	}
+
+	private Progress getOrCreateTaskProgress(String modelId) {
+		Progress progress;
+
+		if (taskProgress.containsKey(modelId)){
+			progress = taskProgress.get(modelId);
+		} else {
+			progress = new Progress(modelId);
+			taskProgress.put(modelId, progress);
+		}
+
+		return progress;
+	}
+
+	private void updateProgressWithTaskResult(ScheduledFuture<?> taskExecution, String name, String modelId, Progress progress) {
+		if (taskExecution.isDone()) {
+			Object result;
+
+			try {
+				result = taskExecution.get();
+				logger.debug("{} result: {}", name, result != null ? result.toString() : "null");
+				if ( (result == null) || (result.equals(false)) ) {
+					progress.updateProgress(1.0, name + " failed", FAILED, "Unknown error");
+				}
+				else {
+					progress.updateProgress(1.0, name + " complete", COMPLETED);
+				}
+			} catch (InterruptedException ex) {
+				logger.error("Could not get task progress", ex);
+				progress.updateProgress(1.0, name + " cancelled", CANCELLED);
+			} catch (ExecutionException ex) {
+				logger.error("Could not get task progress", ex);
+				progress.updateProgress(1.0, name + " failed", FAILED, ex.getMessage());
+			}
+			
+			// Finally, remove the execution from the list
+			logger.info("Unregistering task execution for model: {}", modelId);
+			taskFutures.remove(modelId);
+			//KEM - don't remove the progress object here, as others requests still need access to this
+			//(e.g. another user may monitor validation progress)
+			//modelValidationProgress.remove(modelId);
+		}
+}
 	
 	public LoadingProgress createLoadingProgressOfModel(Model model, String loadingProgressID){
 
