@@ -102,8 +102,8 @@ public class ModelObjectsHelper {
 	private Map<String, Map<String, String>> modelAssetUris;
 	private Map<String, Set<Threat>> modelThreats;
 
-	private Map<String, Progress> modelValidationProgress;
-	private Map<String, ScheduledFuture<?>> validationFutures;
+	private Map<String, Progress> taskProgress;
+	private Map<String, ScheduledFuture<?>> taskFutures;
 	private HashMap<String, ScheduledFuture<?>> loadingFutures;
 
 	private Map<String, LoadingProgress> modelLoadingProgress;
@@ -115,6 +115,11 @@ public class ModelObjectsHelper {
 	
 	private List<String> defaultUserDomainModels; //TODO: persist in TDB instead
 
+	private static final String FAILED = "failed";
+	private static final String COMPLETED = "completed";
+	private static final String CANCELLED = "cancelled";
+
+
 	/**
 	 * Initialises this component.
 	 */
@@ -124,8 +129,8 @@ public class ModelObjectsHelper {
 		modelAssetIDs = new HashMap<>();
 		modelAssetUris = new HashMap<>();
 		modelThreats = new HashMap<>();
-		modelValidationProgress = new HashMap<>();
-		validationFutures = new HashMap<>();
+		taskProgress = new HashMap<>();
+		taskFutures = new HashMap<>();
 		loadingFutures = new HashMap<>();
 		modelLoadingProgress = new HashMap<>();
 		modelLocks = new HashMap<>();
@@ -326,21 +331,21 @@ public class ModelObjectsHelper {
 		assetUris.remove(id);
 	}
 	
-	public boolean registerValidationExecution(String modelId, ScheduledFuture<?> future) {
+	public boolean registerTaskExecution(String modelId, ScheduledFuture<?> future) {
 
-		if (validationFutures.containsKey(modelId)){
-			ScheduledFuture<?> validationExecution = validationFutures.get(modelId);
-			if (validationExecution.isDone()) {
-				logger.debug("Clearing previous validation execution");
+		if (taskFutures.containsKey(modelId)){
+			ScheduledFuture<?> taskExecution = taskFutures.get(modelId);
+			if (taskExecution.isDone()) {
+				logger.debug("Clearing previous task execution");
 				//TODO: tidy up previous execution
 			} else {
-				logger.warn("Validation execution already registered (still running)");
+				logger.warn("Task execution already registered (still running)");
 				return false;
 			}
 		}
 
 		logger.debug("Registering task execution for model: {}", modelId);
-		validationFutures.put(modelId, future);
+		taskFutures.put(modelId, future);
 		return true;
 	}
 
@@ -352,7 +357,7 @@ public class ModelObjectsHelper {
 				logger.debug("Clearing previous loading execution");
 				//TODO: tidy up previous execution
 			} else {
-				logger.warn("Validation execution already registered (still running)");
+				logger.warn("Loading execution already registered (still running)");
 				return false;
 			}
 		}
@@ -369,22 +374,22 @@ public class ModelObjectsHelper {
 
 	public Progress getTaskProgressOfModel(String name, Model model) {
 		String modelId = model.getId();
-		Progress validationProgress;
-		if (modelValidationProgress.containsKey(modelId)){
-			validationProgress = modelValidationProgress.get(modelId);
+		Progress progress;
+		if (taskProgress.containsKey(modelId)){
+			progress = taskProgress.get(modelId);
 		} else {
-			validationProgress = new Progress(modelId);
-			modelValidationProgress.put(modelId, validationProgress);
+			progress = new Progress(modelId);
+			taskProgress.put(modelId, progress);
 		}
 
 		// No need to check execution if not yet running
-		if (! "running".equals(validationProgress.getStatus())) {
+		if (! "running".equals(progress.getStatus())) {
 			logger.info("{} not running - not checking execution status", name);
-			return validationProgress;
+			return progress;
 		}
 
-		if (validationFutures.containsKey(modelId)) {
-			ScheduledFuture<?> validationExecution = validationFutures.get(modelId);
+		if (taskFutures.containsKey(modelId)) {
+			ScheduledFuture<?> validationExecution = taskFutures.get(modelId);
 			if (validationExecution.isDone()) {
 				Object result;
 
@@ -392,22 +397,22 @@ public class ModelObjectsHelper {
 					result = validationExecution.get();
 					logger.debug("{} result: {}", name, result != null ? result.toString() : "null");
 					if ( (result == null) || (result.equals(false)) ) {
-						validationProgress.updateProgress(1.0, name + " failed", "failed", "Unknown error");
+						progress.updateProgress(1.0, name + " failed", FAILED, "Unknown error");
 					}
 					else {
-						validationProgress.updateProgress(1.0, name + " complete", "completed");
+						progress.updateProgress(1.0, name + " complete", COMPLETED);
 					}
 				} catch (InterruptedException ex) {
 					logger.error("Could not get validation progress", ex);
-					validationProgress.updateProgress(1.0, name + " cancelled", "cancelled");
+					progress.updateProgress(1.0, name + " cancelled", CANCELLED);
 				} catch (ExecutionException ex) {
 					logger.error("Could not get validation progress", ex);
-					validationProgress.updateProgress(1.0, name + " failed", "failed", ex.getMessage());
+					progress.updateProgress(1.0, name + " failed", FAILED, ex.getMessage());
 				}
 				
 				// Finally, remove the execution from the list
 				logger.info("Unregistering task execution for model: {}", modelId);
-				validationFutures.remove(modelId);
+				taskFutures.remove(modelId);
 				//KEM - don't remove the progress object here, as others requests still need access to this
 				//(e.g. another user may monitor validation progress)
 				//modelValidationProgress.remove(modelId);
@@ -417,7 +422,7 @@ public class ModelObjectsHelper {
 			logger.warn("No registered execution for model {}: {}", name.toLowerCase(), modelId);
 		}
 
-		return validationProgress;
+		return progress;
 	}
 	
 	public LoadingProgress createLoadingProgressOfModel(Model model, String loadingProgressID){
@@ -456,24 +461,24 @@ public class ModelObjectsHelper {
 					result = loadingExecution.get();
 					logger.debug("Loading result: {}", result != null ? result.toString() : "null");
 					if ( (result == null) || (! (result instanceof Model)) ) {
-						loadingProgress.updateProgress(1.0, "Loading failed", "failed", "Unknown error", null);
+						loadingProgress.updateProgress(1.0, "Loading failed", FAILED, "Unknown error", null);
 					}
 					else {
-						loadingProgress.updateProgress(1.0, "Loading complete", "completed", "", (Model)result);
+						loadingProgress.updateProgress(1.0, "Loading complete", COMPLETED, "", (Model)result);
 					}
 				} catch (InterruptedException ex) {
 					logger.error("Could not get loading progress", ex);
-					loadingProgress.updateProgress(1.0, "Loading cancelled", "cancelled");
+					loadingProgress.updateProgress(1.0, "Loading cancelled", CANCELLED);
 				} catch (ExecutionException ex) {
 					Throwable cause = ex.getCause();
 					if (cause instanceof ModelException) {
 						ModelException me = (ModelException)cause;
 						logger.error("Model exception", me);
-						loadingProgress.updateProgress(1.0, "Model error", "failed", me.getMessage(), me.getModel());
+						loadingProgress.updateProgress(1.0, "Model error", FAILED, me.getMessage(), me.getModel());
 					}
 					else {
 						logger.error("Could not get loading progress", ex);
-						loadingProgress.updateProgress(1.0, "Loading failed", "failed", ex.getMessage(), null);
+						loadingProgress.updateProgress(1.0, "Loading failed", FAILED, ex.getMessage(), null);
 					}
 				}
 

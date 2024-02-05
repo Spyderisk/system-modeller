@@ -708,7 +708,7 @@ public class ModelController {
 			return true;
 		}, 0, TimeUnit.SECONDS);
 
-		modelObjectsHelper.registerValidationExecution(modelId, future);
+		modelObjectsHelper.registerTaskExecution(modelId, future);
 
 		return new ResponseEntity<>(HttpStatus.ACCEPTED);
 	}
@@ -797,7 +797,7 @@ public class ModelController {
 			return true;
 		}, 0, TimeUnit.SECONDS);
 
-		modelObjectsHelper.registerValidationExecution(modelId, future);
+		modelObjectsHelper.registerTaskExecution(modelId, future);
 
 		return new ResponseEntity<>(HttpStatus.ACCEPTED);
 	}
@@ -1600,7 +1600,7 @@ public class ModelController {
 			return true;
 		}, 0, TimeUnit.SECONDS);
         
-		modelObjectsHelper.registerValidationExecution(model.getId(), future);
+		modelObjectsHelper.registerTaskExecution(model.getId(), future);
 
         // Build the Location URI for the job status
         URI locationUri = URI.create("/models/" + modelId + "/recommendations/status/" + jobId);

@@ -248,7 +248,7 @@ public class ModelControllerTest extends CommonTestSetup{
 				.schedule(waitToBeStopped, 0, TimeUnit.NANOSECONDS);
 
 			// Register the task as if it were a validation or risk calculation.
-			modelHelper.registerValidationExecution(testModel.getId(), task);
+			modelHelper.registerTaskExecution(testModel.getId(), task);
 
 			// Set the progress message to the message passed in.
 			// The test that generated the message can then check it is returned by the REST endpoint.
