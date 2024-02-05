@@ -419,7 +419,8 @@ public class ModelObjectsHelper {
 			}
 		}
 		else {
-			logger.warn("No registered execution for model {}: {}", name.toLowerCase(), modelId);
+			String lowerName = name.toLowerCase();
+			logger.warn("No registered execution for model {}: {}", lowerName, modelId);
 		}
 
 		return progress;
