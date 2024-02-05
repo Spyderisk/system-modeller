@@ -163,6 +163,11 @@ public class ModelController {
 	@Value("${knowledgebases.install.folder}")
 	private String kbInstallFolder;
 
+	private static final String VALIDATION = "Validation";
+	private static final String RISK_CALCULATION = "Risk calculation";
+	private static final String RECOMMENDATIONS = "Recommendations";
+	private static final String STARTING = "starting";
+
 	/**
 	 * Take the user IDs of the model owner, editor and modifier and look up the current username for them
 	 */
@@ -264,6 +269,10 @@ public class ModelController {
 
 	private void warnIsValidating(String modelId, String modelWebkey) {
 		logger.warn("Model {} is currently validating - ignoring request {}", modelId, modelWebkey);
+	}
+
+	private void warnIsCalculatingRisks(String modelId, String modelWebkey) {
+		logger.warn("Model {} is already calculating risks - ignoring request {}", modelId, modelWebkey);
 	}
 
 	/**
@@ -653,17 +662,17 @@ public class ModelController {
 		String modelId = model.getId();
 
 		if (model.isValidating()) {
-			logger.warn("Model {} is already validating - ignoring request {}", modelId, modelWriteId);
+			warnIsValidating(modelId, modelWriteId);
 			return new ResponseEntity<>(HttpStatus.ACCEPTED);
 		}
 
 		if (model.isCalculatingRisks()) {
-			logger.warn("Model {} is already calculating risks - ignoring request {}", modelId, modelWriteId);
+			warnIsCalculatingRisks(modelId, modelWriteId);
 			return new ResponseEntity<>(HttpStatus.ACCEPTED);
 		}
 
 		Progress validationProgress = modelObjectsHelper.getValidationProgressOfModel(model);
-		validationProgress.updateProgress(0d, "Validation starting");
+		validationProgress.updateProgress(0d, VALIDATION + " " + STARTING);
 
 		logger.debug("Marking as validating model [{}] {}", modelId, model.getName());
 		model.markAsValidating();
@@ -746,7 +755,7 @@ public class ModelController {
 		}
 
 		if (model.isCalculatingRisks()) {
-			logger.warn("Model {} is already calculating risks - ignoring request {}", modelId, modelWriteId);
+			warnIsCalculatingRisks(modelId, modelWriteId);
 			return new ResponseEntity<>(HttpStatus.ACCEPTED);
 		}
 
@@ -762,10 +771,8 @@ public class ModelController {
 							RiskCalculationMode.values());
 		}
 		
-        Progress validationProgress = modelObjectsHelper.getTaskProgressOfModel("Risk calculation", model);
-		validationProgress.updateProgress(0d, "Risk calculation starting");
-		
-		logger.debug("Marking as calculating risks [{}] {}", modelId, model.getName());
+        Progress validationProgress = modelObjectsHelper.getTaskProgressOfModel(RISK_CALCULATION, model);
+		validationProgress.updateProgress(0d, RISK_CALCULATION + " " + STARTING);
 		model.markAsCalculatingRisks(rcMode, true);
 
 		ScheduledFuture<?> future = Executors.newScheduledThreadPool(1).schedule(() -> {
@@ -843,14 +850,12 @@ public class ModelController {
 			}
 
 			if (model.isCalculatingRisks()) {
-				logger.warn("Model {} is already calculating risks - ignoring request {}", modelId, modelWriteId);
+				warnIsCalculatingRisks(modelId, modelWriteId);
 				return ResponseEntity.status(HttpStatus.OK).body(new RiskCalcResultsDB());
 			}
 
-			validationProgress = modelObjectsHelper.getTaskProgressOfModel("Risk calculation", model);
-			validationProgress.updateProgress(0d, "Risk calculation starting");
-			
-			logger.debug("Marking as calculating risks [{}] {}", modelId, model.getName());
+			validationProgress = modelObjectsHelper.getTaskProgressOfModel(RISK_CALCULATION, model);
+			validationProgress.updateProgress(0d, RISK_CALCULATION + " " + STARTING);			
 			model.markAsCalculatingRisks(rcMode, save);
 		} //synchronized block
 
@@ -1261,7 +1266,7 @@ public class ModelController {
 
 		synchronized(this) {
 			final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
-			return ResponseEntity.status(HttpStatus.OK).body(modelObjectsHelper.getTaskProgressOfModel("Risk calculation", model));
+			return ResponseEntity.status(HttpStatus.OK).body(modelObjectsHelper.getTaskProgressOfModel(RISK_CALCULATION, model));
 		}
 	}
 
@@ -1278,7 +1283,7 @@ public class ModelController {
 
 		synchronized(this) {
 			final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
-			Progress progress = modelObjectsHelper.getTaskProgressOfModel("Recommendations", model);
+			Progress progress = modelObjectsHelper.getTaskProgressOfModel(RECOMMENDATIONS, model);
 			logger.info("{}", progress);
 			return ResponseEntity.status(HttpStatus.OK).body(progress);
 		}
@@ -1462,14 +1467,12 @@ public class ModelController {
 			}
 
 			if (model.isCalculatingRisks()) {
-				logger.warn("Model {} is already calculating risks - ignoring request {}", mId, modelId);
+				warnIsCalculatingRisks(mId, modelId);
 				return ResponseEntity.status(HttpStatus.OK).body(new RecommendationReportDTO());
 			}
 
-			progress = modelObjectsHelper.getTaskProgressOfModel("Recommendations", model);
-			progress.updateProgress(0d, "Recommendations starting");
-
-			logger.debug("Marking as calculating risks [{}] {}", modelId, model.getName());
+			progress = modelObjectsHelper.getTaskProgressOfModel(RECOMMENDATIONS, model);
+			progress.updateProgress(0d, RECOMMENDATIONS + " " + STARTING);
 			model.markAsCalculatingRisks(rcMode, false);
 		} //synchronized block
 
@@ -1568,14 +1571,12 @@ public class ModelController {
 			}
 
 			if (model.isCalculatingRisks()) {
-				logger.warn("Model {} is already calculating risks - ignoring request {}", mId, modelId);
+				warnIsCalculatingRisks(mId, modelId);
 				return new ResponseEntity<>(HttpStatus.ACCEPTED);
 			}
 
-			progress = modelObjectsHelper.getTaskProgressOfModel("Recommendations", model);
-			progress.updateProgress(0d, "Recommendations starting");
-
-			logger.debug("Marking as calculating risks [{}] {}", mId, model.getName());
+			progress = modelObjectsHelper.getTaskProgressOfModel(RECOMMENDATIONS, model);
+			progress.updateProgress(0d, RECOMMENDATIONS + " " + STARTING);
 			model.markAsCalculatingRisks(rcMode, false);
 		} //synchronized block
 
