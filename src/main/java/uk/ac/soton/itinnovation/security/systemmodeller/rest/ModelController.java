@@ -262,6 +262,10 @@ public class ModelController {
 		return models;
 	}
 
+	private void warnIsValidating(String modelId, String modelWebkey) {
+		logger.warn("Model {} is currently validating - ignoring request {}", modelId, modelWebkey);
+	}
+
 	/**
 	 * Returns a list of models for the current user. 
 	 *
@@ -737,7 +741,7 @@ public class ModelController {
 		String modelId = model.getId();
 
 		if (model.isValidating()) {
-			logger.warn("Model {} is currently validating - ignoring calc risks request {}", modelId, modelWriteId);
+			warnIsValidating(modelId, modelWriteId);
 			return new ResponseEntity<>(HttpStatus.ACCEPTED);
 		}
 
@@ -834,13 +838,13 @@ public class ModelController {
 			String modelId = model.getId();
 
 			if (model.isValidating()) {
-				logger.warn("Model {} is currently validating - ignoring calc risks request {}", modelId, modelWriteId);
-				return ResponseEntity.status(HttpStatus.OK).body(new RiskCalcResultsDB()); //TODO: may need to improve this
+				warnIsValidating(modelId, modelWriteId);
+				return ResponseEntity.status(HttpStatus.OK).body(new RiskCalcResultsDB());
 			}
 
 			if (model.isCalculatingRisks()) {
 				logger.warn("Model {} is already calculating risks - ignoring request {}", modelId, modelWriteId);
-				return ResponseEntity.status(HttpStatus.OK).body(new RiskCalcResultsDB()); //TODO: may need to improve this
+				return ResponseEntity.status(HttpStatus.OK).body(new RiskCalcResultsDB());
 			}
 
 			validationProgress = modelObjectsHelper.getTaskProgressOfModel("Risk calculation", model);
@@ -1453,7 +1457,7 @@ public class ModelController {
 			String mId = model.getId();
 			
 			if (model.isValidating()) {
-				logger.warn("Model {} is currently validating - ignoring calc risks request {}", mId, modelId);
+				warnIsValidating(mId, modelId);
 				return ResponseEntity.status(HttpStatus.OK).body(new RecommendationReportDTO());
 			}
 
@@ -1559,7 +1563,7 @@ public class ModelController {
             String mId = model.getId();
 
 			if (model.isValidating()) {
-				logger.warn("Model {} is currently validating - ignoring request {}", mId, modelId);
+				warnIsValidating(mId, modelId);
 				return new ResponseEntity<>(HttpStatus.ACCEPTED);
 			}
 
