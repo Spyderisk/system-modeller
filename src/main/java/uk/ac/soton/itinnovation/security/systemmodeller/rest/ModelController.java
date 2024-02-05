@@ -1412,7 +1412,6 @@ public class ModelController {
             logger.error("Threat graph calculation failed due to invalid misbehaviour set", e);
             throw e;
         } catch (BadRequestErrorException e) {
-            logger.error(e.getMessage());
             throw e;
         } catch (Exception e) {
             logger.error("Threat path failed due to an error", e);
@@ -1505,7 +1504,6 @@ public class ModelController {
             return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(report);
 
         } catch (BadRequestErrorException e) {
-            logger.error(e.getMessage());
             throw e;
         } catch (Exception e) {
             logger.error("Recommendations failed due to an error", e);
@@ -1589,7 +1587,6 @@ public class ModelController {
 
                 success = true;
             } catch (BadRequestErrorException e) {
-				logger.error(e.getMessage());
                 throw e;
             } catch (Exception e) {
                 logger.error("Recommendations failed due to an error", e);
