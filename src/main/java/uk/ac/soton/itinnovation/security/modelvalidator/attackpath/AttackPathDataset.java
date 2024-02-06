@@ -580,18 +580,8 @@ public class AttackPathDataset {
             Set<String> csTriplet = QuerierUtils.getControlTriplet(csURIa);
 
             for (String csURI : csTriplet) {
-                ControlSetDB cs = querier.getControlSet(csURI, "system");
-                if (cs == null) {
-                    cs = new ControlSetDB();
-                    cs.setUri(csURI);
-                }
                 logger.debug("     Set triplet {}: proposed -> {}", csURI, proposed);
-                cs.setProposed(proposed);
-
-                //querier.updateProposedStatus(proposed, cs, "system");
-
-                // check the triplet values to be the same
-                querier.store(cs, "system");
+                querier.updateProposedStatus(proposed, csURI, "system");
             }
 
         }
