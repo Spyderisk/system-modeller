@@ -1420,7 +1420,6 @@ public class ModelController {
         }
     }
 
-
 	/**
 	 * This REST method generates a recommendation report, as a blocking call
 	 *
@@ -1612,6 +1611,28 @@ public class ModelController {
         JobResponseDTO response = new JobResponseDTO(jobId, "CREATED");
 
         return ResponseEntity.accepted().headers(headers).body(response);
+    }
+
+    @GetMapping("/models/{modelId}/recommendations/status/{jobId}")
+    public ResponseEntity<RecStatus> checkRecJobStatus(
+            @PathVariable String modelId, @PathVariable String jobId) {
+
+        logger.info("Got request for jobId {} status", jobId);
+
+        return asyncService.getRecStatus(jobId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/models/{modelId}/recommendations/result/{jobId}")
+    public ResponseEntity<RecommendationReportDTO> downloadRecommendationsReport(
+            @PathVariable String modelId, @PathVariable String jobId) {
+
+        logger.debug("Got download request for jobId: {}", jobId);
+
+        return asyncService.getRecReport(jobId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
 }

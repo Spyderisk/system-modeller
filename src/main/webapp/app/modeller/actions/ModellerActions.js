@@ -450,7 +450,7 @@ export function recommendationsCompleted(modelId, jobId) {
             type: instr.IS_NOT_CALCULATING_RECOMMENDATIONS,
         });
         axiosInstance
-            .get("/async/models/" + modelId + "/recommendations/result/" + jobId)
+            .get("/models/" + modelId + "/recommendations/result/" + jobId)
             .then((response) => { 
                 dispatch({
                     type: instr.RECOMMENDATIONS_RESULTS,

@@ -63,8 +63,6 @@ public class AsyncController {
     @Autowired
     private AsyncService asyncService;
 
-	private final ModelObjectsHelper modelObjectsHelper;
-
     public static class JobResponseDTO {
         private String jobId;
         private String message;
@@ -78,92 +76,5 @@ public class AsyncController {
         public void setMessage(String msg) { this.message = msg; }
     }
 
-    @Autowired
-    public AsyncController(ModelObjectsHelper modelObjectsHelper) {
-        this.modelObjectsHelper = modelObjectsHelper;
-    }
-
-	/**
-	 * This REST method generates a recommendation report
-	 *
-	 * @param modelId the String representation of the model object to seacrh
-	 * @param riskMode string indicating the prefered risk calculation mode
-	 * @return A JSON report containing recommendations
-     * @throws InternalServerErrorException   if an error occurs during report generation
-	 */
-	@GetMapping(value = "/models/{modelId}/recommendations")
-    public ResponseEntity<JobResponseDTO> startRecommendationsTask(
-            @PathVariable String modelId,
-            @RequestParam (defaultValue = "CURRENT") String riskMode) {
-
-        logger.info("Calculating recommendations for model {}", modelId);
-		riskMode = riskMode.replaceAll("[\n\r]", "_");
-        logger.info(" riskMode: {}",riskMode);
-
-		try {
-            RiskCalculationMode.valueOf(riskMode);
-		} catch (IllegalArgumentException e) {
-			throw new BadRiskModeException(riskMode);
-		}
-
-        final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
-        Progress progress = modelObjectsHelper.getTaskProgressOfModel("Recommendations", model);
-        progress.updateProgress(0d, "Recommendations starting");
-
-		String mId = model.getId();
-
-        AStoreWrapper store = storeModelManager.getStore();
-
-        try {
-            JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
-                    model.getModelStack(), true);
-
-            querierDB.init();
-
-            logger.info("Calculating Recommendations");
-
-            logger.info("Creating async job for {}", modelId);
-
-            String jobId = UUID.randomUUID().toString();
-            logger.info("submitting async job with id: {}", jobId);
-
-			RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, mId, riskMode);
-            CompletableFuture.runAsync(() -> asyncService.startRecommendationTask(jobId, recaConfig, progress));
-
-            JobResponseDTO response = new JobResponseDTO(jobId, "CREATED");
-
-            return ResponseEntity.ok(response);
-
-        } catch (BadRequestErrorException e) {
-            throw e;
-        } catch (Exception e) {
-            logger.error("Threat path failed due to an error", e);
-            throw new InternalServerErrorException(
-                    "Finding recommendations failed. Please contact support for further assistance.");
-        }
-
-    }
-
-    @GetMapping("/models/{modelId}/recommendations/status/{jobId}")
-    public ResponseEntity<RecStatus> checkRecJobStatus(
-            @PathVariable String modelId, @PathVariable String jobId) {
-
-        logger.info("got request for jobId {} status", jobId);
-
-        return asyncService.getRecStatus(jobId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @GetMapping("/models/{modelId}/recommendations/result/{jobId}")
-    public ResponseEntity<RecommendationReportDTO> downloadRecommendationsReport(
-            @PathVariable String modelId, @PathVariable String jobId) {
-
-        logger.debug("got download request for jobId: {}", jobId);
-
-        return asyncService.getRecReport(jobId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
 }
 
