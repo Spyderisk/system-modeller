@@ -38,7 +38,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.UnexpectedException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -100,7 +99,7 @@ import uk.ac.soton.itinnovation.security.systemmodeller.model.Model;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.ModelFactory;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.WebKeyRole;
 import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.IModelRepository;
-import uk.ac.soton.itinnovation.security.systemmodeller.rest.AsyncController.JobResponseDTO;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.JobResponseDTO;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.LoadingProgress;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.LoadingProgressResponse;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.ModelDTO;
@@ -120,12 +119,10 @@ import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHe
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.StoreModelManager;
 import uk.ac.soton.itinnovation.security.systemmodeller.util.ReportGenerator;
 import uk.ac.soton.itinnovation.security.systemmodeller.util.SecureUrlHelper;
-
 import uk.ac.soton.itinnovation.security.systemmodeller.model.RecommendationEntity;
 import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.RecommendationRepository;
 import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.AsyncService;
 import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.AsyncService.RecStatus;
-
 
 /**
  * Includes all operations of the Model Controller Service.

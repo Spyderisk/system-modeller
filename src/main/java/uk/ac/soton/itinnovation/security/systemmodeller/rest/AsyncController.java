@@ -63,18 +63,6 @@ public class AsyncController {
     @Autowired
     private AsyncService asyncService;
 
-    public static class JobResponseDTO {
-        private String jobId;
-        private String message;
-        public JobResponseDTO(String jobId, String msg) {
-            this.jobId = jobId;
-            this.message = msg;
-        }
-        public String getJobId() { return this.jobId; }
-        public void setJobId(String jobid) { this.jobId = jobid; }
-        public String getMessage() { return this.message; }
-        public void setMessage(String msg) { this.message = msg; }
-    }
 
 }
 
