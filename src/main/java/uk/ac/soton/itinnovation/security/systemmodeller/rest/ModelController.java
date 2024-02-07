@@ -121,8 +121,8 @@ import uk.ac.soton.itinnovation.security.systemmodeller.util.ReportGenerator;
 import uk.ac.soton.itinnovation.security.systemmodeller.util.SecureUrlHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.RecommendationEntity;
 import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.RecommendationRepository;
-import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.AsyncService;
-import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.AsyncService.RecStatus;
+import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService;
+import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService.RecStatus;
 
 /**
  * Includes all operations of the Model Controller Service.
@@ -131,9 +131,6 @@ import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.AsyncService.
 public class ModelController {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
-
-    @Autowired
-    private RecommendationRepository recRepository;
 
 	@Autowired
 	private IModelRepository modelRepository;
@@ -154,7 +151,10 @@ public class ModelController {
 	private SecureUrlHelper secureUrlHelper;
 
     @Autowired
-    private AsyncService asyncService;
+    private RecommendationsService recommendationsService;
+
+    @Autowired
+    private RecommendationRepository recRepository;
 
 	@Value("${admin-role}")
 	public String adminRole;
@@ -1579,7 +1579,7 @@ public class ModelController {
                 logger.info("Calculating recommendations");
 
                 RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, model.getId(), rm);
-                asyncService.startRecommendationTask(jobId, recaConfig, progress);
+                recommendationsService.startRecommendationTask(jobId, recaConfig, progress);
 
                 success = true;
             } catch (BadRequestErrorException e) {
@@ -1616,7 +1616,7 @@ public class ModelController {
 
         logger.info("Got request for jobId {} status", jobId);
 
-        return asyncService.getRecStatus(jobId)
+        return recommendationsService.getRecStatus(jobId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -1627,7 +1627,7 @@ public class ModelController {
 
         logger.debug("Got download request for jobId: {}", jobId);
 
-        return asyncService.getRecReport(jobId)
+        return recommendationsService.getRecReport(jobId)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

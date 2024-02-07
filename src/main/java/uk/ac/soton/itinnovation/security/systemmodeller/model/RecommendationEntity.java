@@ -9,7 +9,7 @@ import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.Recommend
 
 import java.time.LocalDateTime;
 
-import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.AsyncService.RecStatus;
+import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService.RecStatus;
 
 @Document(collection = "recommendations")
 public class RecommendationEntity {

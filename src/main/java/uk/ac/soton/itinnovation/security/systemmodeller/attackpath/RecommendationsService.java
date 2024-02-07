@@ -41,9 +41,9 @@ import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.RecommendationRe
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.RiskModeMismatchException;
 
 @Service
-public class AsyncService {
+public class RecommendationsService {
 
-	private static final Logger logger = LoggerFactory.getLogger(AsyncService.class);
+	private static final Logger logger = LoggerFactory.getLogger(RecommendationsService.class);
 
     @Autowired
     private RecommendationRepository recRepository;

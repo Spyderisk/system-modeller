@@ -61,7 +61,7 @@ import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.RecommendationRe
 import uk.ac.soton.itinnovation.security.systemmodeller.model.RecommendationEntity;
 
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationReportDTO;
-import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.AsyncService.RecStatus;
+import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService.RecStatus;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = SystemModellerApplication.class)
