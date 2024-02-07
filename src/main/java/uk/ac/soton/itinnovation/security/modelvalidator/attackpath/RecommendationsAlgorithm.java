@@ -33,39 +33,20 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
 import uk.ac.soton.itinnovation.security.model.system.RiskVector;
 import uk.ac.soton.itinnovation.security.modelquerier.IQuerierDB;
-import uk.ac.soton.itinnovation.security.modelquerier.dto.ControlSetDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ModelDB;
 import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
-import uk.ac.soton.itinnovation.security.modelvalidator.RiskCalculator;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.LogicalExpression;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.AdditionalPropertyDTO;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.AssetDTO;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ConsequenceDTO;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ControlDTO;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ControlStrategyDTO;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationDTO;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationReportDTO;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.StateDTO;
-import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
-import uk.ac.soton.itinnovation.security.model.system.RiskVector;
-import uk.ac.soton.itinnovation.security.modelquerier.IQuerierDB;
-import uk.ac.soton.itinnovation.security.modelquerier.dto.ModelDB;
-import uk.ac.soton.itinnovation.security.modelquerier.dto.ControlDB;
-import uk.ac.soton.itinnovation.security.modelquerier.dto.ControlSetDB;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.LogicalExpression;
-import com.bpodgursky.jbool_expressions.And;
 import com.bpodgursky.jbool_expressions.Expression;
-import com.bpodgursky.jbool_expressions.Not;
-import com.bpodgursky.jbool_expressions.Or;
 import com.bpodgursky.jbool_expressions.Variable;
-import com.bpodgursky.jbool_expressions.parsers.ExprParser;
-import com.bpodgursky.jbool_expressions.rules.RuleSet;
 
 @Component
 public class RecommendationsAlgorithm {
