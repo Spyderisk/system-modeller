@@ -51,8 +51,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import uk.ac.soton.itinnovation.security.model.system.Asset;
 import uk.ac.soton.itinnovation.security.model.system.AssetGroup;
-import uk.ac.soton.itinnovation.security.model.system.ComplianceSet;
-import uk.ac.soton.itinnovation.security.model.system.ComplianceThreat;
 import uk.ac.soton.itinnovation.security.model.system.ControlSet;
 import uk.ac.soton.itinnovation.security.model.system.MetadataPair;
 import uk.ac.soton.itinnovation.security.model.system.Relation;
@@ -63,7 +61,6 @@ import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.AssetArrayDTO;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.ControlsAndThreatsResponse;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.CreateAssetResponse;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.DeleteAssetResponse;
-import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.DeleteRelationResponse;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.UpdateAsset;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.UpdateAssetCardinality;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.UpdateAssetResponse;

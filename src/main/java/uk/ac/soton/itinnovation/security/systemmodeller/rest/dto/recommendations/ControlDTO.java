@@ -22,13 +22,15 @@
 //      Created for Project :   Cyberkit4SME
 //
 /////////////////////////////////////////////////////////////////////////
-package uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto;
+package uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations;
 
 import lombok.Data;
 
 @Data
-public class AdditionalPropertyDTO {
-    private String key = "";
-    private String value = "";
+public class ControlDTO {
+    private String label;
+    private String description;
+    private String uri;
+    private AssetDTO asset;
+    private String action;
 }
-

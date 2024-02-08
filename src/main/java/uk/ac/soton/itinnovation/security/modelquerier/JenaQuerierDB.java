@@ -158,6 +158,8 @@ public class JenaQuerierDB implements IQuerierDB {
     }
 
     public void init(){
+        logger.info("Initialising JenaQuerierDB");
+
         final long startTime = System.currentTimeMillis();
 
         this.prefixMap = dataset.getNamedModel(stack.getGraph("core")).getNsPrefixMap();

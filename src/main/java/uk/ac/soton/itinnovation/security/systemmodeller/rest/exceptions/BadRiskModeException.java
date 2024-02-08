@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////
 //
-// © University of Southampton IT Innovation Centre, 2023
+// © University of Southampton IT Innovation Centre, 2024
 //
 // Copyright in this software belongs to University of Southampton
 // IT Innovation Centre of Gamma House, Enterprise Road,
@@ -17,21 +17,29 @@
 // PURPOSE, except where stated in the Licence Agreement supplied with
 // the software.
 //
-//      Created By:				Panos Melas
-//      Created Date:			2023-11-14
+//      Created By :            Ken Meacham
+//      Created Date :          05/02/2024
 //      Created for Project :   Cyberkit4SME
 //
 /////////////////////////////////////////////////////////////////////////
-package uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto;
+package uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions;
 
-import java.util.Set;
+import java.util.Arrays;
 
-import lombok.Data;
+import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
 
-@Data
-public class RecommendationDTO {
-    private int identifier;
-    private Set<ControlStrategyDTO> controlStrategies;
-    private Set<ControlDTO> controls;
-    private StateDTO state;
+/**
+ * BAD_REQUEST error indicating invalid riskMode
+ * Will present as an HTTP response.
+ */
+
+public class BadRiskModeException extends BadRequestErrorException {
+    public BadRiskModeException(String riskMode) {
+        super(createMessage(riskMode));
+    }
+
+    private static String createMessage(String riskMode) {
+        return(String.format("Invalid 'riskMode' parameter value: %s. Valid values are: %s", 
+            riskMode, Arrays.toString(RiskCalculationMode.values())));
+    }
 }

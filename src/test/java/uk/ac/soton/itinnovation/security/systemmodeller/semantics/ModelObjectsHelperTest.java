@@ -204,7 +204,7 @@ public class ModelObjectsHelperTest {
 			instantTaskFinished.countDown();
 		}), 0, TimeUnit.NANOSECONDS);
 
-		assertTrue(modelHelper.registerValidationExecution(mockModelId, instantTask));
+		assertTrue(modelHelper.registerTaskExecution(mockModelId, instantTask));
 
 		//Wait for instantTask to finish before attempting next register assertion
 		try {
@@ -236,10 +236,10 @@ public class ModelObjectsHelperTest {
 		}, 0, TimeUnit.NANOSECONDS);
 
 		//Task registered, still waiting for countdown call, returns true as no others running
-		assertTrue(modelHelper.registerValidationExecution(mockModelId, delayedTask));
+		assertTrue(modelHelper.registerTaskExecution(mockModelId, delayedTask));
 
 		//Returns false as task is already registered for this model
-		assertFalse(modelHelper.registerValidationExecution(mockModelId, instantTask));
+		assertFalse(modelHelper.registerTaskExecution(mockModelId, instantTask));
 
 		//Allowing task to finish, all threads concluded after this point
 		delayedTaskStart.countDown();
@@ -333,7 +333,7 @@ public class ModelObjectsHelperTest {
 			taskFinished.countDown();
 		}, 0, TimeUnit.NANOSECONDS);
 
-		modelHelper.registerValidationExecution(testModel.getId(), markRunningTask);
+		modelHelper.registerTaskExecution(testModel.getId(), markRunningTask);
 
 		//Wait for validation to be marked running and for thread to complete
 		try {

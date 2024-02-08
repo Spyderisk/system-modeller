@@ -4,8 +4,8 @@ import {Modal, Button, ProgressBar} from "react-bootstrap";
 import {
     pollForLoadingProgress, pollForValidationProgress, pollForRiskCalcProgress, pollForRecommendationsProgress,
     validationCompleted, validationFailed,
-    riskCalcCompleted, riskCalcFailed, changeSelectedAsset
-    //resetValidation
+    riskCalcCompleted, riskCalcFailed, changeSelectedAsset,
+    recommendationsCompleted, recommendationsFailed,
 } from "../../actions/ModellerActions";
 
 class LoadingOverlay extends React.Component {
@@ -267,7 +267,8 @@ class LoadingOverlay extends React.Component {
             }
             else if (this.props.validationProgress.progress >= 1.0) {
                 if (this.props.validationProgress.status === "completed") {
-                    console.warn("LoadingOverlay: recommendations progress completed");
+                    console.log("LoadingOverlay: recommendations progress completed");
+                    this.props.dispatch(recommendationsCompleted(this.props.modelId, this.props.recommendationsJobId));
                 }
                 else if (this.props.validationProgress.status === "failed") {
                     console.warn("LoadingOverlay: recommendations progress failed");
@@ -470,6 +471,7 @@ LoadingOverlay.propTypes = {
     isValidating: PropTypes.bool,
     isCalculatingRisks: PropTypes.bool,
     isCalculatingRecommendations: PropTypes.bool,
+    recommendationsJobId: PropTypes.string,
     isValid: PropTypes.bool,
     hasModellingErrors: PropTypes.bool,
     validationProgress: PropTypes.object,

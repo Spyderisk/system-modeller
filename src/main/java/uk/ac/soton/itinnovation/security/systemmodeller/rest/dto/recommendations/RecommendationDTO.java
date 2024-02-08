@@ -22,13 +22,16 @@
 //      Created for Project :   Cyberkit4SME
 //
 /////////////////////////////////////////////////////////////////////////
-package uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto;
+package uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations;
+
+import java.util.Set;
 
 import lombok.Data;
 
 @Data
-public class ControlStrategyDTO {
-    private String uri;
-    private String description;
-    private String category;
+public class RecommendationDTO {
+    private int identifier;
+    private Set<ControlStrategyDTO> controlStrategies;
+    private Set<ControlDTO> controls;
+    private StateDTO state;
 }

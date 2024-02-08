@@ -24,14 +24,9 @@
 
 package uk.ac.soton.itinnovation.security.modelvalidator.test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.jena.query.Dataset;
 import org.apache.jena.tdb.TDBFactory;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -49,23 +44,10 @@ import uk.ac.soton.itinnovation.security.modelquerier.JenaQuerierDB;
 import uk.ac.soton.itinnovation.security.modelquerier.SystemModelQuerier;
 import uk.ac.soton.itinnovation.security.modelquerier.SystemModelUpdater;
 import uk.ac.soton.itinnovation.security.modelquerier.util.TestHelper;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackPathAlgorithm;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithm;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithmConfig;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationReportDTO;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.TreeJsonDoc;
-
-import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
 import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
-import uk.ac.soton.itinnovation.security.modelvalidator.RiskCalculator;
-import uk.ac.soton.itinnovation.security.modelvalidator.Validator;
-
-import uk.ac.soton.itinnovation.security.model.system.MisbehaviourSet;
-import uk.ac.soton.itinnovation.security.systemmodeller.model.Model;
-
-import uk.ac.soton.itinnovation.security.modelquerier.dto.RiskCalcResultsDB;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations.RecommendationReportDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 

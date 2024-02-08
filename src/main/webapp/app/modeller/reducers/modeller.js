@@ -33,6 +33,7 @@ const modelState = {
         risksValid: false,
         riskCalculationMode: ""
     },
+    recommendationsJobId: null,
     recommendations: {},
     // Rayna: TODO - when the backend for groups is implemented, put this array in the model above.
     groups: [],
@@ -792,9 +793,6 @@ export default function modeller(state = modelState, action) {
 
 
     if (action.type === instr.IS_VALIDATING) {
-
-        console.log("modellerReducer: model is validating");
-
         return {
             ...state,
             model: {
@@ -814,9 +812,6 @@ export default function modeller(state = modelState, action) {
     }
 
     if (action.type === instr.IS_NOT_VALIDATING) {
-
-        console.log("modellerReducer: model is not validating");
-
         return {
             ...state,
             model: {
@@ -834,7 +829,6 @@ export default function modeller(state = modelState, action) {
     }
 
     if (action.type === instr.VALIDATION_FAILED) {
-
         console.log("modellerReducer: validation failed");
 
         return {
@@ -847,7 +841,6 @@ export default function modeller(state = modelState, action) {
     }
 
     if (action.type === instr.RISK_CALC_FAILED) {
-
         console.log("modellerReducer: risk calc failed");
 
         return {
@@ -860,7 +853,6 @@ export default function modeller(state = modelState, action) {
     }
 
     if (action.type === instr.RECOMMENDATIONS_FAILED) {
-
         console.log("modellerReducer: recommendationsc failed");
 
         return {
@@ -873,9 +865,6 @@ export default function modeller(state = modelState, action) {
     }
 
     if (action.type === instr.IS_CALCULATING_RISKS) {
-
-        console.log("modellerReducer: calculating risks for model");
-
         return {
             ...state,
             model: {
@@ -894,9 +883,6 @@ export default function modeller(state = modelState, action) {
     }
 
     if (action.type === instr.IS_NOT_CALCULATING_RISKS) {
-
-        console.log("modellerReducer: not calculating risks for model");
-
         return {
             ...state,
             model: {
@@ -910,16 +896,6 @@ export default function modeller(state = modelState, action) {
                 error: "",
                 waitingForUpdate: false
             },
-        };
-    }
-
-    if (action.type === instr.RECOMMENDATIONS_RESULTS) {
-        let recommendations = action.payload;
-        return {
-            ...state,
-            recommendations: recommendations,
-            isRecommendationsExplorerVisible: true,
-            isRecommendationsExplorerActive: true,
         };
     }
 
@@ -1125,6 +1101,25 @@ export default function modeller(state = modelState, action) {
                 error: "",
                 waitingForUpdate: false
             },
+        };
+    }
+
+    if (action.type === instr.RECOMMENDATIONS_JOB_STARTED) {
+        console.log("Recommendations job started: ", action.payload);
+        let jobId = action.payload.jobId;
+        return {
+            ...state,
+            recommendationsJobId: jobId
+        };
+    }
+
+    if (action.type === instr.RECOMMENDATIONS_RESULTS) {
+        let recommendations = action.payload;
+        return {
+            ...state,
+            recommendations: recommendations,
+            isRecommendationsExplorerVisible: true,
+            isRecommendationsExplorerActive: true,
         };
     }
 

@@ -24,15 +24,10 @@
 /////////////////////////////////////////////////////////////////////////
 package uk.ac.soton.itinnovation.security.systemmodeller.attackpath;
 
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.CompletableFuture;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -40,28 +35,18 @@ import java.util.Optional;
 import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithm;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithmConfig;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationReportDTO;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.RecommendationEntity;
 import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.RecommendationRepository;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations.RecommendationReportDTO;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.RiskModeMismatchException;
 
 @Service
-public class AsyncService {
+public class RecommendationsService {
 
-	private static final Logger logger = LoggerFactory.getLogger(AsyncService.class);
+	private static final Logger logger = LoggerFactory.getLogger(RecommendationsService.class);
 
     @Autowired
     private RecommendationRepository recRepository;
-
-    private void performRecommendationCalculation(String modelId, String riskMode) {
-        logger.debug("performRecommendationCalculation");
-        try {
-            Thread.sleep(50000);
-            logger.debug("finished long running job");
-        } catch (InterruptedException e) {
-            logger.debug("performRecommendationCalculation interrupted", e);
-            Thread.currentThread().interrupt();
-        }
-    }
 
     public void startRecommendationTask(String jobId, RecommendationsAlgorithmConfig config, Progress progress) {
 
@@ -79,8 +64,7 @@ public class AsyncService {
 			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(config);
 
             if (!reca.checkRiskCalculationMode(config.getRiskMode())) {
-                logger.error("mismatch in risk calculation mode found");
-                throw new Exception("mismatch between the stored and requested risk calculation mode, please run the risk calculation");
+                throw new RiskModeMismatchException();
             }
 
             RecommendationReportDTO report = reca.recommendations(progress);
@@ -91,30 +75,6 @@ public class AsyncService {
         } catch (Exception e) {
             updateRecStatus(jobId, RecStatus.FAILED);
         }
-    }
-
-    @Async
-    public CompletableFuture<String> startRecommendationTaskOut(String modelId, String riskMode) {
-
-        logger.debug("startRecommendationTask");
-        // create recEntry and save it to mongo db
-        RecommendationEntity recEntity = new RecommendationEntity();
-        recEntity.setStatus(RecStatus.STARTED);
-        recRepository.save(recEntity);
-
-        String jobId = recEntity.getId();
-        logger.debug("startRecommendationTask got jobId {}", jobId);
-
-        try {
-            performRecommendationCalculation(modelId, riskMode);
-
-            updateRecStatus(jobId, RecStatus.FINISHED);
-        } catch (Exception e) {
-            updateRecStatus(jobId, RecStatus.FAILED);
-        }
-
-        // Return the job ID immediately
-        return CompletableFuture.completedFuture(jobId);
     }
 
     public void updateRecStatus(String recId, RecStatus newStatus) {
@@ -148,7 +108,7 @@ public class AsyncService {
         return recRepository.findById(jobId);
     }
 
-    public static enum RecStatus {
+    public enum RecStatus {
         CREATED,
         STARTED,
         RUNNING,

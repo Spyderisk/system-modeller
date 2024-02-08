@@ -248,7 +248,7 @@ public class ModelControllerTest extends CommonTestSetup{
 				.schedule(waitToBeStopped, 0, TimeUnit.NANOSECONDS);
 
 			// Register the task as if it were a validation or risk calculation.
-			modelHelper.registerValidationExecution(testModel.getId(), task);
+			modelHelper.registerTaskExecution(testModel.getId(), task);
 
 			// Set the progress message to the message passed in.
 			// The test that generated the message can then check it is returned by the REST endpoint.
@@ -1428,7 +1428,7 @@ public class ModelControllerTest extends CommonTestSetup{
 	}
 
 	/**
-	 * Test calculating recommendations for model
+	 * Test calculating recommendations for model (blocking call)
 	 * Asserts OK 200 status
 	 */
 	@Test
@@ -1438,7 +1438,7 @@ public class ModelControllerTest extends CommonTestSetup{
 		given().
 			filter(userSession).
 		when().
-			get("/models/testModel/recommendations").
+			get("/models/testModel/recommendations_blocking").
 		then().
 			assertThat().statusCode(HttpStatus.SC_OK);
 	}

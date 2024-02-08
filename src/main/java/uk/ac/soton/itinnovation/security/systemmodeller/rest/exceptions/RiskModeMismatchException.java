@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////
 //
-// © University of Southampton IT Innovation Centre, 2023
+// © University of Southampton IT Innovation Centre, 2024
 //
 // Copyright in this software belongs to University of Southampton
 // IT Innovation Centre of Gamma House, Enterprise Road,
@@ -17,19 +17,20 @@
 // PURPOSE, except where stated in the Licence Agreement supplied with
 // the software.
 //
-//      Created By:				Panos Melas
-//      Created Date:			2023-11-14
+//      Created By :            Ken Meacham
+//      Created Date :          05/02/2024
 //      Created for Project :   Cyberkit4SME
 //
 /////////////////////////////////////////////////////////////////////////
-package uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto;
+package uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions;
 
-import java.util.List;
+/**
+ * BAD_REQUEST error indicating msimatch between stored and requested risk calculation modes
+ * Will present as an HTTP response.
+ */
 
-import lombok.Data;
-
-@Data
-public class StateDTO {
-    private String risk;
-    private List<ConsequenceDTO> consequences;
+public class RiskModeMismatchException extends BadRequestErrorException {
+    public RiskModeMismatchException() {
+        super("Mismatch between the stored and requested risk calculation mode, please run the risk calculation");
+    }
 }

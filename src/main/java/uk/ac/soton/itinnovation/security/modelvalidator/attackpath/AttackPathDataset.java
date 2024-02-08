@@ -52,10 +52,10 @@ import uk.ac.soton.itinnovation.security.modelquerier.dto.TrustworthinessAttribu
 import uk.ac.soton.itinnovation.security.modelquerier.util.QuerierUtils;
 import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
 import uk.ac.soton.itinnovation.security.modelvalidator.RiskCalculator;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.AssetDTO;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ConsequenceDTO;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ControlDTO;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.StateDTO;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations.AssetDTO;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations.ConsequenceDTO;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations.ControlDTO;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations.StateDTO;
 
 
 public class AttackPathDataset {
