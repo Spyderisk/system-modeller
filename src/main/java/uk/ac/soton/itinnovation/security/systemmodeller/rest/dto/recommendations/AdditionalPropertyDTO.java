@@ -22,14 +22,13 @@
 //      Created for Project :   Cyberkit4SME
 //
 /////////////////////////////////////////////////////////////////////////
-package uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto;
-
-import java.util.List;
+package uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations;
 
 import lombok.Data;
 
 @Data
-public class RecommendationReportDTO {
-    private StateDTO current;
-    private List<RecommendationDTO> recommendations;
+public class AdditionalPropertyDTO {
+    private String key = "";
+    private String value = "";
 }
+

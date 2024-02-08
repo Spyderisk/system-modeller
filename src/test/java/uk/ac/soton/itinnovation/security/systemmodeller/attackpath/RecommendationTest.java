@@ -54,13 +54,12 @@ import uk.ac.soton.itinnovation.security.systemmodeller.SystemModellerApplicatio
 import uk.ac.soton.itinnovation.security.systemmodeller.TestHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.IModelRepository;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.LoadingProgress;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations.RecommendationReportDTO;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.StoreModelManager;
 
 import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.RecommendationRepository;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.RecommendationEntity;
-
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationReportDTO;
 import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService.RecStatus;
 
 @RunWith(SpringRunner.class)

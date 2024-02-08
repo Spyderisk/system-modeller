@@ -40,11 +40,13 @@ import uk.ac.soton.itinnovation.security.model.system.RiskVector;
 import uk.ac.soton.itinnovation.security.modelquerier.IQuerierDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ModelDB;
 import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ControlDTO;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.ControlStrategyDTO;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationDTO;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationReportDTO;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.StateDTO;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations.CSGNode;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations.ControlDTO;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations.ControlStrategyDTO;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations.RecommendationDTO;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations.RecommendationReportDTO;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations.StateDTO;
+
 import com.bpodgursky.jbool_expressions.Expression;
 import com.bpodgursky.jbool_expressions.Variable;
 

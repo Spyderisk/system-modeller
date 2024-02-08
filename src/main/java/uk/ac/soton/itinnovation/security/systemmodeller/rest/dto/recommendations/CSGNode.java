@@ -22,14 +22,12 @@
 //      Created for Project :   Cyberkit4SME
 //
 /////////////////////////////////////////////////////////////////////////
-package uk.ac.soton.itinnovation.security.modelvalidator.attackpath;
+package uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.RecommendationDTO;
 
 public class CSGNode {
     private List<String> csgList;
