@@ -46,6 +46,7 @@ import uk.ac.soton.itinnovation.security.modelquerier.dto.ControlDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ControlSetDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ControlStrategyDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.LevelDB;
+import uk.ac.soton.itinnovation.security.modelquerier.dto.MisbehaviourDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.MisbehaviourSetDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ThreatDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.TrustworthinessAttributeSetDB;
@@ -650,16 +651,16 @@ public class AttackPathDataset {
             riskVector.put(ms.getRisk(), riskVector.get(ms.getRisk()) + 1);
             int threshold = riLevels.get("domain#RiskLevelMedium").getLevelValue();
             if (riLevels.get(ms.getRisk()).getLevelValue() >= threshold) {
+                MisbehaviourDB msdb = querier.getMisbehaviour(ms.getMisbehaviour(), "domain");
                 ConsequenceDTO consequence = new ConsequenceDTO();
+                consequence.setLabel(msdb.getLabel().replaceAll("(?<!^)([A-Z])", " $1"));
+                consequence.setDescription(msdb.getDescription());
                 consequence.setUri(ms.getUri());
                 consequence.setRisk(ms.getRisk());
                 consequence.setImpact(ms.getImpactLevel());
                 consequence.setLikelihood(ms.getPrior());
                 AssetDB asset = assets.get(ms.getLocatedAt());
-                AssetDTO assetDTO = new AssetDTO();
-                assetDTO.setUri(asset.getUri());
-                assetDTO.setType(asset.getType());
-                assetDTO.setLabel(asset.getLabel());
+                AssetDTO assetDTO = fillAssetDTO(asset.getUri());
                 consequence.setAsset(assetDTO);
                 consequences.add(consequence);
             }
