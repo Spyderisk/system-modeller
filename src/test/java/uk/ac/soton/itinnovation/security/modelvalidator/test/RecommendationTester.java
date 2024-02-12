@@ -154,10 +154,10 @@ public class RecommendationTester extends TestCase {
 			RecommendationReportDTO report = reca.recommendations(new Progress(config.getModelId()));
 
             // display recommendations in readable json format
-            //ObjectMapper objectMapper = new ObjectMapper();
-            //objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
-            //String json = objectMapper.writeValueAsString(report);
-            //logger.info("Recommendation report: {}", json);
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+            String json = objectMapper.writeValueAsString(report);
+            logger.info("Recommendation report: {}", json);
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Exception thrown by attack path recommendations");

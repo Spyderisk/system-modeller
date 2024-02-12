@@ -238,6 +238,7 @@ public class RecommendationsAlgorithm {
                 logger.debug("Risk calculation response: {}", riskResponse);
                 logger.debug("Overall model risk: {}", riskResponse.getOverall());
                 StateDTO state = apd.getState();
+                state.setRisk(riskResponse.toString());
 
                 recommendation = createRecommendation(csgList, csSet, state);
 
@@ -449,9 +450,8 @@ public class RecommendationsAlgorithm {
             progress.updateProgress(0.1, "Getting initial risk state");
             // get initial risk state
             RiskVector riskResponse = apd.calculateRisk(this.modelId, RiskCalculationMode.valueOf(riskMode));
-            apd.getState();
 
-            StateDTO state = new StateDTO();
+            StateDTO state = apd.getState();
             state.setRisk(riskResponse.toString());
             report.setCurrent(state);
 
