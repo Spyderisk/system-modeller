@@ -648,6 +648,7 @@ public class AttackPathDataset {
 
         List<ConsequenceDTO> consequences = new ArrayList<>();
         for (MisbehaviourSetDB ms : misbehaviourSets.values()) {
+
             riskVector.put(ms.getRisk(), riskVector.get(ms.getRisk()) + 1);
             int threshold = riLevels.get("domain#RiskLevelMedium").getLevelValue();
             if (riLevels.get(ms.getRisk()).getLevelValue() >= threshold) {
@@ -667,7 +668,7 @@ public class AttackPathDataset {
         }
 
         StateDTO state = new StateDTO();
-        state.setRisk(riskVector.toString());
+        state.setRisk(riskVector);
         state.setConsequences(consequences);
 
         return state;

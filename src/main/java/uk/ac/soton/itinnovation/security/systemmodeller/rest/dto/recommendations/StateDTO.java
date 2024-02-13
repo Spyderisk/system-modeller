@@ -25,11 +25,12 @@
 package uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations;
 
 import java.util.List;
+import java.util.Map;
 
 import lombok.Data;
 
 @Data
 public class StateDTO {
-    private String risk;
+    private Map<String, Integer> risk;
     private List<ConsequenceDTO> consequences;
 }

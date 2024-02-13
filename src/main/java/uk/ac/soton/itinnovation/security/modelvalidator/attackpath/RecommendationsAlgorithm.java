@@ -238,7 +238,6 @@ public class RecommendationsAlgorithm {
                 logger.debug("Risk calculation response: {}", riskResponse);
                 logger.debug("Overall model risk: {}", riskResponse.getOverall());
                 StateDTO state = apd.getState();
-                state.setRisk(riskResponse.toString());
 
                 recommendation = createRecommendation(csgList, csSet, state);
 
@@ -452,7 +451,6 @@ public class RecommendationsAlgorithm {
             RiskVector riskResponse = apd.calculateRisk(this.modelId, RiskCalculationMode.valueOf(riskMode));
 
             StateDTO state = apd.getState();
-            state.setRisk(riskResponse.toString());
             report.setCurrent(state);
 
             progress.updateProgress(0.2, "Calculating attack tree");
