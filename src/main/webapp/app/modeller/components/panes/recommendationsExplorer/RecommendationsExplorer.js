@@ -104,7 +104,7 @@ class RecommendationsExplorer extends React.Component {
                             return csg;
                         });
 
-                        csgsByName = new Map([...csgsByName.entries()].sort());
+                        csgsByName = new Map([...csgsByName.entries()].sort((a, b) => a.localeCompare(b)));
                         let csgsArray = Array.from(csgsByName);
 
                         return (
