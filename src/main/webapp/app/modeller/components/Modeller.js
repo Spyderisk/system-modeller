@@ -279,6 +279,8 @@ class Modeller extends React.Component {
                 />
 
                 <RecommendationsExplorer
+                    model={this.props.model}
+                    csgAssets={this.props.csgAssets}
                     selectedAsset={this.props.selectedAsset}
                     isActive={this.props.isRecommendationsExplorerActive} // is window displayed at front
                     recommendations={this.props.recommendations}
@@ -1034,6 +1036,7 @@ var mapStateToProps = function (state) {
         expanded: state.modeller.expanded,
         filters: state.modeller.filters,
         misbehaviourTwas: state.modeller.misbehaviourTwas,
+        csgAssets: state.modeller.csgAssets,
         isMisbehaviourExplorerVisible: state.modeller.isMisbehaviourExplorerVisible,
         isMisbehaviourExplorerActive: state.modeller.isMisbehaviourExplorerActive,
         isComplianceExplorerVisible: state.modeller.isComplianceExplorerVisible,
@@ -1089,6 +1092,7 @@ Modeller.propTypes = {
     expanded: PropTypes.object,
     filters: PropTypes.object,
     misbehaviourTwas: PropTypes.object,
+    csgAssets: PropTypes.object,
     isControlExplorerVisible: PropTypes.bool,
     isControlExplorerActive: PropTypes.bool,
     isControlStrategyExplorerVisible: PropTypes.bool,
