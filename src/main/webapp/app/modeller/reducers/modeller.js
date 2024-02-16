@@ -84,6 +84,7 @@ const modelState = {
         }
     },
     misbehaviourTwas: {},
+    csgAssets: {},
     isMisbehaviourExplorerVisible: false,
     isMisbehaviourExplorerActive: false,
     isComplianceExplorerVisible: false,
@@ -244,6 +245,9 @@ export default function modeller(state = modelState, action) {
             model.threats.forEach(threat => setThreatTriggeredStatus(threat, model.controlStrategies));
         }
 
+        //Get map of CSGs to asset
+        let csgAssets = getCsgAssets(model.threats);
+
         return {
             ...state,
             model: model,
@@ -256,7 +260,8 @@ export default function modeller(state = modelState, action) {
                 ...state.selectedMisbehaviour,
                 misbehaviour: misbehaviour,
             },
-            misbehaviourTwas: misbehaviourTwas
+            misbehaviourTwas: misbehaviourTwas,
+            csgAssets: csgAssets,
         };
     }
 
@@ -2352,6 +2357,21 @@ function getAttackPathThreatRefs(attackPathData) {
         .sort((a,b) => b[1] - a[1]).map((pair) => [prefix + pair[0], pair[1]]);
     console.log("modellerReducer: sorted attack path threats found ", sortedAttackThreats.length);
     return sortedAttackThreats;
+}
+
+//Generate map of Control Strategies to their associated asset
+function getCsgAssets(threats) {
+    let csgAssets = {};
+
+    threats.forEach(threat => {
+        let assetUri = threat.threatensAssets;
+        let threatCsgs = Object.keys(threat.controlStrategies);
+        threatCsgs.forEach(threatCsg => {
+            csgAssets[threatCsg] = assetUri;
+        });
+    });
+
+    return csgAssets;
 }
 
 function updateControlStrategies(threats, controlStrategies, controlSets) {
