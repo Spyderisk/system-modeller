@@ -16,6 +16,7 @@ class RecommendationsExplorer extends React.Component {
         this.renderContent = this.renderContent.bind(this);
         this.renderJson = this.renderJson.bind(this);
         this.renderRecommendations = this.renderRecommendations.bind(this);
+        this.renderNoRecommendations = this.renderNoRecommendations.bind(this);
         this.getRiskVector = this.getRiskVector.bind(this);
         this.getHighestRiskLevel = this.getHighestRiskLevel.bind(this);
         this.getAssetByUri = this.getAssetByUri.bind(this);
@@ -82,6 +83,7 @@ class RecommendationsExplorer extends React.Component {
         return (
             <div className="content">
                 <p>Current risk: {currentRiskLevel.label}</p>
+                {!recommendations ? this.renderNoRecommendations() : 
                 <div className="panel-group accordion">
                     {recommendations.map((rec, index) => {
                         let id = rec.identifier;
@@ -127,9 +129,15 @@ class RecommendationsExplorer extends React.Component {
                             </Panel>
                         );
                     })}
-                </div>
+                </div>}
             </div>
         )
+    }
+
+    renderNoRecommendations() {
+        return (
+            <p>The are no current recommendations for reducing the system model risk any further.</p>
+        );
     }
 
     getRiskVector(reportedRisk) {
