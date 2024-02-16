@@ -215,6 +215,7 @@ RecommendationsExplorer.propTypes = {
     loading: PropTypes.object,
     dispatch: PropTypes.func,
     windowOrder: PropTypes.number,
+    authz: PropTypes.object,
 };
 
 let mapStateToProps = function (state) {

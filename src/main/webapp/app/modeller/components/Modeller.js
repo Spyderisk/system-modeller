@@ -288,6 +288,7 @@ class Modeller extends React.Component {
                     onHide={this.closeRecommendationsExplorer}
                     loading={this.props.loading}
                     dispatch={this.props.dispatch}
+                    authz={this.props.authz}
                 />
 
                 <Canvas ref="tile-canvas"
