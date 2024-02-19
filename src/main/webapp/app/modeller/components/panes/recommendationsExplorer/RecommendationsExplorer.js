@@ -108,7 +108,7 @@ class RecommendationsExplorer extends React.Component {
                         let csgsArray = Array.from(csgsByName);
 
                         return (
-                            <Panel key={id} bsStyle="primary">
+                            <Panel key={id} bsStyle="primary" defaultExpanded>
                                 <Panel.Heading>
                                     <Panel.Title toggle>
                                         <p>Recommendation {id}</p>
