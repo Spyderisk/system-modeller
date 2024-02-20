@@ -20,6 +20,18 @@ class RecommendationsExplorer extends React.Component {
         this.getRiskVector = this.getRiskVector.bind(this);
         this.getHighestRiskLevel = this.getHighestRiskLevel.bind(this);
         this.getAssetByUri = this.getAssetByUri.bind(this);
+        this.getRiskVectorString = this.getRiskVectorString.bind(this);
+        this.compareRiskVectors = this.compareRiskVectors.bind(this);
+
+        //Map of risk level URIs to short level tags (e.g. "Very High" = "VH")
+        //These are currently used to generate the brief risk vector summary
+        this.riskLevelTags = {
+            "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#RiskLevelVeryHigh": "VH",
+            "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#RiskLevelHigh": "H",
+            "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#RiskLevelMedium": "M",
+            "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#RiskLevelLow": "L",
+            "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#RiskLevelVeryLow": "VL"
+        };
 
         this.state = {
         }
@@ -74,9 +86,21 @@ class RecommendationsExplorer extends React.Component {
             return null;
         }
 
-        let recommendations = report.recommendations;
         let currentRiskVector = this.getRiskVector(report.current.risk);
         let currentRiskLevel = this.getHighestRiskLevel(currentRiskVector);
+        let recommendations = report.recommendations;
+
+        if (recommendations) {
+            recommendations.forEach(rec => {
+                let state = rec.state;
+                let riskVector = this.getRiskVector(state.risk);
+                state.riskVector = riskVector;
+            });
+
+            recommendations.sort((a, b) => {
+                return this.compareRiskVectors(b.state.riskVector, a.state.riskVector); //sort descending risk vector
+            });
+        }
 
         let csgAssets = this.props.csgAssets;
 
@@ -90,6 +114,7 @@ class RecommendationsExplorer extends React.Component {
                         let reccsgs = rec.controlStrategies;
                         let state = rec.state;
                         let riskVector = this.getRiskVector(state.risk);
+                        let riskVectorString = this.getRiskVectorString(riskVector); //TODO display this only as a tooltip? (see usage below)
                         let riskLevel = this.getHighestRiskLevel(riskVector);
                         let csgsByName = new Map();
 
@@ -116,7 +141,7 @@ class RecommendationsExplorer extends React.Component {
                                 </Panel.Heading>
                                 <Panel.Collapse>
                                     <Panel.Body>
-                                        <p>Residual risk: {riskLevel.label}</p>
+                                        <p>Residual risk: {riskLevel.label} ({riskVectorString})</p>
                                         <p>Control Strategies</p>
                                         <ControlStrategiesPanel dispatch={this.props.dispatch}
                                             modelId={this.props.model["id"]}
@@ -153,6 +178,7 @@ class RecommendationsExplorer extends React.Component {
         let riskVector = shortUris.map(shorturi => {
             let uri = Constants.URI_PREFIX + shorturi;
             let riskLevel = riskLevelsMap[uri];
+            riskLevel["labelShort"] = this.riskLevelTags[uri];
             let riskLevelCount = {level: riskLevel, count: reportedRisk[shorturi]}
             return riskLevelCount;
         });
@@ -171,6 +197,28 @@ class RecommendationsExplorer extends React.Component {
         });
 
         return riskVector;
+    }
+
+    //e.g. "VL: 695, L: 0, M: 1, H: 0, VH: 0"
+    getRiskVectorString(riskVector) {
+        let strArr = riskVector.map(riskLevelCount => {
+            let level = riskLevelCount.level;
+            return [level.labelShort, riskLevelCount.count].join(": ");
+        });
+
+        return strArr.join(", ");
+    }
+
+    //Compare risk vectors (assumes arrays are pre-sorted)
+    compareRiskVectors(rva, rvb) {
+        let compare = 0;
+        for (let i = rva.length -1; i >= 0; i--) {
+            compare = rva[i].count - rvb[i].count;
+            if (compare !== 0) {
+                return compare;
+            }
+        }
+        return compare;
     }
 
     //Get highest risk level from given risk vector
