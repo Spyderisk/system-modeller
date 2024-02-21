@@ -106,9 +106,11 @@ class RecommendationsExplorer extends React.Component {
 
         return (
             <div className="content">
-                <p>Current risk: {currentRiskLevel.label}</p>
+                <div className="desc">
+                    <p>Current risk: {currentRiskLevel.label}</p>
+                </div>
                 {!recommendations ? this.renderNoRecommendations() : 
-                <div className="panel-group accordion">
+                <div className="panel-group accordion recommendations">
                     {recommendations.map((rec, index) => {
                         let id = rec.identifier;
                         let reccsgs = rec.controlStrategies;
@@ -136,7 +138,7 @@ class RecommendationsExplorer extends React.Component {
                             <Panel key={id} bsStyle="primary" defaultExpanded>
                                 <Panel.Heading>
                                     <Panel.Title toggle>
-                                        <p>Recommendation {id}</p>
+                                        <span>Recommendation {id}</span>
                                     </Panel.Title>
                                 </Panel.Heading>
                                 <Panel.Collapse>
