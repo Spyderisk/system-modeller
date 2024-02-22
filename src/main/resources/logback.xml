@@ -34,10 +34,13 @@
 
     <!-- Add all logging from IT Innovation code to the log file -->
     <logger name="uk.ac.soton.itinnovation.security" level="debug"><appender-ref ref="LOGGING"/></logger>
-    <logger name="uk.ac.soton.itinnovation.security.systemmodeller" level="debug"></logger>
+    <logger name="uk.ac.soton.itinnovation.security.systemmodeller" level="info"></logger>
     <logger name="uk.ac.soton.itinnovation.security.semanticstore" level="info"></logger>
-    <logger name="uk.ac.soton.itinnovation.security.modelvalidator" level="info"></logger>
+    <logger name="uk.ac.soton.itinnovation.security.modelvalidator" level="warn"></logger>
     <logger name="uk.ac.soton.itinnovation.security.modelquerier" level="info"></logger>
+    <logger name="uk.ac.soton.itinnovation.security.modelvalidator.attackpath" level="debug"></logger>
+    <logger name="uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackNode" level="info"></logger>
+    <logger name="uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackPathDataset" level="info"></logger>
 
     <!-- Set log levels for 3rd party packages -->
     <logger name="org.apache.catalina.startup.DigesterFactory" level="ERROR"/>

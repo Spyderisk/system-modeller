@@ -168,18 +168,20 @@ public class RecommendationsAlgorithm {
         return attackTree;
     }
 
+    private CSGNode applyCSGs(LogicalExpression le) {
+        CSGNode node = new CSGNode();
+        return applyCSGs(le, node, "");
+    }
+
     /**
      * Build CSG recommendations tree
      * @param le
      * @param myNode
+     * @param parentStep - for logging
      * @return 
      */
-    private CSGNode applyCSGs(LogicalExpression le, CSGNode myNode) {
-        logger.debug("applyCSGs() recursive method");
-
-        if (myNode == null) {
-            myNode = new CSGNode();
-        }
+    private CSGNode applyCSGs(LogicalExpression le, CSGNode myNode, String parentStep) {
+        logger.debug("applyCSGs() recursive method with parentStep: {}", parentStep);
 
         // convert LE to DNF
         le.applyDNF(300);
@@ -192,20 +194,25 @@ public class RecommendationsAlgorithm {
             logger.debug("   └──> {}", csgOption);
         }
 
+        int csgOptionCounter = 0;
+
         // examine CSG options
         for (Expression csgOption : csgOptions) {
-            logger.debug("examining CSG LE option: {}", csgOption);
 
-            List<Variable> options = le.getListFromAnd(csgOption);
+            csgOptionCounter++;
+            String myStep = String.format("%s%d/%d", parentStep.equals("") ? "" : parentStep + "-", csgOptionCounter, csgOptions.size());
+            logger.debug("examining CSG LE option {}: {}", myStep, csgOption);
+
+            List<Variable> options = LogicalExpression.getListFromAnd(csgOption);
 
             List<String> csgList = new ArrayList<>();
 
             for (Variable va : options) {
                 csgList.add(va.toString());
             }
-            logger.debug("CSG flattened list: {}", csgList);
+            logger.debug("CSG flattened list ({}): {}", csgList.size(), csgList);
 
-            logger.debug("adding a child CSGNode with {} csgs", csgList.size());
+            // logger.debug("adding a child CSGNode with {} csgs", csgList.size());
             CSGNode childNode = new CSGNode(csgList);
             myNode.addChild(childNode);
 
@@ -225,7 +232,7 @@ public class RecommendationsAlgorithm {
 
             // apply all CS in the CS_set
             if (csSet.isEmpty()) {
-                logger.debug("EMPTY csSet is found, skipping iteration");
+                logger.warn("EMPTY csSet is found, skipping iteration");
                 continue;
             }
             apd.changeCS(csSet, true);
@@ -259,13 +266,13 @@ public class RecommendationsAlgorithm {
             // check if risk has improved or teminate iteration?
             logger.debug("check for a termination condition for ID {}", recommendation.getIdentifier());
             if ((riskResponse != null) & (apd.compareOverallRiskToMedium(riskResponse.getOverall()))) {
-                logger.info("Termination condition reached for this option");
+                logger.info("Termination condition reached for {}", myStep);
             } else {
                 logger.debug("Risk is still higher than Medium");
-                logger.info("Recalculate nested attack path tree (for a lower level?) ...");
+                logger.info("Recalculating nested attack path tree");
                 AttackTree nestedAttackTree = calcAttackTree("domain#RiskLevelMedium");
                 LogicalExpression nestedLogicalExpression = nestedAttackTree.attackMitigationCSG();
-                this.applyCSGs(nestedLogicalExpression, childNode);
+                applyCSGs(nestedLogicalExpression, childNode, myStep);
             }
 
             // undo CS changes in CS_set
@@ -273,10 +280,10 @@ public class RecommendationsAlgorithm {
             apd.changeCS(csSet, false);
             apd.calculateRisk(this.modelId, RiskCalculationMode.valueOf(riskMode));
 
-            logger.debug("return from examining CSG LE option: {}", csgOption);
+            logger.debug("Finished examining CSG LE option {}: {}", myStep, csgOption);
         }
 
-        logger.debug("return from applyCSGs() iteration");
+        logger.debug("return from applyCSGs() iteration with parentStep: {}", parentStep);
 
         return myNode;
     }
@@ -462,7 +469,7 @@ public class RecommendationsAlgorithm {
 
             // step: rootNode?
             progress.updateProgress(0.3, "Applying control strategies");
-            CSGNode rootNode = applyCSGs(attackMitigationCSG, new CSGNode());
+            CSGNode rootNode = applyCSGs(attackMitigationCSG);
 
             // step: makeRecommendations on rootNode?
             logger.debug("MAKE RECOMMENDATIONS");

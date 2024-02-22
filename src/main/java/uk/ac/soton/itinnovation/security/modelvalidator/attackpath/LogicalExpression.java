@@ -148,18 +148,16 @@ public class LogicalExpression {
     public List<Expression> getListFromOr() {
         List<Expression> retVal = new ArrayList<>();
         if (this.cause == null) {
-            logger.debug("Logical Expression cause is none, cannot find mitigation CSG");
+            logger.warn("Logical Expression cause is none");
         } else if (this.cause instanceof Or) {
             for (Expression expr : this.cause.getChildren()) {
                 retVal.add(expr);
             }
         } else if (this.cause instanceof And) {
-            for (Expression expr : this.cause.getChildren()) {
-                retVal.add(expr);
-                logger.debug("convert CSG And option, adding {}", expr);
-            }
+            logger.warn("Logical Expression cause is And when Or was expected");
+            retVal.add(this.cause);
         } else {
-            logger.debug("convert_CSG_options: Logical Expression operator not supported");
+            logger.error("Logical Expression operator not supported: {}", this.cause);
         }
 
         return retVal;
@@ -170,19 +168,17 @@ public class LogicalExpression {
      * @param expression
      * @return 
      */
-    public List<Variable> getListFromAnd(Expression expression) {
+    public static List<Variable> getListFromAnd(Expression expression) {
         List<Variable> retVal = new ArrayList<>();
 
         if (expression instanceof And) {
             for (Object obj : expression.getChildren()) {
-                if (obj instanceof Variable) {
-                    retVal.add((Variable)obj);
-                }
+                retVal.add((Variable)obj);
             }
         } else if (expression instanceof Variable) {
-           retVal.add((Variable)expression);
+            retVal.add((Variable)expression);
         } else {
-            logger.debug("convert_CSG_options: Logical Expression operator {} not supported", expression);
+            logger.error("Logical Expression operator not supported: {}", expression);
         }
         return retVal;
     }
@@ -191,7 +187,7 @@ public class LogicalExpression {
      * Display logical expression in terms of Variables
      */
     public void displayExpression() {
-        logger.debug("CSG LogicalExpression has the followng terms:");
+        logger.debug("CSG LogicalExpression has the following terms:");
         parse(this.cause, 0);
     }
 

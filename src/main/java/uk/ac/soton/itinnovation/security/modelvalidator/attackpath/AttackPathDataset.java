@@ -111,6 +111,8 @@ public class AttackPathDataset {
         assets = querier.getAssets("system", "system-inf");
 
         updateDatasets();
+        // // Load system model control sets as well
+        // controlSets = querier.getControlSets("system-inf");
 
         final long endTime = System.currentTimeMillis();
         logger.info("AttackPathDataset.AttackPathDataset(IQuerierDB querier): execution time {} ms",
@@ -569,10 +571,7 @@ public class AttackPathDataset {
     }
 
     public void changeCS(Set<String> csSet, boolean proposed) {
-        logger.info("changeCS list: {}", csSet);
-
-        String logMessage = proposed ? "enabling" : "disabling";
-        logger.debug("{} CS for {} controls:", logMessage, csSet.size());
+        logger.info("changeCS list ({} {}): {}", proposed ? "enabling" : "disabling", csSet.size(), csSet);
 
         for (String csURIa : csSet) {
 
@@ -587,6 +586,8 @@ public class AttackPathDataset {
 
         }
 
+        // // Load system model control sets
+        // controlSets = querier.getControlSets("system-inf");
     }
 
     public RiskVector calculateRisk(String modelId, RiskCalculationMode riskMode) throws RuntimeException {
