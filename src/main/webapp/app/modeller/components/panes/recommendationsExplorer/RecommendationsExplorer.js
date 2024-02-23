@@ -47,9 +47,9 @@ class RecommendationsExplorer extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        this.state = {
+        this.setState({...this.state,
             updatingControlSets: {}
-        }
+        });
     }
 
     render() {
@@ -179,7 +179,9 @@ class RecommendationsExplorer extends React.Component {
 
     renderNoRecommendations() {
         return (
-            <p>The are no current recommendations for reducing the system model risk any further.</p>
+            <div className="desc">
+                <p>There are no current recommendations for reducing the system model risk any further.</p>
+            </div>
         );
     }
 
@@ -297,7 +299,6 @@ class RecommendationsExplorer extends React.Component {
         if (arg.hasOwnProperty("control")) {
             //Here we still want to keep the currently selected asset, not change to the asset referred to in the updatedControl
             this.props.dispatch(updateControlOnAsset(this.props.model.id, arg.control.assetId, arg.control));
-            return;
         }
     }
 
