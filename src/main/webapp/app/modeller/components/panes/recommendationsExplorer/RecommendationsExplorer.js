@@ -7,6 +7,10 @@ import 'react-json-view-lite/dist/index.css';
 import Explorer from "../common/Explorer";
 import ControlStrategiesPanel from "../details/accordion/panels/ControlStrategiesPanel";
 import * as Constants from "../../../../common/constants.js";
+import {renderControlSet} from "../csgExplorer/ControlStrategyRenderer";
+import {
+    updateControlOnAsset,
+} from "../../../../modeller/actions/ModellerActions";
 
 class RecommendationsExplorer extends React.Component {
 
@@ -17,11 +21,14 @@ class RecommendationsExplorer extends React.Component {
         this.renderJson = this.renderJson.bind(this);
         this.renderRecommendations = this.renderRecommendations.bind(this);
         this.renderNoRecommendations = this.renderNoRecommendations.bind(this);
+        this.renderControlSets = this.renderControlSets.bind(this);
+        this.getControlSets = this.getControlSets.bind(this);
         this.getRiskVector = this.getRiskVector.bind(this);
         this.getHighestRiskLevel = this.getHighestRiskLevel.bind(this);
         this.getAssetByUri = this.getAssetByUri.bind(this);
         this.getRiskVectorString = this.getRiskVectorString.bind(this);
         this.compareRiskVectors = this.compareRiskVectors.bind(this);
+        this.updateThreat = this.updateThreat.bind(this);
 
         //Map of risk level URIs to short level tags (e.g. "Very High" = "VH")
         //These are currently used to generate the brief risk vector summary
@@ -34,8 +41,15 @@ class RecommendationsExplorer extends React.Component {
         };
 
         this.state = {
+            updatingControlSets: {}
         }
 
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.state = {
+            updatingControlSets: {}
+        }
     }
 
     render() {
@@ -151,6 +165,8 @@ class RecommendationsExplorer extends React.Component {
                                             displayAssetName={true}
                                             authz={this.props.authz}
                                         />
+                                        <p style={{marginTop: "10px"}}>Controls</p>
+                                        {this.renderControlSets(rec.controls)}
                                     </Panel.Body>
                                 </Panel.Collapse>
                             </Panel>
@@ -165,6 +181,33 @@ class RecommendationsExplorer extends React.Component {
         return (
             <p>The are no current recommendations for reducing the system model risk any further.</p>
         );
+    }
+
+    renderControlSets(controls) {
+        let controlSets = this.getControlSets(controls);
+        controlSets.sort((a, b) => a["label"].localeCompare(b["label"]));
+
+        return (
+            <div>
+                {controlSets.map((control, index) => {
+                    control.optional = false; //assume recommendation does not suggest optional controls
+                    let asset = control["assetUri"] ? this.getAssetByUri(control["assetUri"]) : {label: "Unknown"}
+                    let assetName = asset.label;
+                    return renderControlSet(control, index, null, true, assetName, this.props, this.state, this);
+                })}
+            </div>
+        );
+    }
+
+    getControlSets(controls) {
+        let modelControlSets = this.props.controlSets;
+        let controlSets = controls.map(control => {
+            let csuri = Constants.URI_PREFIX + control.uri;
+            let cs = modelControlSets[csuri];
+            return cs;
+        });
+
+        return controlSets;
     }
 
     getRiskVector(reportedRisk) {
@@ -248,6 +291,16 @@ class RecommendationsExplorer extends React.Component {
         });
         return asset;
     }
+
+    updateThreat(arg) {
+        //this is to enable a single control in a control strategy
+        if (arg.hasOwnProperty("control")) {
+            //Here we still want to keep the currently selected asset, not change to the asset referred to in the updatedControl
+            this.props.dispatch(updateControlOnAsset(this.props.model.id, arg.control.assetId, arg.control));
+            return;
+        }
+    }
+
 }
 
 function shouldExpandRecommendationsNode(level) {
@@ -256,6 +309,7 @@ function shouldExpandRecommendationsNode(level) {
 
 RecommendationsExplorer.propTypes = {
     model: PropTypes.object,
+    controlSets: PropTypes.object,
     csgAssets: PropTypes.object,
     selectedAsset: PropTypes.object,
     isActive: PropTypes.bool, // is in front of other panels

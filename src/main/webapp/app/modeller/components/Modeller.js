@@ -280,6 +280,7 @@ class Modeller extends React.Component {
 
                 <RecommendationsExplorer
                     model={this.props.model}
+                    controlSets={controlSetsMap}
                     csgAssets={this.props.csgAssets}
                     selectedAsset={this.props.selectedAsset}
                     isActive={this.props.isRecommendationsExplorerActive} // is window displayed at front
