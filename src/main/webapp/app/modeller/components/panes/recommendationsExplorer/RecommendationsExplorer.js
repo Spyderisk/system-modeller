@@ -10,6 +10,7 @@ import * as Constants from "../../../../common/constants.js";
 import {renderControlSet} from "../csgExplorer/ControlStrategyRenderer";
 import {
     updateControlOnAsset,
+    updateControls,
 } from "../../../../modeller/actions/ModellerActions";
 
 class RecommendationsExplorer extends React.Component {
@@ -29,6 +30,7 @@ class RecommendationsExplorer extends React.Component {
         this.getRiskVectorString = this.getRiskVectorString.bind(this);
         this.compareRiskVectors = this.compareRiskVectors.bind(this);
         this.updateThreat = this.updateThreat.bind(this);
+        this.toggleRecommendationControls = this.toggleRecommendationControls.bind(this);
 
         //Map of risk level URIs to short level tags (e.g. "Very High" = "VH")
         //These are currently used to generate the brief risk vector summary
@@ -167,6 +169,12 @@ class RecommendationsExplorer extends React.Component {
                                         />
                                         <p style={{marginTop: "10px"}}>Controls</p>
                                         {this.renderControlSets(rec.controls)}
+                                        <p style={{marginTop: "10px"}}>
+                                            <label>
+                                                Select all recommendation controls: &nbsp;
+                                                <input type="checkbox" id={id} onClick={(e) => this.props.authz.userEdit ? this.toggleRecommendationControls(id) : undefined}/>
+                                            </label>
+                                        </p>
                                     </Panel.Body>
                                 </Panel.Collapse>
                             </Panel>
@@ -299,6 +307,28 @@ class RecommendationsExplorer extends React.Component {
         if (arg.hasOwnProperty("control")) {
             //Here we still want to keep the currently selected asset, not change to the asset referred to in the updatedControl
             this.props.dispatch(updateControlOnAsset(this.props.model.id, arg.control.assetId, arg.control));
+        }
+    }
+
+    toggleRecommendationControls(recid) {
+        console.log("toggleRecommendationControls: ", recid);
+        let proposed = $("#"+ recid).is(":checked"); //is recommendation checked?
+        console.log("recommendation " + recid + " proposed:", proposed);
+        let report = this.props.recommendations; //get recommendations report
+        let rec = report.recommendations.find((rec) => rec["identifier"] === recid);
+
+        if (rec) {
+            console.log("Recommendation:", rec);
+
+            let controlsToUpdate = rec.controls.map(control => {
+                return Constants.URI_PREFIX + control.uri;
+            });
+
+            console.log("Updating controlds:", controlsToUpdate, proposed);
+            this.props.dispatch(updateControls(this.props.model.id, controlsToUpdate, proposed, proposed)); //set WIP flag only if proposed is true
+        }
+        else {
+            console.warn("Could not locate recommendation: ", id);
         }
     }
 
