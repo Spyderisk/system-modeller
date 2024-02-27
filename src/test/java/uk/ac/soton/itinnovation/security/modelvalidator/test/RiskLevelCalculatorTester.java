@@ -365,7 +365,7 @@ public class RiskLevelCalculatorTester extends TestCase {
 		try {
 			logger.info("Validating the model - ensures no dependence on bugs in older SSM validators");
 			Validator validator = new Validator(querierDB);
-			validator.validate(new Progress(tester.getGraph("system")));
+			validator.validate(new Progress(tester.getGraph("system")), true);
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail("Exception thrown by validator preparing attack path test case");

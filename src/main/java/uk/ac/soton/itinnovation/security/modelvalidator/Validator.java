@@ -146,10 +146,9 @@ public class Validator {
         this.graphNodeMap = getGraphNodeMap();
     }
 
-    /** Perform a full validation and persist results to the database. This method is not
-     *  actually used, because the DesignTimeValidator orchestrates the sequence itself.
+    /** Perform a full validation and optionally persist results to the database.
      */
-    public void validate(Progress progress) {
+    public void validate(Progress progress, boolean saveResults) {
         progress.updateProgress(0.0, "Repairing asserted system model");
         logger.info("Repairing asserted system model");
         repairAssertedSystemModel();
@@ -180,9 +179,16 @@ public class Validator {
         logger.info("Generating control strategies");
         createControlStrategies();
 
-        progress.updateProgress(0.9, "Persisting model to database");
-        logger.info("Persisting model to database");
-        querier.sync("system-inf");
+        /** Only synchronise to the triple store if the flag is set.
+         *  In some situations we may want to run a validation and risk calculation using
+         *  the same querier, without serializing between the two, e.g., in some unit test
+         *  scenarios.
+         */
+        if(saveResults) {
+            progress.updateProgress(0.9, "Persisting model to database");
+            logger.info("Persisting model to database");
+            querier.sync("system-inf");
+        }
 
     }
 

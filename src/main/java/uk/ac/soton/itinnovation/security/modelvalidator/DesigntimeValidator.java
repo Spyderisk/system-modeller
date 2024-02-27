@@ -96,8 +96,9 @@ public class DesigntimeValidator extends AValidator {
 			querierDB.initForValidation();
 
 			// We no longer have a domain specific 'reasoner', so we can do this in one call
+			// In this situation, the results should be persisted to the triple store
 			Validator validator = new Validator(querierDB);
-			validator.validate(progress);
+			validator.validate(progress, true);
 
 			//write metadata information
 			logger.info("Setting created date");
