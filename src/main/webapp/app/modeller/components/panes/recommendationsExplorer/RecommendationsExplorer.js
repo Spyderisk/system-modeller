@@ -171,7 +171,7 @@ class RecommendationsExplorer extends React.Component {
                                         {this.renderControlSets(rec.controls)}
                                         <p style={{marginTop: "10px"}}>
                                             <label>
-                                                Select all recommendation controls: &nbsp;
+                                                {'Select all recommendation controls: '}
                                                 <input type="checkbox" id={id} onClick={(e) => this.props.authz.userEdit ? this.toggleRecommendationControls(id) : undefined}/>
                                             </label>
                                         </p>
