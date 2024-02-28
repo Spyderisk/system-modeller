@@ -154,7 +154,7 @@ class RecommendationsExplorer extends React.Component {
                             <Panel key={id} bsStyle="primary" defaultExpanded>
                                 <Panel.Heading>
                                     <Panel.Title toggle>
-                                        <span>Recommendation {id}</span>
+                                        <span>Recommendation {index + 1}</span>
                                     </Panel.Title>
                                 </Panel.Heading>
                                 <Panel.Collapse>
