@@ -22,18 +22,22 @@
 //      Created for Project :   Cyberkit4SME
 //
 /////////////////////////////////////////////////////////////////////////
-package uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations;
+package uk.ac.soton.itinnovation.security.modelvalidator.attackpath;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import uk.ac.soton.itinnovation.security.model.system.RiskVector;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations.RecommendationDTO;
+
 public class CSGNode {
     private List<String> csgList;
     private Set<String> csList;
     private List<CSGNode> children;
     private RecommendationDTO recommendation;
+    private int greaterEqualLess;
 
     public CSGNode() {
         this(new ArrayList<>());
@@ -75,5 +79,13 @@ public class CSGNode {
 
     public void setRecommendation(RecommendationDTO rec) {
         this.recommendation = rec;
+    }
+
+    public void setGreaterEqualLess(int val) {
+        greaterEqualLess = val;
+    }
+
+    public int getGreaterEqualLess() {
+        return greaterEqualLess;
     }
 }

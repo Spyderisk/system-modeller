@@ -88,8 +88,16 @@ public class AttackPathAlgorithm {
     }
 
     public boolean checkTargetUris(List<String> targetUris) {
-        boolean retVal = true;
         logger.debug("Checking submitted list of target URIs: {}", targetUris);
+
+        boolean retVal = true;
+
+        // Check if the list is null or empty
+        if (targetUris == null || targetUris.isEmpty()) {
+            logger.warn("The list of target URIs is null or empty.");
+            return false;
+        }
+
         if (!apd.checkMisbehaviourList(targetUris)) {
             logger.error("shortest path, target MS URI not valid");
             retVal = false;

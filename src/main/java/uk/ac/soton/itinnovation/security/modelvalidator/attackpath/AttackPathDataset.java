@@ -48,6 +48,7 @@ import uk.ac.soton.itinnovation.security.modelquerier.dto.ControlStrategyDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.LevelDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.MisbehaviourDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.MisbehaviourSetDB;
+import uk.ac.soton.itinnovation.security.modelquerier.dto.ModelDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ThreatDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.TrustworthinessAttributeSetDB;
 import uk.ac.soton.itinnovation.security.modelquerier.util.QuerierUtils;
@@ -177,7 +178,7 @@ public class AttackPathDataset {
             return requestedMode == RiskCalculationMode.FUTURE;
         } catch (IllegalArgumentException e) {
             // TODO: throw an exception
-            logger.error("Found unexpected riskCalculationMode parameter value {}.", input);
+            logger.warn("Found unexpected riskCalculationMode parameter value {}.", input);
             return false;
         }
     }
@@ -401,47 +402,30 @@ public class AttackPathDataset {
         }
     }
 
-    public List<String> filterMisbehaviours() throws RuntimeException {
-        return filterMisbehaviours("domain#RiskLevelMedium");
-    }
 
-    public List<String> filterMisbehaviours(String riskLevel) throws RuntimeException {
+    public List<String> filterMisbehaviours(String acceptableRiskLevel) {
         /*
-         * compare MS by risk then likelihood, and return MS with likelihood or risk >= MEDIUM
+         * compare MS by risk, and return MS with risk > acceptableRiskLevel
          */
 
         List<String> msUris = new ArrayList<>();
 
-        try {
-            logger.debug("filtering misbehaviour sets...");
+        logger.debug("filtering misbehaviour sets...");
 
-            List<MisbehaviourSetDB> msSorted = new ArrayList<>(misbehaviourSets.values());
+        //TODO simplify and remove sorting.
 
-            Comparator<MisbehaviourSetDB> comparator = Comparator.comparing(MisbehaviourSetDB::getRisk)
-                    .thenComparing(MisbehaviourSetDB::getPrior);
-
-            msSorted.sort(comparator);
-
-            int threshold = riLevels.get(riskLevel).getLevelValue();
-            List<MisbehaviourSetDB> msFiltered = msSorted.stream()
-                    .filter(ms -> riLevels.get(ms.getRisk()).getLevelValue() >= threshold).collect(Collectors.toList());
-
-            for (MisbehaviourSetDB ms : msFiltered) {
-                AssetDB asset = assets.get(ms.getLocatedAt());
-                logger.debug("filtered MS:   {} \t-> risk {} prior {} at {}", ms.getUri().substring(7),
-                        ms.getRisk().substring(7), ms.getPrior().substring(7), asset.getLabel());
+        int acceptableThreshold = riLevels.get(acceptableRiskLevel).getLevelValue();
+        for (MisbehaviourSetDB ms : misbehaviourSets.values()) {
+            if ( riLevels.get(ms.getRisk()).getLevelValue() > acceptableThreshold) {
                 msUris.add(ms.getUri());
             }
-
-            logger.debug("filtered MS sets size: {}/{}", msUris.size(), misbehaviourSets.size());
-
-        } catch (Exception e) {
-            logger.error("got an error filtering misbehaviours: {}", e.getMessage());
-            throw new RuntimeException("got an error filtering misbehavours", e);
         }
+
+        logger.debug("filtered MS sets size: {}/{}", msUris.size(), misbehaviourSets.size());
 
         return msUris;
     }
+
 
     public boolean isExternalCause(String uri) {
         if (misbehaviourSets.containsKey(uri)) {
@@ -529,9 +513,41 @@ public class AttackPathDataset {
         return "";
     }
 
+    /**
+     * Check risk calculation mode is the same as the requested one
+     * @param input
+     * @return 
+     */
+    public boolean checkRiskCalculationMode(String input) {
+        ModelDB model = querier.getModelInfo("system");
+        logger.info("Model info: {}", model);
+
+        RiskCalculationMode modelRiskCalculationMode;
+        RiskCalculationMode requestedMode;
+
+        try {
+            logger.info("riskCalculationMode: {}", model.getRiskCalculationMode());
+            modelRiskCalculationMode = model.getRiskCalculationMode() != null ? RiskCalculationMode.valueOf(model.getRiskCalculationMode()) : null;
+            requestedMode = RiskCalculationMode.valueOf(input);
+
+            return modelRiskCalculationMode == requestedMode;
+
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    public boolean checkRiskLevelKey(String riskKey) {
+        return riLevels.containsKey(riskKey);
+    }
+
     // check MS list exists, no point going futher
     public boolean checkMisbehaviourList(List<String> misbehaviours) {
         boolean retVal = true;
+
+        if (misbehaviours == null || misbehaviours.isEmpty()) {
+            return false;
+        }
 
         for (String misb : misbehaviours) {
             if (!this.isMisbehaviourSet(misb)) {
@@ -569,10 +585,7 @@ public class AttackPathDataset {
     }
 
     public void changeCS(Set<String> csSet, boolean proposed) {
-        logger.info("changeCS list: {}", csSet);
-
-        String logMessage = proposed ? "enabling" : "disabling";
-        logger.debug("{} CS for {} controls:", logMessage, csSet.size());
+        logger.info("changeCS list ({} {}): {}", proposed ? "enabling" : "disabling", csSet.size(), csSet);
 
         for (String csURIa : csSet) {
 
@@ -591,7 +604,6 @@ public class AttackPathDataset {
 
     public RiskVector calculateRisk(String modelId, RiskCalculationMode riskMode) throws RuntimeException {
         try {
-            logger.info("Calculating risks for APD");
 
             RiskCalculator rc = new RiskCalculator(querier);
             rc.calculateRiskLevels(riskMode, false, new Progress(modelId));
@@ -625,12 +637,24 @@ public class AttackPathDataset {
         return new RiskVector(rvRiskLevels, riskVector);
     }
 
-    public boolean compareOverallRiskToMedium(String overall) {
-        int level = riLevels.get(overall).getLevelValue();
-        int threshold = riLevels.get("domain#RiskLevelMedium").getLevelValue();
-        boolean retVal = threshold >= level;
-        logger.debug("Overall Risk Comparison: Medium >= {} --> {}", overall, retVal);
-        return retVal;
+    public String validateRiskLevel(String uri) {
+        return uri;
+    }
+
+    public int compareOverallRiskLevels(String overallRiskA, String overallRiskB) {
+        logger.debug("Overall Risk Comparison: riskA({}) ? riskB({})", overallRiskA, overallRiskB);
+
+        int levelA = riLevels.get(overallRiskA).getLevelValue();
+        int levelB = riLevels.get(overallRiskB).getLevelValue();
+
+        // Compare levelA and levelB and return -1, 0, or 1
+        if (levelA < levelB) {
+            return -1; // riskA is less than riskB
+        } else if (levelA > levelB) {
+            return 1; // riskA is greater than riskB
+        } else {
+            return 0; // riskA is equal to riskB
+        }
     }
 
     public StateDTO getState() {

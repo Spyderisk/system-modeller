@@ -38,7 +38,9 @@
     <logger name="uk.ac.soton.itinnovation.security.semanticstore" level="warn"></logger>
     <logger name="uk.ac.soton.itinnovation.security.modelvalidator" level="warn"></logger>
     <logger name="uk.ac.soton.itinnovation.security.modelvalidator.test" level="debug"></logger>
-    <logger name="uk.ac.soton.itinnovation.security.modelvalidator.attackpath" level="debug"></logger>
+    <logger name="uk.ac.soton.itinnovation.security.modelvalidator.attackpath" level="info"></logger>
+    <logger name="uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithm" level="debug"></logger>
+    <logger name="uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackPathDataset" level="debug"></logger>
     <logger name="uk.ac.soton.itinnovation.security.modelquerier" level="warn"></logger>
 
     <!-- Set log levels for 3rd party packages -->

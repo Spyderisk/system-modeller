@@ -730,7 +730,7 @@ public class AttackNode {
         } catch (TreeTraversalException error) {
             outerSuccess = false;
 
-            //logger.error(String.format("%1$"+ currentPath.size() +"s", "") +
+            //logger.debug(String.format("%1$"+ currentPath.size() +"s", "") +
             //        " Error " + this.uri + " (nodeID:" + this.id + ")");
             loopbackNodeUris = error.getLoopbackNodeUris();
 
@@ -741,11 +741,11 @@ public class AttackNode {
             InnerResult result = new InnerResult();
             if (loopbackNodeUrisOnPath.isEmpty()) {
                 this.cannotBeCaused = true;
-                logger.error(String.format("%1$" + currentPath.size() + "s", "")
+                logger.debug(String.format("%1$" + currentPath.size() + "s", "")
                         + " Error " + this.uri + " can never be caused (nodeID:" + this.id + ")");
             } else {
                 result.setLoopbackNodeUris(loopbackNodeUrisOnPath);
-                logger.error(String.format("%1$" + currentPath.size() + "s", "")
+                logger.debug(String.format("%1$" + currentPath.size() + "s", "")
                         + " Error " + this.uri + " caused by node on path: (nodeID:" + this.id + ")");
             }
 

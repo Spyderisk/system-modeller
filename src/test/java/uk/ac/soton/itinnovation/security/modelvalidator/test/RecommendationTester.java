@@ -51,6 +51,7 @@ import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+
 @RunWith(JUnit4.class)
 public class RecommendationTester extends TestCase {
 
@@ -80,8 +81,6 @@ public class RecommendationTester extends TestCase {
 
         tester.addSystem(0, "modelvalidator/AttackPath/Demo_both_state_reports.nq.gz",
                 "http://it-innovation.soton.ac.uk/system/65944381aa547a34a3a03f10");
-        //tester.addSystem(0, "modelvalidator/AttackPath/cyberkit4sme_demo.nq.gz",
-        //        "http://it-innovation.soton.ac.uk/system/652fe5d3d20c015ba8f02fb6");
 
 		tester.setUp();
 
@@ -146,7 +145,8 @@ public class RecommendationTester extends TestCase {
 		try {
 			logger.info("Gathering datasets for Recommendations");
 
-			RecommendationsAlgorithmConfig config = new RecommendationsAlgorithmConfig(querierDB, tester.getGraph("system"), "CURRENT");
+			RecommendationsAlgorithmConfig config = new RecommendationsAlgorithmConfig(querierDB, tester.getGraph("system"), "CURRENT",
+                    true, "domain#RiskLevelMedium", null);
 			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(config);
 
 			reca.checkRequestedRiskCalculationMode("CURRENT");

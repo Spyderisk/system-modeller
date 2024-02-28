@@ -86,6 +86,7 @@ import uk.ac.soton.itinnovation.security.modelquerier.dto.RiskCalcResultsDB;
 import uk.ac.soton.itinnovation.security.modelvalidator.ModelValidator;
 import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackPathAlgorithm;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackPathDataset;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithm;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithmConfig;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.TreeJsonDoc;
@@ -1428,7 +1429,10 @@ public class ModelController {
 	@GetMapping(value = "/models/{modelId}/recommendations_blocking")
 	public ResponseEntity<RecommendationReportDTO> calculateRecommendationsBlocking(
             @PathVariable String modelId,
-            @RequestParam(defaultValue = "CURRENT") String riskMode) {
+            @RequestParam(defaultValue = "CURRENT") String riskMode,
+            @RequestParam(defaultValue = "true")  boolean localSearch,
+            @RequestParam String acceptableRiskLevel,
+            @RequestParam List<String> targetURIs) {
 
         logger.info("Calculating recommendations for model {}", modelId);
 		riskMode = riskMode.replaceAll("[\n\r]", "_");
@@ -1448,7 +1452,7 @@ public class ModelController {
 		synchronized(this) {
 			model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
 			String mId = model.getId();
-			
+
 			if (model.isValidating()) {
 				warnIsValidating(mId, modelId);
 				return ResponseEntity.status(HttpStatus.OK).body(new RecommendationReportDTO());
@@ -1475,16 +1479,26 @@ public class ModelController {
 
             logger.info("Calculating recommendations");
 
+            AttackPathDataset apd = new AttackPathDataset(querierDB);
+
+            // validate targetURIs
+            if (!apd.checkMisbehaviourList(targetURIs)) {
+                logger.error("Invalid target URIs set");
+                throw new MisbehaviourSetInvalidException("Invalid misbehaviour set");
+            }
+
+            // validate acceptable risk level
+            if (!apd.checkRiskLevelKey(acceptableRiskLevel)) {
+                logger.error("Invalid acceptableRiskLevel: {}", acceptableRiskLevel);
+                throw new MisbehaviourSetInvalidException("Invalid acceptableRiskLevel value");
+            }
+
             String jobId = UUID.randomUUID().toString();
             logger.info("Submitting synchronous job with id: {}", jobId);
 			String mId = model.getId();
 
-			RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, mId, riskMode);
+			RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, mId, riskMode, localSearch, acceptableRiskLevel, targetURIs);
 			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(recaConfig);
-
-            if (!reca.checkRiskCalculationMode(riskMode)) {
-                throw new RiskModeMismatchException();
-            }
 
             report = reca.recommendations(progress);
 
@@ -1523,7 +1537,11 @@ public class ModelController {
 	@GetMapping(value = "/models/{modelId}/recommendations")
     public ResponseEntity<JobResponseDTO> calculateRecommendations(
             @PathVariable String modelId,
-            @RequestParam (defaultValue = "CURRENT") String riskMode) {
+            @RequestParam (defaultValue = "CURRENT") String riskMode,
+            @RequestParam(defaultValue = "true")  boolean localSearch,
+            @RequestParam String acceptableRiskLevel,
+            @RequestParam List<String> targetURIs) {
+
 
         logger.info("Calculating recommendations for model {}", modelId);
 		riskMode = riskMode.replaceAll("[\n\r]", "_");
@@ -1578,7 +1596,21 @@ public class ModelController {
 
                 logger.info("Calculating recommendations");
 
-                RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, model.getId(), rm);
+                AttackPathDataset apd = new AttackPathDataset(querierDB);
+
+                // validate targetURIs
+                if (!apd.checkMisbehaviourList(targetURIs)) {
+                    logger.error("Invalid target URIs set");
+                    throw new MisbehaviourSetInvalidException("Invalid misbehaviour set");
+                }
+
+                // validate acceptable risk level
+                if (!apd.checkRiskLevelKey(acceptableRiskLevel)) {
+                    logger.error("Invalid acceptableRiskLevel: {}", acceptableRiskLevel);
+                    throw new MisbehaviourSetInvalidException("Invalid acceptableRiskLevel value");
+                }
+
+                RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, model.getId(), rm, localSearch, acceptableRiskLevel, targetURIs);
                 recommendationsService.startRecommendationTask(jobId, recaConfig, progress);
 
                 success = true;

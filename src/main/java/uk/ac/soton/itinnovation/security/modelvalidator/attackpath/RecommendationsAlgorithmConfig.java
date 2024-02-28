@@ -24,17 +24,25 @@
 /////////////////////////////////////////////////////////////////////////
 package uk.ac.soton.itinnovation.security.modelvalidator.attackpath;
 
+import java.util.List;
+
 import uk.ac.soton.itinnovation.security.modelquerier.IQuerierDB;
 
 public class RecommendationsAlgorithmConfig {
     private IQuerierDB querier;
     private String modelId;
     private String riskMode;
+    private String acceptableRiskLevel;
+    private List<String> targetMS;
+    private boolean localSearch;
 
-    public RecommendationsAlgorithmConfig(IQuerierDB querier, String modelId, String riskMode) {
+    public RecommendationsAlgorithmConfig(IQuerierDB querier, String modelId, String riskMode, boolean localSearch, String level, List<String> targets) {
         this.querier = querier;
         this.modelId = modelId;
         this.riskMode = riskMode;
+        this.acceptableRiskLevel = level;
+        this.targetMS = targets;
+        this.localSearch = localSearch;
     }
 
     public IQuerierDB getQuerier() {
@@ -59,5 +67,29 @@ public class RecommendationsAlgorithmConfig {
 
     public void setRiskMode(String riskMode) {
         this.riskMode = riskMode;
+    }
+
+    public String getAcceptableRiskLevel() {
+        return this.acceptableRiskLevel;
+    }
+
+    public void setAcceptableRiskLevel(String level) {
+        acceptableRiskLevel = level;
+    }
+
+    public List<String> getTargetMS() {
+        return this.targetMS;
+    }
+
+    public void setTargetMS(List<String> targets) {
+        this.targetMS = targets;
+    }
+
+    public Boolean getLocalSearch() {
+        return this.localSearch;
+    }
+
+    public void setLocalSearch(Boolean flag) {
+        this.localSearch = flag;
     }
 }

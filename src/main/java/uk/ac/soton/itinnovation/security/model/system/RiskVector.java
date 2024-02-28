@@ -25,61 +25,69 @@
 package uk.ac.soton.itinnovation.security.model.system;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+
 import uk.ac.soton.itinnovation.security.model.Level;
 
 public class RiskVector implements Comparable<RiskVector> {
 
-	private Map<String, RiskLevelCount> riskVector;
+    private Map<String, RiskLevelCount> riskV;
+    private Map<Integer, String> levelValueMap;  // aux map for comparison
 
-	public RiskVector(Collection<Level> riskLevels, Map<String, Integer> riskLevelCounts) {
-		riskVector = new HashMap<>();
+    public RiskVector(Collection<Level> riskLevels, Map<String, Integer> riskLevelCounts) {
+        this.riskV = new HashMap<>();
+        levelValueMap = new HashMap<>();
 
-		//For each defined risk level, get the count of misbehaviours at this level
-		for (Level riskLevel : riskLevels) {
-			RiskLevelCount riskLevelCount = new RiskLevelCount();
-			riskLevelCount.setLevel(riskLevel);
-			Integer count = riskLevelCounts.get(riskLevel.getUri());
-			riskLevelCount.setCount(count);
-			riskVector.put(riskLevel.getUri(), riskLevelCount);
-		}
-	}
+        //For each defined risk level, get the count of misbehaviours at this level
+        for (Level riskLevel : riskLevels) {
+            RiskLevelCount riskLevelCount = new RiskLevelCount();
+            riskLevelCount.setLevel(riskLevel);
+            Integer count = riskLevelCounts.get(riskLevel.getUri());
+            riskLevelCount.setCount(count);
+            riskV.put(riskLevel.getUri(), riskLevelCount);
+            levelValueMap.put(riskLevel.getValue(), riskLevel.getUri());
+        }
+    }
 
-	public Map<String, RiskLevelCount> getRiskVector() {
-		return riskVector;
-	}
+    public Map<String, RiskLevelCount> getRiskVector() {
+        return riskV;
+    }
 
-	public void setRiskVector(Map<String, RiskLevelCount> riskVector) {
-		this.riskVector = riskVector;
-	}
+    public void setRiskVector(Map<String, RiskLevelCount> riskVector) {
+        this.riskV = riskVector;
+    }
 
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
 
-		sb.append("(");
+        sb.append("(");
 
-		Collection<RiskLevelCount> riskLevelCounts = riskVector.values();
+        Collection<RiskLevelCount> riskLevelCounts = riskV.values();
 
-		for (RiskLevelCount riskLevelCount : riskLevelCounts) {
-			sb.append(riskLevelCount.getLevel().getLabel());
-			sb.append(": ");
-			sb.append(riskLevelCount.getCount());
-			sb.append(", ");
-		}
+        for (RiskLevelCount riskLevelCount : riskLevelCounts) {
+            sb.append(riskLevelCount.getLevel().getLabel());
+            sb.append(": ");
+            sb.append(riskLevelCount.getCount());
+            sb.append(", ");
+        }
 
-		sb.setLength(sb.length() -2); //remove last comma
+        sb.setLength(sb.length() - 2); //remove last comma
 
-		sb.append(")");
+        sb.append(")");
 
-		return sb.toString();
-	}
+        return sb.toString();
+    }
 
     public String getOverall() {
         int overall = 0;
         String label = "";
-        for (Map.Entry<String, RiskLevelCount> entry : riskVector.entrySet()) {
+        for (Map.Entry<String, RiskLevelCount> entry : riskV.entrySet()) {
             String riskLevelLabel = entry.getValue().getLevel().getUri();
             int riskLevelValue = entry.getValue().getLevel().getValue();
             int riskCount = entry.getValue().getCount();
@@ -92,16 +100,42 @@ public class RiskVector implements Comparable<RiskVector> {
     }
 
     @Override
-    public int compareTo(RiskVector other) {
-        // Iterate through map entries and compare RiskLevelCount objects
-        for (Map.Entry<String, RiskLevelCount> entry : riskVector.entrySet()) {
-            String key = entry.getKey();
-            RiskLevelCount thisRiskLevelCount = entry.getValue();
-            RiskLevelCount otherRiskLevelCount = other.riskVector.get(key);
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        RiskVector other = (RiskVector) obj;
+        return Objects.equals(riskV, other.riskV);
+    }
 
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(riskV);
+    }
+
+    @Override
+    public int compareTo(RiskVector other) {
+
+        List<Integer> sortedKeys = new ArrayList<>(levelValueMap.keySet());
+        Collections.sort(sortedKeys, Collections.reverseOrder());
+
+        // iterate based on the sorted keys
+        for (Integer key : sortedKeys) {
+            String riskLevelUri = levelValueMap.get(key);
+            RiskLevelCount thisRiskLevelCount = riskV.get(riskLevelUri);
+            RiskLevelCount otherRiskLevelCount = other.riskV.get(riskLevelUri);
+
+            if (thisRiskLevelCount == null && otherRiskLevelCount == null) {
+                continue; // Both are missing
+            }
+            if (thisRiskLevelCount == null) {
+                return -1; // This object is considered "less"
+            }
             if (otherRiskLevelCount == null) {
-                // Handle the case where the key is not present in the other RiskVector
-                return 1; // or -1, depending on your requirements
+                return 1;  // This object is considered "greater"
             }
 
             // Compare RiskLevelCount objects
@@ -111,7 +145,7 @@ public class RiskVector implements Comparable<RiskVector> {
             }
         }
 
-        // If all RiskLevelCount objects are equal, consider the RiskVectors equal
+        // If all compared RiskLevelCount objects are equal, consider the RiskVectors equal
         return 0;
     }
 }
