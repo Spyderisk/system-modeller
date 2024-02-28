@@ -1437,6 +1437,7 @@ public class ModelControllerTest extends CommonTestSetup{
 
 		given().
 			filter(userSession).
+            param("domain#RiskLevelMedium").
 		when().
 			get("/models/testModel/recommendations_blocking").
 		then().

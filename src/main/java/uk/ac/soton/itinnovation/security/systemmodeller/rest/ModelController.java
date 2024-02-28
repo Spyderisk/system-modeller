@@ -38,6 +38,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.UnexpectedException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -1432,7 +1433,14 @@ public class ModelController {
             @RequestParam(defaultValue = "CURRENT") String riskMode,
             @RequestParam(defaultValue = "true")  boolean localSearch,
             @RequestParam String acceptableRiskLevel,
-            @RequestParam List<String> targetURIs) {
+            @RequestParam (required = false) List<String> targetURIs) {
+
+        // Check if targetURIs is null or empty and assign an empty list if it is
+        if (targetURIs == null) {
+            targetURIs = new ArrayList<>();
+        }
+
+        final List<String> finalTargetURIs = targetURIs;
 
         logger.info("Calculating recommendations for model {}", modelId);
 		riskMode = riskMode.replaceAll("[\n\r]", "_");
@@ -1482,7 +1490,7 @@ public class ModelController {
             AttackPathDataset apd = new AttackPathDataset(querierDB);
 
             // validate targetURIs
-            if (!apd.checkMisbehaviourList(targetURIs)) {
+            if (!apd.checkMisbehaviourList(finalTargetURIs)) {
                 logger.error("Invalid target URIs set");
                 throw new MisbehaviourSetInvalidException("Invalid misbehaviour set");
             }
@@ -1497,7 +1505,7 @@ public class ModelController {
             logger.info("Submitting synchronous job with id: {}", jobId);
 			String mId = model.getId();
 
-			RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, mId, riskMode, localSearch, acceptableRiskLevel, targetURIs);
+			RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, mId, riskMode, localSearch, acceptableRiskLevel, finalTargetURIs);
 			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(recaConfig);
 
             report = reca.recommendations(progress);
@@ -1540,8 +1548,14 @@ public class ModelController {
             @RequestParam (defaultValue = "CURRENT") String riskMode,
             @RequestParam(defaultValue = "true")  boolean localSearch,
             @RequestParam String acceptableRiskLevel,
-            @RequestParam List<String> targetURIs) {
+            @RequestParam (required = false) List<String> targetURIs) {
 
+        // Check if targetURIs is null or empty and assign an empty list if it is
+        if (targetURIs == null) {
+            targetURIs = new ArrayList<>();
+        }
+
+        final List<String> finalTargetURIs = targetURIs;
 
         logger.info("Calculating recommendations for model {}", modelId);
 		riskMode = riskMode.replaceAll("[\n\r]", "_");
@@ -1599,7 +1613,7 @@ public class ModelController {
                 AttackPathDataset apd = new AttackPathDataset(querierDB);
 
                 // validate targetURIs
-                if (!apd.checkMisbehaviourList(targetURIs)) {
+                if (!apd.checkMisbehaviourList(finalTargetURIs)) {
                     logger.error("Invalid target URIs set");
                     throw new MisbehaviourSetInvalidException("Invalid misbehaviour set");
                 }
@@ -1610,7 +1624,7 @@ public class ModelController {
                     throw new MisbehaviourSetInvalidException("Invalid acceptableRiskLevel value");
                 }
 
-                RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, model.getId(), rm, localSearch, acceptableRiskLevel, targetURIs);
+                RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, model.getId(), rm, localSearch, acceptableRiskLevel, finalTargetURIs);
                 recommendationsService.startRecommendationTask(jobId, recaConfig, progress);
 
                 success = true;
