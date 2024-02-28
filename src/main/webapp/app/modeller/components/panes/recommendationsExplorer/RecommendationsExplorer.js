@@ -114,7 +114,7 @@ class RecommendationsExplorer extends React.Component {
             });
 
             recommendations.sort((a, b) => {
-                return this.compareRiskVectors(b.state.riskVector, a.state.riskVector); //sort descending risk vector
+                return this.compareRiskVectors(a.state.riskVector, b.state.riskVector); //sort ascending risk vector
             });
         }
 
