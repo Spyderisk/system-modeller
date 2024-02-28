@@ -37,8 +37,6 @@ import org.junit.runners.JUnit4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//import static java.util.stream.Collectors.filtering;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -133,65 +131,64 @@ public class JenaQuerierDBTester extends TestCase {
 		MisbehaviourSetDB ms;
 		TrustworthinessAttributeSetDB twas;
 
-		// Read some asserted control set properties and check they are set correctly
-		// Should be set in the asserted graph
+		// Check some entities read from the asserted graph
 		cs = querierDB.getControlSet("system#CS-ImpersonalData-e5440a91","system");
 		logger.warn("Control set {} has proposed status {} in the asserted graph", cs.getUri(), cs.isProposed());
-		assertTrue(cs.isProposed());
-		// Should be copied in the inferred graph
-		cs = querierDB.getControlSet("system#CS-ImpersonalData-e5440a91","system-inf");
-		logger.warn("Control set {} has proposed status {} in the inferred graph", cs.getUri(), cs.isProposed());
-		assertTrue(cs.isProposed());
-		// Should be set in the merged graph
-		cs = querierDB.getControlSet("system#CS-ImpersonalData-e5440a91","system","system-inf");
-		logger.warn("Control set {} has proposed status {} in the combined graph", cs.getUri(), cs.isProposed());
-		assertTrue(cs.isProposed());
+		assertTrue(cs.isProposed());										// Should be proposed in the asserted graph
 
-		// Read some asserted misbehaviour set properties and check they are set correctly
-		// Should be set in the asserted graph
 		ms = querierDB.getMisbehaviourSet("system#MS-LossOfAuthenticity-e5440a91","system");
 		logger.warn("Misbehaviour set {} has impact level {} in the asserted graph", ms.getUri(), ms.getImpactLevel());
-		assertEquals("domain#ImpactLevelHigh", ms.getImpactLevel());
-		// Should be reset to the default level in the inferred graph
-		ms = querierDB.getMisbehaviourSet("system#MS-LossOfAuthenticity-e5440a91","system-inf");
-		logger.warn("Misbehaviour set {} has impact level {} in the inferred graph", ms.getUri(), ms.getImpactLevel());
-		assertEquals("domain#ImpactLevelNegligible", ms.getImpactLevel());
-		// Should be set in the combined graph
-		ms = querierDB.getMisbehaviourSet("system#MS-LossOfAuthenticity-e5440a91","system","system-inf");
-		logger.warn("Misbehaviour set {} has impact level {} in the combined graph", ms.getUri(), ms.getImpactLevel());
-		assertEquals("domain#ImpactLevelHigh", ms.getImpactLevel());
+		assertEquals("domain#ImpactLevelHigh", ms.getImpactLevel());		// Should be overridden in the asserted graph
 
-		// Read some  control set properties that are not asserted and check they are set correctly
 		cs = querierDB.getControlSet("system#CS-AccessPolicy-e5440a91","system");
 		if(cs != null){
 			logger.warn("Control set {} has proposed status {} in the asserted graph", cs.getUri(), cs.isProposed());
-			assertFalse(cs.isProposed());
 		} else {
-			logger.warn("Control set {} does not exist in the asserted graph", "system#CS-AccessPolicy-e5440a91");
-			assertEquals(null, cs);
+			logger.warn("Control set {} is null in the asserted graph", "system#CS-AccessPolicy-e5440a91");
 		}
-		cs = querierDB.getControlSet("system#CS-AccessPolicy-e5440a91","system-inf");
-		logger.warn("Control set {} has proposed status {} in the inferred graph", cs.getUri(), cs.isProposed());
-		assertFalse(cs.isProposed());
-		cs = querierDB.getControlSet("system#CS-AccessPolicy-e5440a91","system","system-inf");
-		logger.warn("Control set {} has proposed status {} in the combined graph", cs.getUri(), cs.isProposed());
-		assertFalse(cs.isProposed());
+		assertNull(cs);														// Should not exist in the asserted graph
 
-		// Read some misbehaviour set properties that are not asserted and check they are set correctly
 		ms = querierDB.getMisbehaviourSet("system#MS-LossOfAuthenticity-1579e6d8","system");
 		if(ms != null){
 			logger.warn("Misbehaviour set {} has impact level {} in the asserted graph", ms.getUri(), ms.getImpactLevel());
-			assertEquals("domain#ImpactLevelNegligible", ms.getImpactLevel());
 		} else {
-			logger.warn("Misbehaviour set {} does not exist in the asserted graph", "system#MS-LossOfAuthenticity-1579e6d8");
-			assertEquals(null, ms);
+			logger.warn("Misbehaviour set {} is null in the asserted graph", "system#MS-LossOfAuthenticity-1579e6d8");
 		}
+		assertNull(ms);														// Should not exist in the asserted graph
+
+		// Check some entities read from the inferred graph
+		cs = querierDB.getControlSet("system#CS-ImpersonalData-e5440a91","system-inf");
+		logger.warn("Control set {} has proposed status {} in the inferred graph", cs.getUri(), cs.isProposed());
+		assertTrue(cs.isProposed());										// Should be copied from the asserted graph
+
+		ms = querierDB.getMisbehaviourSet("system#MS-LossOfAuthenticity-e5440a91","system-inf");
+		logger.warn("Misbehaviour set {} has impact level {} in the inferred graph", ms.getUri(), ms.getImpactLevel());
+		assertEquals("domain#ImpactLevelNegligible", ms.getImpactLevel());	// Should be set to the default level in the inferred graph
+
+		cs = querierDB.getControlSet("system#CS-AccessPolicy-e5440a91","system-inf");
+		logger.warn("Control set {} has proposed status {} in the inferred graph", cs.getUri(), cs.isProposed());
+		assertFalse(cs.isProposed());										// Should not be proposed in the inferred graph
+
 		ms = querierDB.getMisbehaviourSet("system#MS-LossOfAuthenticity-1579e6d8","system-inf");
 		logger.warn("Misbehaviour set {} has impact level {} in the inferred graph", ms.getUri(), ms.getImpactLevel());
-		assertEquals("domain#ImpactLevelNegligible", ms.getImpactLevel());
+		assertEquals("domain#ImpactLevelNegligible", ms.getImpactLevel());	// Should be set to the default level in the inferred graph
+
+		// Check some entities read from both graphs
+		cs = querierDB.getControlSet("system#CS-ImpersonalData-e5440a91","system","system-inf");
+		logger.warn("Control set {} has proposed status {} in the combined graph", cs.getUri(), cs.isProposed());
+		assertTrue(cs.isProposed());										// Should be proposed (same in both graphs)
+
+		ms = querierDB.getMisbehaviourSet("system#MS-LossOfAuthenticity-e5440a91","system","system-inf");
+		logger.warn("Misbehaviour set {} has impact level {} in the combined graph", ms.getUri(), ms.getImpactLevel());
+		assertEquals("domain#ImpactLevelHigh", ms.getImpactLevel());		// Should be overridden, asserted graph takes precedence
+
+		cs = querierDB.getControlSet("system#CS-AccessPolicy-e5440a91","system","system-inf");
+		logger.warn("Control set {} has proposed status {} in the combined graph", cs.getUri(), cs.isProposed());
+		assertFalse(cs.isProposed());										// Should not be proposed in either graph
+
 		ms = querierDB.getMisbehaviourSet("system#MS-LossOfAuthenticity-1579e6d8","system","system-inf");
 		logger.warn("Misbehaviour set {} has impact level {} in the combined graph", ms.getUri(), ms.getImpactLevel());
-		assertEquals("domain#ImpactLevelNegligible", ms.getImpactLevel());
+		assertEquals("domain#ImpactLevelNegligible", ms.getImpactLevel());	// Should be set to the default level in the inferred graph
 
 	}
 
@@ -209,65 +206,64 @@ public class JenaQuerierDBTester extends TestCase {
 		MisbehaviourSetDB ms;
 		TrustworthinessAttributeSetDB twas;
 
-		// Read some asserted control set properties and check they are set correctly
-		// Should be set in the asserted graph
+		// Check some entities read from the asserted graph
 		cs = querierDB.getControlSet("system#CS-ImpersonalData-e5440a91","system");
 		logger.warn("Control set {} has proposed status {} in the asserted graph", cs.getUri(), cs.isProposed());
-		assertTrue(cs.isProposed());
-		// Should be copied in the inferred graph
-		cs = querierDB.getControlSet("system#CS-ImpersonalData-e5440a91","system-inf");
-		logger.warn("Control set {} has proposed status {} in the inferred graph", cs.getUri(), cs.isProposed());
-		assertTrue(cs.isProposed());
-		// Should be set in the merged graph
-		cs = querierDB.getControlSet("system#CS-ImpersonalData-e5440a91","system","system-inf");
-		logger.warn("Control set {} has proposed status {} in the combined graph", cs.getUri(), cs.isProposed());
-		assertTrue(cs.isProposed());
+		assertTrue(cs.isProposed());										// Should be proposed in the asserted graph
 
-		// Read some asserted misbehaviour set properties and check they are set correctly
-		// Should be set in the asserted graph
 		ms = querierDB.getMisbehaviourSet("system#MS-LossOfAuthenticity-e5440a91","system");
 		logger.warn("Misbehaviour set {} has impact level {} in the asserted graph", ms.getUri(), ms.getImpactLevel());
-		assertEquals("domain#ImpactLevelHigh", ms.getImpactLevel());
-		// Should be reset to the default level in the inferred graph
-		ms = querierDB.getMisbehaviourSet("system#MS-LossOfAuthenticity-e5440a91","system-inf");
-		logger.warn("Misbehaviour set {} has impact level {} in the inferred graph", ms.getUri(), ms.getImpactLevel());
-		assertEquals("domain#ImpactLevelNegligible", ms.getImpactLevel());
-		// Should be set in the combined graph
-		ms = querierDB.getMisbehaviourSet("system#MS-LossOfAuthenticity-e5440a91","system","system-inf");
-		logger.warn("Misbehaviour set {} has impact level {} in the combined graph", ms.getUri(), ms.getImpactLevel());
-		assertEquals("domain#ImpactLevelHigh", ms.getImpactLevel());
+		assertEquals("domain#ImpactLevelHigh", ms.getImpactLevel());		// Should be overridden in the asserted graph
 
-		// Read some  control set properties that are not asserted and check they are set correctly
 		cs = querierDB.getControlSet("system#CS-AccessPolicy-e5440a91","system");
 		if(cs != null){
 			logger.warn("Control set {} has proposed status {} in the asserted graph", cs.getUri(), cs.isProposed());
-			assertFalse(cs.isProposed());
 		} else {
-			logger.warn("Control set {} does not exist in the asserted graph", "system#CS-AccessPolicy-e5440a91");
-			assertEquals(null, cs);
+			logger.warn("Control set {} is null in the asserted graph", "system#CS-AccessPolicy-e5440a91");
 		}
-		cs = querierDB.getControlSet("system#CS-AccessPolicy-e5440a91","system-inf");
-		logger.warn("Control set {} has proposed status {} in the inferred graph", cs.getUri(), cs.isProposed());
-		assertFalse(cs.isProposed());
-		cs = querierDB.getControlSet("system#CS-AccessPolicy-e5440a91","system","system-inf");
-		logger.warn("Control set {} has proposed status {} in the combined graph", cs.getUri(), cs.isProposed());
-		assertFalse(cs.isProposed());
+		assertNull(cs);														// Should not exist in the asserted graph
 
-		// Read some misbehaviour set properties that are not asserted and check they are set correctly
 		ms = querierDB.getMisbehaviourSet("system#MS-LossOfAuthenticity-1579e6d8","system");
 		if(ms != null){
 			logger.warn("Misbehaviour set {} has impact level {} in the asserted graph", ms.getUri(), ms.getImpactLevel());
-			assertEquals("domain#ImpactLevelNegligible", ms.getImpactLevel());
 		} else {
-			logger.warn("Misbehaviour set {} does not exist in the asserted graph", "system#MS-LossOfAuthenticity-1579e6d8");
-			assertEquals(null, ms);
+			logger.warn("Misbehaviour set {} is null in the asserted graph", "system#MS-LossOfAuthenticity-1579e6d8");
 		}
+		assertNull(ms);														// Should not exist in the asserted graph
+
+		// Check some entities read from the inferred graph
+		cs = querierDB.getControlSet("system#CS-ImpersonalData-e5440a91","system-inf");
+		logger.warn("Control set {} has proposed status {} in the inferred graph", cs.getUri(), cs.isProposed());
+		assertTrue(cs.isProposed());										// Should be copied from the asserted graph
+
+		ms = querierDB.getMisbehaviourSet("system#MS-LossOfAuthenticity-e5440a91","system-inf");
+		logger.warn("Misbehaviour set {} has impact level {} in the inferred graph", ms.getUri(), ms.getImpactLevel());
+		assertEquals("domain#ImpactLevelNegligible", ms.getImpactLevel());	// Should be set to the default level in the inferred graph
+
+		cs = querierDB.getControlSet("system#CS-AccessPolicy-e5440a91","system-inf");
+		logger.warn("Control set {} has proposed status {} in the inferred graph", cs.getUri(), cs.isProposed());
+		assertFalse(cs.isProposed());										// Should not be proposed in the inferred graph
+
 		ms = querierDB.getMisbehaviourSet("system#MS-LossOfAuthenticity-1579e6d8","system-inf");
 		logger.warn("Misbehaviour set {} has impact level {} in the inferred graph", ms.getUri(), ms.getImpactLevel());
-		assertEquals("domain#ImpactLevelNegligible", ms.getImpactLevel());
+		assertEquals("domain#ImpactLevelNegligible", ms.getImpactLevel());	// Should be set to the default level in the inferred graph
+
+		// Check some entities read from both graphs
+		cs = querierDB.getControlSet("system#CS-ImpersonalData-e5440a91","system","system-inf");
+		logger.warn("Control set {} has proposed status {} in the combined graph", cs.getUri(), cs.isProposed());
+		assertTrue(cs.isProposed());										// Should be proposed (same in both graphs)
+
+		ms = querierDB.getMisbehaviourSet("system#MS-LossOfAuthenticity-e5440a91","system","system-inf");
+		logger.warn("Misbehaviour set {} has impact level {} in the combined graph", ms.getUri(), ms.getImpactLevel());
+		assertEquals("domain#ImpactLevelHigh", ms.getImpactLevel());		// Should be overridden, asserted graph takes precedence
+
+		cs = querierDB.getControlSet("system#CS-AccessPolicy-e5440a91","system","system-inf");
+		logger.warn("Control set {} has proposed status {} in the combined graph", cs.getUri(), cs.isProposed());
+		assertFalse(cs.isProposed());										// Should not be proposed in either graph
+
 		ms = querierDB.getMisbehaviourSet("system#MS-LossOfAuthenticity-1579e6d8","system","system-inf");
 		logger.warn("Misbehaviour set {} has impact level {} in the combined graph", ms.getUri(), ms.getImpactLevel());
-		assertEquals("domain#ImpactLevelNegligible", ms.getImpactLevel());
+		assertEquals("domain#ImpactLevelNegligible", ms.getImpactLevel());	// Should be set to the default level in the inferred graph
 	}
 
 }
