@@ -1065,7 +1065,9 @@ public class Validator {
                 } else {
                     systemThreatAvg.setFrequency(domainThreat.getFrequency());
                     systemThreatAvg.setSecondaryThreat(domainThreat.isSecondaryThreat());
-                    systemThreatAvg.setNormalOperation(domainThreat.isNormalOperation());    
+                    systemThreatAvg.setNormalOperation(domainThreat.isNormalOperation());
+                    systemThreatAvg.setCurrentRisk(domainThreat.isCurrentRisk());
+                    systemThreatAvg.setFutureRisk(domainThreat.isFutureRisk());
                 }
 
                 // Create the minimum likelihood threat, if the domain model has one and the system pattern is a non-singleton
@@ -1090,7 +1092,9 @@ public class Validator {
                         systemThreatMin.setFrequency(domainThreat.getFrequency());
                         systemThreatMin.setSecondaryThreat(domainThreat.isSecondaryThreat());
                         systemThreatMin.setNormalOperation(domainThreat.isNormalOperation());
-                    }
+                        systemThreatMin.setCurrentRisk(domainThreat.isCurrentRisk());
+                        systemThreatMin.setFutureRisk(domainThreat.isFutureRisk());
+                        }
                     systemThreatMin.setMinOf(systemThreatAvg.getUri());
                     systemThreatAvg.setHasMin(systemThreatMin.getUri());
                 }
@@ -1116,7 +1120,9 @@ public class Validator {
                     } else {
                         systemThreatMax.setFrequency(domainThreat.getFrequency());
                         systemThreatMax.setSecondaryThreat(domainThreat.isSecondaryThreat());
-                        systemThreatMax.setNormalOperation(domainThreat.isNormalOperation());    
+                        systemThreatMax.setNormalOperation(domainThreat.isNormalOperation());
+                        systemThreatMax.setCurrentRisk(domainThreat.isCurrentRisk());
+                        systemThreatMax.setFutureRisk(domainThreat.isFutureRisk());    
                     }
                     systemThreatMax.setMaxOf(systemThreatAvg.getUri());
                     systemThreatAvg.setHasMax(systemThreatMax.getUri());
@@ -1353,16 +1359,22 @@ public class Validator {
                     controlStrategyAvg = new ControlStrategyDB();
                     controlStrategyAvg.setParent(dcsg.getUri());
                     controlStrategyAvg.setDescription(generateDescription(dcsg.getDescription(), matchingPattern));
+                    controlStrategyAvg.setFutureRisk(dcsg.isFutureRisk());
+                    controlStrategyAvg.setCurrentRisk(dcsg.isCurrentRisk());
                     if(threatMax != null) {
                         controlStrategyMax = new ControlStrategyDB();
                         controlStrategyMax.setParent(dcsg.getUri());
                         controlStrategyMax.setDescription(generateDescription(dcsg.getDescription(), matchingPattern));
+                        controlStrategyMax.setFutureRisk(dcsg.isFutureRisk());
+                        controlStrategyMax.setCurrentRisk(dcsg.isCurrentRisk());
                     }
                     if(threatMin != null) {
                         controlStrategyMin = new ControlStrategyDB();
                         controlStrategyMin.setParent(dcsg.getUri());
                         controlStrategyMin.setDescription(generateDescription(dcsg.getDescription(), matchingPattern));    
-                    }
+                        controlStrategyMin.setFutureRisk(dcsg.isFutureRisk());
+                        controlStrategyMin.setCurrentRisk(dcsg.isCurrentRisk());
+                        }
 
                     // Assemble a complete list of domain CS to be found, with a deterministic ordering
                     List<String> allCS = new ArrayList<>();
