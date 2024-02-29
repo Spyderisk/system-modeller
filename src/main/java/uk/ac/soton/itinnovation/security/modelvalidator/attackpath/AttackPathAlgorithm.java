@@ -90,8 +90,6 @@ public class AttackPathAlgorithm {
     public boolean checkTargetUris(List<String> targetUris) {
         logger.debug("Checking submitted list of target URIs: {}", targetUris);
 
-        boolean retVal = true;
-
         // Check if the list is null or empty
         if (targetUris == null || targetUris.isEmpty()) {
             logger.warn("The list of target URIs is null or empty.");
@@ -100,9 +98,9 @@ public class AttackPathAlgorithm {
 
         if (!apd.checkMisbehaviourList(targetUris)) {
             logger.error("shortest path, target MS URI not valid");
-            retVal = false;
+            return false;
         }
-        return retVal;
+        return true;
     }
 
     public TreeJsonDoc calculateAttackTreeDoc(List<String> targetUris, String riskCalculationMode, boolean allPaths,

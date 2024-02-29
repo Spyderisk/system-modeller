@@ -41,7 +41,7 @@ public class RiskVector implements Comparable<RiskVector> {
 
     public RiskVector(Collection<Level> riskLevels, Map<String, Integer> riskLevelCounts) {
         this.riskV = new HashMap<>();
-        levelValueMap = new HashMap<>();
+        this.levelValueMap = new HashMap<>();
 
         //For each defined risk level, get the count of misbehaviours at this level
         for (Level riskLevel : riskLevels) {
@@ -58,17 +58,17 @@ public class RiskVector implements Comparable<RiskVector> {
         return riskV;
     }
 
-    public void setRiskVector(Map<String, RiskLevelCount> riskVector) {
-        this.riskV = riskVector;
-    }
-
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
         sb.append("(");
 
-        Collection<RiskLevelCount> riskLevelCounts = riskV.values();
+        // put the items from riskLevelCounts in a list
+        List<RiskLevelCount> riskLevelCounts = new ArrayList<>(riskV.values());
+
+        // sort the riskLevelCounts entries by the RiskLevelCount object's default sort
+        Collections.sort(riskLevelCounts);
 
         for (RiskLevelCount riskLevelCount : riskLevelCounts) {
             sb.append(riskLevelCount.getLevel().getLabel());
@@ -86,17 +86,17 @@ public class RiskVector implements Comparable<RiskVector> {
 
     public String getOverall() {
         int overall = 0;
-        String label = "";
+        String uri = "";
         for (Map.Entry<String, RiskLevelCount> entry : riskV.entrySet()) {
-            String riskLevelLabel = entry.getValue().getLevel().getUri();
+            String riskLevelUri = entry.getValue().getLevel().getUri();
             int riskLevelValue = entry.getValue().getLevel().getValue();
             int riskCount = entry.getValue().getCount();
             if (riskCount > 0 && riskLevelValue >= overall) {
                 overall = riskLevelValue;
-                label = riskLevelLabel;
+                uri = riskLevelUri;
             }
         }
-        return label;
+        return uri;
     }
 
     @Override

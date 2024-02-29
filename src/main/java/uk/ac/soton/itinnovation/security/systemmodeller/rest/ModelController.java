@@ -1422,17 +1422,20 @@ public class ModelController {
 	 * This REST method generates a recommendation report, as a blocking call
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @param riskMode string indicating the prefered risk calculation mode
-	 * @return A JSON report containing recommendations 
-     * @throws InternalServerErrorException   if an error occurs during report generation
-	 */
+	 * @param riskMode optional string indicating the prefered risk calculation mode (defaults to CURRENT)
+	 * @param localSearch optional flag indicating whether to use local search (defaults to true)
+	 * @param acceptableRiskLevel string indicating the acceptable risk level using domain model URI
+	 * @param targetURIs optional list of target misbehaviour sets
+	 * @return ACCEPTED status and jobId for the background task
+	 * @throws InternalServerErrorException if an error occurs during report generation
+ 	 */
 	@GetMapping(value = "/models/{modelId}/recommendations_blocking")
 	public ResponseEntity<RecommendationReportDTO> calculateRecommendationsBlocking(
-            @PathVariable String modelId,
-            @RequestParam(defaultValue = "CURRENT") String riskMode,
-            @RequestParam(defaultValue = "true")  boolean localSearch,
-            @RequestParam String acceptableRiskLevel,
-            @RequestParam List<String> targetURIs) {
+			@PathVariable String modelId,
+			@RequestParam(defaultValue = "CURRENT") String riskMode,
+			@RequestParam(defaultValue = "true") boolean localSearch,
+			@RequestParam String acceptableRiskLevel,
+			@RequestParam(required = false) List<String> targetURIs) {
 
         logger.info("Calculating recommendations for model {}", modelId);
 		riskMode = riskMode.replaceAll("[\n\r]", "_");
@@ -1481,8 +1484,8 @@ public class ModelController {
 
             AttackPathDataset apd = new AttackPathDataset(querierDB);
 
-            // validate targetURIs
-            if (!apd.checkMisbehaviourList(targetURIs)) {
+            // validate targetURIs (if set)
+            if (targetURIs != null && !apd.checkMisbehaviourList(targetURIs)) {
                 logger.error("Invalid target URIs set");
                 throw new MisbehaviourSetInvalidException("Invalid misbehaviour set");
             }
@@ -1530,19 +1533,20 @@ public class ModelController {
 	 * Results may be downloaded once this task has completed.
 	 *
 	 * @param modelId the String representation of the model object to seacrh
-	 * @param riskMode string indicating the prefered risk calculation mode
+	 * @param riskMode optional string indicating the prefered risk calculation mode (defaults to CURRENT)
+	 * @param localSearch optional flag indicating whether to use local search (defaults to true)
+	 * @param acceptableRiskLevel string indicating the acceptable risk level using domain model URI
+	 * @param targetURIs optional list of target misbehaviour sets
 	 * @return ACCEPTED status and jobId for the background task
-     * @throws InternalServerErrorException   if an error occurs during report generation
+     * @throws InternalServerErrorException if an error occurs during report generation
 	 */
 	@GetMapping(value = "/models/{modelId}/recommendations")
     public ResponseEntity<JobResponseDTO> calculateRecommendations(
             @PathVariable String modelId,
-            @RequestParam (defaultValue = "CURRENT") String riskMode,
-            @RequestParam(defaultValue = "true")  boolean localSearch,
+            @RequestParam(defaultValue = "CURRENT") String riskMode,
+            @RequestParam(defaultValue = "true") boolean localSearch,
             @RequestParam String acceptableRiskLevel,
-            @RequestParam List<String> targetURIs) {
-
-
+			@RequestParam(required = false) List<String> targetURIs) {
         logger.info("Calculating recommendations for model {}", modelId);
 		riskMode = riskMode.replaceAll("[\n\r]", "_");
         logger.info(" riskMode: {}",riskMode);
@@ -1598,8 +1602,8 @@ public class ModelController {
 
                 AttackPathDataset apd = new AttackPathDataset(querierDB);
 
-                // validate targetURIs
-                if (!apd.checkMisbehaviourList(targetURIs)) {
+                // validate targetURIs (if set)
+				if (targetURIs != null && !apd.checkMisbehaviourList(targetURIs)) {
                     logger.error("Invalid target URIs set");
                     throw new MisbehaviourSetInvalidException("Invalid misbehaviour set");
                 }
