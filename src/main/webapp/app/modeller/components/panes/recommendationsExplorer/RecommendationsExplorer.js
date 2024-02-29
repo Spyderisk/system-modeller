@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from 'prop-types';
-import {Panel, OverlayTrigger, Tooltip} from "react-bootstrap";
+import {Panel} from "react-bootstrap";
 import {connect} from "react-redux";
 import {JsonView, defaultStyles} from 'react-json-view-lite';
 import 'react-json-view-lite/dist/index.css';
@@ -92,8 +92,6 @@ class RecommendationsExplorer extends React.Component {
             return null;
         }
 
-        let currentRiskVector = this.getRiskVector(report.current.risk);
-        let currentRiskLevel = this.getHighestRiskLevel(currentRiskVector);
         let recommendations = report.recommendations;
 
         if (recommendations) {
