@@ -100,8 +100,6 @@ public class TestHelper extends uk.ac.soton.itinnovation.security.modelquerier.u
 		//		"http://it-innovation.soton.ac.uk/system/652fe5d3d20c015ba8f02fb6");
 		this.addSystem(12, "modelvalidator/AttackPath/Demo_both_state_reports.nq.gz",
 				"http://it-innovation.soton.ac.uk/system/65944381aa547a34a3a03f10");
-		this.addSystem(13, "modelvalidator/AttackPath/Demo_both_state_reports_apache_pop.nq.gz",
-		"http://it-innovation.soton.ac.uk/system/65944381aa547a34a3a03f10");
 				
 	}
 }

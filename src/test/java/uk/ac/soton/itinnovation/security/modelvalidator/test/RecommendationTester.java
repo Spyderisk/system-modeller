@@ -24,6 +24,9 @@
 
 package uk.ac.soton.itinnovation.security.modelvalidator.test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.jena.query.Dataset;
 import org.apache.jena.tdb.TDBFactory;
 import org.junit.After;
@@ -37,20 +40,25 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import junit.framework.TestCase;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+
+import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
 import uk.ac.soton.itinnovation.security.modelquerier.IQuerierDB;
 import uk.ac.soton.itinnovation.security.modelquerier.JenaQuerierDB;
 import uk.ac.soton.itinnovation.security.modelquerier.SystemModelQuerier;
 import uk.ac.soton.itinnovation.security.modelquerier.SystemModelUpdater;
 import uk.ac.soton.itinnovation.security.modelquerier.util.TestHelper;
+import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
+import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
+import uk.ac.soton.itinnovation.security.modelvalidator.RiskCalculator;
+import uk.ac.soton.itinnovation.security.modelvalidator.Validator;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackPathDataset;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithm;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithmConfig;
-import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations.RecommendationReportDTO;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-
 
 @RunWith(JUnit4.class)
 public class RecommendationTester extends TestCase {
@@ -169,5 +177,63 @@ public class RecommendationTester extends TestCase {
 	public void testStoreRecommendation() {
         logger.debug("Testing Store recommendations");
     }
+
+    @Test
+	public void testCheckTargetMS() {
+		logger.info("Switching to selected domain and system model test cases");
+		tester.switchModels(0, 0);
+
+		logger.info("Creating a querierDB object ");
+		IQuerierDB querierDB = new JenaQuerierDB(dataset, tester.getModel(), true);
+		logger.info("Calling querierDB.init");
+		querierDB.init();
+
+        try {
+		    querierDB.initForValidation();
+            logger.info("Validating the model - ensures no dependence on bugs in older SSM validators");
+            Validator validator = new Validator(querierDB);
+            validator.validate(new Progress(tester.getGraph("system")));
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception thrown by validator preparing attack path test case");
+            return;
+		}
+
+        try {
+		    querierDB.initForRiskCalculation();
+			logger.info("Calculating risks and generating attack graph");
+			RiskCalculator rc = new RiskCalculator(querierDB);
+			rc.calculateRiskLevels(RiskCalculationMode.FUTURE, true, new Progress(tester.getGraph("system"))); //save results, as queried below
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception thrown by risk level calculator");
+			return;
+		}
+
+		try {
+			logger.info("Gathering datasets for APD dataset");
+
+            List<String> targetMS = new ArrayList<>();
+            targetMS.add("system#MS-LossOfConfidentiality-eac5dd6b");
+
+            AttackPathDataset apd = new AttackPathDataset(querierDB);
+
+            boolean result = apd.checkMisbehaviourList(targetMS);
+
+            // Assert the checkMisbehavourList result is true
+            assertTrue("The checkMisbehaviourList method should return true", result);
+
+            result = apd.checkRiskLevelKey("domain#RiskLevelMedium");
+
+            // Assert the checkMisbehavourList result is true
+            assertTrue("The checkRiskLevel method should return true", result);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception thrown by attack path APD");
+			return;
+		}
+	}
+
 
 }

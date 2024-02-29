@@ -97,14 +97,14 @@ public class AttackPathDataset {
         // Save the querier reference for use in other methods
         this.querier = querier;
 
-        // Load domain model poulation, impact, trustworthiness, risk and likelihood scales as maps keyed on their URI
+        // Load domain model poulation, impact, trustworthiness, risk and likelihood scales as maps keyed on their short URI (e.g. "domain#RiskLevelMedium")
         poLevels = querier.getPopulationLevels();
         imLevels = querier.getImpactLevels();
         liLevels = querier.getLikelihoodLevels();
         twLevels = querier.getTrustworthinessLevels();
         riLevels = querier.getRiskLevels();
 
-        // Load domain model impact, trustworthiness, risk, and likelihood scales as lists sorted by their level value
+        // Make a sorted list of the LevelDB objects by their risk level values
         riskLevels.addAll(riLevels.values());
         riskLevels.sort(Comparator.comparingInt(LevelDB::getLevelValue));
 
@@ -403,20 +403,18 @@ public class AttackPathDataset {
     }
 
 
-    public List<String> filterMisbehaviours(String acceptableRiskLevel) {
-        /*
-         * compare MS by risk, and return MS with risk > acceptableRiskLevel
-         */
+    /**
+      * Return MS with risk level > acceptableRiskLevel
+      */
+    public List<String> filterMisbehavioursByRiskLevel(String acceptableRiskLevel) {
 
         List<String> msUris = new ArrayList<>();
 
         logger.debug("filtering misbehaviour sets...");
 
-        //TODO simplify and remove sorting.
-
         int acceptableThreshold = riLevels.get(acceptableRiskLevel).getLevelValue();
         for (MisbehaviourSetDB ms : misbehaviourSets.values()) {
-            if ( riLevels.get(ms.getRisk()).getLevelValue() > acceptableThreshold) {
+            if (riLevels.get(ms.getRisk()).getLevelValue() > acceptableThreshold) {
                 msUris.add(ms.getUri());
             }
         }
@@ -541,23 +539,28 @@ public class AttackPathDataset {
         return riLevels.containsKey(riskKey);
     }
 
-    // check MS list exists, no point going futher
-    public boolean checkMisbehaviourList(List<String> misbehaviours) {
-        boolean retVal = true;
+    /** Checks if all elements in the given list represent a valid misbehaviour
+     * set.
+     *
+     * This method iterates through the list of misbehaviour set identifiers
+     * and checks each one to determine if it corresponds to a valid
+     * misbehaviour set.
+     *
+     * @param misbehaviourSetList A list of misbehavour set short URIs as
+     * strings
+     * @return {@code true} if every identifier in the list corresponds to a valid
+     * misbehaviour set, otherwise {@code false}.
+     */
+    public boolean checkMisbehaviourList(List<String> misbehaviourSetList) {
 
-        if (misbehaviours == null || misbehaviours.isEmpty()) {
-            return false;
-        }
-
-        for (String misb : misbehaviours) {
+        for (String misb : misbehaviourSetList) {
             if (!this.isMisbehaviourSet(misb)) {
                 logger.warn("failed to identify MS: {}", misb);
-                retVal = false;
-                break;
+                return false;
             }
         }
 
-        return retVal;
+        return true;
     }
 
     public AssetDTO fillAssetDTO(String assetUri) {
@@ -641,20 +644,34 @@ public class AttackPathDataset {
         return uri;
     }
 
-    public int compareOverallRiskLevels(String overallRiskA, String overallRiskB) {
+    /**
+     * Compare two risk levels specified by URI fragments
+     */
+    public int compareRiskLevelURIs(String overallRiskA, String overallRiskB) {
         logger.debug("Overall Risk Comparison: riskA({}) ? riskB({})", overallRiskA, overallRiskB);
 
         int levelA = riLevels.get(overallRiskA).getLevelValue();
         int levelB = riLevels.get(overallRiskB).getLevelValue();
 
         // Compare levelA and levelB and return -1, 0, or 1
-        if (levelA < levelB) {
-            return -1; // riskA is less than riskB
-        } else if (levelA > levelB) {
-            return 1; // riskA is greater than riskB
-        } else {
-            return 0; // riskA is equal to riskB
+        return Integer.compare(levelA, levelB);
+    }
+
+    /*
+     * Compare the risk levels of a list of misbehaviour sets with another single level
+     */
+    public int compareMSListRiskLevel(List<String> targetMSURIs, String otherRiskURI) {
+        int targetRiskLevel = riLevels.get(otherRiskURI).getLevelValue();
+        int maxRiskLevel = 0;
+
+        for (String msURI : targetMSURIs) {
+            int riskLevel = riLevels.get(misbehaviourSets.get(msURI).getRisk()).getLevelValue();
+            if (riskLevel > maxRiskLevel) {
+                maxRiskLevel = riskLevel;
+            }
         }
+
+        return Integer.compare(maxRiskLevel, targetRiskLevel);
     }
 
     public StateDTO getState() {

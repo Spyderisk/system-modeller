@@ -58,7 +58,6 @@ public class RecommendationsAlgorithm {
     private IQuerierDB querier;
     private String modelId;
     private int recCounter = 0;
-    private int appliedCSCounter = 0;
     private RecommendationReportDTO report;
     private String riskMode = "CURRENT";
     private String acceptableRiskLevel;
@@ -67,7 +66,7 @@ public class RecommendationsAlgorithm {
     private boolean localSearch;
 
     // allPaths flag for single or double backtrace
-    private boolean allPaths = true;
+    private boolean shortestPath = true;
 
     public RecommendationsAlgorithm(RecommendationsAlgorithmConfig config) {
         this.querier = config.getQuerier();
@@ -124,61 +123,33 @@ public class RecommendationsAlgorithm {
     }
 
     /**
-     * Calculate the attack path graph using an MS threshold
-     * @param targetUris
-     * @return 
+     * Calculate the attack tree
+     * @return the attack graph
      */
-    public AttackTree calcAttackTree(List<String> uris) {
-        return calculateAttackTree(uris, riskMode, this.allPaths);
-    }
-
-    /**
-     * Calculate the attack path graph using an MS threshold
-     * @param thresholdLevel
-     * @return 
-     */
-    public AttackTree calcAttackTree(String thresholdLevel) {
-        return calculateAttackTree(apd.filterMisbehaviours(thresholdLevel), riskMode, this.allPaths);
-    }
-
-    /**
-     * Calculate the attack path graph
-     * @return 
-     */
-    public AttackTree calcAttackTree() {
-        if (targetMS != null && !targetMS.isEmpty()) {
-            return calculateAttackTree(targetMS, riskMode, allPaths);
+    private AttackTree calculateAttackTree() {
+        if (targetMS != null) {
+            return calculateAttackTree(targetMS);
         } else {
-            return calculateAttackTree(apd.filterMisbehaviours(acceptableRiskLevel), riskMode, allPaths);
+            return calculateAttackTree(apd.filterMisbehavioursByRiskLevel(acceptableRiskLevel));
         }
     }
 
     /**
-     * Calculate the attack path graph
+     * Calculate the attack tree
      * @param targetUris
-     * @param riskCalculationMode
-     * @param allPaths
-     * @return
+     * @return the attack graph
      * @throws RuntimeException 
      */
-    public AttackTree calculateAttackTree(List<String> targetUris, String riskCalculationMode, boolean allPaths) throws RuntimeException {
-        logger.debug("calculate attack tree with isFUTURE: {}, allPaths: {}", riskCalculationMode, allPaths);
+    private AttackTree calculateAttackTree(List<String> targetUris) throws RuntimeException {
+        logger.debug("calculate attack tree with isFUTURE: {}, shortestPath: {}", riskMode, shortestPath);
         logger.debug("target URIs: {}", targetUris);
 
-        checkRequestedRiskCalculationMode(riskCalculationMode);
-
-        return calculateAttackTreeInternal(targetUris, riskCalculationMode, allPaths);
-    }
-
-    private AttackTree calculateAttackTreeInternal(List<String> targetUris, String riskCalculationMode, boolean singlePath)
-            throws RuntimeException {
-
-        boolean isFutureRisk = apd.isFutureRisk(riskCalculationMode);
+        boolean isFutureRisk = apd.isFutureRisk(riskMode);
         AttackTree attackTree = null;
 
         try {
             final long startTime = System.currentTimeMillis();
-            attackTree = new AttackTree(targetUris, isFutureRisk, singlePath, apd);
+            attackTree = new AttackTree(targetUris, isFutureRisk, shortestPath, apd);
             attackTree.stats();
             final long endTime = System.currentTimeMillis();
             logger.info("AttackPathAlgorithm.calculateAttackTree: execution time {} ms", endTime - startTime);
@@ -195,14 +166,14 @@ public class RecommendationsAlgorithm {
         RiskVector riskResponse = null;
         RecommendationDTO recommendation = null;
         try {
-            riskResponse = apd.calculateRisk(this.modelId, RiskCalculationMode.valueOf(riskMode));
+            riskResponse = apd.calculateRisk(modelId, RiskCalculationMode.valueOf(riskMode));
             logger.debug("Risk calculation response: {}", riskResponse);
             logger.debug("Overall model risk: {}", riskResponse.getOverall());
             StateDTO state = apd.getState();
 
             recommendation = createRecommendation(csgList, csSet, state);
 
-            if (this.report.getRecommendations() == null) {
+            if (report.getRecommendations() == null) {
                 report.setRecommendations(new ArrayList<>());
             }
 
@@ -221,8 +192,6 @@ public class RecommendationsAlgorithm {
             // raise exception since failed to run risk calculation
             throw new RuntimeException(e);
         }
-
-        logger.debug("check for a termination condition for ID {}", recommendation.getIdentifier());
 
         return riskResponse;
     }
@@ -248,18 +217,14 @@ public class RecommendationsAlgorithm {
     }
 
     /**
-     * Build CSG recommendations tree
-     * The current implementation of the algorithm will terminate a CSG option
-     * if risk is below the "accepted risk level", or it will branch only if
-     * the observed risk level reduction is equal or better than the risk level
-     * observed at the parent level, subsequent attack path graphs make use of
-     * the acceptable risk level value for calculating target MS.
+     * Build CSG recommendations tree.
+     * The method is recursive and will create a tree of CSG options.
      * @param le
      * @param myNode
      * @return
      */
     private CSGNode applyCSGs(LogicalExpression le, CSGNode myNode, String parentStep, RiskVector parentRiskVector) {
-        logger.debug("applyCSGs() recursive method with parentStep: {}", parentStep);
+        logger.debug("applyCSGs() with parentStep: {}", parentStep);
 
         // convert LE to DNF
         le.applyDNF(300);
@@ -304,57 +269,51 @@ public class RecommendationsAlgorithm {
 
             // apply all CS in the CS_set
             if (csSet.isEmpty()) {
-                logger.debug("EMPTY csSet is found, skipping this CSG option");
+                logger.warn("EMPTY csSet is found, skipping this CSG option");
                 continue;
             }
             apd.changeCS(csSet, true);
-            appliedCSCounter += csSet.size();
 
             // Re-calculate risk now and create a potential recommendation
             RiskVector riskResponse = processOption(csgList, csSet, childNode);
 
+            // Check for success
+            // Finish if the maximum risk is below or equal to the acceptable risk level
+            // If we are constrained to some target MS, then we should only check the risk levels of the targets (otherwise it is likely it will never finish)
 
-            // check if risk is below acceptable risk level
-            if ((riskResponse != null) & (apd.compareOverallRiskLevels(acceptableRiskLevel, riskResponse.getOverall()) >= 0)) {
-                logger.info("Termination condition reached for {}", myStep);
+            boolean globalRiskAcceptable = targetMS == null && apd.compareRiskLevelURIs(riskResponse.getOverall(), acceptableRiskLevel) <= 0;
+            boolean targetedRiskAcceptable = targetMS != null && apd.compareMSListRiskLevel(targetMS, acceptableRiskLevel) <= 0;
+
+            if (globalRiskAcceptable || targetedRiskAcceptable) {
+                logger.debug("Success termination condition reached for {}", myStep);
             } else {
                 logger.debug("Risk is still higher than {}", acceptableRiskLevel);
-                if (localSearch) {
-                    logger.info("Abort branch");
-                    /* this is an altenative to branch on continues risk
-                     * reduction between branches
-                    if (parentRiskVector.compareTo(riskResponse) == 1) {
-                        AttackTree nestedAttackTree;
-                        if (!targetMS.isEmpty()) {
-                            nestedAttackTree = calcAttackTree(targetMS);
-                        } else {
-                            nestedAttackTree = calcAttackTree(acceptableRiskLevel);
-                        }
-                        LogicalExpression nestedLogicalExpression = nestedAttackTree.attackMitigationCSG();
-                        this.applyCSGs(nestedLogicalExpression, childNode, myStep, riskResponse);
-                    } else {
-                        logger.debug("Abort nesting further as current risk is higher than the initial");
-                    }
-                    */
+
+                // Check if we should abort
+                // If doing localSearch then stop searching (fail) if the risk vector is higher than the parent
+                // In this way we do not let the risk vector increase. We could make this softer by comparing the "overall risk level", i.e. the highest risk level of the current and parent vector
+
+                if (localSearch && (riskResponse.compareTo(parentRiskVector) == 1)) {
+                    logger.debug("Risk level has increased. Abort branch {}", myStep);
                 } else {
-                    logger.info("Recalculate nested attack path tree");
-                    AttackTree nestedAttackTree;
-                    if (!targetMS.isEmpty()) {
-                        nestedAttackTree = calcAttackTree(targetMS);
-                    } else {
-                        nestedAttackTree = calcAttackTree(acceptableRiskLevel);
-                    }
+
+                    // Carry on searching by recursing into the next level
+
+                    logger.debug("Recalculate nested attack path tree");
+                    AttackTree nestedAttackTree = calculateAttackTree();
                     LogicalExpression nestedLogicalExpression = nestedAttackTree.attackMitigationCSG();
-                    this.applyCSGs(nestedLogicalExpression, childNode, myStep, riskResponse);
+                    applyCSGs(nestedLogicalExpression, childNode, myStep, riskResponse);
                 }
             }
 
             // undo CS changes in CS_set
             logger.debug("Undo CS controls ({})", csSet.size());
             apd.changeCS(csSet, false);
-            appliedCSCounter -= csSet.size();
             logger.debug("Re-run risk calculation after CS changes have been revoked");
-            apd.calculateRisk(this.modelId, RiskCalculationMode.valueOf(riskMode));
+            // TODO: optimise this
+            // This does more work than is necessary as we are going to run the risk calculation again in the next iteration.
+            // The reason it is here is because of the side effect of the calculateRisk method which updates the various cached data.
+            apd.calculateRisk(modelId, RiskCalculationMode.valueOf(riskMode));
 
             logger.debug("Finished examining CSG LE option {}: {}", myStep, csgOption);
         }
@@ -421,7 +380,7 @@ public class RecommendationsAlgorithm {
      */
     private RecommendationDTO createRecommendation(List<String> csgList, Set<String> csSet, StateDTO state) {
         RecommendationDTO recommendation = new RecommendationDTO();
-        recommendation.setIdentifier(this.recCounter++);
+        recommendation.setIdentifier(recCounter++);
         recommendation.setState(state);
         logger.debug("Creating a potential recommendation ID: {}", recommendation.getIdentifier());
 
@@ -533,25 +492,25 @@ public class RecommendationsAlgorithm {
         try {
             progress.updateProgress(0.1, "Getting initial risk state");
             // get initial risk state
-            initialRiskVector = apd.calculateRisk(this.modelId, RiskCalculationMode.valueOf(riskMode));
+            initialRiskVector = apd.calculateRisk(modelId, RiskCalculationMode.valueOf(riskMode));
 
             StateDTO state = apd.getState();
             report.setCurrent(state);
 
             progress.updateProgress(0.2, "Calculating attack tree");
-            AttackTree threatTree = calcAttackTree();
+            AttackTree threatTree = calculateAttackTree();
 
             // step: attackMitigationCSG?
             LogicalExpression attackMitigationCSG = threatTree.attackMitigationCSG();
             attackMitigationCSG.displayExpression();
 
             // step: rootNode?
-            progress.updateProgress(0.3, "Applying control strategies");
+            progress.updateProgress(0.3, "Trying different control strategy options");
             CSGNode rootNode = applyCSGs(attackMitigationCSG);
 
             // step: makeRecommendations on rootNode?
             logger.debug("MAKE RECOMMENDATIONS");
-            progress.updateProgress(0.4, "Making recommendations");
+            progress.updateProgress(0.8, "Making recommendations");
             makeRecommendations(rootNode);
 
             progress.updateProgress(0.9, "Preparing report");

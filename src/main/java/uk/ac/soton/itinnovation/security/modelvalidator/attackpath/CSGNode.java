@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import uk.ac.soton.itinnovation.security.model.system.RiskVector;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations.RecommendationDTO;
 
 public class CSGNode {
