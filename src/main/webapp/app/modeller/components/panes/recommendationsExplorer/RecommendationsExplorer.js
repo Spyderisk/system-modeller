@@ -112,9 +112,6 @@ class RecommendationsExplorer extends React.Component {
 
         return (
             <div className="content">
-                <div className="desc">
-                    <p>Current risk: {currentRiskLevel.label}</p>
-                </div>
                 {!recommendations ? this.renderNoRecommendations() : 
                 <div className="panel-group accordion recommendations">
                     {recommendations.map((rec, index) => {
