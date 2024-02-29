@@ -146,13 +146,7 @@ class RecommendationsExplorer extends React.Component {
                                 </Panel.Heading>
                                 <Panel.Collapse>
                                     <Panel.Body>
-                                        <p>{'Residual risk: '}
-                                            <OverlayTrigger delayShow={Constants.TOOLTIP_DELAY} placement="right"
-                                                overlay={<Tooltip id={"risklevel-tooltip-" + id} className={"tooltip-overlay"}>
-                                                    <strong>{riskVectorString}</strong></Tooltip>}>
-                                                <span>{riskLevel.label}</span>
-                                            </OverlayTrigger>
-                                        </p>
+                                        <p>Residual risk: {riskLevel.label} ({riskVectorString})</p>
                                         <p>Control Strategies</p>
                                         <ControlStrategiesPanel dispatch={this.props.dispatch}
                                             modelId={this.props.model["id"]}
