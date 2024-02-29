@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from 'prop-types';
-import {Panel} from "react-bootstrap";
+import {Panel, OverlayTrigger, Tooltip} from "react-bootstrap";
 import {connect} from "react-redux";
 import {JsonView, defaultStyles} from 'react-json-view-lite';
 import 'react-json-view-lite/dist/index.css';
@@ -31,16 +31,6 @@ class RecommendationsExplorer extends React.Component {
         this.compareRiskVectors = this.compareRiskVectors.bind(this);
         this.updateThreat = this.updateThreat.bind(this);
         this.toggleRecommendationControls = this.toggleRecommendationControls.bind(this);
-
-        //Map of risk level URIs to short level tags (e.g. "Very High" = "VH")
-        //These are currently used to generate the brief risk vector summary
-        this.riskLevelTags = {
-            "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#RiskLevelVeryHigh": "VH",
-            "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#RiskLevelHigh": "H",
-            "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#RiskLevelMedium": "M",
-            "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#RiskLevelLow": "L",
-            "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#RiskLevelVeryLow": "VL"
-        };
 
         this.state = {
             updatingControlSets: {}
@@ -132,7 +122,7 @@ class RecommendationsExplorer extends React.Component {
                         let reccsgs = rec.controlStrategies;
                         let state = rec.state;
                         let riskVector = this.getRiskVector(state.risk);
-                        let riskVectorString = this.getRiskVectorString(riskVector); //TODO display this only as a tooltip? (see usage below)
+                        let riskVectorString = this.getRiskVectorString(riskVector);
                         let riskLevel = this.getHighestRiskLevel(riskVector);
                         let csgsByName = new Map();
 
@@ -159,7 +149,13 @@ class RecommendationsExplorer extends React.Component {
                                 </Panel.Heading>
                                 <Panel.Collapse>
                                     <Panel.Body>
-                                        <p>Residual risk: {riskLevel.label} ({riskVectorString})</p>
+                                        <p>{'Residual risk: '}
+                                            <OverlayTrigger delayShow={Constants.TOOLTIP_DELAY} placement="right"
+                                                overlay={<Tooltip id={"risklevel-tooltip-" + id} className={"tooltip-overlay"}>
+                                                    <strong>{riskVectorString}</strong></Tooltip>}>
+                                                <span>{riskLevel.label}</span>
+                                            </OverlayTrigger>
+                                        </p>
                                         <p>Control Strategies</p>
                                         <ControlStrategiesPanel dispatch={this.props.dispatch}
                                             modelId={this.props.model["id"]}
@@ -233,7 +229,6 @@ class RecommendationsExplorer extends React.Component {
         let riskVector = shortUris.map(shorturi => {
             let uri = Constants.URI_PREFIX + shorturi;
             let riskLevel = riskLevelsMap[uri];
-            riskLevel["labelShort"] = this.riskLevelTags[uri];
             let riskLevelCount = {level: riskLevel, count: reportedRisk[shorturi]}
             return riskLevelCount;
         });
@@ -254,11 +249,11 @@ class RecommendationsExplorer extends React.Component {
         return riskVector;
     }
 
-    //e.g. "VL: 695, L: 0, M: 1, H: 0, VH: 0"
+    //e.g. "Very Low: 695, Low: 0, Medium: 1, High: 0, Very High: 0"
     getRiskVectorString(riskVector) {
         let strArr = riskVector.map(riskLevelCount => {
             let level = riskLevelCount.level;
-            return [level.labelShort, riskLevelCount.count].join(": ");
+            return [level.label, riskLevelCount.count].join(": ");
         });
 
         return strArr.join(", ");
