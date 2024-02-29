@@ -51,7 +51,7 @@ class RecommendationsExplorer extends React.Component {
 
         return (
             <Explorer
-                title={"Recommendations Explorer"}
+                title={"Recommendations Explorer (beta)"}
                 windowName={"recommendationsExplorer"}
                 documentationLink={"redirect/recommendations-explorer"}
                 rndParams={{xScale: 0.20, width: 700, height: 600}}
