@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from 'prop-types';
-import {Panel} from "react-bootstrap";
+import {Panel, Button} from "react-bootstrap";
 import {connect} from "react-redux";
 import {JsonView, defaultStyles} from 'react-json-view-lite';
 import 'react-json-view-lite/dist/index.css';
@@ -30,7 +30,7 @@ class RecommendationsExplorer extends React.Component {
         this.getRiskVectorString = this.getRiskVectorString.bind(this);
         this.compareRiskVectors = this.compareRiskVectors.bind(this);
         this.updateThreat = this.updateThreat.bind(this);
-        this.toggleRecommendationControls = this.toggleRecommendationControls.bind(this);
+        this.applyRecommendation = this.applyRecommendation.bind(this);
 
         this.state = {
             updatingControlSets: {}
@@ -154,11 +154,9 @@ class RecommendationsExplorer extends React.Component {
                                         />
                                         <p style={{marginTop: "10px"}}>Controls to enable</p>
                                         {this.renderControlSets(rec.controls)}
-                                        <p style={{marginTop: "10px"}}>
-                                            <label>
-                                                {'Select all recommendation controls: '}
-                                                <input type="checkbox" id={id} onClick={(e) => this.props.authz.userEdit ? this.toggleRecommendationControls(id) : undefined}/>
-                                            </label>
+                                        <p style={{marginTop: "5px", marginBottom: "0px"}}>
+                                            <Button disabled={!this.props.authz.userEdit} bsClass="btn btn-primary btn-xs"
+                                            onClick={() => {this.applyRecommendation(id)}}>Apply</Button>
                                         </p>
                                     </Panel.Body>
                                 </Panel.Collapse>
@@ -294,9 +292,9 @@ class RecommendationsExplorer extends React.Component {
         }
     }
 
-    toggleRecommendationControls(recid) {
-        console.log("toggleRecommendationControls: ", recid);
-        let proposed = $("#"+ recid).is(":checked"); //is recommendation checked?
+    applyRecommendation(recid) {
+        console.log("applyRecommendation: ", recid);
+        let proposed = true;
         console.log("recommendation " + recid + " proposed:", proposed);
         let report = this.props.recommendations; //get recommendations report
         let rec = report.recommendations.find((rec) => rec["identifier"] === recid);
@@ -312,7 +310,7 @@ class RecommendationsExplorer extends React.Component {
             this.props.dispatch(updateControls(this.props.model.id, controlsToUpdate, proposed, proposed)); //set WIP flag only if proposed is true
         }
         else {
-            console.warn("Could not locate recommendation: ", id);
+            console.warn("Could not locate recommendation: ", recid);
         }
     }
 
