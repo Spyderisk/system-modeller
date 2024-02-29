@@ -145,14 +145,14 @@ class RecommendationsExplorer extends React.Component {
                                 <Panel.Collapse>
                                     <Panel.Body>
                                         <p>Residual risk: {riskLevel.label} ({riskVectorString})</p>
-                                        <p>Control Strategies</p>
+                                        <p>Control Strategies to enable</p>
                                         <ControlStrategiesPanel dispatch={this.props.dispatch}
                                             modelId={this.props.model["id"]}
                                             assetCsgs={csgsArray}
                                             displayAssetName={true}
                                             authz={this.props.authz}
                                         />
-                                        <p style={{marginTop: "10px"}}>Controls</p>
+                                        <p style={{marginTop: "10px"}}>Controls to enable</p>
                                         {this.renderControlSets(rec.controls)}
                                         <p style={{marginTop: "10px"}}>
                                             <label>
