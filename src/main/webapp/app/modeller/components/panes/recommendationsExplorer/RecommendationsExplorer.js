@@ -158,6 +158,7 @@ class RecommendationsExplorer extends React.Component {
                                             <Button disabled={!this.props.authz.userEdit} bsClass="btn btn-primary btn-xs"
                                             onClick={() => {this.applyRecommendation(id)}}>Apply</Button>
                                         </p>
+                                        {/* TODO: add tooltip to Apply button*/}
                                     </Panel.Body>
                                 </Panel.Collapse>
                             </Panel>
@@ -293,20 +294,24 @@ class RecommendationsExplorer extends React.Component {
     }
 
     applyRecommendation(recid) {
-        console.log("applyRecommendation: ", recid);
         let proposed = true;
-        console.log("recommendation " + recid + " proposed:", proposed);
         let report = this.props.recommendations; //get recommendations report
         let rec = report.recommendations.find((rec) => rec["identifier"] === recid);
 
         if (rec) {
-            console.log("Recommendation:", rec);
-
             let controlsToUpdate = rec.controls.map(control => {
                 return Constants.URI_PREFIX + control.uri;
             });
 
-            console.log("Updating controlds:", controlsToUpdate, proposed);
+            let updatingControlSets = {...this.state.updatingControlSets};
+            controlsToUpdate.forEach(controlUri => {
+                updatingControlSets[controlUri] = true;
+            });
+        
+            this.setState({
+                updatingControlSets: updatingControlSets,
+            });
+
             this.props.dispatch(updateControls(this.props.model.id, controlsToUpdate, proposed, proposed)); //set WIP flag only if proposed is true
         }
         else {
