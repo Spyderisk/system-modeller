@@ -1735,9 +1735,8 @@ export function getRecommendationsBlocking(modelId, riskMode) {
     };
 }
 
-export function getRecommendations(modelId, riskMode) {
-    let acceptableRiskLevel = "domain#RiskLevelMedium";
-
+export function getRecommendations(modelId, riskMode, acceptableRiskLevel) {
+    console.log("getRecommendations: acceptableRiskLevel = ", acceptableRiskLevel);
     return function(dispatch) {
         dispatch({
             type: instr.IS_CALCULATING_RECOMMENDATIONS

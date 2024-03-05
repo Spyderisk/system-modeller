@@ -6,6 +6,7 @@ export const ASSET_MAX_CARDINALITY = 1; //default max cardinality for new asset
 export const URI_PREFIX = "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/"
 export const ASSET_DEFAULT_POPULATION = "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#PopLevelSingleton"
 export const MODELLING_ERRORS_URI = "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#Anomalies";
+export const ACCEPTABLE_RISK_LEVEL = "domain#RiskLevelMedium";
 export const MODEL_NAME_LIMIT = 50;
 export const MODEL_DESCRIPTION_LIMIT = 500;
 export const DISABLE_GROUPING = false; //disable add group feature on Canvas
