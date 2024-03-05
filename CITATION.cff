@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+title: Spyderisk System Modeller
+message: >-
+  This project should be cited using information from this
+  CFF record (see https://citation-file-format.github.io/)
+type: software
+authors:
+  - given-names: The Spyderisk Authors
+    email: team@spyderisk.org
+    affiliation: Spyderisk Open Project
+identifiers:
+  - type: doi
+    value: 10.1234/spyderisk.5678
+    description: >-
+      Spyderisk Risk Assessment Software (demo citation
+      file)
+repository-code: 'https://github.com/Spyderisk/system-modeller'
+url: 'https://github.com/Spyderisk/'
+abstract: >-
+  This is the GitHub repository for the Spyderisk risk
+  assessment software tool. This consists of a web frontend
+  coupled to a backend, and various tools to import and
+  export risk models and expose modelling functionality via
+  an API. Academic papers accompany this tool, and other
+  repositories within the Spyderisk Open Project contain
+  generic risk models that can be customised using this
+  software.
+keywords:
+  - risk assessment
+  - causal modelling
+  - web service
+  - cybersecurity risk assessment
+license: Apache-2.0
