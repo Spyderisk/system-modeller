@@ -24,6 +24,7 @@
 /////////////////////////////////////////////////////////////////////////
 package uk.ac.soton.itinnovation.security.modelvalidator.attackpath;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import uk.ac.soton.itinnovation.security.modelquerier.IQuerierDB;
@@ -41,7 +42,11 @@ public class RecommendationsAlgorithmConfig {
         this.modelId = modelId;
         this.riskMode = riskMode;
         this.acceptableRiskLevel = level;
-        this.targetMS = targets;
+        if (targets == null) {
+            this.targetMS = new ArrayList<>();
+        } else {
+            this.targetMS = targets;
+        }
         this.localSearch = localSearch;
     }
 

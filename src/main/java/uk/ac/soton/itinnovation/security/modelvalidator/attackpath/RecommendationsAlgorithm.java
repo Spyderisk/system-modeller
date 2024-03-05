@@ -127,7 +127,7 @@ public class RecommendationsAlgorithm {
      * @return the attack graph
      */
     private AttackTree calculateAttackTree() {
-        if (targetMS != null && !targetMS.isEmpty()) {
+        if (!targetMS.isEmpty()) {
             logger.debug("caclulate attack tree using MS list: {}", targetMS);
             return calculateAttackTree(targetMS);
         } else {
@@ -283,8 +283,8 @@ public class RecommendationsAlgorithm {
             // Finish if the maximum risk is below or equal to the acceptable risk level
             // If we are constrained to some target MS, then we should only check the risk levels of the targets (otherwise it is likely it will never finish)
 
-            boolean globalRiskAcceptable = targetMS == null && apd.compareRiskLevelURIs(riskResponse.getOverall(), acceptableRiskLevel) <= 0;
-            boolean targetedRiskAcceptable = targetMS != null && apd.compareMSListRiskLevel(targetMS, acceptableRiskLevel) <= 0;
+            boolean globalRiskAcceptable = targetMS.isEmpty() && apd.compareRiskLevelURIs(riskResponse.getOverall(), acceptableRiskLevel) <= 0;
+            boolean targetedRiskAcceptable = !targetMS.isEmpty() && apd.compareMSListRiskLevel(targetMS, acceptableRiskLevel) <= 0;
 
             if (globalRiskAcceptable || targetedRiskAcceptable) {
                 logger.debug("Success termination condition reached for {}", myStep);
