@@ -1736,13 +1736,15 @@ export function getRecommendationsBlocking(modelId, riskMode) {
 }
 
 export function getRecommendations(modelId, riskMode) {
+    let acceptableRiskLevel = "domain#RiskLevelMedium";
+
     return function(dispatch) {
         dispatch({
             type: instr.IS_CALCULATING_RECOMMENDATIONS
         });
 
         axiosInstance
-            .get("/models/" + modelId + "/recommendations", {params: {riskMode: riskMode}})
+            .get("/models/" + modelId + "/recommendations", {params: {riskMode: riskMode, acceptableRiskLevel: acceptableRiskLevel}})
             .then((response) => {
                 dispatch({
                     type: instr.RECOMMENDATIONS_JOB_STARTED,
