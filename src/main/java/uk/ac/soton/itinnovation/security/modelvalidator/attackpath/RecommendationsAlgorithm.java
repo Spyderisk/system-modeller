@@ -127,9 +127,11 @@ public class RecommendationsAlgorithm {
      * @return the attack graph
      */
     private AttackTree calculateAttackTree() {
-        if (targetMS != null) {
+        if (targetMS != null && !targetMS.isEmpty()) {
+            logger.debug("caclulate attack tree using MS list: {}", targetMS);
             return calculateAttackTree(targetMS);
         } else {
+            logger.debug("caclulate attack tree using acceptable risk level: {}", acceptableRiskLevel);
             return calculateAttackTree(apd.filterMisbehavioursByRiskLevel(acceptableRiskLevel));
         }
     }
