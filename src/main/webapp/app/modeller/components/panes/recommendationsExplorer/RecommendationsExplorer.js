@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from 'prop-types';
-import {Panel, Button} from "react-bootstrap";
+import {Panel, Button, OverlayTrigger, Tooltip} from "react-bootstrap";
 import {connect} from "react-redux";
 import {JsonView, defaultStyles} from 'react-json-view-lite';
 import 'react-json-view-lite/dist/index.css';
@@ -134,6 +134,7 @@ class RecommendationsExplorer extends React.Component {
 
                         csgsByName = new Map([...csgsByName.entries()].sort((a, b) => a.localeCompare(b)));
                         let csgsArray = Array.from(csgsByName);
+                        let applyButtonTooltipText = "Enable all recommended controls";
 
                         return (
                             <Panel key={id} bsStyle="primary" defaultExpanded>
@@ -155,10 +156,13 @@ class RecommendationsExplorer extends React.Component {
                                         <p style={{marginTop: "10px"}}>Controls to enable</p>
                                         {this.renderControlSets(rec.controls)}
                                         <p style={{marginTop: "5px", marginBottom: "0px"}}>
-                                            <Button disabled={!this.props.authz.userEdit} bsClass="btn btn-primary btn-xs"
-                                            onClick={() => {this.applyRecommendation(id)}}>Apply</Button>
+                                            <OverlayTrigger delayShow={Constants.TOOLTIP_DELAY} placement="right"
+                                                overlay={<Tooltip id={"risklevel-tooltip-" + id} className={"tooltip-overlay"}>
+                                                    <strong>{applyButtonTooltipText}</strong></Tooltip>}>
+                                                <Button disabled={!this.props.authz.userEdit} bsClass="btn btn-primary btn-xs"
+                                                    onClick={() => {this.applyRecommendation(id)}}>Apply</Button>
+                                            </OverlayTrigger>
                                         </p>
-                                        {/* TODO: add tooltip to Apply button*/}
                                     </Panel.Body>
                                 </Panel.Collapse>
                             </Panel>
