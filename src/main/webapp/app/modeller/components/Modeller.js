@@ -279,6 +279,9 @@ class Modeller extends React.Component {
                 />
 
                 <RecommendationsExplorer
+                    model={this.props.model}
+                    controlSets={controlSetsMap}
+                    csgAssets={this.props.csgAssets}
                     selectedAsset={this.props.selectedAsset}
                     isActive={this.props.isRecommendationsExplorerActive} // is window displayed at front
                     recommendations={this.props.recommendations}
@@ -286,6 +289,7 @@ class Modeller extends React.Component {
                     onHide={this.closeRecommendationsExplorer}
                     loading={this.props.loading}
                     dispatch={this.props.dispatch}
+                    authz={this.props.authz}
                 />
 
                 <Canvas ref="tile-canvas"
@@ -1034,6 +1038,7 @@ var mapStateToProps = function (state) {
         expanded: state.modeller.expanded,
         filters: state.modeller.filters,
         misbehaviourTwas: state.modeller.misbehaviourTwas,
+        csgAssets: state.modeller.csgAssets,
         isMisbehaviourExplorerVisible: state.modeller.isMisbehaviourExplorerVisible,
         isMisbehaviourExplorerActive: state.modeller.isMisbehaviourExplorerActive,
         isComplianceExplorerVisible: state.modeller.isComplianceExplorerVisible,
@@ -1089,6 +1094,7 @@ Modeller.propTypes = {
     expanded: PropTypes.object,
     filters: PropTypes.object,
     misbehaviourTwas: PropTypes.object,
+    csgAssets: PropTypes.object,
     isControlExplorerVisible: PropTypes.bool,
     isControlExplorerActive: PropTypes.bool,
     isControlStrategyExplorerVisible: PropTypes.bool,

@@ -354,30 +354,6 @@ body {
                     border: 1px ridge #bcdbe4;
                     margin: 0;
                     overflow: hidden;
-                    .control {
-                        width: 100%;
-                        background-color: #1962c0;
-                        border: 1px ridge #1962c0;
-                        color: #fff;
-                        margin: 0;
-                        overflow: hidden;
-                        padding: 2px;
-                        display: inline-flex;
-                        align-items: center;
-
-                        .control-description {
-                            margin-left: 5px;
-                            font-weight: 300;
-                            color: white;
-                        }
-
-                        &[disabled] {
-                            .control-description {
-                                color: darken(#fff, 30);
-                                cursor: not-allowed;
-                            }
-                        }
-                    }
                     .optional {
                         background-color: #3d8ed4;
                     }
@@ -431,6 +407,31 @@ body {
     }
     .ui-resizable-handle {
         cursor: nwse-resize;
+    }
+}
+
+.control {
+    width: 100%;
+    background-color: #1962c0;
+    border: 1px ridge #1962c0;
+    color: #fff;
+    margin: 0;
+    overflow: hidden;
+    padding: 2px;
+    display: inline-flex;
+    align-items: center;
+
+    .control-description {
+        margin-left: 5px;
+        font-weight: 300;
+        color: white;
+    }
+
+    &[disabled] {
+        .control-description {
+            color: darken(#fff, 30);
+            cursor: not-allowed;
+        }
     }
 }
 
@@ -2051,4 +2052,8 @@ div.panel-title {
     font-size: 12px;
     margin: 2px 0;
     padding: 2px 0;
+}
+
+.recommendations .bare-list {
+    font-size: 14px;
 }

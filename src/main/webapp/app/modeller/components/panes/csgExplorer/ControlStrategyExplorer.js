@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from 'prop-types';
-import renderControlStrategy from "./ControlStrategyRenderer";
+import {renderControlStrategy} from "./ControlStrategyRenderer";
 import {
     updateControlOnAsset,
     updateThreat

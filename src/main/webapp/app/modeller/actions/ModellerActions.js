@@ -1434,16 +1434,16 @@ export function revertControlCoverageOnAsset(modelId, assetId, controlSet) {
 
 //Reset controls (i.e. "Reset All" button)
 export function resetControls(modelId, controls) {
-    return updateControls(modelId, controls, false, true);
+    return updateControls(modelId, controls, false, false, true);
 }
 
 //Update multiple controls with new proposed value
-export function updateControls(modelId, controls, proposed, controlsReset) {
+export function updateControls(modelId, controls, proposed, workInProgress, controlsReset) {
     console.log("updateControls: controlsReset = " + controlsReset);
     let controlsUpdateRequest = {
         controls: controls,
         proposed: proposed,
-        workInProgress: false //this should be set to false, irrespective of whether proposed is true or false
+        workInProgress: workInProgress
     };
     
     return function (dispatch) {
