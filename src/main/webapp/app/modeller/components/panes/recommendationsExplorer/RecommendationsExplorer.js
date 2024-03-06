@@ -129,7 +129,6 @@ class RecommendationsExplorer extends React.Component {
                             let asset = assetUri ? this.getAssetByUri(assetUri) : {label: "Unknown"}
                             csg.asset = asset;
                             csgsByName.set(name, csg);
-                            return csg;
                         });
 
                         csgsByName = new Map([...csgsByName.entries()].sort((a, b) => a[0].localeCompare(b[0])));
