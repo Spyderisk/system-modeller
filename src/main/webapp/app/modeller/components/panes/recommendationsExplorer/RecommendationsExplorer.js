@@ -132,7 +132,7 @@ class RecommendationsExplorer extends React.Component {
                             return csg;
                         });
 
-                        csgsByName = new Map([...csgsByName.entries()].sort((a, b) => a.localeCompare(b)));
+                        csgsByName = new Map([...csgsByName.entries()].sort((a, b) => a[0].localeCompare(b[0])));
                         let csgsArray = Array.from(csgsByName);
                         let applyButtonTooltipText = "Enable all recommended controls";
 
