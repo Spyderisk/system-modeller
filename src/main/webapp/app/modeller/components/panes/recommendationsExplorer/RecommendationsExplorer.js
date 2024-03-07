@@ -107,7 +107,6 @@ class RecommendationsExplorer extends React.Component {
                 return this.compareRiskVectors(a.state.riskVector, b.state.riskVector); //sort ascending risk vector
             });
 
-
             //Select recommendations from the top of the list, up to the max number
             for (var i = 0; i < recommendations.length; i++) {
                 if (i >= max_recommendations) {

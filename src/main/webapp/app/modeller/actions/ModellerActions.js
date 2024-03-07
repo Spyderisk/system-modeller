@@ -1,4 +1,5 @@
 import * as instr from "../modellerConstants";
+import * as Constants from "../../common/constants.js";
 import {polyfill} from "es6-promise";
 import {axiosInstance} from "../../common/rest/rest";
 import {addAsset, addRelation} from "./InterActions"
@@ -1735,15 +1736,28 @@ export function getRecommendationsBlocking(modelId, riskMode) {
     };
 }
 
-export function getRecommendations(modelId, riskMode, acceptableRiskLevel) {
-    console.log("getRecommendations: acceptableRiskLevel = ", acceptableRiskLevel);
+export function getRecommendations(modelId, riskMode, acceptableRiskLevel, msUri, localSearch) {
+    console.log("Called getRecommendations");
+
+    let shortUri = msUri ? msUri.replace(Constants.URI_PREFIX, "") : null;
+
+    console.log("riskMode = ", riskMode);
+    console.log("acceptableRiskLevel = ", acceptableRiskLevel);
+    console.log("msUri = ", msUri);
+    console.log("shortUri = ", shortUri);
+    console.log("localSearch = ", localSearch);
+
     return function(dispatch) {
         dispatch({
             type: instr.IS_CALCULATING_RECOMMENDATIONS
         });
 
         axiosInstance
-            .get("/models/" + modelId + "/recommendations", {params: {riskMode: riskMode, acceptableRiskLevel: acceptableRiskLevel}})
+            .get("/models/" + modelId + "/recommendations", {params: {riskMode: riskMode, 
+                                                                acceptableRiskLevel: acceptableRiskLevel,
+                                                                targetURIs: shortUri,
+                                                                localSearch: localSearch,
+                                                            }})
             .then((response) => {
                 dispatch({
                     type: instr.RECOMMENDATIONS_JOB_STARTED,

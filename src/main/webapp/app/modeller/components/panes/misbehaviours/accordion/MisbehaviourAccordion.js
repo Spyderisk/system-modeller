@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import {OverlayTrigger, Panel, Tooltip, Button, ButtonToolbar} from "react-bootstrap";
 import ThreatsPanel from "../../details/accordion/panels/ThreatsPanel";
 import * as Constants from "../../../../../common/constants.js";
-import {getThreatGraph} from "../../../../actions/ModellerActions";
+import {getThreatGraph, getRecommendations} from "../../../../actions/ModellerActions";
 
 class MisbehaviourAccordion extends React.Component {
 
@@ -98,6 +98,17 @@ class MisbehaviourAccordion extends React.Component {
                 this.props.model.id,
                 this.props.model.riskCalculationMode,
                 this.props.selectedMisbehaviour.misbehaviour.uri));
+        };
+
+        let acceptableRiskLevel = Constants.ACCEPTABLE_RISK_LEVEL;
+
+        const handleRecommendationsButtonClick = () => {
+            this.props.dispatch(getRecommendations(
+                this.props.model.id,
+                this.props.model.riskCalculationMode,
+                acceptableRiskLevel,
+                this.props.selectedMisbehaviour.misbehaviour.uri,
+                false));
         };
 
         return (
@@ -203,7 +214,7 @@ class MisbehaviourAccordion extends React.Component {
                                         <Tooltip id="tooltip-threat-graph-id"
                                             className="tooltip-overlay"
                                         >
-                                        {this.props.model.riskCalculationMode ? "Calculate attack path" : "Run risk calculation first!"}
+                                        {this.props.model.riskLevelsValid ? "Calculate attack path" : "Run risk calculation first!"}
                                         </Tooltip>
                                     }
                                 >
@@ -211,11 +222,35 @@ class MisbehaviourAccordion extends React.Component {
                                         className="btn btn-primary btn-xs"
                                         disabled={
                                             attackPathThreats.length > 0 ||
-                                            !this.props.model.riskCalculationMode
+                                            !this.props.model.riskLevelsValid
                                         }
                                         onClick={handleThreatGraphButtonClick}
                                         >
                                         Calculate Attack Path
+                                    </Button>
+                                </OverlayTrigger>
+                                <OverlayTrigger
+                                    delayShow={Constants.TOOLTIP_DELAY}
+                                    placement="right"
+                                    trigger={["hover"]}
+                                    rootClose
+                                    overlay={
+                                        <Tooltip id="tooltip-recommendations-id"
+                                            className="tooltip-overlay"
+                                        >
+                                        {this.props.model.riskLevelsValid ? "Calculate recommendations" : "Run risk calculation first!"}
+                                        </Tooltip>
+                                    }
+                                >
+                                    <Button
+                                        className="btn btn-primary btn-xs"
+                                        disabled={
+                                            attackPathThreats.length > 0 ||
+                                            !this.props.model.riskLevelsValid
+                                        }
+                                        onClick={handleRecommendationsButtonClick}
+                                        >
+                                        Recommendations
                                     </Button>
                                 </OverlayTrigger>
                                 {loadingAttackPath ? <i className="fa fa-spinner fa-pulse fa-lg fa-fw"/> : null}
