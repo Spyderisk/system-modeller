@@ -92,7 +92,9 @@ class RecommendationsExplorer extends React.Component {
             return null;
         }
 
+        let max_recommendations = Constants.MAX_RECOMMENDATIONS; //max number to display
         let recommendations = report.recommendations;
+        let selected_recommendations = [];
 
         if (recommendations) {
             recommendations.forEach(rec => {
@@ -104,6 +106,15 @@ class RecommendationsExplorer extends React.Component {
             recommendations.sort((a, b) => {
                 return this.compareRiskVectors(a.state.riskVector, b.state.riskVector); //sort ascending risk vector
             });
+
+
+            //Select recommendations from the top of the list, up to the max number
+            for (var i = 0; i < recommendations.length; i++) {
+                if (i >= max_recommendations) {
+                    break;
+                }
+                selected_recommendations.push(recommendations[i]);
+            }
         }
 
         let csgAssets = this.props.csgAssets;
@@ -112,7 +123,7 @@ class RecommendationsExplorer extends React.Component {
             <div className="content">
                 {!recommendations ? this.renderNoRecommendations() : 
                 <div className="panel-group accordion recommendations">
-                    {recommendations.map((rec, index) => {
+                    {selected_recommendations.map((rec, index) => {
                         let id = rec.identifier;
                         let reccsgs = rec.controlStrategies;
                         let state = rec.state;
