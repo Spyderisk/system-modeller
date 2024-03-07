@@ -125,6 +125,8 @@ class RecommendationsExplorer extends React.Component {
                         and will not always give the most sensible recommendation(s). 
                         It may also take a very long time to run, in particular for Future risk recommendations. 
                         A list of known issues can be found on <a href="https://github.com/Spyderisk/system-modeller/issues/140">GitHub</a>.</p>
+                    {recommendations && <p>Returned {recommendations.length} recommendations 
+                    {recommendations.length > max_recommendations ? " (Displaying top " + max_recommendations + ")" : ""}</p>}
                 </div>
                 {!recommendations ? this.renderNoRecommendations() : 
                 <div className="panel-group accordion recommendations">
