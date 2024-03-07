@@ -51,7 +51,7 @@ class RecommendationsExplorer extends React.Component {
 
         return (
             <Explorer
-                title={"Recommendations Explorer (beta)"}
+                title={"Recommendations Explorer (work in progress)"}
                 windowName={"recommendationsExplorer"}
                 documentationLink={"redirect/recommendations-explorer"}
                 rndParams={{xScale: 0.20, width: 700, height: 600}}
@@ -120,6 +120,12 @@ class RecommendationsExplorer extends React.Component {
 
         return (
             <div className="content">
+                <div className="desc">
+                    <p>N.B. The recommendations feature is a work in progress 
+                        and will not always give the most sensible recommendation(s). 
+                        It may also take a very long time to run, in particular for Future risk recommendations. 
+                        A list of known issues can be found on <a href="https://github.com/Spyderisk/system-modeller/issues/140">GitHub</a>.</p>
+                </div>
                 {!recommendations ? this.renderNoRecommendations() : 
                 <div className="panel-group accordion recommendations">
                     {selected_recommendations.map((rec, index) => {
