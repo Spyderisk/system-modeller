@@ -1,5 +1,8 @@
 # Spyderisk System Modeller
 
+This is the version of Spyderisk System Modeller to accompany the paper for 
+[TheWebConf24](https://thewebconf.org/).
+
 The Spyderisk System Modeller (SSM) provides a thorough risk assessment of
 complex systems making use of context and connectivity to take into account the
 web of attack paths and secondary threat cascades in a system.
@@ -7,21 +10,26 @@ web of attack paths and secondary threat cascades in a system.
 Spyderisk assists the user in following the risk assessment process defined in
 ISO 27005 and thus supports the Information Security Management System defined
 in ISO 27001. The Spyderisk System Modeller is a generic risk assessment tool
-and must be configured with a model of a domain ("knowledgebase"), containing
-the available asset types and relations, descriptions of the threats, the
-possible security controls, and more.
+and relies upon a model of a domain ("knowledgebase") existing already. The knowledgebase
+defines the available asset types and relations, descriptions of the threats, the
+possible security controls, and more. The user then builds on this knowledgebase
+to create a system model describing the particular system they wish to perform
+risk assessment on. The knowledgebase is a kind of template, generic to a particular
+domain. For example, the knowledgebase understands risks relating to any computer database
+in any network, but a user might have a network that requires a "Customer Database" asset which is 
+held on a mobile computer dealing with some particularly sensitive customer data.
 
 The Spyderisk software does not come bundled with any particular knowledgebase;
 this is configurable at build/deploy time, by putting one or more zip bundles
 into the "knowledgebases" folder (described in more detail later). An example
 knowledgebase has been developed for complex networked information systems,
 which is available here:
-https://github.com/Spyderisk/domain-network/packages/1826148
+https://github.com/Spyderisk/domain-network/packages/1826148 . This example knowledgebase
+is developed and tested completely separately from the Spyderisk System Modeller.
 
-The web-based graphical user interface guides the user through the following
-steps:
+The Spyderisk web interface guides the user through the following steps:
 
-1. The user draws a model of their system model by dragging and dropping typed
+1. The user draws a model of their system by dragging and dropping typed
    assets linked by typed relations onto a canvas.
 2. The software analyses the model, inferring network paths, data flows,
    client-service trust relationships and much more (depending on the
@@ -63,6 +71,8 @@ path does). For the operational risk assessment, the state of the system model
 must first be synchronised with the current operational state (for instance
 through integration via the API with OpenVAS or a SIEM).
 
+## Technical overview
+
 This project provides both a web service and a web-based user interface. An
 API is provided to create, update, analyse and query system models and
 integrate other tools.
@@ -79,15 +89,21 @@ point of open sourcing was done solely by the [University of Southampton IT
 Innovation Centre](http://www.it-innovation.soton.ac.uk/) in a variety of UK
 and EU research projects.
 
-## Pre-requisites
+## Quick Start for a local computer
 
-You will need `git`, `git-lfs`, `docker` and `docker-compose`. See below for
-more detail.
+These instructions are for running Spyderisk on a computer you run such as a desktop or laptop. The steps are:
 
-## Quick Start
+1. install the required software pre-requisites
+2. clone the git repository
+3. copy the knowledgebase
+4. start the docker instances
+5. point your browser at the local computer to see the Spyderisk login screen
 
 The following instructions assume that you have the pre-requisites installed
-and working, and have cloned the repository.
+and working, and have cloned the repository. The first time you run Spyderisk
+it can take up to 30 minutes from cloning the git repository to getting to the login prompt.
+You will need a fast network connection and a computer able to run the [Docker](https://docker.io) 
+virtual container system.
 
 N.B. Prior to running the following commands, you should also ensure that you
 have one or more knowledgebases (domain models) available for installation.
