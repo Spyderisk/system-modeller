@@ -1,7 +1,8 @@
 # Spyderisk System Modeller
 
 This is the version of Spyderisk System Modeller to accompany the paper for 
-[TheWebConf24](https://thewebconf.org/).
+[TheWebConf24](https://thewebconf.org/). The URL for this frozen branch on GitHub
+is: [https://github.com/Spyderisk/system-modeller/tree/TheWebConf24](https://github.com/Spyderisk/system-modeller/tree/TheWebConf24).
 
 The Spyderisk System Modeller (SSM) provides a thorough risk assessment of
 complex systems making use of context and connectivity to take into account the
