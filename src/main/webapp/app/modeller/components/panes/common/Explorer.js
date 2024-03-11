@@ -48,32 +48,27 @@ class Explorer extends React.Component {
                  }}
                  className={!this.props.show ? "hidden" : null}>
                  <div className="explorer">
-                      <button className="header"
+                      <div className="header"
                           onMouseDown={() => {
                               this.props.dispatch(bringToFrontWindow(this.props.windowName));
                           }}
                       >
                           <div className="header header-no-padding">
                               <h1>
-                                  <div className={"doc-help-explorer"}>
-                                      <div className="title">
+                                  <div className="doc-help-explorer">
+                                      <div>
                                           {this.props.title}
                                       </div>
                                   </div>
                               </h1>
-                              <span className="button">
-                                  <button onClick={e => this.props.onHide()}>
-                                      <i className="fa fa-times"/>
-                                  </button>
-                              </span>
-                              <span className="button">
-                                  <button onClick={e => openDocumentation(e, this.props.documentationLink)}>
-                                      <i className="fa fa-question"/>
-                                  </button>
-                              </span>
+                              <span className="menu-close fa fa-times"
+                                  onClick={e => this.props.onHide()}
+                              />
+                              <span className="menu-close fa fa-question"
+                                  onClick={e => openDocumentation(e, this.props.documentationLink)}
+                              />
                           </div>
-                      </button>
-
+                      </div>
                       {this.props.renderContent()}
                  </div>
             </Rnd>
