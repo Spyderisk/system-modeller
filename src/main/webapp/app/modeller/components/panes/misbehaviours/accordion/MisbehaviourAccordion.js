@@ -214,7 +214,7 @@ class MisbehaviourAccordion extends React.Component {
                                         <Tooltip id="tooltip-threat-graph-id"
                                             className="tooltip-overlay"
                                         >
-                                        {this.props.model.riskLevelsValid ? "Calculate attack path" : "Run risk calculation first!"}
+                                        {this.props.model.riskLevelsValid ? "Calculate attack path" : "To use this, first run the risk calculation"}
                                         </Tooltip>
                                     }
                                 >
@@ -226,7 +226,7 @@ class MisbehaviourAccordion extends React.Component {
                                         }
                                         onClick={handleThreatGraphButtonClick}
                                         >
-                                        Calculate Attack Path
+                                        Get Attack Path
                                     </Button>
                                 </OverlayTrigger>
                                 <OverlayTrigger
@@ -238,19 +238,18 @@ class MisbehaviourAccordion extends React.Component {
                                         <Tooltip id="tooltip-recommendations-id"
                                             className="tooltip-overlay"
                                         >
-                                        {this.props.model.riskLevelsValid ? "Calculate recommendations" : "Run risk calculation first!"}
+                                        {this.props.model.riskLevelsValid ? "Calculate recommendations" : "To use this, first run the risk calculation"}
                                         </Tooltip>
                                     }
                                 >
                                     <Button
                                         className="btn btn-primary btn-xs"
                                         disabled={
-                                            attackPathThreats.length > 0 ||
                                             !this.props.model.riskLevelsValid
                                         }
                                         onClick={handleRecommendationsButtonClick}
                                         >
-                                        Recommendations
+                                        Get Recommendations
                                     </Button>
                                 </OverlayTrigger>
                                 {loadingAttackPath ? <i className="fa fa-spinner fa-pulse fa-lg fa-fw"/> : null}
