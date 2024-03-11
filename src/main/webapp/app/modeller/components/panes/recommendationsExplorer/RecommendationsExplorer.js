@@ -93,28 +93,17 @@ class RecommendationsExplorer extends React.Component {
         }
 
         let max_recommendations = Constants.MAX_RECOMMENDATIONS; //max number to display
-        let recommendations = report.recommendations;
+        let recommendations = report.recommendations || [];
         let selected_recommendations = [];
 
-        if (recommendations) {
-            recommendations.forEach(rec => {
-                let state = rec.state;
-                let riskVector = this.getRiskVector(state.risk);
-                state.riskVector = riskVector;
-            });
+        recommendations.forEach(rec => {
+            rec.state.riskVector = this.getRiskVector(rec.state.risk);
+        });
 
-            recommendations.sort((a, b) => {
-                return this.compareRiskVectors(a.state.riskVector, b.state.riskVector); //sort ascending risk vector
-            });
+        recommendations.sort((a, b) => this.compareRiskVectors(a.state.riskVector, b.state.riskVector)); //sort by ascending risk vector
 
-            //Select recommendations from the top of the list, up to the max number
-            for (var i = 0; i < recommendations.length; i++) {
-                if (i >= max_recommendations) {
-                    break;
-                }
-                selected_recommendations.push(recommendations[i]);
-            }
-        }
+        //Select recommendations from the top of the list, up to the max number
+        selected_recommendations = recommendations.slice(0, max_recommendations);
 
         let csgAssets = this.props.csgAssets;
 
@@ -124,19 +113,17 @@ class RecommendationsExplorer extends React.Component {
                     <p>N.B. The recommendations feature is a work in progress 
                         and will not always give the most sensible recommendation(s). 
                         It may also take a very long time to run, in particular for Future risk recommendations. 
-                        A list of known issues can be found on <a href="https://github.com/Spyderisk/system-modeller/issues/140">GitHub</a>.</p>
-                    {recommendations && <p>Returned {recommendations.length} recommendations 
+                        A list of known issues can be found on <a href="https://github.com/Spyderisk/system-modeller/issues/140" target="_blank">GitHub</a>.</p>
+                    {recommendations.length && <p>Returned {recommendations.length} recommendations 
                     {recommendations.length > max_recommendations ? " (Displaying top " + max_recommendations + ")" : ""}</p>}
                 </div>
-                {!recommendations ? this.renderNoRecommendations() : 
+                {!recommendations.length ? this.renderNoRecommendations() : 
                 <div className="panel-group accordion recommendations">
                     {selected_recommendations.map((rec, index) => {
                         let id = rec.identifier;
                         let reccsgs = rec.controlStrategies;
-                        let state = rec.state;
-                        let riskVector = this.getRiskVector(state.risk);
-                        let riskVectorString = this.getRiskVectorString(riskVector);
-                        let riskLevel = this.getHighestRiskLevel(riskVector);
+                        let riskVectorString = this.getRiskVectorString(rec.state.riskVector);
+                        let riskLevel = this.getHighestRiskLevel(rec.state.riskVector);
                         let csgsByName = new Map();
 
                         reccsgs.forEach((reccsg) => {
