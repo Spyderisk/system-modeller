@@ -179,6 +179,10 @@ class LoadingOverlay extends React.Component {
         else if (!prevProps.isCalculatingRecommendations && this.props.isCalculatingRecommendations) {
             this.checkProgress();
         }
+        else if (prevProps.isCalculatingRecommendations && !this.props.isCalculatingRecommendations) {
+            console.log("Recommendations finished - closing abort dialog...");
+            this.setState({...this.state, abortRecommendationsModal: false});
+        }
         else if (prevProps.loadingProgress.waitingForUpdate && !this.props.loadingProgress.waitingForUpdate) {
             this.checkProgress();
         }
