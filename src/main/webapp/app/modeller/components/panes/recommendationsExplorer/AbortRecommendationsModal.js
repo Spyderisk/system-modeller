@@ -19,8 +19,7 @@ class AbortRecommendationsModal extends Component {
                     <Button
                         bsStyle="primary"
                         onClick={this.props.onHide}
-                        autoFocus
-                        ref="closeButtonFooter">
+                        autoFocus>
                         Continue
                     </Button>
                     <Button
