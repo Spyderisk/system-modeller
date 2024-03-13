@@ -477,6 +477,25 @@ export function recommendationsFailed(modelId) {
     };
 }
 
+export function abortRecommendations(modelId) {
+    console.log("abortRecommendations for model: ", modelId);
+    return function (dispatch) {
+        axiosInstance
+            .post("/models/" + modelId + "/recommendations/cancel") //TODO: get correct endpoint
+            .then((response) => {
+                dispatch({
+                    type: instr.IS_NOT_CALCULATING_RECOMMENDATIONS
+                });
+            })
+            .catch((error) => {
+                console.log("Error:", error);
+                dispatch({
+                    type: instr.IS_NOT_CALCULATING_RECOMMENDATIONS
+                });
+            });
+    };
+}
+
 export function loadingCompleted(modelId) {
 
 }
