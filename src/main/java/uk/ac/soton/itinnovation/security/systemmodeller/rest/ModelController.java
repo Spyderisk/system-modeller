@@ -1670,7 +1670,12 @@ public class ModelController {
 
         logger.info("Got request to cancel recommendation task for model: {}, jobId: {}", modelId, jobId);
 
-        recommendationsService.updateRecStatus(jobId, RecStatus.ABORTED);
+		synchronized(this) {
+			final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.WRITE);
+			Progress progress = modelObjectsHelper.getTaskProgressOfModel(RECOMMENDATIONS, model);
+			progress.setMessage("Cancelling");
+			recommendationsService.updateRecStatus(jobId, RecStatus.ABORTED);
+		}
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
