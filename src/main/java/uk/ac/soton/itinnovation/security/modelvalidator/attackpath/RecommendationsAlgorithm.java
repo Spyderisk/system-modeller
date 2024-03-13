@@ -554,9 +554,10 @@ public class RecommendationsAlgorithm {
                 }
             }
 
-            if (abortFlag) {
-                throw new InterruptedException("The recommendation was aborted");
-            }
+            //TODO: (Panos) - check if this is still required, otherwise it can be deleted
+            //if (abortFlag) {
+            //    throw new InterruptedException("The recommendation was aborted");
+            //}
 
         } catch (Exception e) {
             throw new RuntimeException(e);
