@@ -364,6 +364,7 @@ class LoadingOverlay extends React.Component {
     abortRecommendations(modelId, jobId) {
         this.setState({...this.state, abortRecommendationsModal: false});
         this.props.dispatch(abortRecommendations(modelId, jobId));
+        this.pollRecommendationsProgress();
     }
 
     getHeaderText() {
