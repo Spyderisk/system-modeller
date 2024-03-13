@@ -158,6 +158,8 @@ public class JenaQuerierDB implements IQuerierDB {
     }
 
     public void init(){
+        logger.info("Initialising JenaQuerierDB");
+
         final long startTime = System.currentTimeMillis();
 
         this.prefixMap = dataset.getNamedModel(stack.getGraph("core")).getNsPrefixMap();
@@ -3390,13 +3392,13 @@ public class JenaQuerierDB implements IQuerierDB {
 
     }
 
-    /* Method to override the assumed TW level of a TWAS in a graph without creating the TWAS
+    /* Methods to override the assumed TW level of a TWAS in a graph without creating the TWAS
      * in the same graph. Needed to adjust user/client asserted levels which appear as single
      * triples in the asserted graph, but without the TWAS entity (which is added later by the
      * validator in the inferred graph).
      */
     @Override
-    public boolean updateAssertedLevel(LevelDB level, TrustworthinessAttributeSetDB twas, String model){
+    public boolean updateAssertedLevel(LevelDB level, String twasURI, String model){
         String graphUri = stack.getGraph(model);
         if (graphUri == null) {
             return false;
@@ -3404,27 +3406,54 @@ public class JenaQuerierDB implements IQuerierDB {
         Model datasetModel = dataset.getNamedModel(graphUri);
 
         // Encode the population level as a single property of the asset resource
-        Resource resource = datasetModel.getResource(getLongName(twas.getUri()));
+        Resource resource = datasetModel.getResource(getLongName(twasURI));
         Property property = ResourceFactory.createProperty(getLongName("core#hasAssertedLevel"));
         RDFNode object = ResourceFactory.createResource(getLongName(level.getUri()));
 
         // Now remove the old value and save the new value
-        dataset.begin(ReadWrite.WRITE);
-        resource.removeAll(property);
-        resource.addProperty(property, object);
-        dataset.commit();
-        dataset.end();
+        try {
+            dataset.begin(ReadWrite.WRITE);
+            resource.removeAll(property);
+            resource.addProperty(property, object);
+            dataset.commit();
+        } 
+        catch (Exception e) {
+            // Abort the changes and signal that there has been an error
+            dataset.abort();
+            String message = String.format("Error occurred while updating assumed TW level for TWAS %s", twasURI);
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
+        }
+        finally {
+            dataset.end();
+        }
+
+        if(cacheEnabled){
+            // Make the same change in the cached object, if it exists
+            TrustworthinessAttributeSetDB twas = this.getTrustworthinessAttributeSet(twasURI, model);
+            if(twas != null) {
+                twas.setAssertedLevel(level.getUri());
+                this.store(twas, model);
+            }
+
+            // Note that the calling process must change ControlSetDB objects for other graphs        }
+        }
 
         return true;
     }
 
-    /* Method to override the coverage level of a CS in a graph without creating the CS in the
+    @Override
+    public boolean updateAssertedLevel(LevelDB level, TrustworthinessAttributeSetDB twas, String model){
+        return updateAssertedLevel(level, twas.getUri(), model);
+    }
+
+    /* Methods to override the coverage level of a CS in a graph without creating the CS in the
      * same graph. Needed to adjust user/client supplied coverage levels which appear as single
      * triples in the asserted graph, but without the CS entity (which is added later by the
      * validator in the inferred graph).
      */
     @Override
-    public boolean updateCoverageLevel(LevelDB level, ControlSetDB cs, String model){
+    public boolean updateCoverageLevel(LevelDB level, String csURI, String model){
         String graphUri = stack.getGraph(model);
         if (graphUri == null) {
             return false;
@@ -3432,27 +3461,54 @@ public class JenaQuerierDB implements IQuerierDB {
         Model datasetModel = dataset.getNamedModel(graphUri);
 
         // Encode the population level as a single property of the asset resource
-        Resource resource = datasetModel.getResource(getLongName(cs.getUri()));
+        Resource resource = datasetModel.getResource(getLongName(csURI));
         Property property = ResourceFactory.createProperty(getLongName("core#hasCoverageLevel"));
         RDFNode object = ResourceFactory.createResource(getLongName(level.getUri()));
 
         // Now remove the old value and save the new value
-        dataset.begin(ReadWrite.WRITE);
-        resource.removeAll(property);
-        resource.addProperty(property, object);
-        dataset.commit();
-        dataset.end();
+        try {
+            dataset.begin(ReadWrite.WRITE);
+            resource.removeAll(property);
+            resource.addProperty(property, object);
+            dataset.commit();
+        } 
+        catch (Exception e) {
+            // Abort the changes and signal that there has been an error
+            dataset.abort();
+            String message = String.format("Error occurred while updating control coverage level for CS %s", csURI);
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
+        }
+        finally {
+            dataset.end();
+        }
+
+        if(cacheEnabled){
+            // Make the same change in the cached object, if it exists
+            ControlSetDB cs = this.getControlSet(csURI, model);
+            if(cs != null) {
+                cs.setCoverageLevel(level.getUri());
+                this.store(cs, model);
+            }
+
+            // Note that the calling process must change ControlSetDB objects for other graphs        }
+        }
 
         return true;
     }
 
-    /* Method to override the proposed status of a CS in a graph without creating the CS in the
+    @Override
+    public boolean updateCoverageLevel(LevelDB level, ControlSetDB cs, String model){
+        return updateCoverageLevel(level, cs.getUri(), model);
+    }
+
+    /* Methods to override the proposed status of a CS in a graph without creating the CS in the
      * same graph. Needed to adjust user/client supplied status flags which appear as single
      * triples in the asserted graph, but without the CS entity (which is added later by the
      * validator in the inferred graph).
      */
     @Override
-    public boolean updateProposedStatus(Boolean status, ControlSetDB cs, String model){
+    public boolean updateProposedStatus(Boolean status, String csURI, String model){
         String graphUri = stack.getGraph(model);
         if (graphUri == null) {
             return false;
@@ -3460,19 +3516,45 @@ public class JenaQuerierDB implements IQuerierDB {
         Model datasetModel = dataset.getNamedModel(graphUri);
 
         // Encode the population level as a single property of the asset resource
-        Resource resource = datasetModel.getResource(getLongName(cs.getUri()));
+        Resource resource = datasetModel.getResource(getLongName(csURI));
         Property property = ResourceFactory.createProperty(getLongName("core#isProposed"));
 
         // Now remove the old value and save the new value
-        dataset.begin(ReadWrite.WRITE);
-        resource.removeAll(property);
-        resource.addLiteral(property, status.booleanValue());
-        dataset.commit();
-        dataset.end();
+        try {
+            dataset.begin(ReadWrite.WRITE);
+            resource.removeAll(property);
+            resource.addLiteral(property, status.booleanValue());
+            dataset.commit();
+        } 
+        catch (Exception e) {
+            // Abort the changes and signal that there has been an error
+            dataset.abort();
+            String message = String.format("Error occurred while updating control proposed status for CS %s", csURI);
+            logger.error(message, e);
+            throw new RuntimeException(message, e);
+        }
+        finally {
+            dataset.end();
+        }
+
+        if(cacheEnabled){
+            // Make the same change in the cached object, if it exists
+            ControlSetDB cs = this.getControlSet(csURI, model);
+            if(cs != null) {
+                cs.setProposed(status);
+                this.store(cs, model);
+            }
+
+            // Note that the calling process must change ControlSetDB objects for other graphs
+        }
 
         return true;
     }
 
+    @Override
+    public boolean updateProposedStatus(Boolean status, ControlSetDB cs, String model){
+        return updateProposedStatus(status, cs.getUri(), model);
+    }
 
     /* Internal class passed to the Querier's GsonBuilder 
     */

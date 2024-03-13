@@ -380,6 +380,9 @@ class ModelItem extends Component {
     }
 
     formatRiskCalcMode(mode) {
+        console.log("mode:", mode);
+        if (!mode)
+            return "unknown"
         //Capitalise first char, lower case the rest
         return mode.charAt(0).toUpperCase() + mode.slice(1).toLowerCase();
     }

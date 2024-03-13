@@ -1,157 +1,91 @@
 import React from "react";
 import PropTypes from 'prop-types';
 import ControlAccordion from "./ControlAccordion";
-import {Rnd} from "../../../../../node_modules/react-rnd/lib/index";
-import {bringToFrontWindow, closeWindow} from "../../../actions/ViewActions";
 import {connect} from "react-redux";
-import {openDocumentation} from "../../../../common/documentation/documentation"
+import Explorer from "../common/Explorer"
 
 class ControlExplorer extends React.Component {
 
     constructor(props) {
         super(props);
 
-        this.rnd = null;
-    }
-
-    shouldComponentUpdate(nextProps, nextState) {
-        let shouldComponentUpdate = true;
-
-        if ((!this.props.show) && (!nextProps.show)) {
-            return false;
-        }
-
-        if (nextProps.loading.model) {
-            return false;
-        }
-
-        if (this.props.isActive != nextProps.isActive) {
-            return true;
-        }
-
-        if(this.props.selectedAsset != nextProps.selectedAsset) {
-            return true;
-        }
-
-        return shouldComponentUpdate;
+        this.renderContent = this.renderContent.bind(this);
     }
 
     render() {
-        const {model, hoverThreat, dispatch, loading, ...modalProps} = this.props;
-        var controlUri = this.props.selectedAsset.selectedControl;
-        var controlSet = Array.from(this.props.model.controlSets).find(c => c["control"] == controlUri);
-        var label = (controlSet!=null ? controlSet.label : "");
-        var description = (controlSet!=null ? controlSet.description : "");
-
-        let controlSetsMap = {};
-        this.props.model.controlSets.forEach(cs => controlSetsMap[cs.uri] = cs);
-
         if (!this.props.show) {
             return null;
         }
 
         return (
-          <Rnd ref={ c => {this.rnd = c;} }
-               bounds={ '#view-boundary' }
-               default={{
-                   x: window.outerWidth * 0.15,
-                   y: (100 / window.innerHeight) * window.devicePixelRatio,
-                   width: 360,
-                   height: 600,
-               }}
-               style={{ zIndex: this.props.windowOrder }}
-               minWidth={150}
-               minHeight={200}
-               cancel={".content, .text-primary, strong, span"}
-               onResize={(e) => {
-                   if (e.stopPropagation) e.stopPropagation();
-                   if (e.preventDefault) e.preventDefault();
-                   e.cancelBubble = true;
-                   e.returnValue = false;
-               }}
-               // onDragStart={(e) => {
-               //     let elName = $(e.target)[0].localName;
-               //     //console.log("onDragStart: element: " + elName);
-               //
-               //     /*
-               //     if (elName === "input") {
-               //         return false;
-               //     }
-               //     */
-               //     if (this.props.isActive) {
-               //         return;
-               //     }
-               //
-               //     this.bringWindowToFront(true);
-               //     this.props.dispatch(activateControlExplorer(this.props.selectedControl));
-               // }}
-               onDrag={(e) => {
-                   if (e.stopPropagation) e.stopPropagation();
-                   if (e.preventDefault) e.preventDefault();
-                   e.cancelBubble = true;
-                   e.returnValue = false;
-               }}
-               className={!this.props.show ? "hidden" : null}>
-               <div className="control-explorer">
+            <Explorer
+                title={"Control Explorer"}
+                windowName={"controlExplorer"}
+                documentationLink={"redirect/control-explorer"}
+                rndParams={{xScale: 0.15, width: 360, height: 600}}
+                selectedAsset={this.props.selectedAsset}
+                //isActive={this.props.isActive}
+                show={this.props.show}
+                onHide={this.props.onHide}
+                loading={this.props.loading}
+                dispatch={this.props.dispatch}
+                renderContent={this.renderContent}
+                windowOrder={this.props.windowOrder}
+            />
+        )
+    }
 
-                   <div className="header" onMouseDown={() => {
-                       this.props.dispatch(bringToFrontWindow("controlExplorer"));
-                   }}>
-                       <h1>
-                           <div className={"doc-help-explorer"}>
-                               <div>
-                                   {"Control Explorer"}
-                               </div>
-                           </div>
-                       </h1>
-                       <span classID="rel-delete"
-                             className="menu-close fa fa-times"
-                             onClick={() => {
-                                 this.props.dispatch(closeWindow("controlExplorer"));
-                                 this.props.onHide();
-                             }}>
-                       </span>
-                       <span className="menu-close fa fa-question" onClick={e => openDocumentation(e, "redirect/control-explorer")} />
-                   </div>
+    renderContent() {
+        const {model, hoverThreat, dispatch, loading, ...modalProps} = this.props;
 
-                    <div className="content">
-                        <div className="desc">
-                            <div className="descriptor">
-                                <h4>
-                                    {label}
-                                </h4>
-                                <p>
-                                    {description}
-                                </p>
-                            </div>
-                        </div>
+        let controlSetsMap = {};
+        this.props.model.controlSets.forEach(cs => controlSetsMap[cs.uri] = cs);
 
-                       <ControlAccordion dispatch={dispatch}
-                                              model={model}
-                                              controlSets={controlSetsMap}
-                                              hoverThreat={hoverThreat}
-                                              loading={loading}
-                                              selectedAsset={this.props.selectedAsset}
-                                              getAssetType={this.props.getAssetType}
-                                              authz={this.props.authz}
-                       />
-                   </div>
-               </div>
+        var controlUri = this.props.selectedAsset.selectedControl;
+        var controlSet = Array.from(this.props.model.controlSets).find(c => c["control"] == controlUri);
+        var label = (controlSet!=null ? controlSet.label : "");
+        var description = (controlSet!=null ? controlSet.description : "");
 
-          </Rnd>
-        );
+        return (
+            <div className="content">
+                <div className="desc">
+                    <div className="descriptor">
+                        <h4>
+                            {label}
+                        </h4>
+                        <p>
+                            {description}
+                        </p>
+                    </div>
+                </div>
+
+                <ControlAccordion
+                    model={model}
+                    controlSets={controlSetsMap}
+                    hoverThreat={hoverThreat}
+                    loading={loading}
+                    selectedAsset={this.props.selectedAsset}
+                    getAssetType={this.props.getAssetType}
+                    authz={this.props.authz}
+                    dispatch={dispatch}
+                />
+            </div>
+        )
     }
 }
 
 ControlExplorer.propTypes = {
     selectedAsset: PropTypes.object,
-    isActive: PropTypes.bool, // is in front of other panels
+    //isActive: PropTypes.bool, // is in front of other panels
     model: PropTypes.object,
+    show: PropTypes.bool,
     onHide: PropTypes.func,
-    loading: PropTypes.object,
     hoverThreat: PropTypes.func,
     getAssetType: PropTypes.func,
+    loading: PropTypes.object,
+    dispatch: PropTypes.func,
     authz: PropTypes.object,
+    windowOrder: PropTypes.number,
 };
 
 let mapStateToProps = function (state) {

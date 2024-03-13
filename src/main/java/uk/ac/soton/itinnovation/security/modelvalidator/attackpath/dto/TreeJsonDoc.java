@@ -28,7 +28,7 @@ import java.util.Map;
 
 public class TreeJsonDoc {
     // TODO: should pass it as a parameter
-    private static final String uriPrefix = "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/";
+    private static final String URI_PREFIX = "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/";
     private Map<String, Graph> graphs;
 
     public TreeJsonDoc(Map<String, Graph> graphs) {
@@ -36,7 +36,7 @@ public class TreeJsonDoc {
     }
 
     public String getUriPrefix() {
-        return uriPrefix;
+        return URI_PREFIX;
     }
 
     public Map<String, Graph> getGraphs() {

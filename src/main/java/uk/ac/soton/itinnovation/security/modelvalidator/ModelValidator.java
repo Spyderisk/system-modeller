@@ -111,6 +111,7 @@ public class ModelValidator extends AValidator {
 			final long startTime = System.currentTimeMillis();
 		
 			IQuerierDB querier = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(), model);
+			//TODO: check when this should be run, as it may also be done elseqhere
 			querier.initForRiskCalculation();
 			RiskCalculator rc = new RiskCalculator(querier);
 			boolean success = rc.calculateRiskLevels(mode, saveResults, progress);

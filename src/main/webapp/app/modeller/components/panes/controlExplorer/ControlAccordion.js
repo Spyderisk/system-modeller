@@ -284,7 +284,7 @@ class ControlAccordion extends React.Component {
         
         if (controlsToUpdate.length > 0) {
             this.updateControlsState(controlsToUpdate, flag);
-            this.props.dispatch(updateControls(this.props.model.id, controlsToUpdate, flag));
+            this.props.dispatch(updateControls(this.props.model.id, controlsToUpdate, flag, false));
         }
         else {
             //console.log("No controls to update");

@@ -20,7 +20,11 @@ class ControlStrategiesPanel extends React.Component {
                     {csgs.length > 0 ? csgs.map((csgEntry, index) => {
                         let name = csgEntry[0];
                         let csg = csgEntry[1];
-                        let context = {"selection": "csg", "asset": this.props.asset};
+                        let asset = csg.asset ? csg.asset : this.props.asset;
+                        if (this.props.displayAssetName) {
+                            name += " at \"" + asset.label + "\"";
+                        }
+                        let context = {"selection": "csg", "asset": asset};
 
                         let csgOverlayProps = {
                             delayShow: Constants.TOOLTIP_DELAY, placement: "left",
@@ -65,6 +69,7 @@ class ControlStrategiesPanel extends React.Component {
 ControlStrategiesPanel.propTypes = {
     modelId: PropTypes.string,
     asset: PropTypes.object,
+    displayAssetName: PropTypes.bool,
     assetCsgs: PropTypes.array,
     dispatch: PropTypes.func,
     authz: PropTypes.object

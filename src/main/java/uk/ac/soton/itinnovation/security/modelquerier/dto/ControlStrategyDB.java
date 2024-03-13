@@ -86,14 +86,38 @@ public class ControlStrategyDB extends EntityDB {
 	private String hasMin;					// Pointer from CSG for an average likelihood Threat to the CSG for the lowest likelihood Threat
 	private String hasMax;					// Pointer from CSG for an average likelihood Threat to the CSG for the highest likelihood Threat
 
+	/**
+	 * Returns true if this CSG is relevant in current risk calculations
+	 */
 	public boolean isCurrentRisk() {
 		// If the property doesn't exist, default to true
 		return currentRisk != null ? currentRisk : true;
 	}
+	public void setCurrentRisk(Boolean value){
+		if(value == null || value) {
+			// If the property doesn't exist, it is equivalent to true
+			this.currentRisk = null;
+		} else {
+			// So it only needs to be stored if false
+			this.currentRisk = value;
+		}
+	}
 
+	/**
+	 * Returns true if this CSG is relevant in future risk calculations
+	 */
 	public boolean isFutureRisk() {
 		// If the property doesn't exist, default to true
 		return futureRisk != null ? futureRisk : true;
+	}
+	public void setFutureRisk(Boolean value){
+		if(value == null || value) {
+			// If the property doesn't exist, it is equivalent to true
+			this.currentRisk = null;
+		} else {
+			// So it only needs to be stored if false
+			this.currentRisk = value;
+		}
 	}
 
 	public boolean isEnabled() {
