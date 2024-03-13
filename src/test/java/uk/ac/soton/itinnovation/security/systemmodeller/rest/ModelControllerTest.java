@@ -1493,7 +1493,7 @@ public class ModelControllerTest extends CommonTestSetup{
         }
 
         // add a delay to complete the task, e.g. close gracefully the task
-        Thread.sleep(20000);
+        Thread.sleep(2000);
 
         // Additional assertions can go here, e.g., verify the final status is as expected
         //assertThat(jobStatus, equalTo("FINISHED"));
