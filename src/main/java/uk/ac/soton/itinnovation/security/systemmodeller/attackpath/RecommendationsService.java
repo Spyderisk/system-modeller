@@ -67,11 +67,16 @@ public class RecommendationsService {
                 throw new RiskModeMismatchException();
             }
 
+            reca.setRecRepository(recRepository, jobId);
+
             RecommendationReportDTO report = reca.recommendations(progress);
 
             storeRecReport(jobId, report);
 
             updateRecStatus(jobId, RecStatus.FINISHED);
+        } catch (InterruptedException e) {
+            logger.debug("caught a task interruption signal");
+            updateRecStatus(jobId, RecStatus.ABORTED);
         } catch (Exception e) {
             updateRecStatus(jobId, RecStatus.FAILED);
         }
@@ -113,7 +118,9 @@ public class RecommendationsService {
         STARTED,
         RUNNING,
         FAILED,
-        FINISHED
+        FINISHED,
+        ABORTED,
+        UNKNOWN
     }
 
 }

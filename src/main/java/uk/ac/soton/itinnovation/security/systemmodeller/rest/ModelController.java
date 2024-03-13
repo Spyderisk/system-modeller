@@ -43,6 +43,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -1662,18 +1663,34 @@ public class ModelController {
         return ResponseEntity.accepted().headers(headers).body(response);
     }
 
-    @GetMapping("/models/{modelId}/recommendations/status/{jobId}")
-    public ResponseEntity<RecStatus> checkRecJobStatus(
+    @GetMapping("/models/{modelId}/recommendations/{jobId}/cancel")
+    public ResponseEntity<RecStatus> cancelRecJob(
+            @PathVariable String modelId, @PathVariable String jobId) {
+
+        logger.info("Got request to cancel recommendation task for model {} status", modelId);
+
+        recommendationsService.updateRecStatus(jobId, RecStatus.ABORTED);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping("/models/{modelId}/recommendations/{jobId}/status")
+    public ResponseEntity<JobResponseDTO> checkRecJobStatust(
             @PathVariable String modelId, @PathVariable String jobId) {
 
         logger.info("Got request for jobId {} status", jobId);
 
-        return recommendationsService.getRecStatus(jobId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        recommendationsService.updateRecStatus(jobId, RecStatus.ABORTED);
+
+        Optional<RecStatus> optionalStatus = recommendationsService.getRecStatus(jobId);
+        String statusAsString = optionalStatus.map(status -> status.toString()).orElse("UNKNOWN");
+
+        JobResponseDTO response = new JobResponseDTO(jobId, statusAsString);
+
+        return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping("/models/{modelId}/recommendations/result/{jobId}")
+    @GetMapping("/models/{modelId}/recommendations/{jobId}/result")
     public ResponseEntity<RecommendationReportDTO> downloadRecommendationsReport(
             @PathVariable String modelId, @PathVariable String jobId) {
 
