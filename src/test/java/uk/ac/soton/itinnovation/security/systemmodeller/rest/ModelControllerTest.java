@@ -28,6 +28,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.not;
@@ -77,6 +78,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import io.restassured.builder.MultiPartSpecBuilder;
 import io.restassured.http.ContentType;
+import io.restassured.path.json.JsonPath;
 import io.restassured.specification.MultiPartSpecification;
 import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
 import uk.ac.soton.itinnovation.security.modelquerier.SystemModelQuerier;
@@ -1425,6 +1427,76 @@ public class ModelControllerTest extends CommonTestSetup{
 		assertTaskCompleted();
 
 		assertEquals(RiskCalculationMode.FUTURE, querier.getModelInfo(storeModelManager.getStore()).getRiskCalculationMode());
+	}
+
+	/**
+	 * Test calculating recommendations for model (non-blocking call)
+	 * Asserts OK 200 status
+	 */
+	@Test
+	public void testRecommendationsAsync() throws InterruptedException {
+		switchToSystemModel(4, 12); //use recommendations domain and system model
+        logger.error("TEST RECOMMENDATIONS ASYNC");
+
+        String responseJson = given().
+			filter(userSession).
+            queryParam("acceptableRiskLevel", "domain#RiskLevelMedium").
+            log().all().
+		when().
+			get("/models/testModel/recommendations").
+		then().
+            log().all().
+			assertThat().statusCode(HttpStatus.SC_ACCEPTED).
+            extract().asString();
+
+        JsonPath jsonPath = new JsonPath(responseJson);
+        String jobId = jsonPath.getString("jobId");
+
+        // Poll the status endpoint until the job is finished
+        boolean jobFinished = false;
+        boolean cancelled = false;
+        String jobStatus = "";
+        while (!jobFinished) {
+            Thread.sleep(4000); // 5 seconds delay between status checks
+
+            jobStatus = given()
+                .filter(userSession)
+                .log().all()
+             .when()
+                .get("/models/testModel/recommendations/" + jobId + "/status")
+             .then()
+                .log().all()
+                .statusCode(HttpStatus.SC_OK)
+                .extract().asString();
+
+            jsonPath = new JsonPath(jobStatus);
+            String status = jsonPath.getString("message");
+            logger.error("JOB STATUS: {}", status);
+
+            if (!cancelled) {
+                logger.error("CANCELLING JOB");
+
+                jobStatus = given()
+                    .filter(userSession)
+                    .log().all()
+                .when()
+                    .get("/models/testModel/recommendations/" + jobId + "/cancel")
+                .then()
+                    .log().all()
+                    .statusCode(HttpStatus.SC_OK)
+                    .extract().asString();
+
+                cancelled = true;
+            }
+
+            jobFinished = "ABORTED".equals(status); // Assuming "FINISHED" is the status when the job is done
+        }
+
+        // add a delay to complete the task, e.g. close gracefully the task
+        Thread.sleep(20000);
+
+        // Additional assertions can go here, e.g., verify the final status is as expected
+        //assertThat(jobStatus, equalTo("FINISHED"));
 	}
 
 	/**

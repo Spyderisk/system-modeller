@@ -330,7 +330,19 @@ public class ModelObjectsHelper {
 		assetIDs.remove(uri);
 		assetUris.remove(id);
 	}
-	
+
+    public boolean cancelTask(String mId) {
+		if (taskFutures.containsKey(mId)){
+			ScheduledFuture<?> taskExecution = taskFutures.get(mId);
+			if (!taskExecution.isDone()) {
+                boolean mayInterruptIfRunning = true;
+                boolean wasCancelled = taskExecution.cancel(mayInterruptIfRunning);
+                return wasCancelled;
+            }
+        }
+        return false;
+    }
+
 	public boolean registerTaskExecution(String modelId, ScheduledFuture<?> future) {
 
 		if (taskFutures.containsKey(modelId)){
