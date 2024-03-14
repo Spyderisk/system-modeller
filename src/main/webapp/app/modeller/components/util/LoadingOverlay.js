@@ -1,11 +1,12 @@
 import React from "react";
 import PropTypes from "prop-types";
 import {Modal, Button, ProgressBar} from "react-bootstrap";
+import AbortRecommendationsModal from "../panes/recommendationsExplorer/AbortRecommendationsModal";
 import {
     pollForLoadingProgress, pollForValidationProgress, pollForRiskCalcProgress, pollForRecommendationsProgress,
     validationCompleted, validationFailed,
     riskCalcCompleted, riskCalcFailed, changeSelectedAsset,
-    recommendationsCompleted, recommendationsFailed,
+    recommendationsCompleted, recommendationsFailed, abortRecommendations,
 } from "../../actions/ModellerActions";
 
 class LoadingOverlay extends React.Component {
@@ -33,6 +34,7 @@ class LoadingOverlay extends React.Component {
                 }
             },
             progress: 0,
+            abortRecommendationsModal: false,
         };
 
         this.checkProgress = this.checkProgress.bind(this);
@@ -47,11 +49,25 @@ class LoadingOverlay extends React.Component {
         this.getLoadingTimeout = this.getLoadingTimeout.bind(this);
         this.getTimeout = this.getTimeout.bind(this);
         this.getHeaderText = this.getHeaderText.bind(this);
+        this.onKeyPress = this.onKeyPress.bind(this);
+        this.abortRecommendations = this.abortRecommendations.bind(this);
+    }
 
+    onKeyPress(event){
+        //Check for Escape key
+        if (event.keyCode === 27) {
+            if (this.props.isCalculatingRecommendations) {
+                this.setState({...this.state, abortRecommendationsModal: true});
+            }
+        }
     }
 
     componentDidMount() {
-        //console.log("LoadingOverlay timeout settings: ", this.state);
+        document.addEventListener("keydown", this.onKeyPress, false);
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener("keydown", this.onKeyPress, false);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -76,7 +92,7 @@ class LoadingOverlay extends React.Component {
             stateChanged = true;
         }
         
-        // If risk calc has completed, show modal
+        // If recommendations has completed, show modal
         if (this.props.isCalculatingRecommendations && !nextProps.isCalculatingRecommendations) {
             stage = "Recommendations";
             if (nextProps.validationProgress.status !== "inactive") showModal = true;
@@ -162,6 +178,10 @@ class LoadingOverlay extends React.Component {
         }
         else if (!prevProps.isCalculatingRecommendations && this.props.isCalculatingRecommendations) {
             this.checkProgress();
+        }
+        else if (prevProps.isCalculatingRecommendations && !this.props.isCalculatingRecommendations) {
+            console.log("Recommendations finished - closing abort dialog...");
+            this.setState({...this.state, abortRecommendationsModal: false});
         }
         else if (prevProps.loadingProgress.waitingForUpdate && !this.props.loadingProgress.waitingForUpdate) {
             this.checkProgress();
@@ -341,6 +361,12 @@ class LoadingOverlay extends React.Component {
         }
     }
 
+    abortRecommendations(modelId, jobId) {
+        this.setState({...this.state, abortRecommendationsModal: false});
+        this.props.dispatch(abortRecommendations(modelId, jobId));
+        this.pollRecommendationsProgress();
+    }
+
     getHeaderText() {
         let header = "";
 
@@ -359,7 +385,7 @@ class LoadingOverlay extends React.Component {
 
     render() {
         let isCalculatingRisks = this.props.isCalculatingRisks && this.props.validationProgress.status !== "inactive";
-        let isCalculatingRecommendations = this.props.isCalculatingRecommendations && this.props.validationProgress.status !== "inactive";
+        let isCalculatingRecommendations = this.props.isCalculatingRecommendations && this.props.validationProgress.status !== "inactive" && !this.state.abortRecommendationsModal;
         let isDroppingInferredGraph = this.props.isDroppingInferredGraph;
         let clazz = "loading-overlay " + (this.props.isValidating || isCalculatingRisks || isCalculatingRecommendations || isDroppingInferredGraph || this.props.isLoading ? "visible" : "invisible");
         let stage = this.state.stage;
@@ -460,6 +486,9 @@ class LoadingOverlay extends React.Component {
 
                     </Modal.Body>
                 </Modal>
+
+                <AbortRecommendationsModal show={this.state.abortRecommendationsModal} modelId={this.props.modelId} jobId={this.props.recommendationsJobId} abortRecommendations={this.abortRecommendations}
+                                  onHide={() => this.setState({...this.state, abortRecommendationsModal: false})}/>
             </div>
         )
     }

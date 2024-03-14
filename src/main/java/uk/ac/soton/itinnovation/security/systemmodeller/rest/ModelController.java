@@ -68,6 +68,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -1663,13 +1664,18 @@ public class ModelController {
         return ResponseEntity.accepted().headers(headers).body(response);
     }
 
-    @GetMapping("/models/{modelId}/recommendations/{jobId}/cancel")
+    @PostMapping("/models/{modelId}/recommendations/{jobId}/cancel")
     public ResponseEntity<RecStatus> cancelRecJob(
             @PathVariable String modelId, @PathVariable String jobId) {
 
-        logger.info("Got request to cancel recommendation task for model {} status", modelId);
+        logger.info("Got request to cancel recommendation task for model: {}, jobId: {}", modelId, jobId);
 
-        recommendationsService.updateRecStatus(jobId, RecStatus.ABORTED);
+		synchronized(this) {
+			final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.WRITE);
+			Progress progress = modelObjectsHelper.getTaskProgressOfModel(RECOMMENDATIONS, model);
+			progress.setMessage("Cancelling");
+			recommendationsService.updateRecStatus(jobId, RecStatus.ABORTED);
+		}
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
