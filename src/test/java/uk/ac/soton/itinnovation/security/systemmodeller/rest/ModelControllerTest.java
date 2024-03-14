@@ -1434,7 +1434,7 @@ public class ModelControllerTest extends CommonTestSetup{
 	 * Asserts OK 200 status
 	 */
 	@Test
-	public void testRecommendationsAsync() throws InterruptedException {
+	public void testRecommendationsAsyncTaskCancel() throws InterruptedException {
 		switchToSystemModel(4, 12); //use recommendations domain and system model
         logger.error("TEST RECOMMENDATIONS ASYNC");
 

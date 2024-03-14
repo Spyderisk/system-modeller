@@ -516,7 +516,7 @@ public class RecommendationsAlgorithm {
      * @return
      * @throws InterruptedException
      */
-    public RecommendationReportDTO recommendations(Progress progress) throws InterruptedException {
+    public RecommendationReportDTO recommendations(Progress progress) {
 
         logger.info("Recommendations core part (risk mode: {})", riskMode);
 
@@ -552,10 +552,6 @@ public class RecommendationsAlgorithm {
                 for (ControlStrategyDTO csgDTO : rec.getControlStrategies()) {
                     logger.debug("  └──> csgs: {}", csgDTO.getUri().substring(7));
                 }
-            }
-
-            if (abortFlag) {
-                throw new InterruptedException("The recommendation was aborted");
             }
 
         } catch (Exception e) {

@@ -74,9 +74,6 @@ public class RecommendationsService {
             storeRecReport(jobId, report);
 
             updateRecStatus(jobId, RecStatus.FINISHED);
-        } catch (InterruptedException e) {
-            logger.debug("caught a task interruption signal");
-            updateRecStatus(jobId, RecStatus.ABORTED);
         } catch (Exception e) {
             updateRecStatus(jobId, RecStatus.FAILED);
         }
