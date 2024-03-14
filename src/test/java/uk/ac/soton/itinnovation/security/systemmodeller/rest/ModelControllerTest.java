@@ -1480,7 +1480,7 @@ public class ModelControllerTest extends CommonTestSetup{
                     .filter(userSession)
                     .log().all()
                 .when()
-                    .get("/models/testModel/recommendations/" + jobId + "/cancel")
+                    .post("/models/testModel/recommendations/" + jobId + "/cancel")
                 .then()
                     .log().all()
                     .statusCode(HttpStatus.SC_OK)
@@ -1489,7 +1489,8 @@ public class ModelControllerTest extends CommonTestSetup{
                 cancelled = true;
             }
 
-            jobFinished = "ABORTED".equals(status); // Assuming "FINISHED" is the status when the job is done
+			// Final status might be "FINISHED" or "ABORTED", so check for both or unit test may never complete!
+            jobFinished = "FINISHED".equals(status) || "ABORTED".equals(status);
         }
 
         // add a delay to complete the task, e.g. close gracefully the task
