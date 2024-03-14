@@ -1681,12 +1681,10 @@ public class ModelController {
     }
 
     @GetMapping("/models/{modelId}/recommendations/{jobId}/status")
-    public ResponseEntity<JobResponseDTO> checkRecJobStatust(
+    public ResponseEntity<JobResponseDTO> checkRecJobStatus(
             @PathVariable String modelId, @PathVariable String jobId) {
 
         logger.info("Got request for jobId {} status", jobId);
-
-        recommendationsService.updateRecStatus(jobId, RecStatus.ABORTED);
 
         Optional<RecStatus> optionalStatus = recommendationsService.getRecStatus(jobId);
         String statusAsString = optionalStatus.map(status -> status.toString()).orElse("UNKNOWN");
