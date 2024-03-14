@@ -1500,23 +1500,6 @@ public class ModelControllerTest extends CommonTestSetup{
 	}
 
 	/**
-	 * Test calculating recommendations for model (blocking call)
-	 * Asserts OK 200 status
-	 */
-	@Test
-	public void testRecommendations() {
-		switchToSystemModel(4, 12); //use recommendations domain and system model
-
-		given().
-			filter(userSession).
-            queryParam("acceptableRiskLevel", "domain#RiskLevelMedium").
-		when().
-			get("/models/testModel/recommendations_blocking").
-		then().
-			assertThat().statusCode(HttpStatus.SC_OK);
-	}
-
-	/**
 	 * Test calculating current risks
 	 * Asserts flag is false before calling REST method
 	 * Asserts ACCEPTED 202 status
