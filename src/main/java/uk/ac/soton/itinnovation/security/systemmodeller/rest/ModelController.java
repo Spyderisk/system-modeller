@@ -126,7 +126,7 @@ import uk.ac.soton.itinnovation.security.systemmodeller.util.SecureUrlHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.RecommendationEntity;
 import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.RecommendationRepository;
 import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService;
-import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService.RecStatus;
+import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService.RecommendationJobState;
 
 /**
  * Includes all operations of the Model Controller Service.
@@ -1519,7 +1519,7 @@ public class ModelController {
             RecommendationEntity recEntity = new RecommendationEntity();
             recEntity.setId(jobId);
             recEntity.setModelId(mId);
-            recEntity.setStatus(RecStatus.STARTED);
+            recEntity.setState(RecommendationJobState.STARTED);
             recEntity.setReport(report);
             recRepository.save(recEntity);
             logger.debug("rec entity saved for {}", recEntity.getId());
@@ -1665,7 +1665,7 @@ public class ModelController {
     }
 
     @PostMapping("/models/{modelId}/recommendations/{jobId}/cancel")
-    public ResponseEntity<RecStatus> cancelRecJob(
+    public ResponseEntity<RecommendationJobState> cancelRecJob(
             @PathVariable String modelId, @PathVariable String jobId) {
 
         logger.info("Got request to cancel recommendation task for model: {}, jobId: {}", modelId, jobId);
@@ -1674,7 +1674,7 @@ public class ModelController {
 			final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.WRITE);
 			Progress progress = modelObjectsHelper.getTaskProgressOfModel(RECOMMENDATIONS, model);
 			progress.setMessage("Cancelling");
-			recommendationsService.updateRecStatus(jobId, RecStatus.ABORTED);
+			recommendationsService.updateRecommendationJobState(jobId, RecommendationJobState.ABORTED);
 		}
 
         return new ResponseEntity<>(HttpStatus.OK);
@@ -1686,9 +1686,9 @@ public class ModelController {
 
         logger.info("Got request for jobId {} status", jobId);
 
-        recommendationsService.updateRecStatus(jobId, RecStatus.ABORTED);
+        recommendationsService.updateRecommendationJobState(jobId, RecommendationJobState.ABORTED);
 
-        Optional<RecStatus> optionalStatus = recommendationsService.getRecStatus(jobId);
+        Optional<RecommendationJobState> optionalStatus = recommendationsService.getRecommendationJobState(jobId);
         String statusAsString = optionalStatus.map(status -> status.toString()).orElse("UNKNOWN");
 
         JobResponseDTO response = new JobResponseDTO(jobId, statusAsString);

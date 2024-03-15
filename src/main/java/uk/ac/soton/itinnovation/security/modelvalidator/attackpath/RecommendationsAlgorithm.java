@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import java.time.LocalDateTime;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +53,9 @@ import com.bpodgursky.jbool_expressions.Expression;
 import com.bpodgursky.jbool_expressions.Variable;
 
 import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.RecommendationRepository;
-import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService.RecStatus;
+import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService.RecommendationJobState;
+import uk.ac.soton.itinnovation.security.systemmodeller.model.RecommendationEntity;
+
 import uk.ac.soton.itinnovation.security.systemmodeller.model.RecommendationEntity;
 
 @Component
@@ -229,6 +233,28 @@ public class RecommendationsAlgorithm {
         return csSet;
     }
 
+    private void updateJobState(RecommendationJobState newState) {
+        // get job status:
+        Optional<RecommendationEntity> optionalRec = recRepository.findById(jobId);
+        logger.debug("updating job status: {}", optionalRec);
+        optionalRec.ifPresent(rec -> {
+            rec.setState(newState);
+            rec.setModifiedAt(LocalDateTime.now());
+            recRepository.save(rec);
+        });
+    }
+
+    private boolean checkJobAborted(){
+        // get job status:
+        Optional<RecommendationJobState> jobState = recRepository.findById(jobId).map(RecommendationEntity::getState);
+        logger.debug("APPLY CSG: check task status: {}", jobState);
+        if (jobState.isPresent() && jobState.get() == RecommendationJobState.ABORTED) {
+            logger.debug("APPLY CSG: Got job status, cancelling this task");
+            setAbortFlag();
+        }
+        return abortFlag;
+    }
+
     private CSGNode applyCSGs(LogicalExpression le) {
         CSGNode node = new CSGNode();
         return applyCSGs(le, node, "", apd.getRiskVector());
@@ -261,13 +287,11 @@ public class RecommendationsAlgorithm {
         int csgOptionCounter = 0;
         for (Expression csgOption : csgOptions) {
 
-            // get job status:
-            Optional<RecStatus> jobStatus = recRepository.findById(jobId).map(RecommendationEntity::getStatus);
-            logger.debug("APPLY CSG: check task status: {}", jobStatus);
-            if (jobStatus.isPresent() && jobStatus.get() == RecStatus.ABORTED) {
-                logger.debug("APPLY CSG: Got job status, cancelling this task");
-                abortFlag = true;
+            // check if job is aborted:
+            if (checkJobAborted()) {
                 break;
+            } else {
+                updateJobState(RecommendationJobState.RUNNING);
             }
 
             csgOptionCounter += 1;
@@ -514,7 +538,6 @@ public class RecommendationsAlgorithm {
      * Start recommendations algorithm
      * @param progress
      * @return
-     * @throws InterruptedException
      */
     public RecommendationReportDTO recommendations(Progress progress) {
 

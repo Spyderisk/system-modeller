@@ -6,6 +6,5 @@ import uk.ac.soton.itinnovation.security.systemmodeller.model.RecommendationEnti
 
 public interface RecommendationRepository extends MongoRepository<RecommendationEntity, String> {
     public RecommendationEntity findOneById(String id);
-
 }
 

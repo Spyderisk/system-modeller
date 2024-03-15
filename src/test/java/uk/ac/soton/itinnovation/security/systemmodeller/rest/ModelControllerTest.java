@@ -1480,7 +1480,7 @@ public class ModelControllerTest extends CommonTestSetup{
                     .filter(userSession)
                     .log().all()
                 .when()
-                    .get("/models/testModel/recommendations/" + jobId + "/cancel")
+                    .post("/models/testModel/recommendations/" + jobId + "/cancel")
                 .then()
                     .log().all()
                     .statusCode(HttpStatus.SC_OK)
