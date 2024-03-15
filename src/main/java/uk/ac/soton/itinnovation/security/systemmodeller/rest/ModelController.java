@@ -1421,127 +1421,7 @@ public class ModelController {
         }
     }
 
-	/**
-<<<<<<< HEAD
-	 * This REST method generates a recommendation report, as a blocking call
-	 *
-	 * @param modelId the String representation of the model object to seacrh
-	 * @param riskMode optional string indicating the prefered risk calculation mode (defaults to CURRENT)
-	 * @param localSearch optional flag indicating whether to use local search (defaults to true)
-	 * @param acceptableRiskLevel string indicating the acceptable risk level using domain model URI
-	 * @param targetURIs optional list of target misbehaviour sets
-	 * @return ACCEPTED status and jobId for the background task
-	 * @throws InternalServerErrorException if an error occurs during report generation
- 	 */
-	@GetMapping(value = "/models/{modelId}/recommendations_blocking")
-	public ResponseEntity<RecommendationReportDTO> calculateRecommendationsBlocking(
-            @PathVariable String modelId,
-            @RequestParam(defaultValue = "CURRENT") String riskMode,
-            @RequestParam(defaultValue = "true")  boolean localSearch,
-            @RequestParam String acceptableRiskLevel,
-            @RequestParam (required = false) List<String> targetURIs) {
-
-        // Check if targetURIs is null or empty and assign an empty list if it is
-        if (targetURIs == null) {
-            targetURIs = new ArrayList<>();
-        }
-
-        final List<String> finalTargetURIs = targetURIs;
-
-        logger.info("Calculating recommendations for model {}", modelId);
-		riskMode = riskMode.replaceAll("[\n\r]", "_");
-        logger.info("riskMode: {}",riskMode);
-
-		RiskCalculationMode rcMode;
-
-		try {
-            rcMode = RiskCalculationMode.valueOf(riskMode);
-		} catch (IllegalArgumentException e) {
-			throw new BadRiskModeException(riskMode);
-		}
-
-		final Model model;
-		Progress progress;
-
-		synchronized(this) {
-			model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
-			String mId = model.getId();
-
-			if (model.isValidating()) {
-				warnIsValidating(mId, modelId);
-				return ResponseEntity.status(HttpStatus.OK).body(new RecommendationReportDTO());
-			}
-
-			if (model.isCalculatingRisks()) {
-				warnIsCalculatingRisks(mId, modelId);
-				return ResponseEntity.status(HttpStatus.OK).body(new RecommendationReportDTO());
-			}
-
-			progress = modelObjectsHelper.getTaskProgressOfModel(RECOMMENDATIONS, model);
-			progress.updateProgress(0d, RECOMMENDATIONS + " " + STARTING);
-			model.markAsCalculatingRisks(rcMode, false);
-		} //synchronized block
-
-		AStoreWrapper store = storeModelManager.getStore();
-		RecommendationReportDTO report = null;
-
-		try {
-            JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
-                    model.getModelStack(), true);
-
-            querierDB.initForRiskCalculation();
-
-            logger.info("Calculating recommendations");
-
-            AttackPathDataset apd = new AttackPathDataset(querierDB);
-
-            // validate targetURIs (if set)
-            if (!apd.checkMisbehaviourList(finalTargetURIs)) {
-                logger.error("Invalid target URIs set");
-                throw new MisbehaviourSetInvalidException("Invalid misbehaviour set");
-            }
-
-            // validate acceptable risk level
-            if (!apd.checkRiskLevelKey(acceptableRiskLevel)) {
-                logger.error("Invalid acceptableRiskLevel: {}", acceptableRiskLevel);
-                throw new MisbehaviourSetInvalidException("Invalid acceptableRiskLevel value");
-            }
-
-            String jobId = UUID.randomUUID().toString();
-            logger.info("Submitting synchronous job with id: {}", jobId);
-			String mId = model.getId();
-
-			RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, mId, riskMode, localSearch, acceptableRiskLevel, finalTargetURIs);
-			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(recaConfig);
-
-            report = reca.recommendations(progress);
-
-            // create recEntry and save it to mongo db
-            RecommendationEntity recEntity = new RecommendationEntity();
-            recEntity.setId(jobId);
-            recEntity.setModelId(mId);
-            recEntity.setState(RecommendationJobState.STARTED);
-            recEntity.setReport(report);
-            recRepository.save(recEntity);
-            logger.debug("rec entity saved for {}", recEntity.getId());
-
-            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(report);
-
-        } catch (BadRequestErrorException e) {
-            throw e;
-        } catch (Exception e) {
-            logger.error("Recommendations failed due to an error", e);
-            throw new InternalServerErrorException(
-                    "Finding recommendations failed. Please contact support for further assistance.");
-		} finally {
-			//always reset the flags even if the risk calculation crashes
-			model.finishedCalculatingRisks(report != null, rcMode, false);
-		}
-	}
-
-	/**
-=======
->>>>>>> b4a20a1b1479381f6c52bc2f105177c27d679b01
+    /*
 	 * This REST method generates a recommendation report, as an asynchronous call.
 	 * Results may be downloaded once this task has completed.
 	 *
@@ -1690,7 +1570,6 @@ public class ModelController {
         logger.info("Got request for jobId {} status", jobId);
 
         Optional<RecommendationJobState> optionalState = recommendationsService.getRecommendationJobState(jobId);
-
         String stateAsString = optionalState.map(state -> state.toString()).orElse("UNKNOWN");
 
         Optional<String> optionalMessage = recommendationsService.getRecommendationJobMessage(jobId);
