@@ -50,8 +50,11 @@ public class RecommendationEntity {
     public void setModifiedAt(LocalDateTime modifiedAt) {
         this.modifiedAt = modifiedAt;
     }
-    public void setMesage(String msg) {
+    public void setMessage(String msg) {
         this.message = msg;
+    }
+    public String getMessage() {
+        return this.message;
     }
     public void setModelId(String modelId) {
         this.modelId = modelId;

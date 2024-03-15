@@ -407,7 +407,7 @@ public class RecommendationsAlgorithm {
     /**
      * create control DTO
      * @param ctrlUri
-     * @return 
+     * @return
      */
     private ControlDTO createControlDTO(String ctrlUri) {
         return apd.fillControlDTO(ctrlUri);

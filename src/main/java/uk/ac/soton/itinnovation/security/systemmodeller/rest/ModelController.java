@@ -1422,6 +1422,7 @@ public class ModelController {
     }
 
 	/**
+<<<<<<< HEAD
 	 * This REST method generates a recommendation report, as a blocking call
 	 *
 	 * @param modelId the String representation of the model object to seacrh
@@ -1539,6 +1540,8 @@ public class ModelController {
 	}
 
 	/**
+=======
+>>>>>>> b4a20a1b1479381f6c52bc2f105177c27d679b01
 	 * This REST method generates a recommendation report, as an asynchronous call.
 	 * Results may be downloaded once this task has completed.
 	 *
@@ -1649,7 +1652,7 @@ public class ModelController {
             }
 			return true;
 		}, 0, TimeUnit.SECONDS);
-        
+
 		modelObjectsHelper.registerTaskExecution(model.getId(), future);
 
         // Build the Location URI for the job status
@@ -1674,24 +1677,26 @@ public class ModelController {
 			final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.WRITE);
 			Progress progress = modelObjectsHelper.getTaskProgressOfModel(RECOMMENDATIONS, model);
 			progress.setMessage("Cancelling");
-			recommendationsService.updateRecommendationJobState(jobId, RecommendationJobState.ABORTED);
+			recommendationsService.updateRecommendationJobState(jobId, RecommendationJobState.ABORTED, "job cancelled");
 		}
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/models/{modelId}/recommendations/{jobId}/status")
-    public ResponseEntity<JobResponseDTO> checkRecJobStatust(
+    public ResponseEntity<JobResponseDTO> checkRecJobStatus(
             @PathVariable String modelId, @PathVariable String jobId) {
 
         logger.info("Got request for jobId {} status", jobId);
 
-        recommendationsService.updateRecommendationJobState(jobId, RecommendationJobState.ABORTED);
+        Optional<RecommendationJobState> optionalState = recommendationsService.getRecommendationJobState(jobId);
 
-        Optional<RecommendationJobState> optionalStatus = recommendationsService.getRecommendationJobState(jobId);
-        String statusAsString = optionalStatus.map(status -> status.toString()).orElse("UNKNOWN");
+        String stateAsString = optionalState.map(state -> state.toString()).orElse("UNKNOWN");
 
-        JobResponseDTO response = new JobResponseDTO(jobId, statusAsString);
+        Optional<String> optionalMessage = recommendationsService.getRecommendationJobMessage(jobId);
+        String message = optionalMessage.map(msg -> msg.toString()).orElse("");
+
+        JobResponseDTO response = new JobResponseDTO(jobId, stateAsString, message);
 
         return ResponseEntity.ok().body(response);
     }

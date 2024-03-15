@@ -79,6 +79,16 @@ public class RecommendationsService {
         }
     }
 
+    public void updateRecommendationJobState(String recId, RecommendationJobState newState, String msg) {
+        Optional<RecommendationEntity> optionalRec = recRepository.findById(recId);
+        optionalRec.ifPresent(rec -> {
+            rec.setState(newState);
+            rec.setMessage(msg);
+            rec.setModifiedAt(LocalDateTime.now());
+            recRepository.save(rec);
+        });
+    }
+
     public void updateRecommendationJobState(String recId, RecommendationJobState newState) {
         Optional<RecommendationEntity> optionalRec = recRepository.findById(recId);
         optionalRec.ifPresent(rec -> {
@@ -102,6 +112,11 @@ public class RecommendationsService {
         return recRepository.findById(jobId).map(RecommendationEntity::getState);
     }
 
+    public Optional<String> getRecommendationJobMessage(String jobId) {
+        return recRepository.findById(jobId).map(RecommendationEntity::getMessage);
+    }
+
+
     public Optional<RecommendationReportDTO> getRecReport(String jobId) {
         return recRepository.findById(jobId).map(RecommendationEntity::getReport);
     }
@@ -113,17 +128,14 @@ public class RecommendationsService {
     // TODO: the happy path for a job should be: created -> started-> running
     // -> finished.
     // For cancelled jobs the sequence should be: created -> started -> running
-    // -> aborting -> finished.
+    // -> aborted -> finished?
+    //
     // Somehow the recommendation report should indicate what has happened to
     // the job if it was cancelled, because cancelled jobs should still produce
     // results.
     //
-    // Actually RecStatus should be renamed to RecState, maybe
-    // RecommendationJobState and should take enum values.
-    //
     // Then use the RecommendationEntity to store additional information, eg
     // number of recommendations found.
-    //
     //
     public enum RecommendationJobState {
         CREATED,

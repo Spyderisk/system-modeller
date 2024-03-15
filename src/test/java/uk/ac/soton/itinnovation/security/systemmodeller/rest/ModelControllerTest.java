@@ -1436,7 +1436,7 @@ public class ModelControllerTest extends CommonTestSetup{
 	@Test
 	public void testRecommendationsAsyncTaskCancel() throws InterruptedException {
 		switchToSystemModel(4, 12); //use recommendations domain and system model
-        logger.error("TEST RECOMMENDATIONS ASYNC");
+        logger.debug("TEST RECOMMENDATIONS ASYNC");
 
         String responseJson = given().
 			filter(userSession).
@@ -1470,11 +1470,11 @@ public class ModelControllerTest extends CommonTestSetup{
                 .extract().asString();
 
             jsonPath = new JsonPath(jobStatus);
-            String status = jsonPath.getString("message");
-            logger.error("JOB STATUS: {}", status);
+            String state = jsonPath.getString("state");
+            logger.debug("JOB STATE NAME: {}", state);
 
             if (!cancelled) {
-                logger.error("CANCELLING JOB");
+                logger.debug("CANCELLING JOB");
 
                 jobStatus = given()
                     .filter(userSession)
@@ -1489,7 +1489,8 @@ public class ModelControllerTest extends CommonTestSetup{
                 cancelled = true;
             }
 
-            jobFinished = "ABORTED".equals(status); // Assuming "FINISHED" is the status when the job is done
+			// Final status might be "FINISHED" or "ABORTED", so check for both or unit test may never complete!
+            jobFinished = "FINISHED".equals(state) || "ABORTED".equals(state);
         }
 
         // add a delay to complete the task, e.g. close gracefully the task
@@ -1497,23 +1498,6 @@ public class ModelControllerTest extends CommonTestSetup{
 
         // Additional assertions can go here, e.g., verify the final status is as expected
         //assertThat(jobStatus, equalTo("FINISHED"));
-	}
-
-	/**
-	 * Test calculating recommendations for model (blocking call)
-	 * Asserts OK 200 status
-	 */
-	@Test
-	public void testRecommendations() {
-		switchToSystemModel(4, 12); //use recommendations domain and system model
-
-		given().
-			filter(userSession).
-            queryParam("acceptableRiskLevel", "domain#RiskLevelMedium").
-		when().
-			get("/models/testModel/recommendations_blocking").
-		then().
-			assertThat().statusCode(HttpStatus.SC_OK);
 	}
 
 	/**
