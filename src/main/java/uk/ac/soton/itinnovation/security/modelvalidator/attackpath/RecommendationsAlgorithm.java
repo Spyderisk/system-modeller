@@ -287,11 +287,14 @@ public class RecommendationsAlgorithm {
         int csgOptionCounter = 0;
         for (Expression csgOption : csgOptions) {
 
-            // check if job is aborted:
-            if (checkJobAborted()) {
-                break;
-            } else {
-                updateJobState(RecommendationJobState.RUNNING);
+            // avoid checking job state if jobId is not defined
+            if (jobId != null && !jobId.isEmpty()) {
+                // check if job is aborted:
+                if (checkJobAborted()) {
+                    break;
+                } else {
+                    updateJobState(RecommendationJobState.RUNNING);
+                }
             }
 
             csgOptionCounter += 1;
