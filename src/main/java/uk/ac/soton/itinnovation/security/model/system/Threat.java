@@ -38,14 +38,13 @@ public class Threat extends AThreat {
 	//all misbehaviours that could possibly be caused by this threat
 	private final Map<String, MisbehaviourSet> misbehaviours;
 
-	//these are direct effects, as found to be caused by this threat through the secondary effect calculations
-	//private final Map<String, MisbehaviourSet> directEffects;
-
 	//these are all effects, including but not limited to direct effects
 	private final Map<String, MisbehaviourSet> indirectEffects;
 
 	//Flag to indicate if secondary threat, otherwise primary
 	private boolean secondaryThreat;
+
+	private boolean normalOperation;
 
 	private final Map<String, MisbehaviourSet> secondaryEffectConditions;
 
@@ -64,7 +63,6 @@ public class Threat extends AThreat {
 		super();
 
 		misbehaviours = new HashMap<>();
-		//directEffects = new HashMap<>();
 		indirectEffects = new HashMap<>();
 		secondaryEffectConditions = new HashMap<>();
 		entryPoints = new HashMap<>();
@@ -124,10 +122,6 @@ public class Threat extends AThreat {
 		} else {
 			t += "\t\tnone\n";
 		}
-		//if (!directEffects.isEmpty()) {
-		//	t += "\t- direct effects\n";
-		//	t = directEffects.values().stream().map(m -> "\t\t* " + m.toString() + "\n").reduce(t, String::concat);
-		//}
 		if (!indirectEffects.isEmpty()) {
 			t += "\t- indirect effects\n";
 			t = indirectEffects.values().stream().map(m -> "\t\t* " + m.toString() + "\n").reduce(t, String::concat);
@@ -149,12 +143,6 @@ public class Threat extends AThreat {
 		return misbehaviours;
 	}
 
-	/*
-	public Map<String, MisbehaviourSet> getDirectEffects() {
-		return directEffects;
-	}
-	*/
-
 	public Map<String, MisbehaviourSet> getIndirectEffects() {
 		return indirectEffects;
 	}
@@ -169,6 +157,14 @@ public class Threat extends AThreat {
 
 	public Map<String, MisbehaviourSet> getSecondaryEffectConditions() {
 		return secondaryEffectConditions;
+	}
+
+	public boolean isNormalOperation() {
+		return normalOperation;
+	}
+
+	public void setNormalOperation(boolean normalOperation) {
+		this.normalOperation = normalOperation;
 	}
 
 	public Map<String, TrustworthinessAttributeSet> getEntryPoints() {

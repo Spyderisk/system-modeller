@@ -212,6 +212,7 @@ class ThreatEditor extends React.Component {
                                     {assetLabelHeading}
                                 </h4>
                             </div>
+                            {threat.normalOperation && <p>This "threat" is expected to occur in normal operation.</p>}
                             <p>
                                 {threat !== undefined ? threat["description"] : ""}
                             </p>

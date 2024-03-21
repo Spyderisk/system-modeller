@@ -58,11 +58,15 @@ public class ControlSetDB extends EntityDB {
 		return proposed != null ? proposed : false;
 	}
 
+	public Boolean getProposed() {
+		return isProposed();
+	}
+
 	public void setProposed(Boolean status){
-		if(status) {
+		if (status) {
 			proposed = status;
 		}
-		else{
+		else {
 			proposed = null;
 		}
 	}

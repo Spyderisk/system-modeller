@@ -24,10 +24,10 @@ class ThreatsPanel extends React.Component {
         this.getAssetByUri = this.getAssetByUri.bind(this);
         this.sortByCol = this.sortByCol.bind(this);
         this.getFilterID = this.getFilterID.bind(this);
-        
+
         this.state = this.getDefaultState(props);
     }
-    
+
     getDefaultState(props) {
         return {
             search: "",
@@ -36,12 +36,14 @@ class ThreatsPanel extends React.Component {
             showOnlyRootCauseThreats: false,
             showOnlyThreatsWithCSG: false,
             showOnlyThreatsWithInactiveCSG: false,
+            showOnlyNormalOperationThreats: false,
             showPrimaryThreats: true,
             showSecondaryThreats: true,
+            showNormalOperationThreats: true,
             showUntriggeredThreats: false, //only used to filter compliance threats for now
             showFilters: false,
             sort: {
-                col: (props.name === "direct-effects") ? "likelihood" : "risk",
+                col: (props.name === "direct-effects") ? "likelihood" : (props.name === "attack-path-threats") ? "distance" : "risk",
                 dir: "desc"
             }
         }
@@ -91,7 +93,7 @@ class ThreatsPanel extends React.Component {
 
     render() {
         let threats = [];
-        
+
         if (this.props.displayRootThreats) {
             if (this.props.getIndirectThreats) {
                 if (this.props.complianceSet) {
@@ -112,7 +114,7 @@ class ThreatsPanel extends React.Component {
             else if (this.props.getRootThreats || this.props.complianceSet) {
                 if (this.props.complianceSet) {
                     let complianceThreats = this.props.complianceSet["complianceThreats"];
-                    
+
                     //Show untriggered threats if flag is false
                     if (this.state.showUntriggeredThreats) {
                         threats = complianceThreats; //show ALL threats (including untriggered ones)
@@ -159,26 +161,29 @@ class ThreatsPanel extends React.Component {
         if (this.state.showOnlyRootCauseThreats) {
             filteredThreats = filteredThreats.filter((t) => t.rootCause);
         }
-        
+
         //Include only threats with a control strategy (if flag is set)
         if (this.state.showOnlyThreatsWithCSG) {
             filteredThreats = filteredThreats.filter((t) => Object.keys(t.controlStrategies).length > 0);
         }
-        
+
+        //Include only normal operation threats
+        if (this.state.showOnlyNormalOperationThreats) {
+            filteredThreats = filteredThreats.filter((t) => t.normalOperation);
+        }
+
         //Include only threats with one or more inactive control strategy (if flag is set)
         if (this.state.showOnlyThreatsWithInactiveCSG) {
             filteredThreats = filteredThreats.filter((t) => Object.values(t.controlStrategies).some((csg) => {
-                //console.log(csg);
                 return !csg.enabled;
             }));
         }
 
-        //Include primary/secondary threats, according to flags
-        filteredThreats = filteredThreats.filter((t) => (this.state.showPrimaryThreats && !t.secondaryThreat) ||
-                                                        (this.state.showSecondaryThreats && t.secondaryThreat)
+        //Include primary/secondary and normal threats, according to flags
+        filteredThreats = filteredThreats.filter((t) => ((this.state.showPrimaryThreats && !t.secondaryThreat) ||
+                                                         (this.state.showSecondaryThreats && t.secondaryThreat)) &&
+                                                        ((this.state.showNormalOperationThreats && t.normalOperation) || !t.normalOperation)
         );
-
-        //console.log("filtered threats: ", filteredThreats.length);
 
         let showFiltersDiv;
         if (threats.length > 0 && !this.state.showFilters) {
@@ -237,7 +242,7 @@ class ThreatsPanel extends React.Component {
                     {this.state.showFilters && <FormGroup>
                         <InputGroup>
                             <InputGroup.Addon><i className="fa fa-lg fa-filter"/></InputGroup.Addon>
-                            <FormControl 
+                            <FormControl
                                 type="text"
                                 id={inputID}
                                 value={this.state.search}
@@ -317,6 +322,14 @@ class ThreatsPanel extends React.Component {
                             Only threats with an inactive control strategy
                         </Checkbox>
 
+                        <Checkbox
+                            checked={this.state.showOnlyNormalOperationThreats}
+                            onChange={() => {
+                                this.setState({...this.state, showOnlyNormalOperationThreats: !this.state.showOnlyNormalOperationThreats})
+                            }}>
+                            Only normal operation threats
+                        </Checkbox>
+
                         {(!this.props.complianceSet && (this.props.name !== "root-causes")) && <Checkbox
                             checked={this.state.showPrimaryThreats}
                             onChange={() => {
@@ -331,6 +344,14 @@ class ThreatsPanel extends React.Component {
                                 this.setState({...this.state, showSecondaryThreats: !this.state.showSecondaryThreats})
                             }}>
                             Include secondary threats
+                        </Checkbox>}
+
+                        {(!this.props.complianceSet && (this.props.name !== "root-causes")) && <Checkbox
+                            checked={this.state.showNormalOperationThreats}
+                            onChange={() => {
+                                this.setState({...this.state, showNormalOperationThreats: !this.state.showNormalOperationThreats})
+                            }}>
+                            Include normal operation threats
                         </Checkbox>}
                     </FormGroup>}
                 </Form>
@@ -351,6 +372,8 @@ class ThreatsPanel extends React.Component {
         let compliance = this.props.name === "compliance-threats" ||
                 this.props.name === "modelling-errors"; // are we displaying compliance or modelling threats?
         //console.log("compliance:", compliance);
+
+        let attackPath = this.props.name === "attack-path-threats";
 
         let threatHeader = this.props.complianceSet ? (this.props.name === "modelling-errors" ? "Modelling Error" : "Compliance Threat") : "Threat";
 
@@ -405,6 +428,26 @@ class ThreatsPanel extends React.Component {
                     return result;
                 })
             }
+        }
+        else if (sortCol === "distance") {
+            if (sortDir == "asc") {
+                //sort by distance (low to high), then alphabetically
+                sortedThreats.sort(function (a,b) {
+                    let a_val = a.distance ? a.distance : -1;
+                    let b_val = b.distance ? b.distance : -1;
+                    return (a_val < b_val) ? -1 : (a_val > b_val) ? 1 : (a.label < b.label) ? -1 : (a.label > b.label) ? 1 : 0;
+                })
+            }
+            else {
+                //sort by distance (high to low), then alphabetically
+                sortedThreats.sort(function (a, b) {
+                    let a_val = a.distance ? a.distance : -1;
+                    let b_val = b.distance ? b.distance : -1;
+                    let result = (a_val > b_val) ? -1 : (a_val < b_val) ? 1 : (a.label < b.label) ? -1 : (a.label > b.label) ? 1 : 0;
+                    return result;
+                })
+            }
+
         }
         else if (sortCol === "risk") {
             if (sortDir === "asc") {
@@ -543,7 +586,7 @@ class ThreatsPanel extends React.Component {
             else {
                 status = statusString;
             }
-            
+
             //console.log("status: ", status);
             //console.log("triggeredStatus: ", triggeredStatus);
 
@@ -554,7 +597,7 @@ class ThreatsPanel extends React.Component {
             //status: UNMANAGED, ACCEPTED, MITIGATED, BLOCKED
             let statusText = "";
             let symbol;
-            
+
             /* Uncomment to add triggered state, e.g. for debugging
             if (triggeredStatus === "UNTRIGGERED") {
                 statusText = "Untriggered / ";
@@ -564,7 +607,14 @@ class ThreatsPanel extends React.Component {
             }
             */
 
-            if (status === "BLOCKED") {
+            //Is threat a normal operation
+            let normalOperation = threat.normalOperation !== undefined ? threat.normalOperation : false;
+
+            if (normalOperation) {
+                // For now, display a blank icon here, as a space filler
+                // TODO: display a better icon here, e.g. depending on a "isAdverseOp" - see issue #107
+                symbol = <span className="threat-icon" style={{borderStyle: "none"}}></span>
+            } else if (status === "BLOCKED") {
                 statusText += "Managed (" + threatColorAndBE.be.label + ")";
                 symbol = <span className="fa fa-check threat-icon" style={{backgroundColor: threatColorAndBE.color}}/>;
             } else if (status === "MITIGATED") {
@@ -578,7 +628,7 @@ class ThreatsPanel extends React.Component {
                 statusText += "Unmanaged";
                 symbol = <span className="fa fa-exclamation-triangle threat-icon" style={{backgroundColor: "red", color: "white"}}/>;
             }
-            
+
             if (triggeredStatus === "UNTRIGGERED") {
                 statusText = "Untriggered side effect";
                 symbol = <span className="fa fa-check threat-icon"/>;
@@ -608,6 +658,8 @@ class ThreatsPanel extends React.Component {
             let likelihood = threat["likelihood"];
             let risk = threat["riskLevel"];
 
+            let distance = threat.distance;
+
             let likelihoodRender = getRenderedLevelText(this.props.model.levels.Likelihood, likelihood);
             let riskRender = getRenderedLevelText(this.props.model.levels.RiskLevel, risk);
 
@@ -621,7 +673,7 @@ class ThreatsPanel extends React.Component {
                     onMouseLeave={() => this.props.hoverThreat(false, threat)}
                 >
                     <span className="col-xs-1" style={{minWidth: "44px"}}>
-                        <OverlayTrigger delayShow={Constants.TOOLTIP_DELAY} placement="left"
+                        {!normalOperation ? <OverlayTrigger delayShow={Constants.TOOLTIP_DELAY} placement="left"
                             trigger={["hover"]}
                             overlay={
                                 <Tooltip id={`threats-stat-${index + 1}-tooltip`}
@@ -633,6 +685,7 @@ class ThreatsPanel extends React.Component {
                         >
                             {symbol}
                         </OverlayTrigger>
+                        : symbol } {/* tooltip temporarily disabled for normaol op threats - see issue #107 */}
                         {primary && root_cause ? <OverlayTrigger
                             delayShow={Constants.TOOLTIP_DELAY}
                             placement="left"
@@ -648,7 +701,7 @@ class ThreatsPanel extends React.Component {
                             <span className="threat-icon">1</span>
                         </OverlayTrigger>
                         : null }
-                        {primary && !root_cause ? <OverlayTrigger
+                        {primary && !normalOperation && !root_cause ? <OverlayTrigger
                             delayShow={Constants.TOOLTIP_DELAY}
                             placement="left"
                             trigger={["hover"]}
@@ -663,7 +716,7 @@ class ThreatsPanel extends React.Component {
                             <span className="threat-icon">1</span>
                         </OverlayTrigger>
                         : null }
-                        {secondary ? <OverlayTrigger
+                        {secondary && !normalOperation ? <OverlayTrigger
                             delayShow={Constants.TOOLTIP_DELAY}
                             placement="left"
                             trigger={["hover"]}
@@ -676,6 +729,21 @@ class ThreatsPanel extends React.Component {
                             }
                         >
                             <span className="threat-icon">2</span>
+                        </OverlayTrigger>
+                        : null }
+                        {normalOperation ? <OverlayTrigger
+                            delayShow={Constants.TOOLTIP_DELAY}
+                            placement="left"
+                            trigger={["hover"]}
+                            overlay={
+                                <Tooltip id={`threats-normalop-${index + 1}-tooltip`}
+                                    className="tooltip-overlay"
+                                >
+                                    Normal Operation
+                                </Tooltip>
+                            }
+                        >
+                            <span className="threat-icon">N</span>
                         </OverlayTrigger>
                         : null }
                         {!compliance && !root_cause && !primary && !secondary ? <span
@@ -701,7 +769,7 @@ class ThreatsPanel extends React.Component {
                             {threatName}
                         </span>
                     </OverlayTrigger>
-                    {!displayOneAsset ? 
+                    {!displayOneAsset && !attackPath ?
                         <OverlayTrigger delayShow={Constants.TOOLTIP_DELAY} placement="left"
                             trigger={["hover"]}
                             overlay={
@@ -716,12 +784,17 @@ class ThreatsPanel extends React.Component {
                                 {assetLabel}
                             </span>
                         </OverlayTrigger> : null}
+                    {!compliance && attackPath &&
+                    <span className="col-xs-1 distance">
+                        {distance}
+                    </span>
+                    }
                     {!compliance &&
                     <span className="col-xs-1 likelihood">
                         {likelihoodRender}
                     </span>
                     }
-                    {!compliance &&
+                    {!compliance && !attackPath &&
                     <span className="col-xs-1 risk">
                         {riskRender}
                     </span>
@@ -754,7 +827,7 @@ class ThreatsPanel extends React.Component {
                             </span>
                         </OverlayTrigger>
                     </span>
-                    {!displayOneAsset ? 
+                    {!displayOneAsset && !attackPath ? 
                         <span className={(compliance ? "col-xs-4" : "col-xs-3")} style={{minWidth: "50px"}}>
                             <OverlayTrigger delayShow={Constants.TOOLTIP_DELAY} placement="left"
                                             trigger={["hover"]}
@@ -772,6 +845,24 @@ class ThreatsPanel extends React.Component {
                             </OverlayTrigger>
                         </span>
                     : null }
+                    {!compliance && attackPath &&
+                    <span className="col-xs-1 distance">
+                        <OverlayTrigger delayShow={Constants.TOOLTIP_DELAY} placement="left"
+                                        trigger={["hover"]}
+                                        overlay={
+                                            <Tooltip id={`threats-panel-sort-distance-tooltip`}
+                                                     className={"tooltip-overlay"}>
+                                                Sort by Distance to Target
+                                            </Tooltip>
+                                        }>
+                            <span onClick={() => this.sortByCol("distance")}>
+                                <span className="head-text">Distance</span>
+                                <span className={sortDirIcon}
+                                    style={{display: sortCol === "distance" ? "inline-block" : "none"}}/>
+                            </span>
+                        </OverlayTrigger>
+                    </span>
+                    }
                     {!compliance &&
                     <span className="col-xs-1 likelihood">
                         <OverlayTrigger delayShow={Constants.TOOLTIP_DELAY} placement="left"
@@ -790,7 +881,7 @@ class ThreatsPanel extends React.Component {
                         </OverlayTrigger>
                     </span>
                     }
-                    {!compliance &&
+                    {!compliance && !attackPath &&
                     <span className="col-xs-1 risk">
                         <OverlayTrigger delayShow={Constants.TOOLTIP_DELAY} placement="left"
                                         trigger={["hover"]}

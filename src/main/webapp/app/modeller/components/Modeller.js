@@ -219,6 +219,7 @@ class Modeller extends React.Component {
                     model={this.props.model}
                     getTwasForMisbehaviourSet={this.getTwasForMisbehaviourSet}
                     selectedMisbehaviour={this.props.selectedMisbehaviour}
+                    attackPaths={this.props.attackPaths}
                     selectedThreat={this.props.selectedThreat}
                     loadingCausesAndEffects={this.props.selectedAsset["loadingCausesAndEffects"]}
                     show={this.props.isMisbehaviourExplorerVisible}
@@ -314,6 +315,7 @@ class Modeller extends React.Component {
                             selectedThreat={this.props.selectedThreat}
                             selectedMisbehaviour={this.props.selectedMisbehaviour}
                             expanded={this.props.expanded}
+                            filters={this.props.filters}
                             loading={this.props.loading}
                             getAssetType={this.getAssetType}
                             getAssetsForType={this.getAssetsForType}
@@ -895,7 +897,7 @@ class Modeller extends React.Component {
         return this.props.model.misbehaviourSets[id];
     }
 
-    renderTrustworthinessAttributes(attributes, levels, self, hideInvisibleTwas) {
+    renderTrustworthinessAttributes(attributes, levels, self, showInvisibleTwas) {
         return (
             <div>
                 <div key={0} className="row head">
@@ -912,13 +914,11 @@ class Modeller extends React.Component {
                 {attributes.map((field, index) => {
                     let updating = self.state.updating[field.label];
                     let twas = self.state.twas[field.label];
-                    //console.log("twas: ", twas);
                     
                     //Is TWAS visible?
                     let visible = twas["visible"];
 
-                    if (hideInvisibleTwas && (visible !== undefined) && !visible) {
-                        //console.log("Hiding TWAS: " + twas.attribute.label);
+                    if (!showInvisibleTwas && (visible !== undefined) && !visible) {
                         return;
                     }
 
@@ -1011,7 +1011,9 @@ var mapStateToProps = function (state) {
         csgExplorerContext: state.modeller.csgExplorerContext,
         selectedThreat: state.modeller.selectedThreat,
         selectedMisbehaviour: state.modeller.selectedMisbehaviour,
+        attackPaths: state.modeller.attackPaths,
         expanded: state.modeller.expanded,
+        filters: state.modeller.filters,
         misbehaviourTwas: state.modeller.misbehaviourTwas,
         isMisbehaviourExplorerVisible: state.modeller.isMisbehaviourExplorerVisible,
         isMisbehaviourExplorerActive: state.modeller.isMisbehaviourExplorerActive,
@@ -1062,7 +1064,9 @@ Modeller.propTypes = {
     csgExplorerContext: PropTypes.object,
     selectedThreat: PropTypes.object,
     selectedMisbehaviour: PropTypes.object,
+    attackPaths: PropTypes.object,
     expanded: PropTypes.object,
+    filters: PropTypes.object,
     misbehaviourTwas: PropTypes.object,
     isControlExplorerVisible: PropTypes.bool,
     isControlExplorerActive: PropTypes.bool,

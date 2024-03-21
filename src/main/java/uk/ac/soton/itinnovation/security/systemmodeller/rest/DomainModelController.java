@@ -34,15 +34,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.UnexpectedException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipException;
-import net.lingala.zip4j.ZipFile;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -64,9 +61,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import uk.ac.soton.itinnovation.security.semanticstore.IStoreWrapper;
 import uk.ac.soton.itinnovation.security.systemmodeller.auth.KeycloakAdminClient;
-import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.Message;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.StoreModelManager;
+import uk.ac.soton.itinnovation.security.systemmodeller.util.DomainModelUtils;
 import uk.ac.soton.itinnovation.security.systemmodeller.util.PaletteGenerator;
 
 @RestController
@@ -86,6 +83,9 @@ public class DomainModelController {
 
 	@Value("${admin-role}")
 	public String adminRole;
+
+	@Value("${knowledgebases.install.folder}")
+	private String kbInstallFolder;
 
 	@RequestMapping(value = "/", method = RequestMethod.GET)
 	public Map<String, Map<String, Object>> getDomainModels(){
@@ -109,29 +109,35 @@ public class DomainModelController {
 
 	@RequestMapping(value = "/upload", method = RequestMethod.POST)
 	public ResponseEntity<?> uploadNewDomainVersion(@RequestParam("file") MultipartFile file,
-						@RequestParam(value = "file2", required = false) MultipartFile ontologies,
 						@RequestParam(value = "domainUri", required = false) String domainUri,
 						@RequestParam(value = "newDomain", required = false) boolean newDomain
 						) throws IOException {
 
-		String domainFileName;
+		String domainModelName;
+		String domainModelFolder = null;
 
 		if (newDomain) {
 			logger.info("Uploading new domain model");
-			domainFileName = "newDomain"; //provisional name until we determine domain name from mapping file
+			domainModelName = "newDomain"; //provisional name until we determine domain name from mapping file
 		}
 		else {
 			logger.info("Uploading domain model with given domain URI: {}", domainUri);
-			domainFileName = domainUri.substring(domainUri.lastIndexOf('/') + 1);
+			domainModelName = domainUri.substring(domainUri.lastIndexOf('/') + 1);
 		}
 
-		logger.debug("domainFileName: {}", domainFileName);
+		logger.debug("domainModelName: {}", domainModelName);
 	
 		boolean rdf = file.getOriginalFilename().endsWith(".rdf") || file.getOriginalFilename().endsWith(".rdf.gz");
 		boolean gz = file.getOriginalFilename().endsWith(".gz");
 		boolean zip = file.getOriginalFilename().endsWith(".zip");
+
+		//N.B. It is likely that we will remove support for uploading domain models as .nq files, etc (without the corresponding icons, etc)
+		//so for now we throw an exception if the uploaded file is not a .zip bundle
+		if (!zip) {
+			throw new IOException("Only domain .zip bundles may be uploaded!");
+		}
 	
-		File f = File.createTempFile(domainFileName, zip ? ".zip" : (rdf ? ".rdf" : ".nq"));
+		File f = File.createTempFile(domainModelName, zip ? ".zip" : (rdf ? ".rdf" : ".nq"));
 
 		logger.debug(f.getAbsolutePath());
 
@@ -159,93 +165,63 @@ public class DomainModelController {
 		File iconMappingFile = null;
 
 		if (zip) {
-			logger.info("Extracting zipfile: {}", f.getAbsolutePath());
+			DomainModelUtils domainModelUtils= new DomainModelUtils();
+			Map<String, String> result = domainModelUtils.extractDomainBundle(kbInstallFolder, f, newDomain, domainUri, domainModelName);
+			logger.debug("Removing tmp zipfile: {}", f);
+			f.delete();
 
-			String tmpdir = Files.createTempDirectory("domain").toFile().getAbsolutePath();
-			logger.info("Created tmp folder: {}", tmpdir);
-
-			String source = f.getAbsolutePath();
-			String destination = tmpdir;   
-			
-			ZipFile zipFile = new ZipFile(source);
-			zipFile.extractAll(destination);
-
-			String nqFilename = "domain.nq";
-			String nqFilepath = destination + File.separator + nqFilename;
-
-			//set domain model file (to be loaded later)
-			f = new File(nqFilepath);
-
-			//Check for domain model file
-			if (!f.exists()) throw new IOException("Cannot locate domain model file: " + nqFilename);
-			logger.debug("Located domain model file: {}", nqFilepath);
-
-			//Check for icon mapping file
-			String iconMappingFilename = "icon-mapping.json";
-			iconMappingFile = new File(destination + File.separator + iconMappingFilename);
-			if (!iconMappingFile.exists()) throw new IOException("Cannot locate icon mapping file: " + iconMappingFilename);
-			logger.debug("Located icon mapping file: {}", iconMappingFile.getAbsolutePath());
-
-			//Check for icons folder
-			String iconsFoldername = "icons";
-			File iconsFolder = new File(destination + File.separator + iconsFoldername);
-			if (!iconsFolder.exists() || !iconsFolder.isDirectory()) throw new IOException("Cannot locate icons folder");
-			logger.debug("Located icons folder: {}", iconsFolder.getAbsolutePath());
-
-			if (newDomain) {
-				//Determine domain URI from icons mapping file 
-				domainUri = PaletteGenerator.getDomainUri(new FileInputStream(iconMappingFile));
-				domainFileName = domainUri.substring(domainUri.lastIndexOf('/') + 1);
-				logger.debug("domainUri: {}", domainUri);
-				logger.debug("domainFileName: {}", domainFileName);
+			if (result.containsKey("domainUri")) {
+				domainUri = result.get("domainUri");
 			}
 
-			String imagesDir = this.getClass().getResource("/static/images/").getPath();
-			String domainImagesPath = imagesDir + domainFileName;
+			if (result.containsKey("domainModelName")) {
+				domainModelName = result.get("domainModelName");
+			}
 
-			//extract icons folder from zipfile into /images folder
-			zipFile.extractFile(iconsFoldername + "/", imagesDir);
-
-			//locate extracted icons folder
-			File iconsDir = new File(imagesDir + "icons");
-
-			//define domain images folder and delete if exists
-			File domainImagesDir = new File(domainImagesPath);
-			FileUtils.deleteDirectory(domainImagesDir);
-
-			//rename icons folder to domain images folder
-			iconsDir.renameTo(domainImagesDir);
-
-			if (!domainImagesDir.exists() || !domainImagesDir.isDirectory()) throw new IOException("Cannot locate icons folder: " +
-				domainImagesDir.getAbsolutePath());
-
-			logger.debug("Created domain icons folder: {}", domainImagesDir.getAbsolutePath());
+			if (result.containsKey("domainModelFolder")) {
+				domainModelFolder = result.get("domainModelFolder");
+			}
+		
+			if (result.containsKey("nqFilepath")) {
+				f = new File(result.get("nqFilepath"));
+			}
+			
+			if (result.containsKey("iconMappingFile")) {
+				iconMappingFile = new File(result.get("iconMappingFile"));
+			}
 		}
 
 		//storeModelManager.deleteModel(domainUri); //KEM loadModel handles the delete
-		storeModelManager.loadModel(domainFileName, domainUri, f.getAbsolutePath());
+		logger.debug("domainUri: {}", domainUri);
+		logger.info("domainModelName: {}", domainModelName);
+		logger.info("domainModelFolder: {}", domainModelFolder);
+		logger.debug("domain model file: {}", f.getAbsolutePath());
+		logger.debug("icon mapping file: {}", iconMappingFile.getAbsolutePath());
+		storeModelManager.loadModel(domainModelName, domainUri, f.getAbsolutePath());
    
 		boolean paletteCreated = false;
 
 		//First, use icon mapping file, if available (specific for this domain model)
 		if (iconMappingFile != null) {
 			logger.debug("Loading icon mappings from file: {}", iconMappingFile.getAbsolutePath());
-			paletteCreated = PaletteGenerator.createPalette(domainUri, modelObjectsHelper, new FileInputStream(iconMappingFile));
-		}
-		//We check to replace ontologies.json first because the palette generator uses this file for icon matching
-		else if (ontologies != null) {
-			logger.debug("Updating ontologies.json");
-			File ontFile = new File(this.getClass().getResource("/static/data/ontologies.json").getPath());
-			try {
-				ontologies.transferTo(ontFile);
-			} catch (IOException e) {
-				 logger.error("Could not upload ontologies.json file", e);
-			}
+			logger.info("Creating palette for {}", domainUri);
+			PaletteGenerator pg = PaletteGenerator.createPalette(domainModelFolder, domainUri, modelObjectsHelper, new FileInputStream(iconMappingFile));
+			paletteCreated = pg.isPaletteCreated();
+			if (paletteCreated) {
+				logger.info("Added domain model: {}", domainModelName);
 
-			paletteCreated = PaletteGenerator.createPalette(domainUri, modelObjectsHelper, new FileInputStream(ontFile));
-		} else {
-			paletteCreated = PaletteGenerator.createPalette(domainUri, modelObjectsHelper);
-		}
+				boolean defaultUserAccess = pg.isDefaultUserAccess();
+				if (defaultUserAccess) {
+					logger.info("Adding default user access for {}", domainModelName);
+					List<String> defaultUserOntologies = modelObjectsHelper.getDefaultUserDomainModels();
+					if (defaultUserOntologies == null) {
+						defaultUserOntologies = new ArrayList<>();
+					}
+					defaultUserOntologies.add(domainModelName);
+					modelObjectsHelper.setDefaultUserDomainModels(defaultUserOntologies);
+				}
+			}
+}
 
 		if (!paletteCreated) {
 			logger.error("Palette not generated for: " + domainUri);
@@ -265,27 +241,24 @@ public class DomainModelController {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Unknown domain model: " + domain);
 		}
 
+		logger.info("Domain model deleted from triplestore: {}", domain);
+
+		//Determine domain model installation folder path
+		Path domainModelFolderPath = Paths.get(kbInstallFolder, domain);
+		File domainModelFolder = domainModelFolderPath.toFile();
+
+		//Delete domain model folder, if it exists
+		if (domainModelFolder.isDirectory()) {
+			logger.info("Deleting installation folder: {}", domainModelFolderPath);
+			FileUtils.deleteDirectory(domainModelFolder);
+		}
+		else {
+			logger.warn("Installation folder does not exist: {}", domainModelFolderPath);
+		}
+
 		return ResponseEntity.ok(getDomainModels());
 	}
 						
-	@RequestMapping(value = "/{domain}/palette", method = RequestMethod.POST)
-	public ResponseEntity<?> updatePalette(@PathVariable String domain, @RequestBody Map<?, ?> body) {
-
-		String rdfName = domain.substring(domain.lastIndexOf('/') + 1);
-		File f = new File(this.getClass().getResource("/static/data/palette-"+rdfName+".json").getPath());
-		if(!f.exists()){
-		    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new Message("Could not identify this domain's palette", 1));
-		}
-		ObjectMapper objectMapper = new ObjectMapper();
-
-		try {
-		    objectMapper.writerWithDefaultPrettyPrinter().writeValue(f, body);
-		} catch (IOException e) {
-		    logger.error(e.getMessage());
-		}
-		return ResponseEntity.ok().body(body);
-	}
-
 	@RequestMapping(value = "/{domain}/users", method = RequestMethod.GET)
 	public ResponseEntity<?> getDomainUsers(@PathVariable String domain) {
 
@@ -310,23 +283,6 @@ public class DomainModelController {
 
 	@RequestMapping(value = "/{domain}/users", method = RequestMethod.POST)
 	public ResponseEntity<?> updateDomainUsers(@PathVariable String domain, @RequestBody Map<?, ?> body) {
-
-//        String rdfName = domain.substring(domain.lastIndexOf('/') + 1);
-//        File f = new File(this.getClass().getResource("/static/data/users-" + rdfName + ".rdf.json").getPath());
-//        if(!f.exists()){
-//            try {
-//                f.createNewFile();
-//            } catch (IOException e) {
-//                logger.error("Error creating file {}", rdfName, e);
-//            }
-//        }
-//        ObjectMapper objectMapper = new ObjectMapper();
-//
-//        try {
-//            objectMapper.writerWithDefaultPrettyPrinter().writeValue(f, body);
-//        } catch (IOException e) {
-//            logger.error(e.getMessage());
-//        }
 		logger.debug("{}", body);
 		modelObjectsHelper.setUsersForDomainModel(domain, (List<String>) body.get("users"));
 
@@ -363,15 +319,6 @@ public class DomainModelController {
 		headers.add("Content-disposition", "attachment;filename=" + graphName + "_" + version + ".nq");
 
 		return ResponseEntity.status(HttpStatus.OK).headers(headers).contentType(MediaType.TEXT_PLAIN).body(resource);
-	}
-
-	@RequestMapping(value = "/ontologies", method = RequestMethod.GET)
-	public ResponseEntity<?> exportOntologies() throws UnexpectedException {
-
-		logger.info("Called REST method to GET serialised ontologies.json");
-		File f = new File(this.getClass().getResource("/static/data/ontologies.json").getPath());
-
-		return returnFile(Paths.get(f.getAbsolutePath()), f.getName());
 	}
 
 	private ResponseEntity<?> returnFile(Path p, String filename) {

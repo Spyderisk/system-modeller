@@ -8,7 +8,7 @@ import {
 import { connect } from "react-redux";
 import { saveDownload } from "../../../common/actions/api";
 import * as Constants from "../../../common/constants.js";
-import { openDocumentation } from "../../../common/documentation/documentation";
+import { openDocumentation, openApiDocs } from "../../../common/documentation/documentation";
 import {
     reCentreCanvas,
     reCentreModel,
@@ -450,71 +450,98 @@ class Header extends React.Component {
                         <div className="header-dropdown">
                             <DropdownButton title="Help" id="help-menu">
                                 <MenuItem
-                                    key={1}
-                                    eventKey={1}
+                                    key={0}
+                                    eventKey={0}
                                     onClick={(e) =>
                                         openDocumentation(e, "Reference%20Guide/")
                                     }
                                 >
                                     Reference Guide
                                 </MenuItem>
+                                <MenuItem
+                                    key={10}
+                                    eventKey={10}
+                                    onClick={(e) =>
+                                        openApiDocs(e)
+                                    }
+                                >
+                                    Spyderisk REST API
+                                </MenuItem>
                                 <MenuItem divider />
                                 <h4 style={{ color: "black", paddingLeft: "20px" }}>
                                     Tutorials
                                 </h4>
                                 <MenuItem
+                                    key={1}
+                                    eventKey={1}
+                                    onClick={(e) =>
+                                        openDocumentation(e, "Tutorials/1%20Overview/")
+                                    }
+                                >
+                                    1. Overview
+                                </MenuItem>
+                                <MenuItem
                                     key={2}
                                     eventKey={2}
                                     onClick={(e) =>
-                                        openDocumentation(e, "Tutorials/Tutorial%201/")
+                                        openDocumentation(e, "Tutorials/2%20Getting%20Started/")
                                     }
                                 >
-                                    1. Getting Started
+                                    2. Getting Started with SSM
                                 </MenuItem>
                                 <MenuItem
                                     key={3}
                                     eventKey={3}
                                     onClick={(e) =>
-                                        openDocumentation(e, "Tutorials/Tutorial%202/")
+                                        openDocumentation(e, "Tutorials/3%20Risk%20Identification%20pt1%20-%20Modelling%20your%20System/")
                                     }
                                 >
-                                    2. How to...Start Modelling
+                                    3. Risk Identification (1) - Modelling your System
                                 </MenuItem>
                                 <MenuItem
                                     key={4}
                                     eventKey={4}
                                     onClick={(e) =>
-                                        openDocumentation(e, "Tutorials/Tutorial%203/")
+                                        openDocumentation(e, "Tutorials/4%20Risk%20Identification%20pt2%20-%20Validating%20your%20Model/")
                                     }
                                 >
-                                    3. How to...Complete Modelling
+                                    4. Risk Identification (2) - Validating your Model
                                 </MenuItem>
                                 <MenuItem
                                     key={5}
                                     eventKey={5}
                                     onClick={(e) =>
-                                        openDocumentation(e, "Tutorials/Tutorial%204/")
+                                        openDocumentation(e, "Tutorials/5%20Risk%20Analysis%20-%20Impact%20and%20Controls/")
                                     }
                                 >
-                                    4. How to...Validate and Correct your Model
+                                    5. Risk Analysis (1)
                                 </MenuItem>
                                 <MenuItem
                                     key={6}
                                     eventKey={6}
                                     onClick={(e) =>
-                                        openDocumentation(e, "Tutorials/Tutorial%205/")
+                                        openDocumentation(e, "Tutorials/6%20Risk%20Analysis%20and%20Evaluation/")
                                     }
                                 >
-                                    5. How to...Analyse and Mitigate Risk
+                                    6. Risk Analysis (2) and Risk Evaluation
                                 </MenuItem>
                                 <MenuItem
                                     key={7}
                                     eventKey={7}
                                     onClick={(e) =>
-                                        openDocumentation(e, "Tutorials/Tutorial%206/")
+                                        openDocumentation(e, "Tutorials/7%20Risk%20Treatment/")
                                     }
                                 >
-                                    6. How to...Finish your Session
+                                    7. Risk Treatment
+                                </MenuItem>
+                                <MenuItem
+                                    key={8}
+                                    eventKey={8}
+                                    onClick={(e) =>
+                                        openDocumentation(e, "Tutorials/8%20Finishing%20your%20Session/")
+                                    }
+                                >
+                                    8. Finishing your Session
                                 </MenuItem>
                             </DropdownButton>
                         </div>

@@ -221,24 +221,21 @@ class ModelMisBehavPanel extends React.Component {
     }
 
     static getDerivedStateFromProps(props, state) {
-        //console.log("getDerivedStateFromProps: ", props, state);
+        let newMisBehav = fromJS(props.misbehaviours);
 
         if (props.selectedMisbehaviour.misbehaviour && props.selectedMisbehaviour.misbehaviour.id &&
                 props.selectedMisbehaviour.misbehaviour.id !== state.selected) {
-            //console.log("Sorting: changing selected misbehaviour: " + state.selected 
-            //        + " to " + props.selectedMisbehaviour.misbehaviour.id);
+            misBehavImmutable = newMisBehav;
+            lastFilterState = {
+                filter: state.filter,
+                sort: state.sort
+            };
             return {
                 ...state,
-                selected: props.selectedMisbehaviour.misbehaviour.id
+                selected: props.selectedMisbehaviour.misbehaviour.id,
+                ...ModelMisBehavPanel.getUpdatedState(props, state)
             }
         }
-
-        let newMisBehav = fromJS(props.misbehaviours);
-
-        //console.log("state.selectedThreat:", state.selectedThreat);
-        //console.log("props.selectedThreat:", props.selectedThreat);
-        //console.log("misBehavImmutable:", misBehavImmutable);
-        //console.log("newMisBehav:", newMisBehav);
 
         if (props.selectedThreat !== state.selectedThreat) {
             misBehavImmutable = newMisBehav;
@@ -246,7 +243,6 @@ class ModelMisBehavPanel extends React.Component {
                 filter: state.filter,
                 sort: state.sort
             };
-            //console.log("selected threat changed");
             return {
                 ...state,
                 ...ModelMisBehavPanel.getUpdatedState(props, state)
@@ -258,7 +254,6 @@ class ModelMisBehavPanel extends React.Component {
                 filter: state.filter,
                 sort: state.sort
             };
-            //console.log("misbehaviours changed");
             return {
                 ...state,
                 ...ModelMisBehavPanel.getUpdatedState(props, state)
@@ -269,7 +264,6 @@ class ModelMisBehavPanel extends React.Component {
                 filter: state.filter,
                 sort: state.sort
             };
-            //console.log("filter or sort changed");
             return {
                 ...state,
                 ...ModelMisBehavPanel.getUpdatedState(props, state)
@@ -277,13 +271,10 @@ class ModelMisBehavPanel extends React.Component {
         }
 
         // null represents no change to state
-        //console.log("nothing changed");
         return null;
     }
 
     render() {
-        //console.log("render: ", misBehavImmutable.count(), this.state.tableData);
-        
         //Get current settings for sort column/direction. Use defaults if undefined
         let column = this.state.sort.column ? this.state.sort.column : this.state.sortDefaults.column;
         let direction = this.state.sort.direction ? this.state.sort.direction : this.state.sortDefaults.direction;
@@ -637,7 +628,6 @@ let mapStateToProps = function (state) {
         selectedMisbehaviour: state.modeller.selectedMisbehaviour,
         rightSidePanelWidth: state.modeller.view.rightSidePanelWidth,
         authz: state.modeller.authz,
-
     };
 };
 
@@ -647,10 +637,10 @@ let mapStateToProps = function (state) {
 ModelMisBehavPanel.propTypes = {
     panelType: PropTypes.string,
     selectedMisbehaviours: PropTypes.array,
+    selectedMisbehaviour: PropTypes.object,
     selectedThreat: PropTypes.string,
     adjustAssetNameSizes: PropTypes.bool,
     authz: PropTypes.object,
-
 };
 
 export default connect(mapStateToProps)(ModelMisBehavPanel);

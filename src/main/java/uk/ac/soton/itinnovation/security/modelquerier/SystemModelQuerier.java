@@ -1533,26 +1533,28 @@ public class SystemModelQuerier extends AModelQuerier {
 		// ----- Get threats -----
 		
 		String query = String.format("SELECT DISTINCT * WHERE {\r\n" + 
-				(threatURI != null ? "	BIND (<" + SparqlHelper.escapeURI(threatURI) + "> AS ?t) .\n" : "") +
-				"	GRAPH <%s> {\r\n" + 
-				"		?t core:parent ?genThreat .\r\n" + 
-				"		OPTIONAL { ?t core:isSecondaryThreat ?isSecondaryThreat }\r\n" + 
-				"		BIND(IF(BOUND(?isSecondaryThreat),STR(?isSecondaryThreat),\"false\") AS ?isST)\n" +
-				(threatId != null ? "	?t core:hasID \"" + SparqlHelper.escapeLiteral(threatId) + "\" . \n" : "") +
-				"		?t core:threatens ?a .\r\n" + 
-				"		?t core:appliesTo ?matchingPattern .\r\n" + 
-				"		OPTIONAL { ?t rdfs:comment ?tDesc }\r\n" + 
-				"		OPTIONAL { ?t rdfs:label ?l }\r\n" + 
-				"		OPTIONAL { ?t core:isRootCause ?isRootCause }\r\n" + 
-				"		BIND(IF(BOUND(?isRootCause),STR(?isRootCause),\"false\") AS ?isRC)\n" +
-				"	}\r\n" +
-				(assetURI != null ? "	FILTER (?a=<" + SparqlHelper.escapeURI(assetURI) + ">) .\n" : "") +
-				"	GRAPH <%s> {\r\n" + 
-				"		?genThreat a ?threat .\r\n" + 
-				"		?threat rdfs:subClassOf* core:Threat .\r\n" + 
-				"		OPTIONAL { ?genThreat rdfs:label ?gtl }\r\n" + 
-				"		OPTIONAL { ?genThreat rdfs:comment ?genDesc }\r\n" + 
-				"	}" +
+				(threatURI != null ? "    BIND (<" + SparqlHelper.escapeURI(threatURI) + "> AS ?t) .\n" : "") +
+				"    GRAPH <%s> {\r\n" + 
+				"        ?t core:parent ?genThreat .\r\n" + 
+				"        OPTIONAL { ?t core:isSecondaryThreat ?isSecondaryThreat }\r\n" + 
+				"        BIND(IF(BOUND(?isSecondaryThreat),STR(?isSecondaryThreat),\"false\") AS ?isST)\n" +
+				"        OPTIONAL { ?t core:isNormalOp ?isNormalOp }\r\n" + 
+				"        BIND(IF(BOUND(?isNormalOp),STR(?isNormalOp),\"false\") AS ?isNO)\n" +
+				(threatId != null ? "    ?t core:hasID \"" + SparqlHelper.escapeLiteral(threatId) + "\" . \n" : "") +
+				"        ?t core:threatens ?a .\r\n" + 
+				"        ?t core:appliesTo ?matchingPattern .\r\n" + 
+				"        OPTIONAL { ?t rdfs:comment ?tDesc }\r\n" + 
+				"        OPTIONAL { ?t rdfs:label ?l }\r\n" + 
+				"        OPTIONAL { ?t core:isRootCause ?isRootCause }\r\n" + 
+				"        BIND(IF(BOUND(?isRootCause),STR(?isRootCause),\"false\") AS ?isRC)\n" +
+				"    }\r\n" +
+				(assetURI != null ? "    FILTER (?a=<" + SparqlHelper.escapeURI(assetURI) + ">) .\n" : "") +
+				"    GRAPH <%s> {\r\n" + 
+				"        ?genThreat a ?threat .\r\n" + 
+				"        ?threat rdfs:subClassOf* core:Threat .\r\n" + 
+				"        OPTIONAL { ?genThreat rdfs:label ?gtl }\r\n" + 
+				"        OPTIONAL { ?genThreat rdfs:comment ?genDesc }\r\n" + 
+				"    }" +
 				"}", model.getGraph("system-inf"), 
 				model.getGraph("domain"));
 		List<Map<String, String>> rows = store.translateSelectResult(store.querySelect(query,
@@ -1574,7 +1576,10 @@ public class SystemModelQuerier extends AModelQuerier {
 			}
 
 			//is threat a secondary threat (otherwise primary)
-			boolean secondaryThreat = Boolean.valueOf(row.get("isST"));
+			boolean secondaryThreat = Boolean.parseBoolean(row.get("isST"));
+
+			//is threat a normal operation
+			boolean normalOperation = Boolean.parseBoolean(row.get("isNO"));
 
 			Threat threat = new Threat(threatUri,
 					row.get("l"),
@@ -1586,6 +1591,8 @@ public class SystemModelQuerier extends AModelQuerier {
 					null, 
 					new HashMap<>(), new HashMap<>(), new HashMap<>());
 
+			threat.setNormalOperation(normalOperation);
+
 			//is threat a root cause of a misbehaviour set?
 			threat.setRootCause(Boolean.valueOf(row.get("isRC")));
 			
@@ -1593,34 +1600,7 @@ public class SystemModelQuerier extends AModelQuerier {
 				throw new RuntimeException("Duplicate Threat with URI " + threatUri + " found.");
 			}
 		}
-		
-		/* KEM - this does not seem to be necessary, as causesDirectMisbehaviour triples are no longer created in the risk calculator
-		// ---- Get all direct misbehaviours ----
-		
-		query = String.format("SELECT DISTINCT * WHERE {\r\n" +
-				(threatURI != null ? "	BIND (<" + SparqlHelper.escapeURI(threatURI) + "> AS ?t) .\n" : "") +
-				"    GRAPH <%s> {\r\n" + 
-				(threatId != null ? "	?t core:hasID \"" + SparqlHelper.escapeLiteral(threatId) + "\" . \n" : "") +
-				"        ?t core:causesDirectMisbehaviour ?ms\r\n" + 
-				"    }\r\n" + 
-				"}", model.getGraph("system-inf"));
-		rows = store.translateSelectResult(store.querySelect(query, 
-				model.getGraph("system-inf")));
-		
-		for (Map<String, String> row : rows) {
-			String threatUri = row.get("t");
-			String effectUri = row.get("ms");
-			
-			MisbehaviourSet misbs = misbehaviourSets.get(effectUri);
-			if (misbs != null && threats.containsKey(threatUri)) {
-				if (threats.get(threatUri).getDirectEffects().put(effectUri, misbs) != null) {
-					throw new RuntimeException("Duplicate MisbehaviourSet with URI " + misbs.getUri() + 
-							 " associated with DirectEffect with URI " + effectUri + " for Threat with URI " + threatUri);
-				}
-			}
-		}
-		*/
-		
+				
 		// ----- Get indirect misbehaviours -----
 		
 		query = String.format("SELECT DISTINCT * WHERE {\r\n" +
@@ -2590,6 +2570,7 @@ public class SystemModelQuerier extends AModelQuerier {
 		(msID != null ? "		?ms core:hasID \"" + SparqlHelper.escapeLiteral(msID) + "\" .\n" : "") +
 		"		?ms core:locatedAt ?a .\n" +
 		"		?ms a core:MisbehaviourSet .\n" +
+		"       OPTIONAL { ?ms core:isNormalOpEffect ?isNormalOpEffect } \n" +
 		"	}\n" +
 		//the assetURI may be in the system or system-inf graph
 		"	{\n" +
@@ -2634,7 +2615,8 @@ public class SystemModelQuerier extends AModelQuerier {
 		"		OPTIONAL { ?m rdfs:comment ?md } \n" +
 		"		OPTIONAL { ?m core:isVisible ?isVisible } \n" +
 		"	}\n" +
-		"	BIND(IF(BOUND(?isVisible),STR(?isVisible),\"true\") AS ?vis)\n" +
+		"   BIND(IF(BOUND(?isVisible),STR(?isVisible),\"true\") AS ?vis)\n" +
+		"   BIND(IF(BOUND(?isNormalOpEffect),STR(?isNormalOpEffect),\"false\") AS ?nop)\n" +
 		"}";
 	}
 
@@ -2746,9 +2728,12 @@ public class SystemModelQuerier extends AModelQuerier {
 			);
 			
 			//check for misbehaviour set visibility (via core#isVisible on the misbehaviour in domain model)
-			boolean visible = Boolean.valueOf(row.get("vis"));
-			//logger.debug("<{}> visible = {}", ms.getUri(), visible);
+			boolean visible = Boolean.parseBoolean(row.get("vis"));
 			ms.setVisible(visible);
+
+			//is MS a normal operation effect?
+			boolean nop = Boolean.parseBoolean(row.get("nop"));
+			ms.setNormalOpEffect(nop);
 			
 			if (row.containsKey("md") && row.get("md")!=null) {
 				ms.setDescription(row.get("md"));
