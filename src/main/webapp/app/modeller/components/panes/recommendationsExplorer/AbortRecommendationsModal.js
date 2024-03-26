@@ -5,7 +5,7 @@ import { Button, Modal } from "react-bootstrap";
 class AbortRecommendationsModal extends Component {
 
     render() {
-        const {modelId, abortRecommendations, ...modalProps} = this.props;
+        const {modelId, jobId, abortRecommendations, ...modalProps} = this.props;
 
         return (
             <Modal {...modalProps}>
@@ -25,7 +25,7 @@ class AbortRecommendationsModal extends Component {
                     <Button
                         bsStyle="danger"
                         onClick={() => {
-                            abortRecommendations(modelId)
+                            abortRecommendations(modelId, jobId)
                         }}>
                         Abort Recommendations
                     </Button>
@@ -37,6 +37,7 @@ class AbortRecommendationsModal extends Component {
 
 AbortRecommendationsModal.propTypes = {
     modelId: PropTypes.string,
+    jobId: PropTypes.string,
     abortRecommendations: PropTypes.func,
     onHide: PropTypes.func,
 };

@@ -60,7 +60,7 @@ import uk.ac.soton.itinnovation.security.systemmodeller.semantics.StoreModelMana
 
 import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.RecommendationRepository;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.RecommendationEntity;
-import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService.RecStatus;
+import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService.RecommendationJobState;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = SystemModellerApplication.class)
@@ -129,7 +129,7 @@ public class RecommendationTest {
         //rec.setId("1234");
         RecommendationReportDTO report = new RecommendationReportDTO();
         rec.setReport(report);
-        rec.setStatus(RecStatus.FINISHED);
+        rec.setState(RecommendationJobState.FINISHED);
         recRepository.save(rec);
         logger.info("Created record: {}", rec.getId());
     }

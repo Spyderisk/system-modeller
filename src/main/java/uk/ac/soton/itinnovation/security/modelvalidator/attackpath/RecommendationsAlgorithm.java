@@ -28,7 +28,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+
+import java.time.LocalDateTime;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +52,12 @@ import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations
 import com.bpodgursky.jbool_expressions.Expression;
 import com.bpodgursky.jbool_expressions.Variable;
 
+import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.RecommendationRepository;
+import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService.RecommendationJobState;
+import uk.ac.soton.itinnovation.security.systemmodeller.model.RecommendationEntity;
+
+import uk.ac.soton.itinnovation.security.systemmodeller.model.RecommendationEntity;
+
 @Component
 public class RecommendationsAlgorithm {
 
@@ -64,6 +73,9 @@ public class RecommendationsAlgorithm {
     private List<String> targetMS;
     private RiskVector initialRiskVector;
     private boolean localSearch;
+    private boolean abortFlag = false;
+    private RecommendationRepository recRepository;
+    private String jobId;
 
     // allPaths flag for single or double backtrace
     private boolean shortestPath = true;
@@ -86,6 +98,14 @@ public class RecommendationsAlgorithm {
         apd = new AttackPathDataset(querier);
     }
 
+    public void setRecRepository(RecommendationRepository recRepository, String job) {
+        this.recRepository = recRepository;
+        this.jobId = job;
+    }
+
+    public void setAbortFlag() {
+        this.abortFlag = true;
+    }
 
     /**
      * Check risk calculation mode is the same as the requested one
@@ -213,6 +233,28 @@ public class RecommendationsAlgorithm {
         return csSet;
     }
 
+    private void updateJobState(RecommendationJobState newState) {
+        // get job status:
+        Optional<RecommendationEntity> optionalRec = recRepository.findById(jobId);
+        logger.debug("updating job status: {}", optionalRec);
+        optionalRec.ifPresent(rec -> {
+            rec.setState(newState);
+            rec.setModifiedAt(LocalDateTime.now());
+            recRepository.save(rec);
+        });
+    }
+
+    private boolean checkJobAborted(){
+        // get job status:
+        Optional<RecommendationJobState> jobState = recRepository.findById(jobId).map(RecommendationEntity::getState);
+        logger.debug("APPLY CSG: check task status: {}", jobState);
+        if (jobState.isPresent() && jobState.get() == RecommendationJobState.ABORTED) {
+            logger.debug("APPLY CSG: Got job status, cancelling this task");
+            setAbortFlag();
+        }
+        return abortFlag;
+    }
+
     private CSGNode applyCSGs(LogicalExpression le) {
         CSGNode node = new CSGNode();
         return applyCSGs(le, node, "", apd.getRiskVector());
@@ -223,6 +265,8 @@ public class RecommendationsAlgorithm {
      * The method is recursive and will create a tree of CSG options.
      * @param le
      * @param myNode
+     * @param parentStep
+     * @param parentRiskVector
      * @return
      */
     private CSGNode applyCSGs(LogicalExpression le, CSGNode myNode, String parentStep, RiskVector parentRiskVector) {
@@ -242,6 +286,16 @@ public class RecommendationsAlgorithm {
         // examine CSG options
         int csgOptionCounter = 0;
         for (Expression csgOption : csgOptions) {
+
+            // avoid checking job state if jobId is not defined
+            if (jobId != null && !jobId.isEmpty()) {
+                // check if job is aborted:
+                if (checkJobAborted()) {
+                    break;
+                } else {
+                    updateJobState(RecommendationJobState.RUNNING);
+                }
+            }
 
             csgOptionCounter += 1;
             String myStep = String.format("%s%d/%d", parentStep.equals("") ? "" : parentStep + "-", csgOptionCounter, csgOptions.size());
@@ -281,7 +335,8 @@ public class RecommendationsAlgorithm {
 
             // Check for success
             // Finish if the maximum risk is below or equal to the acceptable risk level
-            // If we are constrained to some target MS, then we should only check the risk levels of the targets (otherwise it is likely it will never finish)
+            // If we are constrained to some target MS, then we should only check the
+            // risk levels of the targets (otherwise it is likely it will never finish)
 
             boolean globalRiskAcceptable = targetMS.isEmpty() && apd.compareRiskLevelURIs(riskResponse.getOverall(), acceptableRiskLevel) <= 0;
             boolean targetedRiskAcceptable = !targetMS.isEmpty() && apd.compareMSListRiskLevel(targetMS, acceptableRiskLevel) <= 0;
@@ -293,7 +348,8 @@ public class RecommendationsAlgorithm {
 
                 // Check if we should abort
                 // If doing localSearch then stop searching (fail) if the risk vector is higher than the parent
-                // In this way we do not let the risk vector increase. We could make this softer by comparing the "overall risk level", i.e. the highest risk level of the current and parent vector
+                // In this way we do not let the risk vector increase. We could make this softer by comparing
+                // the "overall risk level", i.e. the highest risk level of the current and parent vector
 
                 if (localSearch && (riskResponse.compareTo(parentRiskVector) == 1)) {
                     logger.debug("Risk level has increased. Abort branch {}", myStep);
@@ -354,7 +410,7 @@ public class RecommendationsAlgorithm {
     /**
      * create control DTO
      * @param ctrlUri
-     * @return 
+     * @return
      */
     private ControlDTO createControlDTO(String ctrlUri) {
         return apd.fillControlDTO(ctrlUri);
@@ -485,9 +541,8 @@ public class RecommendationsAlgorithm {
      * Start recommendations algorithm
      * @param progress
      * @return
-     * @throws RuntimeException 
      */
-    public RecommendationReportDTO recommendations(Progress progress) throws RuntimeException {
+    public RecommendationReportDTO recommendations(Progress progress) {
 
         logger.info("Recommendations core part (risk mode: {})", riskMode);
 

@@ -330,7 +330,7 @@ public class ModelObjectsHelper {
 		assetIDs.remove(uri);
 		assetUris.remove(id);
 	}
-	
+
 	public boolean registerTaskExecution(String modelId, ScheduledFuture<?> future) {
 
 		if (taskFutures.containsKey(modelId)){

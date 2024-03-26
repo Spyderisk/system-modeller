@@ -451,7 +451,7 @@ export function recommendationsCompleted(modelId, jobId) {
             type: instr.IS_NOT_CALCULATING_RECOMMENDATIONS,
         });
         axiosInstance
-            .get("/models/" + modelId + "/recommendations/result/" + jobId)
+            .get("/models/" + modelId + "/recommendations/" + jobId + "/result")
             .then((response) => { 
                 dispatch({
                     type: instr.RECOMMENDATIONS_RESULTS,
@@ -477,21 +477,16 @@ export function recommendationsFailed(modelId) {
     };
 }
 
-export function abortRecommendations(modelId) {
-    console.log("abortRecommendations for model: ", modelId);
+export function abortRecommendations(modelId, jobId) {
+    console.log("abortRecommendations for model: ", modelId, jobId);
     return function (dispatch) {
         axiosInstance
-            .post("/models/" + modelId + "/recommendations/cancel") //TODO: get correct endpoint
+            .post("/models/" + modelId + "/recommendations/" + jobId + "/cancel")
             .then((response) => {
-                dispatch({
-                    type: instr.IS_NOT_CALCULATING_RECOMMENDATIONS
-                });
+                console.log("Cancel sent");
             })
             .catch((error) => {
                 console.log("Error:", error);
-                dispatch({
-                    type: instr.IS_NOT_CALCULATING_RECOMMENDATIONS
-                });
             });
     };
 }

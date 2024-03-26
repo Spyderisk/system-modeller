@@ -361,9 +361,10 @@ class LoadingOverlay extends React.Component {
         }
     }
 
-    abortRecommendations(id) {
+    abortRecommendations(modelId, jobId) {
         this.setState({...this.state, abortRecommendationsModal: false});
-        this.props.dispatch(abortRecommendations(id));
+        this.props.dispatch(abortRecommendations(modelId, jobId));
+        this.pollRecommendationsProgress();
     }
 
     getHeaderText() {
@@ -376,7 +377,7 @@ class LoadingOverlay extends React.Component {
             header = "Calculating risks";
         }
         else if (this.props.isCalculatingRecommendations) {
-            header = "Calculating recommendations";
+            header = "Calculating recommendations (Esc to cancel)";
         }
 
         return header;
@@ -486,7 +487,7 @@ class LoadingOverlay extends React.Component {
                     </Modal.Body>
                 </Modal>
 
-                <AbortRecommendationsModal show={this.state.abortRecommendationsModal} modelId={modelId} abortRecommendations={this.abortRecommendations}
+                <AbortRecommendationsModal show={this.state.abortRecommendationsModal} modelId={this.props.modelId} jobId={this.props.recommendationsJobId} abortRecommendations={this.abortRecommendations}
                                   onHide={() => this.setState({...this.state, abortRecommendationsModal: false})}/>
             </div>
         )
