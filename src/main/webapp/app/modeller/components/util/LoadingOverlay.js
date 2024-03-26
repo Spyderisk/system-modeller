@@ -377,7 +377,7 @@ class LoadingOverlay extends React.Component {
             header = "Calculating risks";
         }
         else if (this.props.isCalculatingRecommendations) {
-            header = "Calculating recommendations";
+            header = "Calculating recommendations (Esc to cancel)";
         }
 
         return header;
