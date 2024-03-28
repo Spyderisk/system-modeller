@@ -26,6 +26,7 @@ package uk.ac.soton.itinnovation.security.systemmodeller.attackpath;
 
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,9 +49,13 @@ public class RecommendationsService {
     @Autowired
     private RecommendationRepository recRepository;
 
+	@Value("${recommendations.timeout.secs: 900}")
+	private Integer recommendationsTimeoutSecs;
+
     public void startRecommendationTask(String jobId, RecommendationsAlgorithmConfig config, Progress progress) {
 
         logger.debug("startRecommendationTask for {}", jobId);
+        logger.debug("recommendationsTimeoutSecs: {}", this.recommendationsTimeoutSecs);
 
         // create recEntry and save it to mongo db
         RecommendationEntity recEntity = new RecommendationEntity();
@@ -61,7 +66,7 @@ public class RecommendationsService {
         logger.debug("rec entity saved for {}", recEntity.getId());
 
         try {
-			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(config);
+			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(config, recommendationsTimeoutSecs);
 
             if (!reca.checkRiskCalculationMode(config.getRiskMode())) {
                 throw new RiskModeMismatchException();
@@ -73,7 +78,8 @@ public class RecommendationsService {
 
             storeRecReport(jobId, report);
 
-            updateRecommendationJobState(jobId, RecommendationJobState.FINISHED);
+            RecommendationJobState finalState = reca.getFinalState() != null ? reca.getFinalState() : RecommendationJobState.FINISHED;
+            updateRecommendationJobState(jobId, finalState);
         } catch (Exception e) {
             updateRecommendationJobState(jobId, RecommendationJobState.FAILED);
         }
@@ -144,6 +150,7 @@ public class RecommendationsService {
         FAILED,
         FINISHED,
         ABORTED,
+        TIMED_OUT,
         UNKNOWN
     }
 
