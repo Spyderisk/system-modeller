@@ -1457,7 +1457,7 @@ public class ModelControllerTest extends CommonTestSetup{
         boolean cancelled = false;
         String jobStatus = "";
         while (!jobFinished) {
-            Thread.sleep(4000); // 5 seconds delay between status checks
+            Thread.sleep(4000); // delay between status checks
 
             jobStatus = given()
                 .filter(userSession)
@@ -1473,7 +1473,10 @@ public class ModelControllerTest extends CommonTestSetup{
             String state = jsonPath.getString("state");
             logger.debug("JOB STATE NAME: {}", state);
 
-            if (!cancelled) {
+			// Final status might be "FINISHED", "ABORTED" or "TIMED_OUT", so check for all or unit test may never complete!
+            jobFinished = "FINISHED".equals(state) || "ABORTED".equals(state) || "TIMED_OUT".equals(state);
+
+            if (!jobFinished && !cancelled) {
                 logger.debug("CANCELLING JOB");
 
                 jobStatus = given()
@@ -1489,8 +1492,6 @@ public class ModelControllerTest extends CommonTestSetup{
                 cancelled = true;
             }
 
-			// Final status might be "FINISHED" or "ABORTED", so check for both or unit test may never complete!
-            jobFinished = "FINISHED".equals(state) || "ABORTED".equals(state);
         }
 
         // add a delay to complete the task, e.g. close gracefully the task
