@@ -1,22 +1,48 @@
-# Spyderisk System Modeller
+# The Spyderisk System Modeller
 
 The Spyderisk System Modeller (SSM) provides a thorough risk assessment of
-complex systems making use of context and connectivity to take into account the
-web of attack paths and secondary threat cascades in a system.
+complex systems, applying our mathematical modelling to your particular problem.
 
-Spyderisk assists the user in following the risk assessment process defined in
-ISO 27005 and thus supports the Information Security Management System defined
-in ISO 27001. The Spyderisk System Modeller is a generic risk assessment tool
-and must be configured with a model of a domain ("knowledgebase"), containing
-the available asset types and relations, descriptions of the threats, the
-possible security controls, and more.
+This README is for the [system-modeller source tree](https://github.com/Spyderisk/system-modeller) of the 
+[Spyderisk Open Project](https://github/com/Spyderisk). If you want to work with Spyderisk
+source code you are in the right place. There are other source trees for
+[installing Spyderisk and its web GUI](https://github.com/Spyderisk/system-modeller-deployment) or 
+[programming Spyderisk with Python](https://github.com/Spyderisk/system-modeller-adaptor).
 
-The Spyderisk software does not come bundled with any particular knowledgebase;
-this is configurable at build/deploy time, by putting one or more zip bundles
-into the "knowledgebases" folder (described in more detail later). An example
-knowledgebase has been developed for complex networked information systems,
-which is available here:
-https://github.com/Spyderisk/domain-network/packages/1826148
+Spyderisk is created by the [Spyderisk Contributors](./CONTRIBUTORS.md), freely
+available under [Open Source terms](./LICENSE.md). Everyone is welcome, noting
+our [basic rules of decent behaviour](CODE-OF-CONDUCT.md) around Spyderisk,
+which includes contact details if you want to report a behaviour problem.
+
+We try to make it easy to [contribute to Spyderisk](./CONTRIBUTING.md) whatever your skills.
+
+You can contact us by:
+* [raising a GitHub Issue](https://github.com/Spyderisk/system-modeller/issues/new)
+* emailing [team@spyderisk.org](mailto://team@spyderisk.org)
+
+Spyderisk has a [long history](./HISTORY.md), starting in 2008 until being open sourced in 2023. 
+The establishment of the Spyderisk Open Project was an exciting new beginning.
+
+# What is the Spyderisk System Modeller?
+
+The Spyderisk System Modeller is a generic risk assessment tool
+and must be configured with a model of a domain ("knowledgebase"), describing a
+simplified version of the real world and the different threats and mitigations 
+that apply. The most advanced use case for Spyderisk relates to cybersecurity
+analysis, however the Spyderisk team is working on modelling risks in other areas,
+including medical devices and privacy.
+
+For traditional cybersecurity analysis, Spyderisk assists the user in following
+the risk assessment process defined in ISO 27005 from the
+[ISO 27001](https://en.wikipedia.org/wiki/ISO/IEC_27000-series)
+of standards.
+
+Spyderisk does not come bundled with any particular knowledgebase; this is
+configurable at build/deploy time, by putting one or more zip bundles into the
+"knowledgebases" folder (described below). We publish and
+maintain our most advanced
+[knowledgebase for complex networked systems](https://github.com/Spyderisk/domain-network/packages/1826148)
+in its own GitHub repository.
 
 The web-based graphical user interface guides the user through the following
 steps:
@@ -69,15 +95,9 @@ integrate other tools.
 
 Docker is used to provide a consistent build and test environment for
 developers and for the continuous integration (CI) system.  If you want to do a
-demo of the Spyderisk System Modeller and do not need to do any development
+demo of the Spyderisk System Modeller and do not need to do any development,
 then you need to refer to the [Installing Docker](#installing-docker) section
-and then use the separate "system-modeller-deployment" project.
-
-Development of the software began in 2013, drawing on research dating back to
-2008. It was open-sourced in early 2023. The research and development up to the
-point of open sourcing was done solely by the [University of Southampton IT
-Innovation Centre](http://www.it-innovation.soton.ac.uk/) in a variety of UK
-and EU research projects.
+and then use the [system modeller deployment project](https://github.com/Spyderisk/system-modeller-deployment).
 
 ## Pre-requisites
 
@@ -117,9 +137,8 @@ N.B. The links in the user interface for the attack graph image does not work in
 
 Please also note that the default setup is to recreate all databases on initial
 start-up. In order to persist any installed knowledgebases and created system
-models, you should ensure that the environment variable `RESET_ON_START=false` prior to re-running `./gradlew assemble bootTest`.
-In the bash shell, that can be done with `export RESET_ON_START=false`.
-Alternatively, put `RESET_ON_START=false` in your `.env` file and "source" it with `set -a; source .env; set +a`.
+models, you should ensure that `RESET_ON_START=false` in your `.env` file, prior to re-running `./gradlew assemble
+bootTest`.
 
 ## Installing Docker
 
@@ -722,7 +741,7 @@ docker-compose down
 
 In all these cases, the (Docker disk) volumes are persisted and named volumes
 will be reattached to new containers, during restart. Assuming that you have
-`RESET_ON_START=false` in your `.env` file, this also means
+`reset.on.start=false` in your `application.properties` file, this also means
 that any knowledgebases (domain models), system models, palettes, etc will be
 persisted after restarting the containers.
 
@@ -739,11 +758,11 @@ docker-compose exec ssm bash
 ./gradlew assemble bootTest
 ```
 
-b) Leave containers running, but set `RESET_ON_START=true` then restart Spyderisk, e.g.
+b) Leave containers running, but set `reset.on.start=true` in your
+`application.properties` file, then restart Spyderisk, e.g.
 
 ```shell
 docker-compose exec ssm bash
-export RESET_ON_START=true
 ./gradlew assemble bootTest
 ```
 
