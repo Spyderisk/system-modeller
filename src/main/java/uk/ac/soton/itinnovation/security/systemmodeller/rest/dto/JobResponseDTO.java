@@ -27,10 +27,18 @@ package uk.ac.soton.itinnovation.security.systemmodeller.rest.dto;
 public class JobResponseDTO {
 
     private String jobId;
+    private String state;
     private String message;
 
-    public JobResponseDTO(String jobId, String msg) {
+    public JobResponseDTO(String jobId, String stateName) {
         this.jobId = jobId;
+        this.state = stateName;
+        this.message = "";
+    }
+
+    public JobResponseDTO(String jobId, String stateName, String msg) {
+        this.jobId = jobId;
+        this.state = stateName;
         this.message = msg;
     }
 
@@ -41,5 +49,10 @@ public class JobResponseDTO {
     public String getMessage() { return this.message; }
 
     public void setMessage(String msg) { this.message = msg; }
+
+    public String getState() { return this.state; }
+
+    public void setState(String stateName) { this.state = stateName; }
+
 
 }

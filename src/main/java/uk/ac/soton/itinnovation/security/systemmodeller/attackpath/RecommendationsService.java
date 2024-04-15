@@ -26,6 +26,7 @@ package uk.ac.soton.itinnovation.security.systemmodeller.attackpath;
 
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,39 +49,56 @@ public class RecommendationsService {
     @Autowired
     private RecommendationRepository recRepository;
 
+	@Value("${recommendations.timeout.secs: 900}")
+	private Integer recommendationsTimeoutSecs;
+
     public void startRecommendationTask(String jobId, RecommendationsAlgorithmConfig config, Progress progress) {
 
         logger.debug("startRecommendationTask for {}", jobId);
+        logger.debug("recommendationsTimeoutSecs: {}", this.recommendationsTimeoutSecs);
 
         // create recEntry and save it to mongo db
         RecommendationEntity recEntity = new RecommendationEntity();
         recEntity.setId(jobId);
         recEntity.setModelId(config.getModelId());
-        recEntity.setStatus(RecStatus.STARTED);
+        recEntity.setState(RecommendationJobState.STARTED);
         recRepository.save(recEntity);
         logger.debug("rec entity saved for {}", recEntity.getId());
 
         try {
-			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(config);
+			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(config, recommendationsTimeoutSecs);
 
             if (!reca.checkRiskCalculationMode(config.getRiskMode())) {
                 throw new RiskModeMismatchException();
             }
 
+            reca.setRecRepository(recRepository, jobId);
+
             RecommendationReportDTO report = reca.recommendations(progress);
 
             storeRecReport(jobId, report);
 
-            updateRecStatus(jobId, RecStatus.FINISHED);
+            RecommendationJobState finalState = reca.getFinalState() != null ? reca.getFinalState() : RecommendationJobState.FINISHED;
+            updateRecommendationJobState(jobId, finalState);
         } catch (Exception e) {
-            updateRecStatus(jobId, RecStatus.FAILED);
+            updateRecommendationJobState(jobId, RecommendationJobState.FAILED);
         }
     }
 
-    public void updateRecStatus(String recId, RecStatus newStatus) {
+    public void updateRecommendationJobState(String recId, RecommendationJobState newState, String msg) {
         Optional<RecommendationEntity> optionalRec = recRepository.findById(recId);
         optionalRec.ifPresent(rec -> {
-            rec.setStatus(newStatus);
+            rec.setState(newState);
+            rec.setMessage(msg);
+            rec.setModifiedAt(LocalDateTime.now());
+            recRepository.save(rec);
+        });
+    }
+
+    public void updateRecommendationJobState(String recId, RecommendationJobState newState) {
+        Optional<RecommendationEntity> optionalRec = recRepository.findById(recId);
+        optionalRec.ifPresent(rec -> {
+            rec.setState(newState);
             rec.setModifiedAt(LocalDateTime.now());
             recRepository.save(rec);
         });
@@ -90,15 +108,20 @@ public class RecommendationsService {
         Optional<RecommendationEntity> optionalRec = recRepository.findById(jobId);
         optionalRec.ifPresent(job -> {
             job.setReport(report);
-            job.setStatus(RecStatus.FINISHED);
+            job.setState(RecommendationJobState.FINISHED);
             job.setModifiedAt(LocalDateTime.now());
             recRepository.save(job);
         });
     }
 
-    public Optional<RecStatus> getRecStatus(String jobId) {
-        return recRepository.findById(jobId).map(RecommendationEntity::getStatus);
+    public Optional<RecommendationJobState> getRecommendationJobState(String jobId) {
+        return recRepository.findById(jobId).map(RecommendationEntity::getState);
     }
+
+    public Optional<String> getRecommendationJobMessage(String jobId) {
+        return recRepository.findById(jobId).map(RecommendationEntity::getMessage);
+    }
+
 
     public Optional<RecommendationReportDTO> getRecReport(String jobId) {
         return recRepository.findById(jobId).map(RecommendationEntity::getReport);
@@ -108,12 +131,27 @@ public class RecommendationsService {
         return recRepository.findById(jobId);
     }
 
-    public enum RecStatus {
+    // TODO: the happy path for a job should be: created -> started-> running
+    // -> finished.
+    // For cancelled jobs the sequence should be: created -> started -> running
+    // -> aborted -> finished?
+    //
+    // Somehow the recommendation report should indicate what has happened to
+    // the job if it was cancelled, because cancelled jobs should still produce
+    // results.
+    //
+    // Then use the RecommendationEntity to store additional information, eg
+    // number of recommendations found.
+    //
+    public enum RecommendationJobState {
         CREATED,
         STARTED,
         RUNNING,
         FAILED,
-        FINISHED
+        FINISHED,
+        ABORTED,
+        TIMED_OUT,
+        UNKNOWN
     }
 
 }

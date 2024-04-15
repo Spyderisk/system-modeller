@@ -42,6 +42,7 @@
     <logger name="uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithm" level="debug"></logger>
     <logger name="uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackPathDataset" level="debug"></logger>
     <logger name="uk.ac.soton.itinnovation.security.modelquerier" level="warn"></logger>
+    <logger name="uk.ac.soton.itinnovation.security.systemmodeller.rest.ModelControllerTest" level="debug"></logger>
 
     <!-- Set log levels for 3rd party packages -->
     <logger name="org.apache.catalina.startup.DigesterFactory" level="ERROR"/>

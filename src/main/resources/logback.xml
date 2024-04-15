@@ -34,7 +34,7 @@
 
     <!-- Add all logging from IT Innovation code to the log file -->
     <logger name="uk.ac.soton.itinnovation.security" level="info"><appender-ref ref="LOGGING"/></logger>
-    <logger name="uk.ac.soton.itinnovation.security.systemmodeller" level="warn"></logger>
+    <logger name="uk.ac.soton.itinnovation.security.systemmodeller" level="debug"></logger>
     <logger name="uk.ac.soton.itinnovation.security.semanticstore" level="warn"></logger>
     <logger name="uk.ac.soton.itinnovation.security.modelvalidator" level="warn"></logger>
     <logger name="uk.ac.soton.itinnovation.security.modelvalidator.test" level="debug"></logger>

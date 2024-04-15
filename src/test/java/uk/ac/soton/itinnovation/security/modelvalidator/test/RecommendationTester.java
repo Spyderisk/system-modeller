@@ -52,7 +52,6 @@ import uk.ac.soton.itinnovation.security.modelquerier.SystemModelQuerier;
 import uk.ac.soton.itinnovation.security.modelquerier.SystemModelUpdater;
 import uk.ac.soton.itinnovation.security.modelquerier.util.TestHelper;
 import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
-import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
 import uk.ac.soton.itinnovation.security.modelvalidator.RiskCalculator;
 import uk.ac.soton.itinnovation.security.modelvalidator.Validator;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackPathDataset;
@@ -155,7 +154,8 @@ public class RecommendationTester extends TestCase {
 
 			RecommendationsAlgorithmConfig config = new RecommendationsAlgorithmConfig(querierDB, tester.getGraph("system"), "CURRENT",
                     true, "domain#RiskLevelMedium", null);
-			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(config);
+			Integer recommendationsTimeoutSecs = 300; //5 min timeout
+			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(config, recommendationsTimeoutSecs);
 
 			reca.checkRequestedRiskCalculationMode("CURRENT");
 

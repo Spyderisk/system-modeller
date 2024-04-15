@@ -43,6 +43,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -67,6 +68,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -124,7 +126,7 @@ import uk.ac.soton.itinnovation.security.systemmodeller.util.SecureUrlHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.RecommendationEntity;
 import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.RecommendationRepository;
 import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService;
-import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService.RecStatus;
+import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService.RecommendationJobState;
 
 /**
  * Includes all operations of the Model Controller Service.
@@ -1419,124 +1421,7 @@ public class ModelController {
         }
     }
 
-	/**
-	 * This REST method generates a recommendation report, as a blocking call
-	 *
-	 * @param modelId the String representation of the model object to seacrh
-	 * @param riskMode optional string indicating the prefered risk calculation mode (defaults to CURRENT)
-	 * @param localSearch optional flag indicating whether to use local search (defaults to true)
-	 * @param acceptableRiskLevel string indicating the acceptable risk level using domain model URI
-	 * @param targetURIs optional list of target misbehaviour sets
-	 * @return ACCEPTED status and jobId for the background task
-	 * @throws InternalServerErrorException if an error occurs during report generation
- 	 */
-	@GetMapping(value = "/models/{modelId}/recommendations_blocking")
-	public ResponseEntity<RecommendationReportDTO> calculateRecommendationsBlocking(
-            @PathVariable String modelId,
-            @RequestParam(defaultValue = "CURRENT") String riskMode,
-            @RequestParam(defaultValue = "true")  boolean localSearch,
-            @RequestParam String acceptableRiskLevel,
-            @RequestParam (required = false) List<String> targetURIs) {
-
-        // Check if targetURIs is null or empty and assign an empty list if it is
-        if (targetURIs == null) {
-            targetURIs = new ArrayList<>();
-        }
-
-        final List<String> finalTargetURIs = targetURIs;
-
-        logger.info("Calculating recommendations for model {}", modelId);
-		riskMode = riskMode.replaceAll("[\n\r]", "_");
-        logger.info("riskMode: {}",riskMode);
-
-		RiskCalculationMode rcMode;
-
-		try {
-            rcMode = RiskCalculationMode.valueOf(riskMode);
-		} catch (IllegalArgumentException e) {
-			throw new BadRiskModeException(riskMode);
-		}
-
-		final Model model;
-		Progress progress;
-
-		synchronized(this) {
-			model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
-			String mId = model.getId();
-
-			if (model.isValidating()) {
-				warnIsValidating(mId, modelId);
-				return ResponseEntity.status(HttpStatus.OK).body(new RecommendationReportDTO());
-			}
-
-			if (model.isCalculatingRisks()) {
-				warnIsCalculatingRisks(mId, modelId);
-				return ResponseEntity.status(HttpStatus.OK).body(new RecommendationReportDTO());
-			}
-
-			progress = modelObjectsHelper.getTaskProgressOfModel(RECOMMENDATIONS, model);
-			progress.updateProgress(0d, RECOMMENDATIONS + " " + STARTING);
-			model.markAsCalculatingRisks(rcMode, false);
-		} //synchronized block
-
-		AStoreWrapper store = storeModelManager.getStore();
-		RecommendationReportDTO report = null;
-
-		try {
-            JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
-                    model.getModelStack(), true);
-
-            querierDB.initForRiskCalculation();
-
-            logger.info("Calculating recommendations");
-
-            AttackPathDataset apd = new AttackPathDataset(querierDB);
-
-            // validate targetURIs (if set)
-            if (!apd.checkMisbehaviourList(finalTargetURIs)) {
-                logger.error("Invalid target URIs set");
-                throw new MisbehaviourSetInvalidException("Invalid misbehaviour set");
-            }
-
-            // validate acceptable risk level
-            if (!apd.checkRiskLevelKey(acceptableRiskLevel)) {
-                logger.error("Invalid acceptableRiskLevel: {}", acceptableRiskLevel);
-                throw new MisbehaviourSetInvalidException("Invalid acceptableRiskLevel value");
-            }
-
-            String jobId = UUID.randomUUID().toString();
-            logger.info("Submitting synchronous job with id: {}", jobId);
-			String mId = model.getId();
-
-			RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, mId, riskMode, localSearch, acceptableRiskLevel, finalTargetURIs);
-			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(recaConfig);
-
-            report = reca.recommendations(progress);
-
-            // create recEntry and save it to mongo db
-            RecommendationEntity recEntity = new RecommendationEntity();
-            recEntity.setId(jobId);
-            recEntity.setModelId(mId);
-            recEntity.setStatus(RecStatus.STARTED);
-            recEntity.setReport(report);
-            recRepository.save(recEntity);
-            logger.debug("rec entity saved for {}", recEntity.getId());
-
-            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(report);
-
-        } catch (BadRequestErrorException e) {
-            throw e;
-        } catch (Exception e) {
-            logger.error("Recommendations failed due to an error", e);
-            throw new InternalServerErrorException(
-                    "Finding recommendations failed. Please contact support for further assistance.");
-		} finally {
-			//always reset the flags even if the risk calculation crashes
-			model.finishedCalculatingRisks(report != null, rcMode, false);
-		}
-	}
-
-	/**
+    /*
 	 * This REST method generates a recommendation report, as an asynchronous call.
 	 * Results may be downloaded once this task has completed.
 	 *
@@ -1647,7 +1532,7 @@ public class ModelController {
             }
 			return true;
 		}, 0, TimeUnit.SECONDS);
-        
+
 		modelObjectsHelper.registerTaskExecution(model.getId(), future);
 
         // Build the Location URI for the job status
@@ -1662,18 +1547,40 @@ public class ModelController {
         return ResponseEntity.accepted().headers(headers).body(response);
     }
 
-    @GetMapping("/models/{modelId}/recommendations/status/{jobId}")
-    public ResponseEntity<RecStatus> checkRecJobStatus(
+    @PostMapping("/models/{modelId}/recommendations/{jobId}/cancel")
+    public ResponseEntity<RecommendationJobState> cancelRecJob(
+            @PathVariable String modelId, @PathVariable String jobId) {
+
+        logger.info("Got request to cancel recommendation task for model: {}, jobId: {}", modelId, jobId);
+
+		synchronized(this) {
+			final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.WRITE);
+			Progress progress = modelObjectsHelper.getTaskProgressOfModel(RECOMMENDATIONS, model);
+			progress.setMessage("Cancelling");
+			recommendationsService.updateRecommendationJobState(jobId, RecommendationJobState.ABORTED, "job cancelled");
+		}
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping("/models/{modelId}/recommendations/{jobId}/status")
+    public ResponseEntity<JobResponseDTO> checkRecJobStatus(
             @PathVariable String modelId, @PathVariable String jobId) {
 
         logger.info("Got request for jobId {} status", jobId);
 
-        return recommendationsService.getRecStatus(jobId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Optional<RecommendationJobState> optionalState = recommendationsService.getRecommendationJobState(jobId);
+        String stateAsString = optionalState.map(state -> state.toString()).orElse("UNKNOWN");
+
+        Optional<String> optionalMessage = recommendationsService.getRecommendationJobMessage(jobId);
+        String message = optionalMessage.map(msg -> msg.toString()).orElse("");
+
+        JobResponseDTO response = new JobResponseDTO(jobId, stateAsString, message);
+
+        return ResponseEntity.ok().body(response);
     }
 
-    @GetMapping("/models/{modelId}/recommendations/result/{jobId}")
+    @GetMapping("/models/{modelId}/recommendations/{jobId}/result")
     public ResponseEntity<RecommendationReportDTO> downloadRecommendationsReport(
             @PathVariable String modelId, @PathVariable String jobId) {
 

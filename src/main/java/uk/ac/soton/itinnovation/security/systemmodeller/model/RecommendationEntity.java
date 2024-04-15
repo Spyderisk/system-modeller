@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService.RecStatus;
+import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService.RecommendationJobState;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations.RecommendationReportDTO;
 
 @Document(collection = "recommendations")
@@ -16,9 +16,11 @@ public class RecommendationEntity {
     @Id
     private String id;
     private RecommendationReportDTO report;
-    private RecStatus status;
+    private RecommendationJobState state;
     private String message;
     private String modelId;
+    private int validRec = 0;
+    private int totalReci = 0;
 
     @CreatedDate
     private LocalDateTime createdAt;
@@ -27,11 +29,11 @@ public class RecommendationEntity {
     private LocalDateTime modifiedAt;
 
     // getters and setters
-    public void setStatus(RecStatus status) {
-        this.status = status;
+    public void setState(RecommendationJobState state) {
+        this.state = state;
     }
-    public RecStatus getStatus() {
-        return this.status;
+    public RecommendationJobState getState() {
+        return this.state;
     }
     public String getId() {
         return this.id;
@@ -48,8 +50,11 @@ public class RecommendationEntity {
     public void setModifiedAt(LocalDateTime modifiedAt) {
         this.modifiedAt = modifiedAt;
     }
-    public void setMesage(String msg) {
+    public void setMessage(String msg) {
         this.message = msg;
+    }
+    public String getMessage() {
+        return this.message;
     }
     public void setModelId(String modelId) {
         this.modelId = modelId;
