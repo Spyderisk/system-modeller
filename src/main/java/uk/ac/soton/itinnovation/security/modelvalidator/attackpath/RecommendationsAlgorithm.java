@@ -56,8 +56,6 @@ import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.RecommendationRe
 import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService.RecommendationJobState;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.RecommendationEntity;
 
-import uk.ac.soton.itinnovation.security.systemmodeller.model.RecommendationEntity;
-
 @Component
 public class RecommendationsAlgorithm {
 
@@ -76,11 +74,16 @@ public class RecommendationsAlgorithm {
     private boolean abortFlag = false;
     private RecommendationRepository recRepository;
     private String jobId;
+    private RecommendationJobState finalState;
 
     // allPaths flag for single or double backtrace
     private boolean shortestPath = true;
 
-    public RecommendationsAlgorithm(RecommendationsAlgorithmConfig config) {
+    // used to implement timeout
+    private Integer maxSecs;
+    private long maxEndTime;
+
+    public RecommendationsAlgorithm(RecommendationsAlgorithmConfig config, Integer maxSecs) {
         this.querier = config.getQuerier();
         this.modelId = config.getModelId();
         this.riskMode = config.getRiskMode();
@@ -88,6 +91,7 @@ public class RecommendationsAlgorithm {
         this.targetMS = config.getTargetMS();
         this.report = new RecommendationReportDTO();
         this.localSearch = config.getLocalSearch();
+        this.maxSecs = maxSecs;
 
         initializeAttackPathDataset();
     }
@@ -105,6 +109,10 @@ public class RecommendationsAlgorithm {
 
     public void setAbortFlag() {
         this.abortFlag = true;
+    }
+
+    public RecommendationJobState getFinalState() {
+        return finalState;
     }
 
     /**
@@ -250,9 +258,22 @@ public class RecommendationsAlgorithm {
         logger.debug("APPLY CSG: check task status: {}", jobState);
         if (jobState.isPresent() && jobState.get() == RecommendationJobState.ABORTED) {
             logger.debug("APPLY CSG: Got job status, cancelling this task");
+            this.finalState = RecommendationJobState.ABORTED;
             setAbortFlag();
         }
         return abortFlag;
+    }
+
+    private boolean checkJobTimedOut() {
+        boolean timedOut = System.currentTimeMillis() > this.maxEndTime;
+        if (timedOut) {
+            logger.warn("JOB TIMED OUT");
+            this.finalState = RecommendationJobState.TIMED_OUT;
+        }
+        else {
+            logger.debug("JOB NOT YET TIMED OUT");
+        }
+        return timedOut;
     }
 
     private CSGNode applyCSGs(LogicalExpression le) {
@@ -289,8 +310,8 @@ public class RecommendationsAlgorithm {
 
             // avoid checking job state if jobId is not defined
             if (jobId != null && !jobId.isEmpty()) {
-                // check if job is aborted:
-                if (checkJobAborted()) {
+                // check if job is aborted or timed out:
+                if (checkJobAborted() || checkJobTimedOut()) {
                     break;
                 } else {
                     updateJobState(RecommendationJobState.RUNNING);
@@ -545,6 +566,19 @@ public class RecommendationsAlgorithm {
     public RecommendationReportDTO recommendations(Progress progress) {
 
         logger.info("Recommendations core part (risk mode: {})", riskMode);
+        logger.warn("Job timeout: {} secs", maxSecs);
+
+        // Set start time for recommendations
+        long startTime = System.currentTimeMillis();
+
+        // Determine end time for recommendations (i.e. after which no further iterations will be completed)
+        if (maxSecs != null) {
+            this.maxEndTime = startTime + maxSecs * 1000;
+        }
+        else {
+            logger.warn("No recommendations.timeout.secs property set. Not setting timeout...");
+            this.maxEndTime = Long.MAX_VALUE;
+        }
 
         try {
             progress.updateProgress(0.1, "Getting initial risk state");
