@@ -26,6 +26,7 @@ package uk.ac.soton.itinnovation.security.modelvalidator.test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.jena.query.Dataset;
 import org.apache.jena.tdb.TDBFactory;
@@ -49,7 +50,23 @@ import uk.ac.soton.itinnovation.security.modelquerier.SystemModelQuerier;
 import uk.ac.soton.itinnovation.security.modelquerier.SystemModelUpdater;
 import uk.ac.soton.itinnovation.security.modelquerier.util.TestHelper;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackPathAlgorithm;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithm;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithmConfig;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.TreeJsonDoc;
+
+import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
+import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
+import uk.ac.soton.itinnovation.security.modelvalidator.RiskCalculator;
+import uk.ac.soton.itinnovation.security.modelvalidator.Validator;
+
+import uk.ac.soton.itinnovation.security.model.system.MisbehaviourSet;
+import uk.ac.soton.itinnovation.security.systemmodeller.model.Model;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations.RecommendationReportDTO;
+import uk.ac.soton.itinnovation.security.modelquerier.dto.RiskCalcResultsDB;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 @RunWith(JUnit4.class)
 public class AttackPathTester extends TestCase {
@@ -74,12 +91,11 @@ public class AttackPathTester extends TestCase {
 
 		tester = new TestHelper("jena-tdb");
 
-		// Test domain model for shortest attack path
-		tester.addDomain(0, "modelvalidator/domain-network-6a1-3-5-auto-expanded-unfiltered.nq.gz",
-				"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
+        tester.addDomain(0, "modelvalidator/domain-network-6a1-3-5-auto-expanded-unfiltered.nq.gz",
+                "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
 
 		tester.addSystem(0, "modelvalidator/system-dataflow-test-singles.nq.gz",
-				"http://it-innovation.soton.ac.uk/system/63d9308f8f6a206408be9010");
+                "http://it-innovation.soton.ac.uk/system/63d9308f8f6a206408be9010");
 
 		tester.setUp();
 
@@ -115,6 +131,30 @@ public class AttackPathTester extends TestCase {
 		logger.info("Creating a querierDB object");
 		IQuerierDB querierDB = new JenaQuerierDB(dataset, tester.getModel(), true);
 		querierDB.init();
+
+		querierDB.initForValidation();
+
+        try {
+            logger.info("Validating the model - ensures no dependence on bugs in older SSM validators");
+            Validator validator = new Validator(querierDB);
+            validator.validate(new Progress(tester.getGraph("system")));
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail("Exception thrown by validator preparing attack path test case");
+            return;
+		}
+
+        try {
+			logger.info("Calculating risks and generating attack graph");
+			RiskCalculator rc = new RiskCalculator(querierDB);
+			rc.calculateRiskLevels(RiskCalculationMode.FUTURE, true, new Progress(tester.getGraph("system"))); //save results, as queried below
+            //RiskCalcResultsDB results = rc.getRiskCalcResults();
+            //logger.debug("RiskResutlst: {}", results);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception thrown by risk level calculator");
+			return;
+		}
 
 		try {
 			logger.info("Gathering datasets for the attack graph");

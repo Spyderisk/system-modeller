@@ -92,8 +92,6 @@ public class EntityController {
         AStoreWrapper store = storeModelManager.getStore();
 
         try {
-            logger.info("Initialising JenaQuerierDB");
-
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), false);
 
@@ -134,8 +132,6 @@ public class EntityController {
         AStoreWrapper store = storeModelManager.getStore();
 
         try {
-            logger.info("Initialising JenaQuerierDB");
-
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), false);
 
@@ -174,8 +170,6 @@ public class EntityController {
         AStoreWrapper store = storeModelManager.getStore();
 
         try {
-            logger.info("Initialising JenaQuerierDB");
-
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), false);
 
@@ -218,8 +212,6 @@ public class EntityController {
         AStoreWrapper store = storeModelManager.getStore();
 
         try {
-            logger.info("Initialising JenaQuerierDB");
-
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), false);
 
@@ -267,8 +259,6 @@ public class EntityController {
         AStoreWrapper store = storeModelManager.getStore();
 
         try {
-            logger.info("Initialising JenaQuerierDB");
-
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), false);
 
@@ -309,8 +299,6 @@ public class EntityController {
         AStoreWrapper store = storeModelManager.getStore();
 
         try {
-            logger.info("Initialising JenaQuerierDB");
-
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), false);
 
@@ -349,8 +337,6 @@ public class EntityController {
         AStoreWrapper store = storeModelManager.getStore();
 
         try {
-            logger.info("Initialising JenaQuerierDB");
-
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), false);
 
@@ -391,8 +377,6 @@ public class EntityController {
         AStoreWrapper store = storeModelManager.getStore();
 
         try {
-            logger.info("Initialising JenaQuerierDB");
-
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), false);
 
@@ -431,8 +415,6 @@ public class EntityController {
         AStoreWrapper store = storeModelManager.getStore();
 
         try {
-            logger.info("Initialising JenaQuerierDB");
-
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), false);
 
@@ -472,8 +454,6 @@ public class EntityController {
         AStoreWrapper store = storeModelManager.getStore();
 
         try {
-            logger.info("Initialising JenaQuerierDB");
-
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), false);
 
@@ -512,8 +492,6 @@ public class EntityController {
         AStoreWrapper store = storeModelManager.getStore();
 
         try {
-            logger.info("Initialising JenaQuerierDB");
-
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), false);
 
@@ -554,8 +532,6 @@ public class EntityController {
         AStoreWrapper store = storeModelManager.getStore();
 
         try {
-            logger.info("Initialising JenaQuerierDB");
-
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), false);
 
@@ -593,8 +569,6 @@ public class EntityController {
         AStoreWrapper store = storeModelManager.getStore();
 
         try {
-            logger.info("Initialising JenaQuerierDB");
-
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), false);
 
@@ -634,8 +608,6 @@ public class EntityController {
         AStoreWrapper store = storeModelManager.getStore();
 
         try {
-            logger.info("Initialising JenaQuerierDB");
-
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), false);
 
@@ -673,8 +645,6 @@ public class EntityController {
         AStoreWrapper store = storeModelManager.getStore();
 
         try {
-            logger.info("Initialising JenaQuerierDB");
-
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), false);
 
@@ -714,8 +684,6 @@ public class EntityController {
         AStoreWrapper store = storeModelManager.getStore();
 
         try {
-            logger.info("Initialising JenaQuerierDB");
-
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), false);
 
@@ -754,8 +722,6 @@ public class EntityController {
         AStoreWrapper store = storeModelManager.getStore();
 
         try {
-            logger.info("Initialising JenaQuerierDB");
-
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), false);
 
@@ -796,8 +762,6 @@ public class EntityController {
         AStoreWrapper store = storeModelManager.getStore();
 
         try {
-            logger.info("Initialising JenaQuerierDB");
-
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), false);
 
@@ -836,8 +800,6 @@ public class EntityController {
         AStoreWrapper store = storeModelManager.getStore();
 
         try {
-            logger.info("Initialising JenaQuerierDB");
-
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), false);
 
@@ -898,8 +860,6 @@ public class EntityController {
         AStoreWrapper store = storeModelManager.getStore();
 
         try {
-            logger.info("Initialising JenaQuerierDB");
-
             JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
                     model.getModelStack(), false);
 

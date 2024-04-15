@@ -1,7 +1,7 @@
 import React, {Fragment} from "react";
 import PropTypes from 'prop-types';
 import {Button, Checkbox, FormControl, FormGroup} from "react-bootstrap";
-import renderControlStrategy from "../../../csgExplorer/ControlStrategyRenderer";
+import {renderControlStrategy} from "../../../csgExplorer/ControlStrategyRenderer";
 import {connect} from "react-redux";
 
 class ControlStrategiesPanel extends React.Component {
