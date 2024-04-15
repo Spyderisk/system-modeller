@@ -372,7 +372,7 @@ public class RecommendationsAlgorithm {
                 // In this way we do not let the risk vector increase. We could make this softer by comparing
                 // the "overall risk level", i.e. the highest risk level of the current and parent vector
 
-                if (localSearch && (riskResponse.compareTo(parentRiskVector) == 1)) {
+                if (localSearch && (riskResponse.compareTo(parentRiskVector) > 0)) {
                     logger.debug("Risk level has increased. Abort branch {}", myStep);
                 } else {
 
