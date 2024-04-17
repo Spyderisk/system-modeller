@@ -646,8 +646,11 @@ public class ModelControllerTest extends CommonTestSetup{
 	 * Test creating a system model for a domain model to which the user has no access
 	 * Asserts FORBIDDEN 403 status
 	 * Asserts error message returned
+	 * 
+	 * N.B. 17/4/2024 This test is now redundant, as we now allow all users access to all domain models
 	 */
 	@Test
+	@Ignore
 	public void testCreateModelNoDomainAccess() {
 		switchToSystemModel(0);
 
@@ -1280,8 +1283,11 @@ public class ModelControllerTest extends CommonTestSetup{
 	 * Test importing a system model for a domain model to which the user has no access
 	 * Asserts FORBIDDEN 403 status
 	 * Asserts error message returned
+	 * 
+	 * N.B. 17/4/2024 This test is now redundant, as we now allow all users access to all domain models
 	 */
 	@Test
+	@Ignore
 	public void testImportModelNoDomainAccess() {
 		given().
 			filter(userSession).
