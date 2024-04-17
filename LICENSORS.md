@@ -2,7 +2,7 @@
 
 Every individual and organisation listed here has chosen to license their work
 to the world under Open Source terms and conditions. We have incorporated that
-work into Spyderisk. Thankyou.
+work into Spyderisk. Thank you.
 
 If you feel you should be listed here but are not, then please
 [do get in touch](mailto://team@spyderisk.org).
@@ -95,8 +95,7 @@ Individual owners/licensors:
 * Alexander Shtuchkin (iconv lite)
 * Glen Maddern (icss-utils)
 * Lee Byron (js-immutable)
-* Tyler Kellen <tyler@sleekcode.net> (gulp.js interpreter)
-* 
+* Tyler Kellen <tyler@sleekcode.net> (gulp.js interpreter) 
 
 
 
