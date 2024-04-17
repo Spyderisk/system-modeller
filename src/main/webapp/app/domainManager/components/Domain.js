@@ -35,8 +35,8 @@ class Domain extends Component {
                             </Col>
                             <Col xs={4}>
                                 <span style={{ float: "right" }}>
-                                    <Button bsStyle="primary" onClick={() => toggleAccessListModal(true, domainUri, ontology)}
-                                    >Access List</Button>
+                                    {/* <Button bsStyle="primary" onClick={() => toggleAccessListModal(true, domainUri, ontology)}
+                                    >Access List</Button> */}
                                     <Button bsStyle="primary"
                                         disabled={ontology.loaded === false}
                                         onClick={() => {
