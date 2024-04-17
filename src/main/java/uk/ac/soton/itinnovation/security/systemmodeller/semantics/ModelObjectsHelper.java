@@ -1400,6 +1400,7 @@ public class ModelObjectsHelper {
 	 * @return true/false if they are able to access the domain model
 	 */
 	public boolean canUserAccessDomain(String domainURI, String user){
+		/* For now, allow all users to access each domain model
 		// If this is the user's first login we need to add them to
 		// the management graph and set their default domain model
 		// access.
@@ -1407,6 +1408,9 @@ public class ModelObjectsHelper {
 
 		AStoreWrapper store = storeManager.getStore();
 		return store.queryAsk(TemplateLoader.formatTemplate(queries.get("CanUserAccessDomain"), storeManager.getManagementGraph(), user, domainURI));
+		*/
+
+		return true;
 	}
 	
 	/**
