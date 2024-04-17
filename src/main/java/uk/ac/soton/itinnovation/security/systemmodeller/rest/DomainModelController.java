@@ -93,6 +93,10 @@ public class DomainModelController {
 		logger.debug("Getting domain models for: {}", username);
 
 		/* New users are not given access to domain models, so commenting this out
+
+I agree with the change to the code.
+I don't think the comment quite makes sense though? It's not clear whether you are describing the intended behaviour or the bug.
+What about "The user access control system for domain models is not working correctly and is not currently a required feature. Therefore, the list of domain models returned for any user will be all domain models."
 		// If this is the user's first login we need to add them to
 		// the management graph and set their default domain model
 		// access.
