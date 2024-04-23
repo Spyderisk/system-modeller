@@ -114,7 +114,7 @@ class RecommendationsExplorer extends React.Component {
                         and will not always give the most sensible recommendation(s). 
                         It may also take a very long time to run, in particular for Future risk recommendations. 
                         A list of known issues can be found on <a href="https://github.com/Spyderisk/system-modeller/issues/140" target="_blank">GitHub</a>.</p>
-                    {recommendations.length && <p>Returned {recommendations.length} recommendations 
+                    {recommendations.length > 0 && <p>Returned {recommendations.length} recommendations 
                     {recommendations.length > max_recommendations ? " (Displaying top " + max_recommendations + ")" : ""}</p>}
                 </div>
                 {!recommendations.length ? this.renderNoRecommendations() : 
