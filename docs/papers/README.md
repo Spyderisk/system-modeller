@@ -1,16 +1,14 @@
 # Papers and articles
 
-The [DOI system](https://en.wikipedia.org/wiki/Digital_object_identifier) is the standard for uniquely
-identifying papers and their metadata. All Spyderisk papers have a DOI.
-
-In addition, this directory contains the PDFs of papers, articles and reports written by contributors to
-Spyderisk. These PDFs are referred to throughout the Spyderisk tree, particularly in
+This directory contains the PDFs of papers, articles and reports written by contributors to
+the Spyderisk project. These PDFs are referred to throughout the Spyderisk tree, particularly in
 the [Spyderisk history document](./../../HISTORY.md) and having them here
-ensures the PDFs are always available given the many systems the originals are
-stored in. This scheme also gives a single web address that can be crawled by 
-[archive.org](https://archive.org), rather than a different destination for every DOI.
+ensures the files are always available given the many different academic storage systems the originals are in.
+In addition, the PDFs are a single web address that can be crawled by 
+sites such as [archive.org](https://archive.org),
+rather than a different destination for every [DOI](https://en.wikipedia.org/wiki/Digital_object_identifier).
 
-The authors own their own work and have contributed these articles under the CC-BY-SA license
+The authors of papers own their own work and where possible have contributed these articles under the CC-BY-SA license
 as described in the top-level [licenses/](../../licences/README.md) directory.
 
 * [boniface2010.pdf](./boniface2010.pdf): S. Bertram; M. Boniface; M. Surridge; N. Briscombe; M. Hall-May,  ‘On-Demand Dynamic Security for Risk-Based Secure Collaboration in Clouds’, 2010 IEEE 3rd International Conference on Cloud Computing. doi: 10.1109/CLOUD.2010.83
