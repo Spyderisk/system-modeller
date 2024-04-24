@@ -13,6 +13,8 @@ stored in. This scheme also gives a single web address that can be crawled by
 The authors own their own work and have contributed these articles under the CC-BY-SA license
 as described in the top-level [licenses/](../../licences/README.md) directory.
 
+* [boniface2010.pdf](./boniface2010.pdf): S. Bertram; M. Boniface; M. Surridge; N. Briscombe; M. Hall-May,  ‘On-Demand Dynamic Security for Risk-Based Secure Collaboration in Clouds’, 2010 IEEE 3rd International Conference on Cloud Computing. doi: 10.1109/CLOUD.2010.83
+
 * [surridge2011.pdf](./surridge2011.pdf): M. Surridge, A. Chakravarthy, M. Bashevoy, J. Wright, M. Hall-May, and R. Nossal, ‘SERSCIS-Ont : evaluation of a formal metric model using airport collaborative decision making’, Int. J. Adv. Intell. Syst., vol. 4, no. 3, Art. no. 3, Apr. 2012. doi: 10.5258/SOTON/P1129
 
 * [surridge2013.pdf](./surridge2013.pdf): M. Surridge, B. Nasser, X. Chen, A. Chakravarthy, and P. Melas, ‘Run-Time Risk Management in Adaptive ICT Systems’, in 2013 International Conference on Availability, Reliability and Security, Sep. 2013, pp. 102–110. doi: 10.1109/ARES.2013.20. 
