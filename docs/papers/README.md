@@ -9,7 +9,7 @@ sites such as [archive.org](https://archive.org),
 rather than a different destination for every [DOI](https://en.wikipedia.org/wiki/Digital_object_identifier).
 
 The authors of papers own their own work and where possible have contributed these articles under the CC-BY-SA license
-as described in the top-level [licenses/](../../LICENSES/README.md) directory.
+as described in the top-level [LICENSES/](../../LICENSES/README.md) directory.
 
 | Local copy                             | Full citation |
 | -------------                          | ------------- |
