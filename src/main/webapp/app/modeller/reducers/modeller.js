@@ -26,10 +26,15 @@ const modelState = {
         //riskLevelsValid: true,  //don't set this initially (button will be coloured blue)
         saved: true,
         calculatingRisks: false,
+        calculatingRecommendations: false,
         controlsReset: false,
         canBeEdited: true,
-        canBeShared: true
+        canBeShared: true,
+        risksValid: false,
+        riskCalculationMode: ""
     },
+    recommendationsJobId: null,
+    recommendations: {},
     // Rayna: TODO - when the backend for groups is implemented, put this array in the model above.
     groups: [],
     grouping: {
@@ -60,16 +65,26 @@ const modelState = {
     selectedThreat: {
         id: ""
     },
+    attackPaths: {},
     selectedMisbehaviour: {
         misbehaviour: {},
-        loadingRootCauses: false
+        loadingRootCauses: false,
+        loadingAttackPath: false
     },
     expanded: {
         assetDetails: {
             twas: false
         }
     },
+    filters: {
+        assetDetails: {
+            twas: {
+                showInvisible: false
+            }
+        }
+    },
     misbehaviourTwas: {},
+    csgAssets: {},
     isMisbehaviourExplorerVisible: false,
     isMisbehaviourExplorerActive: false,
     isComplianceExplorerVisible: false,
@@ -78,6 +93,8 @@ const modelState = {
     isControlExplorerActive: false,
     isControlStrategyExplorerVisible: false,
     isControlStrategyExplorerActive: false,
+    isRecommendationsExplorerVisible: false,
+    isRecommendationsExplorerActive: false,
     isReportDialogVisible: false,
     isReportDialogActive: false,
     isDroppingInferredGraph: false,
@@ -193,6 +210,7 @@ export default function modeller(state = modelState, action) {
 
         let model = action.payload;
         model.saved = true; //must be true if reloaded
+        model.calculatingRecommendations = false; //flag is not currently returned in model
 
         let groups = model.groups;
 
@@ -227,6 +245,9 @@ export default function modeller(state = modelState, action) {
             model.threats.forEach(threat => setThreatTriggeredStatus(threat, model.controlStrategies));
         }
 
+        //Get map of CSGs to asset
+        let csgAssets = getCsgAssets(model.threats);
+
         return {
             ...state,
             model: model,
@@ -239,7 +260,8 @@ export default function modeller(state = modelState, action) {
                 ...state.selectedMisbehaviour,
                 misbehaviour: misbehaviour,
             },
-            misbehaviourTwas: misbehaviourTwas
+            misbehaviourTwas: misbehaviourTwas,
+            csgAssets: csgAssets,
         };
     }
 
@@ -304,7 +326,6 @@ export default function modeller(state = modelState, action) {
 
     if (action.type === instr.EDIT_MODEL) {
         let updatedModel = action.payload;
-        //console.log("EDIT_MODEL:", updatedModel);
         return {
             ...state,
             model: {
@@ -316,86 +337,19 @@ export default function modeller(state = modelState, action) {
     }
 
     if (action.type === instr.UPDATE_VALIDATION_PROGRESS) {
-        if (action.payload.waitingForUpdate) {
-            //console.log("poll: UPDATE_VALIDATION_PROGRESS: (waiting for progress)");
-            return {
-                ...state, validationProgress: {
-                    ...state.validationProgress,
-                    waitingForUpdate: action.payload.waitingForUpdate
-                }
-            };
-        }
-
-        let status = "running";
-
-        if (action.payload.status) {
-            status = action.payload.status;
-        }
-        else if (action.payload.message.indexOf("failed") != -1) {
-            console.log("Validation failed (detected from message)");
-            status = "failed";
-        }
-        else if (action.payload.message.indexOf("complete") != -1) {
-            console.log("Validation completed (detected from message)");
-            status = "completed";
-        }
-
-        let error = action.payload.error != null ? action.payload.error : "";
-
-        return {
-            ...state, validationProgress: {
-                status: status,
-                progress: action.payload.progress,
-                message: action.payload.message,
-                error: error,
-                waitingForUpdate: action.payload.waitingForUpdate
-            }
-        };
+        return updateProgress("Validation", state, action);
     }
 
     if (action.type === instr.UPDATE_RISK_CALC_PROGRESS) {
-        //console.log("UPDATE_RISK_CALC_PROGRESS", action.payload);
-        if (action.payload.waitingForUpdate) {
-            //console.log("poll: UPDATE_RISK_CALC_PROGRESS: (waiting for progress)");
-            return {
-                ...state, validationProgress: {
-                    ...state.validationProgress,
-                    waitingForUpdate: action.payload.waitingForUpdate
-                }
-            };
-        }
+        return updateProgress("Risk calc", state, action);
+    }
 
-        let status = "running";
-
-        if (action.payload.status) {
-            status = action.payload.status;
-        }
-        else if (action.payload.message.indexOf("failed") != -1) {
-            console.log("Risk calc failed (detected from message)");
-            status = "failed";
-        }
-        else if (action.payload.message.indexOf("complete") != -1) {
-            console.log("Risk calc completed (detected from message)");
-            status = "completed";
-        }
-
-        let error = action.payload.error != null ? action.payload.error : "";
-
-        return {
-            ...state, validationProgress: {
-                status: status,
-                progress: action.payload.progress,
-                message: action.payload.message,
-                error: error,
-                waitingForUpdate: action.payload.waitingForUpdate
-            }
-        };
+    if (action.type === instr.UPDATE_RECOMMENDATIONS_PROGRESS) {
+        return updateProgress("Recommendations", state, action);
     }
 
     if (action.type === instr.UPDATE_LOADING_PROGRESS) {
-        //console.log("UPDATE_LOADING_PROGRESS:", action.payload);
         if (action.payload.waitingForUpdate) {
-            //console.log("poll: UPDATE_LOADING_PROGRESS: (waiting for progress)");
             return {
                 ...state, loadingProgress: {
                     ...state.loadingProgress,
@@ -844,9 +798,6 @@ export default function modeller(state = modelState, action) {
 
 
     if (action.type === instr.IS_VALIDATING) {
-
-        console.log("modellerReducer: model is validating");
-
         return {
             ...state,
             model: {
@@ -861,13 +812,11 @@ export default function modeller(state = modelState, action) {
                 error: "",
                 waitingForUpdate: false
             },
+            attackPaths: {}
         };
     }
 
     if (action.type === instr.IS_NOT_VALIDATING) {
-
-        console.log("modellerReducer: model is not validating");
-
         return {
             ...state,
             model: {
@@ -885,7 +834,6 @@ export default function modeller(state = modelState, action) {
     }
 
     if (action.type === instr.VALIDATION_FAILED) {
-
         console.log("modellerReducer: validation failed");
 
         return {
@@ -898,7 +846,6 @@ export default function modeller(state = modelState, action) {
     }
 
     if (action.type === instr.RISK_CALC_FAILED) {
-
         console.log("modellerReducer: risk calc failed");
 
         return {
@@ -910,10 +857,19 @@ export default function modeller(state = modelState, action) {
         };
     }
 
+    if (action.type === instr.RECOMMENDATIONS_FAILED) {
+        console.log("modellerReducer: recommendationsc failed");
+
+        return {
+            ...state,
+            model: {
+                ...state.model,
+                calculatingRecommendations: false
+            },
+        };
+    }
+
     if (action.type === instr.IS_CALCULATING_RISKS) {
-
-        console.log("modellerReducer: calculating risks for model");
-
         return {
             ...state,
             model: {
@@ -927,13 +883,11 @@ export default function modeller(state = modelState, action) {
                 error: "",
                 waitingForUpdate: false
             },
+            attackPaths: {}
         };
     }
 
     if (action.type === instr.IS_NOT_CALCULATING_RISKS) {
-
-        console.log("modellerReducer: not calculating risks for model");
-
         return {
             ...state,
             model: {
@@ -1026,7 +980,7 @@ export default function modeller(state = modelState, action) {
 
         misbehaviourSets.map((ms) => {
             let msuri = prefix + ms.uri;
-            let likelihoodUri = prefix + ms.prior;
+            let likelihoodUri = prefix + ms.likelihood;
             let riskUri = prefix + ms.risk;
 
             let likelihood = likelihoodLevels[likelihoodUri];
@@ -1075,7 +1029,8 @@ export default function modeller(state = modelState, action) {
             ...state,
             model: {
                 ...state.model,
-                riskLevelsValid: true,
+                riskLevelsValid: model.risksValid,
+                riskCalculationMode: model.riskCalculationMode,
                 risk: modelRisk,
                 saved: saved,
                 controlSets: updatedControlSets,
@@ -1084,10 +1039,9 @@ export default function modeller(state = modelState, action) {
                     ...state.model.threats.map((threat) => {
                         let threatKey = threat["uri"].replace(prefix, "");
                         if (threatKey in threatsMap) {
-                            //console.log("updating threat: " + threat["uri"]);
                             let rcThreat = threatsMap[threatKey];
 
-                            let likelihoodUri = prefix + rcThreat.prior;
+                            let likelihoodUri = prefix + rcThreat.likelihood;
                             let riskUri = prefix + rcThreat.risk;
                 
                             let likelihood = likelihoodLevels[likelihoodUri];
@@ -1118,6 +1072,60 @@ export default function modeller(state = modelState, action) {
             //}
         };
 
+    }
+
+    if (action.type === instr.IS_CALCULATING_RECOMMENDATIONS) {
+        return {
+            ...state,
+            model: {
+                ...state.model,
+                calculatingRecommendations: true
+            },
+            recommendations: null, //clear previous results
+            validationProgress: {
+                status: "starting",
+                progress: 0.0,
+                message: "Starting calculation",
+                error: "",
+                waitingForUpdate: false
+            }
+        };
+    }
+
+    if (action.type === instr.IS_NOT_CALCULATING_RECOMMENDATIONS) {
+        return {
+            ...state,
+            model: {
+                ...state.model,
+                calculatingRecommendations: false
+            },
+            validationProgress: {
+                status: "inactive",
+                progress: 0.0,
+                message: "",
+                error: "",
+                waitingForUpdate: false
+            },
+        };
+    }
+
+    if (action.type === instr.RECOMMENDATIONS_JOB_STARTED) {
+        console.log("Recommendations job started: ", action.payload);
+        let jobId = action.payload.jobId;
+        return {
+            ...state,
+            recommendationsJobId: jobId
+        };
+    }
+
+    if (action.type === instr.RECOMMENDATIONS_RESULTS) {
+        let recommendations = action.payload;
+        return {
+            ...state,
+            recommendations: recommendations,
+            isRecommendationsExplorerVisible: true,
+            isRecommendationsExplorerActive: true,
+        };
     }
 
     if (action.type === instr.IS_DROPPING_INFERRED_GRAPH) {
@@ -1536,6 +1544,32 @@ export default function modeller(state = modelState, action) {
         };
     }
 
+    if (action.type === instr.TOGGLE_FILTER) {
+        let panel = action.payload.panel;
+        let filter = action.payload.filter;
+        let selected = action.payload.selected;
+
+        //TODO (if/when required): add support for toggling other filters
+        if (panel !== "twas" || filter !== "showInvisible") {
+            console.log("Panel/filter not known:", panel, filter);
+            return state;
+        }
+
+        return {
+            ...state,
+            filters: {
+                ...state.filters,
+                assetDetails: {
+                    ...state.filters.assetDetails,
+                    twas: {
+                        ...state.filters.assetDetails.twas,
+                        showInvisible: selected
+                    }
+                }
+            }
+        };
+    }
+
     if (action.type === instr.CLOSE_MISBEHAVIOUR_EXPLORER) {
         return {
             ...state,
@@ -1609,6 +1643,22 @@ export default function modeller(state = modelState, action) {
             ...state,
             isControlStrategyExplorerVisible: false,
             isControlStrategyExplorerActive: false,
+        };
+    }
+
+    if (action.type === instr.OPEN_RECOMMENDATIONS_EXPLORER) {
+        return {
+            ...state,            
+            isRecommendationsExplorerVisible: true,
+            isRecommendationsExplorerActive: true,
+        };
+    }
+
+    if (action.type === instr.CLOSE_RECOMMENDATIONS_EXPLORER) {
+        return {
+            ...state,
+            isRecommendationsExplorerVisible: false,
+            isRecommendationsExplorerActive: false,
         };
     }
 
@@ -2228,7 +2278,100 @@ export default function modeller(state = modelState, action) {
         window.open(action.payload);
     }
 
+    if (action.type === instr.LOADING_ATTACK_PATH) {
+        let loading = action.payload;
+
+        if (loading) {
+            console.log("Loading attack path...");
+        }
+        else {
+            console.log("Finished loading attack path (or error)");
+        }
+        
+        return {
+            ...state,
+            selectedMisbehaviour: {
+                ...state.selectedMisbehaviour,
+                loadingAttackPath: loading
+            }
+        };
+    }
+
+    if (action.type === instr.GET_ATTACK_PATH) {
+        let apt = getAttackPathThreatRefs(action.payload);
+        let updatedAttackPaths = {...state.attackPaths};
+        updatedAttackPaths[state.selectedMisbehaviour.misbehaviour.uri] = apt;
+        return {
+            ...state,
+            selectedMisbehaviour: {
+                ...state.selectedMisbehaviour,
+                loadingAttackPath: false
+            },
+            attackPaths: updatedAttackPaths
+        };
+    }
+
     return state;
+}
+
+function updateProgress(task, state, action) {
+    if (action.payload.waitingForUpdate) {
+        return {
+            ...state, validationProgress: {
+                ...state.validationProgress,
+                waitingForUpdate: action.payload.waitingForUpdate
+            }
+        };
+    }
+
+    let status = "running";
+
+    if (action.payload.status) {
+        status = action.payload.status;
+    }
+    else if (action.payload.message.indexOf("failed") != -1) {
+        console.log(task + " failed (detected from message)");
+        status = "failed";
+    }
+    else if (action.payload.message.indexOf("complete") != -1) {
+        console.log(task + " completed (detected from message)");
+        status = "completed";
+    }
+
+    let error = action.payload.error != null ? action.payload.error : "";
+
+    return {
+        ...state, validationProgress: {
+            status: status,
+            progress: action.payload.progress,
+            message: action.payload.message,
+            error: error,
+            waitingForUpdate: action.payload.waitingForUpdate
+        }
+    };
+}
+
+function getAttackPathThreatRefs(attackPathData) {
+    const prefix = attackPathData.prefix;
+    const sortedAttackThreats = Array.from(new Map(Object.entries(attackPathData.threats)))
+        .sort((a,b) => b[1] - a[1]).map((pair) => [prefix + pair[0], pair[1]]);
+    console.log("modellerReducer: sorted attack path threats found ", sortedAttackThreats.length);
+    return sortedAttackThreats;
+}
+
+//Generate map of Control Strategies to their associated asset
+function getCsgAssets(threats) {
+    let csgAssets = {};
+
+    threats.forEach(threat => {
+        let assetUri = threat.threatensAssets;
+        let threatCsgs = Object.keys(threat.controlStrategies);
+        threatCsgs.forEach(threatCsg => {
+            csgAssets[threatCsg] = assetUri;
+        });
+    });
+
+    return csgAssets;
 }
 
 function updateControlStrategies(threats, controlStrategies, controlSets) {

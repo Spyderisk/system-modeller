@@ -1,0 +1,8 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Spyderisk
+Upstream-Contact: Spyderisk Team <team@spyderisk.org>
+Source: https://github.com/Spyderisk/system-modeller/src
+
+Files: src/*
+Copyright: 2024 The Spyderisk Licensors
+License: APACHE-2.0

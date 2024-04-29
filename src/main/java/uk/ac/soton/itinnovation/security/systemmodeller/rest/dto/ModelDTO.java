@@ -41,6 +41,7 @@ import uk.ac.soton.itinnovation.security.model.system.ControlSet;
 import uk.ac.soton.itinnovation.security.model.system.ControlStrategy;
 import uk.ac.soton.itinnovation.security.model.system.MisbehaviourSet;
 import uk.ac.soton.itinnovation.security.model.system.Relation;
+import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
 import uk.ac.soton.itinnovation.security.model.system.RiskLevelCount;
 import uk.ac.soton.itinnovation.security.model.system.RiskVector;
 import uk.ac.soton.itinnovation.security.model.system.Threat;
@@ -58,6 +59,7 @@ public class ModelDTO {
 	private boolean valid;
 	private boolean isValidating;
 	private boolean riskLevelsValid;
+	private RiskCalculationMode riskCalculationMode;
 	private boolean calculatingRisks;
 	private boolean canBeEdited;
 	private boolean canBeShared;
@@ -99,6 +101,7 @@ public class ModelDTO {
 		this.valid = model.isValid();
 		this.isValidating = model.isValidating();
 		this.riskLevelsValid = model.riskLevelsValid();
+		this.riskCalculationMode = model.getRiskCalculationMode();
 		this.calculatingRisks = model.isCalculatingRisks();
 		this.risk = (model.riskLevelsValid() ? model.getRiskLevel() : null);
 		// TODO -- this needs to be a username for display on the GUI. 
@@ -299,6 +302,14 @@ public class ModelDTO {
 		this.risk = risk;
 	}
 	
+	public RiskCalculationMode getRiskCalculationMode() {
+		return riskCalculationMode;
+	}
+
+	public void setRiskCalculationMode(RiskCalculationMode riskCalculationMode) {
+		this.riskCalculationMode = riskCalculationMode;
+	}
+
 	public Set<ThreatDTO> getThreats() {
 		return threats;
 	}

@@ -153,6 +153,17 @@ public class AssetControllerTest extends CommonTestSetup{
 		when(secureUrlHelper.getReadModelFromUrl("testModel")).thenReturn(testModel);
 	}
 
+	/**
+	 * Ensure that a given asset has a population level set (may not be the case in older system models)
+	 * @param asset
+	 */
+	private void ensureAssetPopulation(Asset asset) {
+		if (asset.getPopulation() == null) {
+			//Set default population level
+			asset.setPopulation("http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#PopLevelSingleton");
+		}
+	}
+
 	//Tests
 
 	/**
@@ -218,6 +229,7 @@ public class AssetControllerTest extends CommonTestSetup{
 		switchToSystemModel(1);
 
 		Asset testAsset = querier.getSystemAssets(testHelper.getStore()).values().iterator().next();
+		ensureAssetPopulation(testAsset);
 
 		switchToSystemModel(5);
 
@@ -246,6 +258,7 @@ public class AssetControllerTest extends CommonTestSetup{
 		switchToSystemModel(1);
 
 		Asset testAsset = querier.getSystemAssets(testHelper.getStore()).values().iterator().next();
+		ensureAssetPopulation(testAsset);
 
 		given().
 			filter(userSession).
@@ -268,7 +281,6 @@ public class AssetControllerTest extends CommonTestSetup{
 	@Test
 	public void testAddAssetToModelEmptyAssetObject() {
 		switchToSystemModel(5);
-
 		given().
 			filter(userSession).
 			contentType(ContentType.JSON).

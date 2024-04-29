@@ -63,14 +63,13 @@ public class ThreatDTO extends SemanticEntityDTO {
 	//all misbehaviours that could possibly be caused by this threat
 	private final Set<String> misbehaviours;
 
-	//these are direct effects, as found to be caused by this threat through the secondary effect calculations
-	//private final Set<String> directEffects;
-
 	//these are all effects, including but not limited to direct effects
 	private final Set<String> indirectEffects;
 
 	//Flag to indicate if secondary threat, otherwise primary
 	private boolean secondaryThreat;
+
+	private boolean normalOperation;
 
 	private final Set<String> secondaryEffectConditions;
 
@@ -88,7 +87,6 @@ public class ThreatDTO extends SemanticEntityDTO {
 	public ThreatDTO() {
 
 		misbehaviours = new HashSet<>();
-		//directEffects = new HashSet<>();
 		indirectEffects = new HashSet<>();
 		secondaryEffectConditions = new HashSet<>();
 		controlStrategies = new HashMap<>();
@@ -142,10 +140,10 @@ public class ThreatDTO extends SemanticEntityDTO {
 		this.resolved = threat.isResolved();
 		this.acceptanceJustification = threat.getAcceptanceJustification();
 		this.misbehaviours = threat.getMisbehaviours().keySet();
-		//this.directEffects = threat.getDirectEffects().keySet();
 		this.indirectEffects = threat.getIndirectEffects().keySet();
 		this.secondaryThreat = threat.isSecondaryThreat();
 		this.secondaryEffectConditions = threat.getSecondaryEffectConditions().keySet();
+		this.normalOperation = threat.isNormalOperation();
 		this.controlStrategies = new HashMap<>();
 		extractControlStrategiesMap(threat.getControlStrategies());
 		this.entryPoints = threat.getEntryPoints().keySet();
@@ -160,10 +158,10 @@ public class ThreatDTO extends SemanticEntityDTO {
 		setDescription(threat.getDescription());
 		
 		this.misbehaviours = new HashSet<>();
-		//this.directEffects = new HashSet<>();
 		this.indirectEffects = new HashSet<>();
 		this.secondaryThreat = false; //cannot be a secondary threat
 		this.secondaryEffectConditions = new HashSet<>();
+		this.normalOperation = false; //cannot be a normal operation
 		this.entryPoints = new HashSet<>();
 
 		this.pattern = threat.getPattern();
@@ -205,10 +203,6 @@ public class ThreatDTO extends SemanticEntityDTO {
 			t += "\t- secondary effect conditions\n";
 			t = secondaryEffectConditions.stream().map(m -> "\t\t* " + m + "\n").reduce(t, String::concat);
 		}
-		//if (!directEffects.isEmpty()) {
-		//	t += "\t- direct effects\n";
-		//	t = directEffects.stream().map(m -> "\t\t* " + m + "\n").reduce(t, String::concat);
-		//}
 		if (!indirectEffects.isEmpty()) {
 			t += "\t- indirect effects\n";
 			t = indirectEffects.stream().map(m -> "\t\t* " + m + "\n").reduce(t, String::concat);
@@ -277,12 +271,6 @@ public class ThreatDTO extends SemanticEntityDTO {
 		return misbehaviours;
 	}
 
-	/*
-	public Set<String> getDirectEffects() {
-		return directEffects;
-	}
-	*/
-
 	public Set<String> getIndirectEffects() {
 		return indirectEffects;
 	}
@@ -297,6 +285,14 @@ public class ThreatDTO extends SemanticEntityDTO {
 
 	public Set<String> getSecondaryEffectConditions() {
 		return secondaryEffectConditions;
+	}
+
+	public boolean isNormalOperation() {
+		return normalOperation;
+	}
+
+	public void setNormalOperation(boolean normalOperation) {
+		this.normalOperation = normalOperation;
 	}
 
 	public Map<String, ControlStrategyType> getControlStrategies() {

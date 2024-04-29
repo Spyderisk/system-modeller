@@ -32,13 +32,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.URL;
+import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.rmi.UnexpectedException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -51,19 +56,19 @@ import java.util.zip.GZIPOutputStream;
 import javax.naming.SizeLimitExceededException;
 import javax.servlet.http.HttpServletRequest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.apache.jena.query.Dataset;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -74,44 +79,57 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
 import uk.ac.soton.itinnovation.security.model.system.RiskLevelCount;
 import uk.ac.soton.itinnovation.security.model.system.RiskVector;
+import uk.ac.soton.itinnovation.security.modelquerier.JenaQuerierDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.RiskCalcResultsDB;
 import uk.ac.soton.itinnovation.security.modelvalidator.ModelValidator;
 import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackPathAlgorithm;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackPathDataset;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithm;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithmConfig;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.TreeJsonDoc;
 import uk.ac.soton.itinnovation.security.semanticstore.AStoreWrapper;
 import uk.ac.soton.itinnovation.security.semanticstore.IStoreWrapper;
+import uk.ac.soton.itinnovation.security.semanticstore.JenaTDBStoreWrapper;
 import uk.ac.soton.itinnovation.security.semanticstore.util.SparqlHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.auth.KeycloakAdminClient;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.Model;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.ModelFactory;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.WebKeyRole;
 import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.IModelRepository;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.JobResponseDTO;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.LoadingProgress;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.LoadingProgressResponse;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.ModelDTO;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.UpdateModelResponse;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations.RecommendationReportDTO;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.BadRequestErrorException;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.BadRiskModeException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.InternalServerErrorException;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.MisbehaviourSetInvalidException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.ModelException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.ModelInvalidException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.NotAcceptableErrorException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.NotFoundErrorException;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.RiskModeMismatchException;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.UnprocessableEntityException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.UserForbiddenFromDomainException;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.StoreModelManager;
-import uk.ac.soton.itinnovation.security.systemmodeller.util.PaletteGenerator;
 import uk.ac.soton.itinnovation.security.systemmodeller.util.ReportGenerator;
 import uk.ac.soton.itinnovation.security.systemmodeller.util.SecureUrlHelper;
-
-import uk.ac.soton.itinnovation.security.modelquerier.util.ModelStack;
-import uk.ac.soton.itinnovation.security.modelquerier.JenaQuerierDB;
-import uk.ac.soton.itinnovation.security.modelquerier.dto.ModelExportDB;
-import uk.ac.soton.itinnovation.security.semanticstore.JenaTDBStoreWrapper;
+import uk.ac.soton.itinnovation.security.systemmodeller.model.RecommendationEntity;
+import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.RecommendationRepository;
+import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService;
+import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService.RecommendationJobState;
 
 /**
- * Includes all operations of the Model Controller Service. 
+ * Includes all operations of the Model Controller Service.
  */
 @RestController
 public class ModelController {
@@ -136,8 +154,22 @@ public class ModelController {
 	@Autowired
 	private SecureUrlHelper secureUrlHelper;
 
+    @Autowired
+    private RecommendationsService recommendationsService;
+
+    @Autowired
+    private RecommendationRepository recRepository;
+
 	@Value("${admin-role}")
 	public String adminRole;
+
+	@Value("${knowledgebases.install.folder}")
+	private String kbInstallFolder;
+
+	private static final String VALIDATION = "Validation";
+	private static final String RISK_CALCULATION = "Risk calculation";
+	private static final String RECOMMENDATIONS = "Recommendations";
+	private static final String STARTING = "starting";
 
 	/**
 	 * Take the user IDs of the model owner, editor and modifier and look up the current username for them
@@ -236,6 +268,14 @@ public class ModelController {
 			counter++;
 		}
 		return models;
+	}
+
+	private void warnIsValidating(String modelId, String modelWebkey) {
+		logger.warn("Model {} is currently validating - ignoring request {}", modelId, modelWebkey);
+	}
+
+	private void warnIsCalculatingRisks(String modelId, String modelWebkey) {
+		logger.warn("Model {} is already calculating risks - ignoring request {}", modelId, modelWebkey);
 	}
 
 	/**
@@ -511,29 +551,28 @@ public class ModelController {
 		String ontology = model.getDomainGraph().substring(model.getDomainGraph().lastIndexOf("/")+1);
 		
 		try {
-			String paletteFile = "/static/data/palette-" + ontology + ".json";
-			URL paletteResource = this.getClass().getResource(paletteFile);
-			if (paletteResource == null) {
-				logger.warn("Palette missing: {}", paletteFile);
-				logger.warn("Creating now..");
-				boolean paletteCreated = PaletteGenerator.createPalette(model.getDomainGraph(), modelObjectsHelper);
+			String paletteFile = "palette.json";
+			Path palettePath = Paths.get(kbInstallFolder, ontology, paletteFile);
+			File palette = palettePath.toFile();
+			logger.info("Loading palette file: {}", palette.getAbsolutePath());
 
-				if (paletteCreated) {
-					//try to load resource again
-					paletteResource = this.getClass().getResource(paletteFile);
-				}
-
-				if (!paletteCreated || paletteResource == null) {
-					throw new NotFoundErrorException("Could not create new palette");
-				}
-			}
-			map = objectMapper.readValue(new File(paletteResource.getPath()), Map.class);
+			map = objectMapper.readValue(palette, Map.class);
 		} catch (IOException e) {
 			logger.error("Could not read palette", e);
 			throw new NotFoundErrorException("Could not load palette");
 		}
 		return ResponseEntity.ok().body(map);
 	}
+
+	@RequestMapping(value = "/images/{domainModel}/{image}" , method = RequestMethod.GET) 
+    public ResponseEntity<FileSystemResource> getImage(@PathVariable String domainModel, @PathVariable String image) throws IOException {
+		Path imagePath = Paths.get(kbInstallFolder, domainModel, "icons", image);
+		FileSystemResource resource = new FileSystemResource(imagePath);
+
+		return ResponseEntity.ok()
+		.contentType(MediaType.parseMediaType(Files.probeContentType(imagePath)))
+		.body(resource);
+    }
 
 	/**
 	 * This method forces a checkout even if another user is currently editing a model, as for example
@@ -626,17 +665,17 @@ public class ModelController {
 		String modelId = model.getId();
 
 		if (model.isValidating()) {
-			logger.warn("Model {} is already validating - ignoring request {}", modelId, modelWriteId);
+			warnIsValidating(modelId, modelWriteId);
 			return new ResponseEntity<>(HttpStatus.ACCEPTED);
 		}
 
 		if (model.isCalculatingRisks()) {
-			logger.warn("Model {} is already calculating risks - ignoring request {}", modelId, modelWriteId);
+			warnIsCalculatingRisks(modelId, modelWriteId);
 			return new ResponseEntity<>(HttpStatus.ACCEPTED);
 		}
 
 		Progress validationProgress = modelObjectsHelper.getValidationProgressOfModel(model);
-		validationProgress.updateProgress(0d, "Validation starting");
+		validationProgress.updateProgress(0d, VALIDATION + " " + STARTING);
 
 		logger.debug("Marking as validating model [{}] {}", modelId, model.getName());
 		model.markAsValidating();
@@ -670,7 +709,7 @@ public class ModelController {
 			return true;
 		}, 0, TimeUnit.SECONDS);
 
-		modelObjectsHelper.registerValidationExecution(modelId, future);
+		modelObjectsHelper.registerTaskExecution(modelId, future);
 
 		return new ResponseEntity<>(HttpStatus.ACCEPTED);
 	}
@@ -714,12 +753,12 @@ public class ModelController {
 		String modelId = model.getId();
 
 		if (model.isValidating()) {
-			logger.warn("Model {} is currently validating - ignoring calc risks request {}", modelId, modelWriteId);
+			warnIsValidating(modelId, modelWriteId);
 			return new ResponseEntity<>(HttpStatus.ACCEPTED);
 		}
 
 		if (model.isCalculatingRisks()) {
-			logger.warn("Model {} is already calculating risks - ignoring request {}", modelId, modelWriteId);
+			warnIsCalculatingRisks(modelId, modelWriteId);
 			return new ResponseEntity<>(HttpStatus.ACCEPTED);
 		}
 
@@ -735,11 +774,9 @@ public class ModelController {
 							RiskCalculationMode.values());
 		}
 		
-		Progress validationProgress = modelObjectsHelper.getValidationProgressOfModel(model);
-		validationProgress.updateProgress(0d, "Risk calculation starting");
-		
-		logger.debug("Marking as calculating risks [{}] {}", modelId, model.getName());
-		model.markAsCalculatingRisks(rcMode);
+        Progress validationProgress = modelObjectsHelper.getTaskProgressOfModel(RISK_CALCULATION, model);
+		validationProgress.updateProgress(0d, RISK_CALCULATION + " " + STARTING);
+		model.markAsCalculatingRisks(rcMode, true);
 
 		ScheduledFuture<?> future = Executors.newScheduledThreadPool(1).schedule(() -> {
 			//boolean valid = false;
@@ -754,14 +791,14 @@ public class ModelController {
 				throw new Exception("Risk calculation failed. Please contact support for further assistance.");
 			} finally {
 				//always reset the flags even if the risk calculation crashes
-				model.finishedCalculatingRisks(results != null);
+				model.finishedCalculatingRisks(results != null, rcMode, true);
 				validationProgress.updateProgress(1.0, "Risk calculation complete");
 			}
 
 			return true;
 		}, 0, TimeUnit.SECONDS);
 
-		modelObjectsHelper.registerValidationExecution(modelId, future);
+		modelObjectsHelper.registerTaskExecution(modelId, future);
 
 		return new ResponseEntity<>(HttpStatus.ACCEPTED);
 	}
@@ -811,20 +848,18 @@ public class ModelController {
 			String modelId = model.getId();
 
 			if (model.isValidating()) {
-				logger.warn("Model {} is currently validating - ignoring calc risks request {}", modelId, modelWriteId);
-				return ResponseEntity.status(HttpStatus.OK).body(new RiskCalcResultsDB()); //TODO: may need to improve this
+				warnIsValidating(modelId, modelWriteId);
+				return ResponseEntity.status(HttpStatus.OK).body(new RiskCalcResultsDB());
 			}
 
 			if (model.isCalculatingRisks()) {
-				logger.warn("Model {} is already calculating risks - ignoring request {}", modelId, modelWriteId);
-				return ResponseEntity.status(HttpStatus.OK).body(new RiskCalcResultsDB()); //TODO: may need to improve this
+				warnIsCalculatingRisks(modelId, modelWriteId);
+				return ResponseEntity.status(HttpStatus.OK).body(new RiskCalcResultsDB());
 			}
 
-			validationProgress = modelObjectsHelper.getValidationProgressOfModel(model);
-			validationProgress.updateProgress(0d, "Risk calculation starting");
-			
-			logger.debug("Marking as calculating risks [{}] {}", modelId, model.getName());
-			model.markAsCalculatingRisks(rcMode);
+			validationProgress = modelObjectsHelper.getTaskProgressOfModel(RISK_CALCULATION, model);
+			validationProgress.updateProgress(0d, RISK_CALCULATION + " " + STARTING);			
+			model.markAsCalculatingRisks(rcMode, save);
 		} //synchronized block
 
 		RiskCalcResultsDB results = null;
@@ -838,7 +873,7 @@ public class ModelController {
 			throw new InternalServerErrorException("Risk calculation failed. Please contact support for further assistance.");
 		} finally {
 			//always reset the flags even if the risk calculation crashes
-			model.finishedCalculatingRisks(results != null);
+			model.finishedCalculatingRisks(results != null, rcMode, save);
 			validationProgress.updateProgress(1.0, "Risk calculation complete");
 		}
 		
@@ -981,8 +1016,8 @@ public class ModelController {
 		headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
 		headers.add("Pragma", "no-cache");
 		headers.add("Expires", "0");
-		headers.add("Content-disposition", "attachment;filename=Model" + model.getId() + "_" +
-				(new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss")).format(new Date()) + ".nq.gz");
+		headers.add("Content-disposition", "attachment;filename=" + model.getName() + " asserted " +
+				(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm")).format(new Date()) + ".nq.gz");
 		
 		//If we have temporarily invalidated the model above, reset the flag to true
 		if (resetValidFlag) {
@@ -1097,18 +1132,28 @@ public class ModelController {
 						}
 					}
 					
-					if(!validDomain && line.contains("<http://it-innovation.soton.ac.uk/ontologies/trustworthiness/core#domainGraph>")){
+					if (!validDomain && line.contains("<http://it-innovation.soton.ac.uk/ontologies/trustworthiness/core#domainGraph>")) {
 						String domainURI = line.substring(0, line.lastIndexOf("<")-1);
 						domainURI = domainURI.substring(domainURI.lastIndexOf("<") + 1, domainURI.lastIndexOf(">"));
-						logger.debug(domainURI);
-						if(!canAccessAllDomains && !modelObjectsHelper.canUserAccessDomain(domainURI, user.getUsername())){
+						logger.debug("Model domain: {}", domainURI);
+
+						boolean domainModelExists = storeModelManager.domainModelExists(domainURI);
+
+						if (!domainModelExists) {
+							logger.error("The system model attempted to use non-existent domain: {}", domainURI);
+							throw new UnprocessableEntityException("The system model requires a knowledgebase that is not installed: " + domainURI);
+						}
+
+						if (!canAccessAllDomains && !modelObjectsHelper.canUserAccessDomain(domainURI, user.getUsername())) {
 							logger.info("User: {} blocked from importing model with domain {}", user.getUsername(), domainURI);
 							throw new UserForbiddenFromDomainException();
 						}
+
 						validDomain = true;
 						domainGraph = domainURI;
 					}
-					if(oldGraphURI!=null && validDomain){
+
+					if (oldGraphURI!=null && validDomain){
 						break;
 					}
 				} while ((line = bufferedReader.readLine()) != null);
@@ -1224,7 +1269,26 @@ public class ModelController {
 
 		synchronized(this) {
 			final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
-			return ResponseEntity.status(HttpStatus.OK).body(modelObjectsHelper.getValidationProgressOfModel(model));
+			return ResponseEntity.status(HttpStatus.OK).body(modelObjectsHelper.getTaskProgressOfModel(RISK_CALCULATION, model));
+		}
+	}
+
+	/**
+	 *  Get an update on the progress of the recommendations operation, given the ID of the model.
+	 *
+	 * @param modelId
+	 * @return recommendations progress
+	 * @throws java.rmi.UnexpectedException
+	 */
+	@GetMapping(value = "/models/{modelId}/recommendationsprogress")
+	public ResponseEntity<Progress> getRecommendationsProgress(@PathVariable String modelId) throws UnexpectedException {
+		logger.info("Called REST method to GET recommendations progress for model {}", modelId);
+
+		synchronized(this) {
+			final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
+			Progress progress = modelObjectsHelper.getTaskProgressOfModel(RECOMMENDATIONS, model);
+			logger.info("{}", progress);
+			return ResponseEntity.status(HttpStatus.OK).body(progress);
 		}
 	}
 
@@ -1286,4 +1350,245 @@ public class ModelController {
 		String reportJson = reportGenerator.generate(modelObjectsHelper, model);
 		return ResponseEntity.status(HttpStatus.OK).contentType(MediaType.APPLICATION_JSON).body(reportJson);
 	}
+
+	/**
+	 * This REST method generates a JSON representation of the shortest attack
+     * path for the given model and target URIs
+	 *
+	 * @param modelId the String representation of the model object to seacrh
+	 * @param riskMode string indicating the prefered risk calculation mode
+	 * @param allPaths flag indicating whether to calculate all paths
+	 * @param normalOperations flag indicationg whether to include normal operations
+	 * @param targetURIs list of target misbehaviour sets
+	 * @return A JSON report containing the attack tree
+     * @throws MisbehaviourSetInvalidException if an invalid target URIs set is provided
+     * @throws InternalServerErrorException   if an error occurs during report generation
+	 */
+	@RequestMapping(value = "/models/{modelId}/threatgraph", method = RequestMethod.GET)
+	public ResponseEntity<TreeJsonDoc> calculateThreatGraph(
+            @PathVariable String modelId,
+            @RequestParam(defaultValue = "FUTURE") String riskMode,
+            @RequestParam(defaultValue = "false") boolean allPaths,
+            @RequestParam(defaultValue = "false") boolean normalOperations,
+            @RequestParam List<String> targetURIs) {
+
+        logger.info("Calculating threat graph for model {}", modelId);
+        logger.info(" with target URIs: {}, all-paths: {}, normal-operations: {} riskMode: {}",
+                targetURIs, allPaths, normalOperations, riskMode);
+
+		try {
+            RiskCalculationMode.valueOf(riskMode);
+		} catch (IllegalArgumentException e) {
+			throw new BadRiskModeException(riskMode);
+		}
+
+        final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
+
+        AStoreWrapper store = storeModelManager.getStore();
+
+        try {
+            JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
+                    model.getModelStack(), false);
+
+            querierDB.init();
+
+            logger.info("Calculating attack tree");
+
+            AttackPathAlgorithm apa = new AttackPathAlgorithm(querierDB);
+
+            if (!apa.checkTargetUris(targetURIs)) {
+                logger.error("Invalid target URIs set");
+                throw new MisbehaviourSetInvalidException("Invalid misbehaviour set");
+            }
+
+            if (!apa.checkRiskCalculationMode(riskMode)) {
+                throw new RiskModeMismatchException();
+            }
+
+            TreeJsonDoc treeDoc = apa.calculateAttackTreeDoc(targetURIs, riskMode, allPaths, normalOperations);
+
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(treeDoc);
+
+        } catch (MisbehaviourSetInvalidException e) {
+            logger.error("Threat graph calculation failed due to invalid misbehaviour set", e);
+            throw e;
+        } catch (BadRequestErrorException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error("Threat path failed due to an error", e);
+            throw new InternalServerErrorException(
+                    "Threat graph calculation failed. Please contact support for further assistance.");
+        }
+    }
+
+    /*
+	 * This REST method generates a recommendation report, as an asynchronous call.
+	 * Results may be downloaded once this task has completed.
+	 *
+	 * @param modelId the String representation of the model object to seacrh
+	 * @param riskMode optional string indicating the prefered risk calculation mode (defaults to CURRENT)
+	 * @param localSearch optional flag indicating whether to use local search (defaults to true)
+	 * @param acceptableRiskLevel string indicating the acceptable risk level using domain model URI
+	 * @param targetURIs optional list of target misbehaviour sets
+	 * @return ACCEPTED status and jobId for the background task
+     * @throws InternalServerErrorException if an error occurs during report generation
+	 */
+	@GetMapping(value = "/models/{modelId}/recommendations")
+    public ResponseEntity<JobResponseDTO> calculateRecommendations(
+            @PathVariable String modelId,
+            @RequestParam(defaultValue = "CURRENT") String riskMode,
+            @RequestParam(defaultValue = "true") boolean localSearch,
+            @RequestParam String acceptableRiskLevel,
+            @RequestParam (required = false) List<String> targetURIs) {
+
+        // Check if targetURIs is null or empty and assign an empty list if it is
+        if (targetURIs == null) {
+            targetURIs = new ArrayList<>();
+        }
+
+        final List<String> finalTargetURIs = targetURIs;
+
+        logger.info("Calculating recommendations for model {}", modelId);
+		riskMode = riskMode.replaceAll("[\n\r]", "_");
+        logger.info(" riskMode: {}",riskMode);
+
+        RiskCalculationMode rcMode;
+
+		try {
+            rcMode = RiskCalculationMode.valueOf(riskMode);
+		} catch (IllegalArgumentException e) {
+			throw new BadRiskModeException(riskMode);
+		}
+
+        final String rm = riskMode;
+
+		final Model model;
+		Progress progress;
+
+		synchronized(this) {
+			model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
+            String mId = model.getId();
+
+			if (model.isValidating()) {
+				warnIsValidating(mId, modelId);
+				return new ResponseEntity<>(HttpStatus.ACCEPTED);
+			}
+
+			if (model.isCalculatingRisks()) {
+				warnIsCalculatingRisks(mId, modelId);
+				return new ResponseEntity<>(HttpStatus.ACCEPTED);
+			}
+
+			progress = modelObjectsHelper.getTaskProgressOfModel(RECOMMENDATIONS, model);
+			progress.updateProgress(0d, RECOMMENDATIONS + " " + STARTING);
+			model.markAsCalculatingRisks(rcMode, false);
+		} //synchronized block
+
+		AStoreWrapper store = storeModelManager.getStore();
+
+        logger.info("Creating async job for {}", modelId);
+        String jobId = UUID.randomUUID().toString();
+        logger.info("Submitting async job with id: {}", jobId);
+
+        ScheduledFuture<?> future = Executors.newScheduledThreadPool(1).schedule(() -> {
+            boolean success = false;
+
+            try {
+                JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
+                        model.getModelStack(), true);
+
+                querierDB.initForRiskCalculation();
+
+                logger.info("Calculating recommendations");
+
+                AttackPathDataset apd = new AttackPathDataset(querierDB);
+
+                // validate targetURIs (if set)
+				if (!apd.checkMisbehaviourList(finalTargetURIs)) {
+                    logger.error("Invalid target URIs set");
+                    throw new MisbehaviourSetInvalidException("Invalid misbehaviour set");
+                }
+
+                // validate acceptable risk level
+                if (!apd.checkRiskLevelKey(acceptableRiskLevel)) {
+                    logger.error("Invalid acceptableRiskLevel: {}", acceptableRiskLevel);
+                    throw new MisbehaviourSetInvalidException("Invalid acceptableRiskLevel value");
+                }
+
+                RecommendationsAlgorithmConfig recaConfig = new RecommendationsAlgorithmConfig(querierDB, model.getId(), rm, localSearch, acceptableRiskLevel, finalTargetURIs);
+                recommendationsService.startRecommendationTask(jobId, recaConfig, progress);
+
+                success = true;
+            } catch (BadRequestErrorException e) {
+                throw e;
+            } catch (Exception e) {
+                logger.error("Recommendations failed due to an error", e);
+                throw new InternalServerErrorException(
+                        "Finding recommendations failed. Please contact support for further assistance.");
+            } finally {
+                //always reset the flags even if the risk calculation crashes
+                model.finishedCalculatingRisks(success, rcMode, false);
+                progress.updateProgress(1.0, "Recommendations complete");
+            }
+			return true;
+		}, 0, TimeUnit.SECONDS);
+
+		modelObjectsHelper.registerTaskExecution(model.getId(), future);
+
+        // Build the Location URI for the job status
+        URI locationUri = URI.create("/models/" + modelId + "/recommendations/status/" + jobId);
+
+        // Return 202 Accepted with a Location header
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(locationUri);
+
+        JobResponseDTO response = new JobResponseDTO(jobId, "CREATED");
+
+        return ResponseEntity.accepted().headers(headers).body(response);
+    }
+
+    @PostMapping("/models/{modelId}/recommendations/{jobId}/cancel")
+    public ResponseEntity<RecommendationJobState> cancelRecJob(
+            @PathVariable String modelId, @PathVariable String jobId) {
+
+        logger.info("Got request to cancel recommendation task for model: {}, jobId: {}", modelId, jobId);
+
+		synchronized(this) {
+			final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.WRITE);
+			Progress progress = modelObjectsHelper.getTaskProgressOfModel(RECOMMENDATIONS, model);
+			progress.setMessage("Cancelling");
+			recommendationsService.updateRecommendationJobState(jobId, RecommendationJobState.ABORTED, "job cancelled");
+		}
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @GetMapping("/models/{modelId}/recommendations/{jobId}/status")
+    public ResponseEntity<JobResponseDTO> checkRecJobStatus(
+            @PathVariable String modelId, @PathVariable String jobId) {
+
+        logger.info("Got request for jobId {} status", jobId);
+
+        Optional<RecommendationJobState> optionalState = recommendationsService.getRecommendationJobState(jobId);
+        String stateAsString = optionalState.map(state -> state.toString()).orElse("UNKNOWN");
+
+        Optional<String> optionalMessage = recommendationsService.getRecommendationJobMessage(jobId);
+        String message = optionalMessage.map(msg -> msg.toString()).orElse("");
+
+        JobResponseDTO response = new JobResponseDTO(jobId, stateAsString, message);
+
+        return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/models/{modelId}/recommendations/{jobId}/result")
+    public ResponseEntity<RecommendationReportDTO> downloadRecommendationsReport(
+            @PathVariable String modelId, @PathVariable String jobId) {
+
+        logger.debug("Got download request for jobId: {}", jobId);
+
+        return recommendationsService.getRecReport(jobId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
 }

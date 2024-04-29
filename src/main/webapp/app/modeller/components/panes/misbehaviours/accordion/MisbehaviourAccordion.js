@@ -1,8 +1,9 @@
 import React from "react";
 import PropTypes from "prop-types";
-import {OverlayTrigger, Panel, Tooltip} from "react-bootstrap";
+import {OverlayTrigger, Panel, Tooltip, Button, ButtonToolbar} from "react-bootstrap";
 import ThreatsPanel from "../../details/accordion/panels/ThreatsPanel";
 import * as Constants from "../../../../../common/constants.js";
+import {getThreatGraph, getRecommendations} from "../../../../actions/ModellerActions";
 
 class MisbehaviourAccordion extends React.Component {
 
@@ -44,7 +45,7 @@ class MisbehaviourAccordion extends React.Component {
             return (
                 <div>
                     <p>There are no root causes because none of the threats that could directly cause this consqeuence have high enough likelihood.</p>
-                    {(this.props.twas && this.props.twas.assertedTWLevel.label !== "Safe") && 
+                    {(this.props.twas && this.props.twas.assertedTWLevel.label !== "Safe") &&
                         <p>However, threats may still be caused by low {this.props.renderTwasLink(this.props.twas)} at {this.props.renderAssetLink(this.props.asset)}, based on its assumed TW level.</p>
                     }
                 </div>
@@ -57,7 +58,7 @@ class MisbehaviourAccordion extends React.Component {
         let misbLabel = misbehaviour.misbehaviourLabel;
         return <p>
             Any secondary threats listed below are caused directly by {misbLabel} at {this.props.renderAssetLink(this.props.asset)}. 
-            {this.props.twas ? 
+            {this.props.twas ?
                 <span> Any primary threats are caused by low {this.props.renderTwasLink(this.props.twas)} at {this.props.renderAssetLink(this.props.asset)}, based on its calculated trustworthiness level which 
             may be reduced below the assumed trustworthiness level by {misbLabel} at {this.props.renderAssetLink(this.props.asset)}.</span> : null}
         </p>
@@ -81,6 +82,34 @@ class MisbehaviourAccordion extends React.Component {
         let allCausesIcon = <span style={{float:"right"}}>∣<i className="fa fa-arrow-right"/><i className="fa fa-arrow-right"/> <i className="fa fa-crosshairs"/></span>;
         let directCausesIcon = <span style={{float:"right"}}><i className="fa fa-arrow-right"/> <i className="fa fa-crosshairs"/></span>;
         let directlyCausesIcon = <span style={{float:"right"}}><i className="fa fa-crosshairs"/> <i className="fa fa-arrow-right"/></span>;
+
+        // populate attack path threats
+        let attackPathThreats = this.props.attackPaths[this.props.selectedMisbehaviour.misbehaviour.uri] ? 
+            this.props.attackPaths[this.props.selectedMisbehaviour.misbehaviour.uri].map((threatUriAndDist) => {
+                let threat = this.props.model.threats.find((threat) => threat["uri"] === threatUriAndDist[0]);
+                threat.distance = threatUriAndDist[1];
+                return threat;
+            }) : [];
+
+        let loadingAttackPath = this.props.selectedMisbehaviour.loadingAttackPath;
+
+        const handleThreatGraphButtonClick = () => {
+            this.props.dispatch(getThreatGraph(
+                this.props.model.id,
+                this.props.model.riskCalculationMode,
+                this.props.selectedMisbehaviour.misbehaviour.uri));
+        };
+
+        let acceptableRiskLevel = Constants.ACCEPTABLE_RISK_LEVEL;
+
+        const handleRecommendationsButtonClick = () => {
+            this.props.dispatch(getRecommendations(
+                this.props.model.id,
+                this.props.model.riskCalculationMode,
+                acceptableRiskLevel,
+                this.props.selectedMisbehaviour.misbehaviour.uri,
+                false));
+        };
 
         return (
             <div className="panel-group accordion">
@@ -164,6 +193,79 @@ class MisbehaviourAccordion extends React.Component {
                                               threatFiltersActive={this.props.threatFiltersActive}
                                               loading={this.props.loading}/>
                             }
+                        </Panel.Body>
+                    </Panel.Collapse>
+                </Panel>
+                <Panel bsStyle="primary" defaultExpanded>
+                    <Panel.Heading>
+                        <Panel.Title toggle>
+                            {this.renderHeader("Attack path threats", null, "Threats identified in the attack path of this consequence.", "attack-path-threats")}
+                        </Panel.Title>
+                    </Panel.Heading>
+                    <Panel.Collapse>
+                        <Panel.Body>
+                            <ButtonToolbar>
+                                <OverlayTrigger
+                                    delayShow={Constants.TOOLTIP_DELAY}
+                                    placement="right"
+                                    trigger={["hover"]}
+                                    rootClose
+                                    overlay={
+                                        <Tooltip id="tooltip-threat-graph-id"
+                                            className="tooltip-overlay"
+                                        >
+                                        {this.props.model.riskLevelsValid ? "Calculate attack path" : "To use this, first run the risk calculation"}
+                                        </Tooltip>
+                                    }
+                                >
+                                    <Button
+                                        className="btn btn-primary btn-xs"
+                                        disabled={
+                                            attackPathThreats.length > 0 ||
+                                            !this.props.model.riskLevelsValid
+                                        }
+                                        onClick={handleThreatGraphButtonClick}
+                                        >
+                                        Get Attack Path
+                                    </Button>
+                                </OverlayTrigger>
+                                <OverlayTrigger
+                                    delayShow={Constants.TOOLTIP_DELAY}
+                                    placement="right"
+                                    trigger={["hover"]}
+                                    rootClose
+                                    overlay={
+                                        <Tooltip id="tooltip-recommendations-id"
+                                            className="tooltip-overlay"
+                                        >
+                                        {this.props.model.riskLevelsValid ? "Calculate recommendations" : "To use this, first run the risk calculation"}
+                                        </Tooltip>
+                                    }
+                                >
+                                    <Button
+                                        className="btn btn-primary btn-xs"
+                                        disabled={
+                                            !this.props.model.riskLevelsValid
+                                        }
+                                        onClick={handleRecommendationsButtonClick}
+                                        >
+                                        Get Recommendations
+                                    </Button>
+                                </OverlayTrigger>
+                                {loadingAttackPath ? <i className="fa fa-spinner fa-pulse fa-lg fa-fw"/> : null}
+                            </ButtonToolbar>
+                            {!loadingAttackPath && <ThreatsPanel dispatch={this.props.dispatch}
+                                          name={"attack-path-threats"}
+                                          context={this.props.selectedMisbehaviour.misbehaviour.uri}
+                                          model={this.props.model}
+                                          threats={attackPathThreats}
+                                          selectedAsset={null}
+                                          selectedThreat={null}
+                                          displayRootThreats={false}
+                                          hoverThreat={this.props.hoverThreat}
+                                          getDirectThreats={null}
+                                          threatFiltersActive={null}
+                            />}
                         </Panel.Body>
                     </Panel.Collapse>
                 </Panel>
@@ -315,6 +417,7 @@ class MisbehaviourAccordion extends React.Component {
 MisbehaviourAccordion.propTypes = {
     model: PropTypes.object,
     selectedMisbehaviour: PropTypes.object,
+    attackPaths: PropTypes.object,
     selectedThreat: PropTypes.object,
     twas: PropTypes.object,
     asset: PropTypes.object,

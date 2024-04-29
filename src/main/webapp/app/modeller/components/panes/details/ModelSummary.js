@@ -51,6 +51,7 @@ class ModelSummary extends Component {
         this.renderControlStrategiesPanel = this.renderControlStrategiesPanel.bind(this);
         this.resetControls = this.resetControls.bind(this);
         this.togglePanel = this.togglePanel.bind(this);
+        this.formatRiskCalcMode = this.formatRiskCalcMode.bind(this);
         this.renderHeader = this.renderHeader.bind(this);
         this.renderPossibleModellingErrorsHeader = this.renderPossibleModellingErrorsHeader.bind(this);
         this.renderAssetsHeader = this.renderAssetsHeader.bind(this);
@@ -103,6 +104,11 @@ class ModelSummary extends Component {
         });
     }
 
+    formatRiskCalcMode(mode) {
+        //Capitalise first char, lower case the rest
+        return mode.charAt(0).toUpperCase() + mode.slice(1).toLowerCase();
+    }
+
     render() {
         const pageSize = 15;
         let assets = this.props.model.assets;
@@ -136,6 +142,10 @@ class ModelSummary extends Component {
         let domainVersion = this.props.model["domainVersion"] != null ? this.props.model["domainVersion"] : "-";
         let validatedDomainVersion = this.props.model["validatedDomainVersion"] != null ? this.props.model["validatedDomainVersion"] : "-";
         let description = this.props.model["description"];
+        let riskLevelsValid = this.props.model.valid && this.props.model.riskLevelsValid;
+        let riskCalculationMode = this.props.model.riskCalculationMode ? this.formatRiskCalcMode(this.props.model.riskCalculationMode) : "None";
+        let saved = this.props.model.saved;
+        let riskCalcModeText = riskCalculationMode + (riskLevelsValid ? saved ? " (saved)" : " (unsaved)" : "");
 
         let versionWarningText = "Version does not match current knowledgebase version (" + domainVersion + "). Please revalidate!";
         let versionMismatch = (validatedDomainVersion !== domainVersion);
@@ -199,6 +209,7 @@ class ModelSummary extends Component {
                                     <dt>Number of Assets</dt><dd>{this.props.model.assets.length}</dd>
                                     <dt>Number of Relations</dt><dd>{this.props.model.relations.length}</dd>
                                     <dt>Number of Threats</dt><dd>{this.props.model.threats.length}</dd>
+                                    <dt>Risk levels calculated</dt><dd>{riskCalcModeText}</dd>
                                 </dl>
                                 <ButtonToolbar>
                                     <Button disabled={!this.props.authz.userEdit} bsClass="btn btn-primary btn-xs"
@@ -211,8 +222,9 @@ class ModelSummary extends Component {
                                         title="Open Report"
                                     >
                                         <MenuItem onClick={() => this.openReport("technicalReport")}>Technical Report</MenuItem>
-                                        <MenuItem divider />
-                                        <MenuItem onClick={() => this.openReport("riskTreatmentPlan")}>Risk Treatment Plan</MenuItem>
+                                        {/* Risk treatment plan option is currently disabled until it can either be fixed, or replaced by something better */}
+                                        {/* <MenuItem divider />
+                                        <MenuItem onClick={() => this.openReport("riskTreatmentPlan")}>Risk Treatment Plan</MenuItem> */}
                                     </DropdownButton>
                                 </ButtonToolbar>
                             </Panel.Body>
@@ -304,7 +316,7 @@ class ModelSummary extends Component {
                                 <span>
                                     <i className="fa fa-sitemap "/>Consequences and their Impact ({displayedMisbehaviours.length})
                                 </span>
-                                <button onClick={e => openDocumentation(e, "redirect/model-misbehaviours")} className={"doc-help-button"}><i className="fa fa-question"/></button>
+                                <button onClick={e => openDocumentation(e, "redirect/model-consequences-and-impacts")} className={"doc-help-button"}><i className="fa fa-question"/></button>
                             </div>
                         </Panel.Title>
                     </Panel.Heading>
@@ -396,7 +408,7 @@ class ModelSummary extends Component {
         let complianceLabel = "Possible Modelling Errors";        
         let icon = complianceSet.compliant ? "fa fa-check" : "fa fa-warning";
         let tt_text = (nCompThreats > 0) ? nCompliant + " out of " + nCompThreats + " addressed" : "no modelling errors";
-        return this.renderHeader(complianceLabel, icon, nCompliant, nCompThreats, tt_text);
+        return this.renderHeader(complianceLabel, icon, nCompliant, nCompThreats, tt_text, "model-possible-modelling-errors");
     }
 
     renderAssetsHeader(nAssets) {
@@ -418,7 +430,7 @@ class ModelSummary extends Component {
 
     renderControlStrategiesHeader(nCSGs) {
         let tt_text = nCSGs + " control strategies";
-        return this.renderHeader("Control Strategies", "fa fa-shield", -1, nCSGs, tt_text, "model-csgs");
+        return this.renderHeader("Control Strategies", "fa fa-shield", -1, nCSGs, tt_text, "model-control-strategies");
     }
 
     renderThreatsHeader(n1, n2) {

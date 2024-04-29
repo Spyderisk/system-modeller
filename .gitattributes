@@ -7,3 +7,4 @@
 src/main/resources/core.rdf !filter !diff !merge !text
 gradlew eol=lf
 gradlew.bat eol=crlf
+*.sh eol=lf

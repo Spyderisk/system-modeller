@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import com.google.gson.annotations.SerializedName;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -97,6 +98,7 @@ public class ThreatDB extends EntityDB {
 
 	// Properties set during risk calculation
 	@SerializedName("hasPrior")
+    @JsonProperty("likelihood")
 	private String prior;									// Synonym for threat likelihood
 	@SerializedName("hasRisk")
 	private String risk;									// Risk level, calculated from the likleihood and impact of threat effects
@@ -187,10 +189,13 @@ public class ThreatDB extends EntityDB {
 		return currentRisk != null ? currentRisk : true;
 	}
 	public void setCurrentRisk(Boolean value){
-		if(value == null || !value)
+		if(value == null || value) {
+			// If the property doesn't exist, it is equivalent to true
 			this.currentRisk = null;
-		else
+		} else {
+			// So it only needs to be stored if false
 			this.currentRisk = value;
+		}
 	}
 
 	/**
@@ -201,10 +206,13 @@ public class ThreatDB extends EntityDB {
 		return futureRisk != null ? futureRisk : true;
 	}
 	public void setFutureRisk(Boolean value){
-		if(value == null || !value)
-			this.futureRisk = null;
-		else
-			this.futureRisk = value;
+		if(value == null || value) {
+			// If the property doesn't exist, it is equivalent to true
+			this.currentRisk = null;
+		} else {
+			// So it only needs to be stored if false
+			this.currentRisk = value;
+		}
 	}
 	
 }

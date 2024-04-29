@@ -19,9 +19,7 @@
     }
 </script>
 <div id="app"></div>
-<script th:src="${@environment.getProperty('server.servlet.contextPath', T(java.lang.String))} + '/js/lib/jquery-3.4.1.min.js'"></script>
-<script th:src="${@environment.getProperty('server.servlet.contextPath', T(java.lang.String))} + '/js/lib/bootstrap.min.js'"></script>
-<script th:src="${@environment.getProperty('server.servlet.contextPath', T(java.lang.String))} + '/js/lib/jquery-ui.min.js'"></script>
+<script src="/system-modeller/js/lib/jquery-3.5.1.min.js"></script>
 <script th:src="${@environment.getProperty('server.servlet.contextPath', T(java.lang.String))} + '/dist/dashboard.bundle.js'"></script>
 </body>
 </html>

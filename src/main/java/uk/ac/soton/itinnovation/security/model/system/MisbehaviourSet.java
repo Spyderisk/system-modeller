@@ -50,6 +50,8 @@ public class MisbehaviourSet extends SemanticEntity {
 
 	private boolean impactLevelAsserted; //is the impact level asserted by the user
 
+	private boolean normalOpEffect; // True if the MS has non-zero likelihood caused by normal operational threats and their secondary effects
+
 	private final Set<String> directCauses;
 
 	private final Set<String> indirectCauses;
@@ -178,6 +180,14 @@ public class MisbehaviourSet extends SemanticEntity {
 
 	public void setImpactLevelAsserted(boolean impactLevelAsserted) {
 		this.impactLevelAsserted = impactLevelAsserted;
+	}
+
+	public boolean isNormalOpEffect() {
+		return normalOpEffect;
+	}
+
+	public void setNormalOpEffect(boolean normalOpEffect) {
+		this.normalOpEffect = normalOpEffect;
 	}
 
 	public Set<String> getDirectCauses() {

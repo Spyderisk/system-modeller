@@ -29,7 +29,6 @@ import java.util.Map;
 import io.restassured.RestAssured;
 import io.restassured.config.RedirectConfig;
 import io.restassured.filter.session.SessionFilter;
-import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.junit.After;
@@ -41,7 +40,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.TestPropertySource;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertTrue;
 
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
@@ -50,7 +48,12 @@ import uk.ac.soton.itinnovation.security.systemmodeller.semantics.StoreModelMana
 /**
  * Represents common setup for the REST controller tests.
  */
-@TestPropertySource(properties = {"spring.data.mongodb.database=${test.spring.data.mongodb.database}", "reset.on.start=false"})
+@TestPropertySource(properties = {"spring.data.mongodb.database=${test.spring.data.mongodb.database}",
+                                    "reset.on.start=false",
+                                    "knowledgebases.source.folder=/code/knowledgebases-test",
+                                    "knowledgebases.install.folder=/opt/spyderisk/knowledgebases-test",
+                                    "check.installed.knowledgebases=false"
+})
 public abstract class CommonTestSetup {
 
     protected final Logger logger = LoggerFactory.getLogger(CommonTestSetup.class);

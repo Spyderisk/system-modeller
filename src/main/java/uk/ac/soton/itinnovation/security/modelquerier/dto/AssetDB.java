@@ -38,6 +38,8 @@ import lombok.ToString;
 @ToString(callSuper=true)
 public class AssetDB extends EntityDB {
 	public AssetDB() {
+		minCardinality = 0;
+		maxCardinality = 0;
 	}
 
 	/*
@@ -55,6 +57,8 @@ public class AssetDB extends EntityDB {
 	protected String label;
 	@SerializedName("rdfs#comment")
 	protected String description;
+
+	protected Boolean asserted; // flag to indicate if asset is asserted or inferred (should not be persisted as triple)
 	
 	// Cardinality represented by min and max values (with -1 meaning 'many'), to be deprecated
 	private Integer minCardinality;
@@ -63,4 +67,11 @@ public class AssetDB extends EntityDB {
 	// Cardinality represented by a reference to a level in the new PopulationLevel scale
 	private String population;
 
+	public boolean getAsserted() {
+		return true;
+	}
+
+	public void setAsserted(Boolean value) {
+		asserted = null; //ensures that value is not persisted
+	}
 }

@@ -7,7 +7,7 @@ import {
 } from "../../../actions/ModellerActions";
 import {bringToFrontWindow} from "../../../actions/ViewActions";
 
-export default function renderControlStrategy(csgName, controlStrategy, csgKey, threat, state, props, ths, context) {
+export function renderControlStrategy(csgName, controlStrategy, csgKey, threat, state, props, ths, context) {
     const csgDescription = controlStrategy.description ? controlStrategy.description : csgName;
     let blockingEffect = controlStrategy.blockingEffect;
     let controlStrategyControlSetUris = controlStrategy.mandatoryControlSets.concat(controlStrategy.optionalControlSets);
@@ -53,125 +53,16 @@ export default function renderControlStrategy(csgName, controlStrategy, csgKey, 
                 <p>{csgDescription}</p>
 
                 {controlStrategyControlSets.sort((a, b) => a["label"].localeCompare(b["label"])).map((control, index) => {
-                    let spinnerActive = state.updatingControlSets[control.uri] === true;
-                    let optionalControl = controlStrategy.optionalControlSets.includes(control.uri);
-                    let errorFlag = control["error"];
-                    let errorMsg = "Request failed. Please try again";
-
-                    let errorFlagOverlay = "";
-                    if (errorFlag) {
-                        let errorFlagOverlayProps = {
-                            delayShow: Constants.TOOLTIP_DELAY, placement: "right",
-                            overlay: <Tooltip id={"control-set-" + control.id + "-error-tooltip"}
-                                              className={"tooltip-overlay"}>
-                                {errorMsg}
-                            </Tooltip>
-                        };
-                        errorFlagOverlay = <OverlayTrigger {...errorFlagOverlayProps}>
-                            <div>
-                                &nbsp;
-                                <span>
-                                    {/* show icon according to error / busy etc */}
-                                    <i className="fa fa-exclamation-triangle" style={{color : "#bf0500"}}/>
-                                </span>
-                            </div>
-                        </OverlayTrigger>;
-                    } else if (spinnerActive) {
-                        let errorFlagOverlayProps = {
-                            delayShow: Constants.TOOLTIP_DELAY, placement: "right",
-                            overlay: <Tooltip id={"control-set-" + control.id + "-error-tooltip"}
-                                              className={"tooltip-overlay"}>
-                                <span>
-                                    <i className="fa fa-spinner fa-pulse fa-lg fa-fw"/>Processing
-                                </span>
-                            </Tooltip>
-                        };
-                        errorFlagOverlay = <OverlayTrigger {...errorFlagOverlayProps}>
-                            <div>
-                                &nbsp;
-                                <span><i className="fa fa-spinner fa-pulse fa-lg fa-fw"/></span>
-                            </div>
-                        </OverlayTrigger>;
-                    }
+                    control.optional = controlStrategy.optionalControlSets.includes(control.uri);
 
                     let threatensAsset = false;
                     if (!threat || (threat && (_.find(assets, ['uri', threat.threatensAssets]))) ) {
                         threatensAsset = true;
                     }
 
-                    let cursor = (!threatensAsset || !control["assertable"]) ? 'not-allowed' : 'pointer';
+                    let assetName = filterNodeName(control["assetId"], control["assetUri"], threat, assets);
 
-                    if (props.authz.userEdit == false) {
-                        cursor = "default"
-                    }
-                    
-                    return (
-                        <div key={index} className="row detail-info control-info">
-                            <Well
-                                bsClass={"well well-sm control" + (optionalControl ?  " optional" : "")}
-                                disabled={!threatensAsset || !control["assertable"]}
-                            >
-                                <span 
-                                    className={"inline-flex inverted " + (props.authz.userEdit ? "traffic-lights" : "traffic-lights-view-only")} 
-                                    style={{cursor: cursor}}
-                                    disabled={!threatensAsset || !control["assertable"]}
-                                >
-                                    <OverlayTrigger key={"red" + index} delayShow={Constants.CTRL_TOOLTIP_DELAY} placement="top" overlay={
-                                        <Tooltip id={"ctrl-red-tooltip-" + index}
-                                                 className={"tooltip-overlay"}>
-                                            {"Control not implemented"}
-                                        </Tooltip>
-                                    }>
-                                        <span className="fa-stack" onClick={() => props.authz.userEdit ? toggleControlProposedState(control, controlStrategy, ths, false) : undefined}>
-                                            <i className="bg fa fa-circle fa-stack-1x"/>
-                                            <i className={!control.proposed ? "red fa fa-stop-circle fa-stack-1x" : "red fa fa-circle fa-stack-1x"}/>
-                                        </span>
-                                    </OverlayTrigger>
-                                    <OverlayTrigger key={"amber" + index} delayShow={Constants.CTRL_TOOLTIP_DELAY} placement="top" overlay={
-                                        <Tooltip id={"ctrl-amber-tooltip-" + index}
-                                                 className={"tooltip-overlay"}>
-                                            {"Control to be implemented"}
-                                        </Tooltip>
-                                    }>
-                                        <span className="fa-stack" onClick={() => props.authz.userEdit ? toggleControlProposedState(control, controlStrategy, ths, true, true) : undefined}>
-                                            <i className="bg fa fa-circle fa-stack-1x"/>
-                                            <i className={control.proposed && control.workInProgress ?  "amber fa fa-stop-circle fa-stack-1x" : "amber fa fa-circle fa-stack-1x"}/>
-                                        </span>
-                                    </OverlayTrigger>
-                                    <OverlayTrigger key={"green" + index} delayShow={Constants.CTRL_TOOLTIP_DELAY} placement="top" overlay={
-                                        <Tooltip id={"ctrl-green-tooltip-" + index}
-                                                 className={"tooltip-overlay"}>
-                                            {"Control is implemented"}
-                                        </Tooltip>
-                                    }>
-                                        <span className="fa-stack" onClick={() => props.authz.userEdit ? toggleControlProposedState(control, controlStrategy, ths, true) : undefined}>
-                                            <i className="bg fa fa-circle fa-stack-1x"/>
-                                            <i className={control.proposed && !control.workInProgress ? "green fa fa-stop-circle fa-stack-1x" : "green fa fa-circle fa-stack-1x"}/>
-                                        </span>
-                                    </OverlayTrigger>
-                                </span>
-                                <OverlayTrigger key={index} delayShow={Constants.TOOLTIP_DELAY}
-                                                placement="left" overlay={
-                                    <Tooltip id={"ctrl-strat-desc-tooltip-" + index}
-                                             className={"tooltip-overlay"}>
-                                        {control.description !== null
-                                            ? control["description"]
-                                            : "No description available"}
-                                    </Tooltip>
-                                }>
-                                    <span className="control-description">
-                                        {control["label"]}
-                                        {' at "'}
-                                        {filterNodeName(control["assetId"], control["assetUri"], threat, assets)}
-                                        {'" '}
-                                        <i className="fa fa-info-circle"></i>
-                                        {optionalControl ? ' (optional) ' : ''}
-                                    </span>
-                                </OverlayTrigger>
-                            </Well>
-                        {errorFlagOverlay}
-                        </div>
-                    )
+                    return renderControlSet(control, index, controlStrategy, threatensAsset, assetName, props, state, ths);
                 })}
 
                 {(context === "csg-explorer") && <h5>Related Threats</h5>}
@@ -195,6 +86,123 @@ export default function renderControlStrategy(csgName, controlStrategy, csgKey, 
     )
 }
 
+export function renderControlSet(control, index, controlStrategy, threatensAsset, assetName, props, state, ths) {
+    let spinnerActive = state.updatingControlSets[control.uri] === true;
+    let optionalControl = control.optional;
+    let errorFlag = control["error"];
+    let errorMsg = "Request failed. Please try again";
+
+    let errorFlagOverlay = "";
+    if (errorFlag) {
+        let errorFlagOverlayProps = {
+            delayShow: Constants.TOOLTIP_DELAY, placement: "right",
+            overlay: <Tooltip id={"control-set-" + control.id + "-error-tooltip"}
+                              className={"tooltip-overlay"}>
+                {errorMsg}
+            </Tooltip>
+        };
+        errorFlagOverlay = <OverlayTrigger {...errorFlagOverlayProps}>
+            <div>
+                &nbsp;
+                <span>
+                    {/* show icon according to error / busy etc */}
+                    <i className="fa fa-exclamation-triangle" style={{color : "#bf0500"}}/>
+                </span>
+            </div>
+        </OverlayTrigger>;
+    } else if (spinnerActive) {
+        let errorFlagOverlayProps = {
+            delayShow: Constants.TOOLTIP_DELAY, placement: "right",
+            overlay: <Tooltip id={"control-set-" + control.id + "-error-tooltip"}
+                              className={"tooltip-overlay"}>
+                <span>
+                    <i className="fa fa-spinner fa-pulse fa-lg fa-fw"/>Processing
+                </span>
+            </Tooltip>
+        };
+        errorFlagOverlay = <OverlayTrigger {...errorFlagOverlayProps}>
+            <div>
+                &nbsp;
+                <span><i className="fa fa-spinner fa-pulse fa-lg fa-fw"/></span>
+            </div>
+        </OverlayTrigger>;
+    }
+
+    let cursor = (!threatensAsset || !control["assertable"]) ? 'not-allowed' : 'pointer';
+
+    if (props.authz.userEdit == false) {
+        cursor = "default"
+    }
+    
+    return (
+        <div key={index} className="row detail-info control-info">
+            <Well
+                bsClass={"well well-sm control" + (optionalControl ?  " optional" : "")}
+                disabled={!threatensAsset || !control["assertable"]}
+            >
+                <span 
+                    className={"inline-flex inverted " + (props.authz.userEdit ? "traffic-lights" : "traffic-lights-view-only")} 
+                    style={{cursor: cursor}}
+                    disabled={!threatensAsset || !control["assertable"]}
+                >
+                    <OverlayTrigger key={"red" + index} delayShow={Constants.CTRL_TOOLTIP_DELAY} placement="top" overlay={
+                        <Tooltip id={"ctrl-red-tooltip-" + index}
+                                 className={"tooltip-overlay"}>
+                            {"Control not implemented"}
+                        </Tooltip>
+                    }>
+                        <span className="fa-stack" onClick={() => props.authz.userEdit ? toggleControlProposedState(control, controlStrategy, ths, false) : undefined}>
+                            <i className="bg fa fa-circle fa-stack-1x"/>
+                            <i className={!control.proposed ? "red fa fa-stop-circle fa-stack-1x" : "red fa fa-circle fa-stack-1x"}/>
+                        </span>
+                    </OverlayTrigger>
+                    <OverlayTrigger key={"amber" + index} delayShow={Constants.CTRL_TOOLTIP_DELAY} placement="top" overlay={
+                        <Tooltip id={"ctrl-amber-tooltip-" + index}
+                                 className={"tooltip-overlay"}>
+                            {"Control to be implemented"}
+                        </Tooltip>
+                    }>
+                        <span className="fa-stack" onClick={() => props.authz.userEdit ? toggleControlProposedState(control, controlStrategy, ths, true, true) : undefined}>
+                            <i className="bg fa fa-circle fa-stack-1x"/>
+                            <i className={control.proposed && control.workInProgress ?  "amber fa fa-stop-circle fa-stack-1x" : "amber fa fa-circle fa-stack-1x"}/>
+                        </span>
+                    </OverlayTrigger>
+                    <OverlayTrigger key={"green" + index} delayShow={Constants.CTRL_TOOLTIP_DELAY} placement="top" overlay={
+                        <Tooltip id={"ctrl-green-tooltip-" + index}
+                                 className={"tooltip-overlay"}>
+                            {"Control is implemented"}
+                        </Tooltip>
+                    }>
+                        <span className="fa-stack" onClick={() => props.authz.userEdit ? toggleControlProposedState(control, controlStrategy, ths, true) : undefined}>
+                            <i className="bg fa fa-circle fa-stack-1x"/>
+                            <i className={control.proposed && !control.workInProgress ? "green fa fa-stop-circle fa-stack-1x" : "green fa fa-circle fa-stack-1x"}/>
+                        </span>
+                    </OverlayTrigger>
+                </span>
+                <OverlayTrigger key={index} delayShow={Constants.TOOLTIP_DELAY}
+                                placement="left" overlay={
+                    <Tooltip id={"ctrl-strat-desc-tooltip-" + index}
+                             className={"tooltip-overlay"}>
+                        {control.description !== null
+                            ? control["description"]
+                            : "No description available"}
+                    </Tooltip>
+                }>
+                    <span className="control-description">
+                        {control["label"]}
+                        {' at "'}
+                        {assetName}
+                        {'" '}
+                        <i className="fa fa-info-circle"></i>
+                        {optionalControl ? ' (optional) ' : ''}
+                    </span>
+                </OverlayTrigger>
+            </Well>
+        {errorFlagOverlay}
+        </div>
+    )
+}
+
 function openCsgExplorer(csgs, context, props) {
     if (csgs.length > 0) {
         props.dispatch(openControlStrategyExplorer(csgs, context));
@@ -210,7 +218,7 @@ function toggleControlProposedState(control, controlStrategy, ths, proposed = tr
             ...control,
             proposed: proposed,
             workInProgress: workInProgress,
-            controlStrategy: controlStrategy["id"]
+            controlStrategy: controlStrategy ? controlStrategy["id"] : null
         },
     });
 

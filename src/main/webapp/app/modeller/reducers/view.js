@@ -1,11 +1,12 @@
 import * as instr from "../modellerConstants";
 
-var _ = require('lodash');
+let _ = require('lodash');
 
 let defaultState = {
     windowOrder: [
         { 'name': 'controlExplorer', order: 1065 },
         { 'name': 'controlStrategyExplorer', order: 1065 },
+        { 'name': 'recommendationsExplorer', order: 1065 },
         { 'name': 'misbehaviourExplorer', order: 1065 },
         { 'name': 'complianceExplorer', order: 1065 },
         { 'name': 'reportDialog', order: 1065 },
@@ -17,14 +18,13 @@ let defaultState = {
     'misbehaviourExplorer': 1065,
     'controlExplorer': 1065,
     'controlStrategyExplorer': 1065,
+    'recommendationsExplorer': 1065,
 };
 
-var highestWindowOrder = 1074;
-var hiddenWindowOrder = 1065;
-
+let highestWindowOrder = 1074;
+let hiddenWindowOrder = 1065;
 
 export default function view(state=defaultState, action) {
-    //console.log("view:", state, action);
     if (action.type === instr.OPEN_WINDOW) {
         let newWindowOrder = [];
         let newWindowObjects = {};

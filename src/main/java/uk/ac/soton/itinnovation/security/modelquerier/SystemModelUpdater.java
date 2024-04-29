@@ -42,6 +42,7 @@ import uk.ac.soton.itinnovation.security.model.system.Model;
 import uk.ac.soton.itinnovation.security.model.system.Relation;
 import uk.ac.soton.itinnovation.security.model.system.TrustworthinessAttributeSet;
 import uk.ac.soton.itinnovation.security.modelquerier.util.ModelStack;
+import uk.ac.soton.itinnovation.security.modelquerier.util.QuerierUtils;
 import uk.ac.soton.itinnovation.security.semanticstore.AStoreWrapper;
 import uk.ac.soton.itinnovation.security.semanticstore.util.SparqlHelper;
 
@@ -392,6 +393,11 @@ public class SystemModelUpdater {
 		//depending on whether the asset is asserted or inferred it is stored in a different graph
 		String assetGraph = asset.isAsserted()?model.getGraph("system"):model.getGraph("system-inf");
 
+		//Ensure that population is not null
+		if (asset.getPopulation() == null) {
+			throw new RuntimeException("Population is null");
+		}
+
 		String sparql = "DELETE {\n" +
 		//delete from both possible graphs just in case the asserted property has changed (although it shouldn't)
 		"	GRAPH <" + model.getGraph("system") + "> {\n" +
@@ -424,8 +430,6 @@ public class SystemModelUpdater {
 		"		?a rdfs:label \"" + SparqlHelper.escapeLiteral(asset.getLabel())+ "\"^^xsd:string .\n" +
 		"		?a rdf:type <" + SparqlHelper.escapeURI(asset.getType()) + "> .\n" +
 		"		?a core:hasID \"" + asset.getID() + "\" .\n" +
-		//"		?a core:minCardinality \"" + SparqlHelper.escapeLiteral(String.valueOf(asset.getMinCardinality())) + "\"^^xsd:int .\n" + // no longer store cardinality
-		//"		?a core:maxCardinality \"" + SparqlHelper.escapeLiteral(String.valueOf(asset.getMaxCardinality())) + "\"^^xsd:int .\n" + // no longer store cardinality
 		"		?a core:population <" + SparqlHelper.escapeURI(asset.getPopulation()) + "> .\n" +
 		"		?a ?prop1 ?b2 .\n" +
 		"		?c2 ?prop2 ?a .\n" +
@@ -522,8 +526,15 @@ public class SystemModelUpdater {
 		 * be updated by the validator as necessary. This means the client/user should not be able to set
 		 * relationship cardinality at all. Hence those properties are not updated by this query.
 		 */
+
+		String typeUri = relation.getType();
+		String[] uriFrags = typeUri.split("#");
+		String relationType = uriFrags[1];
+
 		String cc = "<" + SparqlHelper.escapeLiteral(model.getNS("system")) +
-				relation.getFromID() + "-" + relation.getLabel() + "-" + relation.getToID() + ">";
+				relation.getFromID() + "-" + relationType + "-" + relation.getToID() + ">";
+		
+		logger.debug("cc = {}", cc);
 
 		String sparql = "INSERT DATA {\n" +
 		"	GRAPH <" + model.getGraph("system") + "> {\n" +
@@ -651,42 +662,6 @@ public class SystemModelUpdater {
 		return controlSets;
 	}
 
-	private Set<String> getExpandedControlSets(Set<String> controlSets) {
-		Set<String> expandedControlSets = new HashSet<>();
-
-		for (String cs : controlSets) {
-			Set<String> expCs = getControlTriplet(cs);
-			expandedControlSets.addAll(expCs);
-		}
-
-		return expandedControlSets;
-	}
-
-	private Set<String> getControlTriplet(String csuri) {
-		String[] uriFrags = csuri.split("#");
-		String uriPrefix = uriFrags[0];
-		String shortUri = uriFrags[1];
-
-		String [] shortUriFrags = shortUri.split("-");
-		String control = shortUriFrags[0] + "-" + shortUriFrags[1];
-		control = control.replace("_Min", "").replace("_Max", "");
-		String assetId = shortUriFrags[2];
-
-		//logger.debug("control: {}", control);
-		//logger.debug("assetId: {}", assetId);
-
-		String csAvg = uriPrefix + "#" + control + "-" + assetId;
-		String csMin = uriPrefix + "#" + control + "_Min" + "-" + assetId;
-		String csMax = uriPrefix + "#" + control + "_Max" + "-" + assetId;
-
-		//logger.debug("csAvg: {}", csAvg);
-		//logger.debug("csMin: {}", csMin);
-		//logger.debug("csMax: {}", csMax);
-
-		Set<String> controlSets = new HashSet<>(Arrays.asList(csAvg, csMin, csMax));
-		return controlSets;
-	}
-
 	/**
 	 * Toggle the proposed status of multiple control sets
 	 *
@@ -703,7 +678,7 @@ public class SystemModelUpdater {
 			throw new IllegalArgumentException("Controls cannot be work in progress but not proposed");
 		}
 
-		Set<String> expandedControlSets = getExpandedControlSets(controlSets);
+		Set<String> expandedControlSets = QuerierUtils.getExpandedControlSets(controlSets);
 
 		for (String cs : expandedControlSets) {
 			logger.debug("control set {}, proposed: {}", cs, proposed);
