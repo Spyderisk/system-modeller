@@ -37,6 +37,7 @@ lists the roles within Spyderisk.
 We thank you all for your work and look forward to seeing you around.
 
 * Anna Brown <a.m.brown@soton.ac.uk>
+* Ajay Chakravarthy
 * Stefanie Cox <ssm@binarywood.net>
 * Niall A J. Dickin <najd@it-innovation.soton.ac.uk>
 * Emanuel Dinssa <manny@dinssa.com>  https://dinssa.com
