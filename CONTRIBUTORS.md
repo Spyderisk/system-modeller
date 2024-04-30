@@ -27,10 +27,9 @@ lists the roles within Spyderisk.
 * Panos Melas <pm@it-innovation.soton.ac.uk>
 * Stephen C. Phillips <scp@it-innovation.soton.ac.uk>
 * Samuel Senior <s.senior@soton.ac.uk>
-* Dan Shearer <dan@shearer.org> https://cv.shearer.org/
+* Dan Shearer <dan.shearer@soton.ac.uk>, <dan@shearer.org> 
 * Mike Surridge <ms@it-innovation.soton.ac.uk>
 * Steve Taylor <sjt1@soton.ac.uk>
-* Josh Tucker <jt6g20@soton.ac.uk>
 
 # Spyderisk alumni
 
@@ -50,5 +49,6 @@ We thank you all for your work and look forward to seeing you around.
 * Lee Mason <lm18@it-innovation.soton.ac.uk>
 * Pete Maynard <pete@port22.co.uk>  https://github.com/PMaynard
 * Ardavan Shafiee <bm.bigbang@gmail.com>  https://github.com/bmbigbang
+* Josh Tucker <jt6g20@soton.ac.uk>
 * Toby Wilkinson <stw@it-innovation.soton.ac.uk>
 * Josh Wright <jw18@it-innovation.soton.ac.uk>
