@@ -45,3 +45,4 @@ We thank you all for your work and look forward to seeing you around.
 * Pete Maynard <pete@port22.co.uk>  https://github.com/PMaynard
 * Ardavan Shafiee <bm.bigbang@gmail.com>  https://github.com/bmbigbang
 * Toby Wilkinson <stw@it-innovation.soton.ac.uk>
+* Dian Kumanov <d.a.kumanov@soton.ac.uk>
