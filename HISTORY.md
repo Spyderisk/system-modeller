@@ -23,11 +23,11 @@ about risk assessment.
 
 It became clear that risk assessment is something that the entire world is
 beginning to take seriously. From legislation regulating the use of AI in
-dangerous situations to drumbeats of doom about the impact of human activity on
-climate change, the common theme is that these involve systems that are
-overwhelmingly complicated for any human mind to understand. The IT Innovation
-Centre realised that it had 15 years of work that could be used to seed a new
-community of automated risk assessment. 
+dangerous situations, to conflicting needs to mitigate climate change,
+these involve systems that are too complicated for any human
+mind to understand. How can we make judgements about relative risk if we cannot
+understand how the systems work? The IT Innovation Centre realised that it had 15 years of
+study that could be used to seed a new community of automated risk assessment. 
 
 In 2023 the Spyderisk open project was founded, with the IT Innovation team
 aiming for involvement and practical applications far beyond Southampton.  All
@@ -107,7 +107,7 @@ Our knowledgebase was starting to become useful, as we said in 2011:
   airport, and the potential for physical or electronic attacks on communication
   assets as well as services that use them.
 
-![Core ontology for airport modelling](./docs/images/serscis-base-ontology.png).
+![Core ontology for airport modelling](./docs/images/serscis-base-ontology.png "Core ontology for airport modelling")
 
 Over time, as we refined our software tools, we began to move towards
 cause-and-effect modelling as opposed to probabilistic modelling.  Spyderisk
