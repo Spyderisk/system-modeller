@@ -9,10 +9,11 @@ them locally means links always work.
 
 ## Attribution and copyright
 
-Some informal attribution is in the names of the PDFs here, and we have made efforts to
-contact authors where relevant. The authors of papers own their own work and where possible
-have additionally contributed these articles under the CC-BY-SA license as described in the
-top-level Spyderisk [LICENSES/](../../LICENSES/README.md) directory.
+Each of these papers have several authors, but only one appears in the filename
+which is a degree of informal attribution.  We have made efforts to contact
+authors where relevant. The authors of papers own their own work and where
+possible have additionally contributed these articles under the CC-BY-SA
+license as described in the top-level Spyderisk [LICENSES/](../../LICENSES/README.md) directory.
 
 | Local copy                                    | Full citation |
 | -------------                                 | ------------- |
