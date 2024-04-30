@@ -36,13 +36,19 @@ lists the roles within Spyderisk.
 
 We thank you all for your work and look forward to seeing you around.
 
+* Maxim Bashevoy <mvb@it-innovation.soton.ac.uk>
+* Rayna Bozhkova <rb@it-innovation.soton.ac.uk>
 * Anna Brown <a.m.brown@soton.ac.uk>
-* Ajay Chakravarthy
+* Ajay Chakravarthy <ajay@it-innovation.soton.ac.uk>
+* Gianluca Correndo <gc@it-innovation.soton.ac.uk>
 * Stefanie Cox <ssm@binarywood.net>
 * Niall A J. Dickin <najd@it-innovation.soton.ac.uk>
-* Emanuel Dinssa <manny@dinssa.com>  https://dinssa.com
-* Lee Mason <leekmason@gmail.com>
+* Manny Dinssa <ed@it-innovation.soton.ac.uk>
+* Vahibav Gohil <vg20@it-innovation.soton.ac.uk>
+* Vadim Krivcov <vk@it-innovation.soton.ac.uk>
+* Dian Kumanov <d.a.kumanov@soton.ac.uk>
+* Lee Mason <lm18@it-innovation.soton.ac.uk>
 * Pete Maynard <pete@port22.co.uk>  https://github.com/PMaynard
 * Ardavan Shafiee <bm.bigbang@gmail.com>  https://github.com/bmbigbang
 * Toby Wilkinson <stw@it-innovation.soton.ac.uk>
-* Dian Kumanov <d.a.kumanov@soton.ac.uk>
+* Josh Wright <jw18@it-innovation.soton.ac.uk>
