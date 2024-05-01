@@ -49,4 +49,4 @@ jobs:
         docker login -u ${{ vars.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_RW_SECRET }}
         docker push ${TAG_DATE}
         docker push ${TAG_LATEST}
-    
+
