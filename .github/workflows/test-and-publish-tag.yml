@@ -23,7 +23,7 @@ jobs:
     #needs: test
     #if: success() && github.event_name != 'pull_request'
     # Check if GITHUB_REF is a tag
-    if: contains(${GITHUB_REF}, 'tags')
+    if: contains(GITHUB_REF, 'tags')
  
     runs-on: ubuntu-22.04
 
