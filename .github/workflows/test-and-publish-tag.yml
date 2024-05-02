@@ -38,7 +38,7 @@ jobs:
     - name: Checkout LFS objects
       run: git lfs checkout
 
-    - name: Build the Docker image
+    - name: Build the Docker image for tag
       # The metadata inside the image will include the final git commit SHA and the time of the final commit.
       # The tag applied to the image will be like spyderisk/system-modeller:<branch-name>-<timestamp>
       # e.g. spyderisk/system-modeller:dev-20230405T1012
@@ -48,18 +48,20 @@ jobs:
         echo "${{github.event_name}}"
         echo "${GITHUB_REF}"
         TAG_ROOT=spyderisk/system-modeller
-        TIMESTAMP=$(git show -s --format=%cI ${GITHUB_SHA})
-        SHORT_TIME=$(echo ${TIMESTAMP} | sed 's/[-:]//g')
+        #TIMESTAMP=$(git show -s --format=%cI ${GITHUB_SHA})
+        #SHORT_TIME=$(echo ${TIMESTAMP} | sed 's/[-:]//g')
         REF_END=$(echo ${GITHUB_REF} | sed 's/.*\///')
-        TAG_DATE=${TAG_ROOT}:${REF_END}-${SHORT_TIME:0:13}
-        TAG_LATEST=${TAG_ROOT}:${REF_END}-latest
-        echo "TAG_DATE=${TAG_DATE}" >> ${GITHUB_ENV}
-        echo "TAG_LATEST=${TAG_LATEST}" >> ${GITHUB_ENV}
+        #TAG_DATE=${TAG_ROOT}:${REF_END}-${SHORT_TIME:0:13}
+        #TAG_LATEST=${TAG_ROOT}:${REF_END}-latest
+        TAG=${TAG_ROOT}:${REF_END}
+        #echo "TAG_DATE=${TAG_DATE}" >> ${GITHUB_ENV}
+        #echo "TAG_LATEST=${TAG_LATEST}" >> ${GITHUB_ENV}
+        echo "TAG=${TAG}" >> ${GITHUB_ENV}
         #docker build --tag ${TAG_DATE} --tag ${TAG_LATEST} --build-arg CI_COMMIT_SHA=${GITHUB_SHA} --build-arg CI_COMMIT_TIMESTAMP=${TIMESTAMP} --file Dockerfile --target ssm-production "."
+        #docker build --tag ${TAG} --build-arg CI_COMMIT_SHA=${GITHUB_SHA} --build-arg CI_COMMIT_TIMESTAMP=${TIMESTAMP} --file Dockerfile --target ssm-production "."
 
     - name: Push Docker image to registry
       run: | 
         echo "docker login -u ${{ vars.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_RW_SECRET }}"
-        echo "docker push ${TAG_DATE}"
-        echo "docker push ${TAG_LATEST}"
+        echo "docker push ${TAG}"
 
