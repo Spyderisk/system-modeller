@@ -34,7 +34,7 @@ jobs:
       # Where the timestamp is the time of the final commit in the build.
       # In addition, the image is tagged with spyderisk/system-modeller:<branch-name>-latest
       run: |
-        echo "github.event_name" github.event_name
+        echo ${{ "github.event_name" github.event_name }}
         TAG_ROOT=spyderisk/system-modeller
         TIMESTAMP=$(git show -s --format=%cI ${GITHUB_SHA})
         SHORT_TIME=$(echo ${TIMESTAMP} | sed 's/[-:]//g')
