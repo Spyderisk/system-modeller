@@ -45,7 +45,7 @@ jobs:
       # In addition, the image is tagged with spyderisk/system-modeller:<branch-name>-latest
       run: |
         echo "${{github.event_name}}"
-        echo "${{GITHUB_REF}}"
+        echo "${GITHUB_REF}"
         TAG_ROOT=spyderisk/system-modeller
         TIMESTAMP=$(git show -s --format=%cI ${GITHUB_SHA})
         SHORT_TIME=$(echo ${TIMESTAMP} | sed 's/[-:]//g')
