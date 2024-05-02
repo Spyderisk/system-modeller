@@ -9,7 +9,9 @@ permissions:
 jobs:
 
   check-env:
+    runs-on: ubuntu-22.04
     steps:
+    - name: Check env
       run: |
         echo "${{github.event_name}}"
         echo "${{GITHUB_REF}}"
