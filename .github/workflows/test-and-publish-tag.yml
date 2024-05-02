@@ -8,12 +8,20 @@ permissions:
 
 jobs:
 
-  publish:
+  check-env:
+    steps:
+      run: |
+        echo "${{github.event_name}}"
+        echo "${{GITHUB_REF}}"
+
+  publish-tag:
 
     # This job should only run if the test job succeeds
     # Don't run this job if it's a pull request, otherwise we get an image with branch name "merge" for every PR
     #needs: test
     #if: success() && github.event_name != 'pull_request'
+    # Check if GITHUB_REF is a tag
+    if: contains(${GITHUB_REF}, 'tags')
  
     runs-on: ubuntu-22.04
 
@@ -35,6 +43,7 @@ jobs:
       # In addition, the image is tagged with spyderisk/system-modeller:<branch-name>-latest
       run: |
         echo "${{github.event_name}}"
+        echo "${{GITHUB_REF}}"
         TAG_ROOT=spyderisk/system-modeller
         TIMESTAMP=$(git show -s --format=%cI ${GITHUB_SHA})
         SHORT_TIME=$(echo ${TIMESTAMP} | sed 's/[-:]//g')
