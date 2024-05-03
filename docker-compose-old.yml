@@ -1,0 +1,66 @@
+# This file provides the base orchestration.
+# The `docker-compose up` command will read this and automatically overlay the contents of the `docker-compose.override.yml` file.
+
+version: '3.7'
+
+services:
+
+  ssm:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      args:
+        # These are passed as "build arguments" to the Dockerfile by the CI (ARG in there, available only when building)
+        - NEXUS_USER=${NEXUS_USER}
+        - NEXUS_PASS=${NEXUS_PASS}
+    # The "init" config means the container responds to signals and exits cleanly
+    init: true
+    environment:
+      # These env variables override the values in application.properties
+      # https://docs.spring.io/spring-boot/docs/current/reference/html/spring-boot-features.html#boot-features-external-config
+      SPRING_DATA_MONGODB_HOST: mongo
+      KEYCLOAK_CREDENTIALS_SECRET: ${KEYCLOAK_CREDENTIALS_SECRET}
+    volumes:
+      # Persistent named volume for the jena-tdb storage
+      - type: volume
+        source: jena
+        target: /code/jena-tdb
+    depends_on:
+      - mongo
+      - keycloak
+
+  mongo:
+    image: mongo:4.2.5-bionic
+    volumes:
+      - type: volume
+        source: mongo-db
+        target: /data/db
+      - type: volume
+        source: mongo-configdb
+        target: /data/configdb
+
+  keycloak:
+    image: keycloak/keycloak:21.0
+    # WARNING: THIS CONFIGURATION IS INSECURE AND SHOULD ONLY BE USED IN DEVELOPMENT SYSTEMS
+    # Override the normal entrypoint of `/opt/keycloak/bin/kc.sh`.
+    # The `sed` command copies `ssm.template` to `ssm.json` while replacing the string "KEYCLOAK_CREDENTIALS_SECRET" with the value of the environment variable of the same name.
+    # The environment variable is set in the `environment` block below.
+    # The `ssm.template` is mounted from the host using the bind mount set in the `volume` block below.
+    # Then the `kc.sh` command is run with the following arguments:
+    # --import-realm: causes Keycloak to import any JSON files found at /opt/keycloak/data/import (see bind mount below)
+    # --http-relative-path /auth: sets the Keycloak context path to be /auth (this was the default before Keycloak 17)
+    entrypoint: [ "/bin/sh", "-c", "sed -e s/KEYCLOAK_CREDENTIALS_SECRET/$${KEYCLOAK_CREDENTIALS_SECRET}/ /opt/keycloak/data/import/ssm.template > /opt/keycloak/data/import/ssm.json && /opt/keycloak/bin/kc.sh start-dev --import-realm --http-relative-path /auth" ]
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USERNAME}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KEYCLOAK_CREDENTIALS_SECRET: ${KEYCLOAK_CREDENTIALS_SECRET}
+      PROXY_ADDRESS_FORWARDING: '${KEYCLOAK_PROXY_ADDRESS_FORWARDING:-false}'
+    volumes:
+      - type: bind
+        source: ./provisioning/keycloak
+        target: /opt/keycloak/data/import
+
+volumes:
+  jena:
+  mongo-db:
+  mongo-configdb:
