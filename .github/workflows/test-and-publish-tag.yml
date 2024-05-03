@@ -2,6 +2,7 @@ name: Test and publish tag
 
 on:
   release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
