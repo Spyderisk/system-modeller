@@ -1,8 +1,8 @@
 name: Test and publish
 
 on:
-  #push:
-  #  branches: [ "dev", "main" ]
+  push:
+    branches: [ "dev", "main" ]
   pull_request:
     branches: [ "dev", "main" ]
   workflow_dispatch:
@@ -57,8 +57,9 @@ jobs:
 
     # This job should only run if the test job succeeds
     # Don't run this job if it's a pull request, otherwise we get an image with branch name "merge" for every PR
+    # Also check that the github.ref is NOT a tag (this is handled by publish-tag)
     needs: test
-    if: success() && github.event_name != 'pull_request'
+    if: ${{ success() && github.event_name != 'pull_request' && ! startsWith(github.ref, 'refs/tags/') }}
  
     runs-on: ubuntu-22.04
 
