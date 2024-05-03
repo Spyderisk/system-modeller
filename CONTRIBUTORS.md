@@ -27,7 +27,8 @@ lists the roles within Spyderisk.
 * Panos Melas <pm@it-innovation.soton.ac.uk>
 * Stephen C. Phillips <scp@it-innovation.soton.ac.uk>
 * Samuel Senior <s.senior@soton.ac.uk>
-* Dan Shearer <dan.shearer@soton.ac.uk>, <dan@shearer.org> 
+* Dan Shearer <dan@shearer.org> on GitHub (also <dan.shearer@soton.ac.uk> )
+* Paul Smart <ps02v@ecs.soton.ac.uk>
 * Mike Surridge <ms@it-innovation.soton.ac.uk>
 * Steve Taylor <sjt1@soton.ac.uk>
 
