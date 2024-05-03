@@ -1,30 +1,44 @@
 # Licenses in Spyderisk and how to apply them
 
-We apply licenses to all intellectual property in the Spyderisk project, unless
-the intellectual property was created by external authors with a
-Spyderisk-compatible license. In this latter case, we of course retain the
-original license terms. We apply licenses in the ways specified in the
-the [REUSE](https://reuse.software/spec/) specification of files and directories, and within files, according to the 
-[SPDX software component Bill of Materials](https://spdx.dev/) specification.
+This is both a policy document and a practical how-to. The technical details of
+licensing can be complicated, but Spyderisk licensing is easy if you follow
+these basic rules. If you have any questions do please ask
+[team@spyderisk.org](mailto://team@spyderisk.org).
 
-There are three types of intellectual property created by Spyderisk developers:
+Licenses apply to all intellectual property in the Spyderisk project.
+We apply licenses in the ways specified in
+the [REUSE](https://reuse.software/spec/) specification of files and directories. Within
+individual source files, according to the 
+[SPDX software component Bill of Materials](https://spdx.dev/) specification. For code
+that we create, we choose the license. For third-party code, we use whatever license 
+was chosen for that code (assuming it is compatible with Spyderisk at all - otherwise
+we couldn't use that third-party code!)
+
+There are four types of intellectual property created by Spyderisk project members
+specifically for including in Spyderisk:
 
 * software source code
 * documentation, including images and other media
+* academic papers and reports
 * configuration files and examples, which we choose to regard the same as documentation
 
-A fourth type of intellectual property created by external third-party contributors, of
-any of the above three types.
+A fifth type of intellectual property is that created by external third-party
+contributors who have probably never even heard of Spyderisk, of any of the
+above four types. We already use a lot of such code because it is compatible with
+our licensing policy.
 
 We currently use these licenses in Spyderisk:
+BSD-3-CLAUSE.txt  CREATIVE-COMMONS-BY-SA-4.0.txt  ISC.txt  MIT.txt
 
-* *Apache 2* nearly all code.
-* *Creative Commons By-SA 4.0* Eventually all documentation will be copyright CC By SA.
-* *MIT* A few third party front-end elements including the Bootstrap and JQuery libraries)
+* *[Apache 2](./APACHE-2.0.txt)* for nearly all code, including all code created specifically for Spyderisk
+* *[Creative Commons By-SA 4.0](./CREATIVE-COMMONS-BY-SA-4.0.txt)* for all new documentation, and eventually all documentation will be copyright CC By SA unless it was created by someone 
+* *[MIT](./MIT.txt)* Some third party front-end elements (including the Bootstrap and JQuery libraries)
+* *[ISC](./ISC.txt)* and *[BSD 3-Clause](./BSD-3-CLAUSE.txt)* for some other third-party code
 
-We are happy to consider any useful third-party code or documentation for inclusion in Spyderisk
-provided it is under a compatible license. There is occasionally some nuance to
-what "compatible license" means, as described below, but this is our general intention.
+As you can see, Spyderisk is happy to consider any useful third-party code or
+documentation for inclusion in Spyderisk provided it is under a compatible
+license. There is occasionally some nuance to what "compatible license" means,
+as described below, but this is our general intention.
 
 # Apache 2.0 license - default for source code
 
@@ -33,11 +47,9 @@ So long as the third party code has a license compatible with the
 [Open Source Definition](https://opensource.org/osd/) then it will not conflict with
 the Apache 2.0 license and we can freely use it.
 
-https://www.apache.org/licenses/LICENSE-2.0.txt
-
 In order to apply the Apache license to a source code file in the Spyderisk
-project, insert this at the top, replacing the text in [brackets] with the
-correct values.
+project, insert the following comment block at the top, replacing the text in
+[square brackets] with the correct values.
 
 ```
 Copyright [YEAR] The Spyderisk Licensors
@@ -64,11 +76,10 @@ Copyright [YEAR] The Spyderisk Licensors
 # Creative Commons BY-SA - documentation and config files
 
 We have decided not to apply copyright headers to README files such as the one you are reading, because
-the REUSE standard brand every file. We do not, for example, add copyright headers
-to images, we just make a statement in a file about all the images. However most text forms
-of documentation do have explicit CC BY-SA license at the top.
-
-https://creativecommons.org/licenses/by-sa/4.0/deed.en
+the REUSE standard already brands every file, and it would just be messy and distracting.
+Similarly we do not add copyright headers to images, we just make a statement in a file 
+covering all the images. However most non-Markdown forms of documentation do have explicit CC BY-SA
+license at the top.
 
 ```
 Copyright 2023 The Spyderisk Authors
@@ -89,19 +100,21 @@ We cannot use GPLv2 licensed code because it is the one major open source licens
 Spyderisk uses the JSPlumb library, which is dual-licensed under MIT and GPLv2, and we choose to 
 use it under the MIT license so there is no conflict.
 
-... and Maybe.
+... and also *Maybe*, perhaps.
 
-The GPLv3 is compatible with Apache 2.0, but only in one direction. After the
-two codebases are combined, the result can only be distributed under the GPL
-(again, there is some nuance but this is approximately correct.) In the
-theoretical case of a significant piece of third party software only being
-available under the GPLv3, AGPLv3 or LGPLv3, then the whole of Spyderisk would
-be distributed under the GPL terms.
+Unlike version 2, the [GPLv3](https://www.gnu.org/licenses/gpl-3.0.txt) is
+compatible with Apache 2.0, **but only in one direction**.  After codebases
+under these two licenses are combined, the combined result can only be
+distributed under the GPLv3 (again, there are some additional but this is
+approximately correct.) In the theoretical case where the Spyderisk Project
+decided to mix its code with a significant piece of third party software which
+is only available under the GPLv3, AGPLv3 or LGPLv3, then the whole of
+Spyderisk (when compiled) could only be distributed under the GPLv3 terms.
 
 That is certainly possible, but it would be a big change and not what was
 intended at the time Spyderisk was placed under Open Source licences by our
 generous founding donor, the University of Southampton. In that unexpected case,
 we might even consider re-licensing to GPLv3.
 
-Until that time, we will review very carefully any proposed imports of GPL code
+Until that time, we will review very carefully any proposed imports of GPLv3 code
 into the tree. We're not saying "no", but we will be cautious.
