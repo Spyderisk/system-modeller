@@ -100,41 +100,41 @@ jobs:
   
     publish-tag:
 
-    # This job should only run if the test job succeeds
-    # It is intended to build a docker image based on a tag
-    needs: test
-    # Check if github.ref is a tag
-    if: ${{ success() && startsWith(github.ref, 'refs/tags/') }}
- 
-    runs-on: ubuntu-22.04
+      # This job should only run if the test job succeeds
+      # It is intended to build a docker image based on a tag
+      needs: test
+      # Check if github.ref is a tag
+      if: ${{ success() && startsWith(github.ref, 'refs/tags/') }}
+  
+      runs-on: ubuntu-22.04
 
-    steps:
+      steps:
 
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        lfs: true
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          lfs: true
 
-    - name: Checkout LFS objects
-      run: git lfs checkout
+      - name: Checkout LFS objects
+        run: git lfs checkout
 
-    - name: Build the Docker image for tag
-      # The metadata inside the image will include the final git commit SHA and the time of the final commit.
-      # The tag applied to the image will be like spyderisk/system-modeller:<tag>
-      # e.g. spyderisk/system-modeller:v3.5.0
-      # Where the timestamp is the time of the final commit in the build.
-      run: |
-        echo "event_name = ${{github.event_name}}"
-        echo "action = ${{github.event.action}}"
-        echo "GITHUB_REF = ${GITHUB_REF}"
-        TAG_ROOT=spyderisk/system-modeller
-        TIMESTAMP=$(git show -s --format=%cI ${GITHUB_SHA})
-        REF_END=$(echo ${GITHUB_REF} | sed 's/.*\///')
-        TAG=${TAG_ROOT}:${REF_END}
-        echo "TAG=${TAG}" >> ${GITHUB_ENV}
-        docker build --tag ${TAG} --build-arg CI_COMMIT_SHA=${GITHUB_SHA} --build-arg CI_COMMIT_TIMESTAMP=${TIMESTAMP} --file Dockerfile --target ssm-production "."
+      - name: Build the Docker image for tag
+        # The metadata inside the image will include the final git commit SHA and the time of the final commit.
+        # The tag applied to the image will be like spyderisk/system-modeller:<tag>
+        # e.g. spyderisk/system-modeller:v3.5.0
+        # Where the timestamp is the time of the final commit in the build.
+        run: |
+          echo "event_name = ${{github.event_name}}"
+          echo "action = ${{github.event.action}}"
+          echo "GITHUB_REF = ${GITHUB_REF}"
+          TAG_ROOT=spyderisk/system-modeller
+          TIMESTAMP=$(git show -s --format=%cI ${GITHUB_SHA})
+          REF_END=$(echo ${GITHUB_REF} | sed 's/.*\///')
+          TAG=${TAG_ROOT}:${REF_END}
+          echo "TAG=${TAG}" >> ${GITHUB_ENV}
+          docker build --tag ${TAG} --build-arg CI_COMMIT_SHA=${GITHUB_SHA} --build-arg CI_COMMIT_TIMESTAMP=${TIMESTAMP} --file Dockerfile --target ssm-production "."
 
-    - name: Push Docker image to registry
-      run: | 
-        docker login -u ${{ vars.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_RW_SECRET }}
-        docker push ${TAG}
+      - name: Push Docker image to registry
+        run: | 
+          docker login -u ${{ vars.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_RW_SECRET }}
+          docker push ${TAG}
