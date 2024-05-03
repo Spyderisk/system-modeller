@@ -38,8 +38,9 @@ jobs:
       # Where the timestamp is the time of the final commit in the build.
       # In addition, the image is tagged with spyderisk/system-modeller:<branch-name>-latest
       run: |
-        echo "${{github.event_name}}"
-        echo "${GITHUB_REF}"
+        echo "event_name = ${{github.event_name}}"
+        echo "action = ${{github.event.action}}"
+        echo "GITHUB_REF = ${GITHUB_REF}"
         TAG_ROOT=spyderisk/system-modeller
         REF_END=$(echo ${GITHUB_REF} | sed 's/.*\///')
         TAG=${TAG_ROOT}:${REF_END}
