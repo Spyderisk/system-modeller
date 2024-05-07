@@ -2,7 +2,7 @@ name: Test and publish
 
 on:
   push:
-    branches: [ "dev", "main", "167-develop-workflow-to-create-docker-image-based-on-release-tag" ]
+    branches: [ "dev", "main" ]
   pull_request:
     branches: [ "dev", "main" ]
   release:
@@ -59,7 +59,7 @@ jobs:
 
     # This job should only run if the test job succeeds
     # Don't run this job if it's a pull request, otherwise we get an image with branch name "merge" for every PR
-    #needs: test
+    needs: test
     if: success() && github.event_name != 'pull_request'
  
     runs-on: ubuntu-22.04
