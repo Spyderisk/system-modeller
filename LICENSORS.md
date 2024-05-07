@@ -13,6 +13,10 @@ Refer to the Spyderisk source tree for exact details.  Only the first
 contribution of an Owner is noted here, just as a handy hint. Some Owners have
 dozens of contributions.
 
+Note: authors of many thousands of lines of Spyderisk code are not listed here,
+because their employment contracts mean they are not Owners. They deserve just as
+much recognition, and are listed in [CONTRIBUTORS.md](./CONTRIBUTORS.md).
+
 Corporate owners/licensors:
 
 * University of Southampton

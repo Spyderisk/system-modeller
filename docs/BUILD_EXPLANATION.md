@@ -4,7 +4,7 @@
 
 ### Outline:
 
-![Simple outline of how the elements interact with each other](JS_BUILD_DIAGRAM.png)
+![Simple outline of how the elements interact with each other](./images/JS_BUILD_DIAGRAM.png)
 
 ### Tools:
 
