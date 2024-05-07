@@ -18,7 +18,7 @@ FROM gradle:6.3.0-jdk8 AS ssm-dev
 
 # LABELs are added to the image metadata
 LABEL org.opencontainers.image.vendor="IT Innovation Centre"
-LABEL org.opencontainers.image.title="SPYDERISK System Modeller development image"
+LABEL org.opencontainers.image.title="Spyderisk System Modeller development image"
 
 # Need gradle v6, java v8, python3 and python3-lxml (needed for jacoco2cobertura), killall (from psmisc)
 RUN apt-get update && apt-get -y install python3 python3-lxml psmisc
@@ -41,7 +41,7 @@ FROM ssm-dev AS ssm-build
 ARG MAVEN_USER
 ARG MAVEN_PASS
 
-LABEL org.opencontainers.image.title="SPYDERISK System Modeller build image"
+LABEL org.opencontainers.image.title="Spyderisk System Modeller build image"
 
 # Copy in only the files needed for the build: it's cleanest and it means more cache hits
 COPY src /system-modeller/src/
@@ -64,11 +64,13 @@ FROM alpine:3.11 AS ssm-production
 # Build metadata
 ARG CI_COMMIT_SHA
 ARG CI_COMMIT_TIMESTAMP
+ARG CI_RELEASE
 
 LABEL org.opencontainers.image.vendor="IT Innovation Centre"
-LABEL org.opencontainers.image.title="SPYDERISK System Modeller"
+LABEL org.opencontainers.image.title="Spyderisk System Modeller"
 LABEL org.opencontainers.image.revision=${CI_COMMIT_SHA}
 LABEL org.opencontainers.image.created=${CI_COMMIT_TIMESTAMP}
+LABEL org.opencontainers.image.release=${CI_RELEASE}
 
 ENV SPRING_PROFILES_ACTIVE=production
 
