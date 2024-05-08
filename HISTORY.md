@@ -6,8 +6,8 @@ Last updated April 2024
 
 This document ([HISTORY.md](./HISTORY.md)) was first written quarter-way
 through the 21st century, where humanity faces problems of immense complexity.
-Many citizens worry that they cannot escape the effects of automated systems, and
-there are quite rightly responses by governments and others in society to these feelings.
+Many citizens worry they cannot escape the effects of automated systems, and
+there are quite rightly responses to these feelings by governments and others in society.
 Spyderisk is one response to this, a tool intended to visualise and present a summary 
 of the risk in a system too complicated for any human to understand or debug.
 
@@ -21,19 +21,21 @@ tools for assessing the risk in complex systems. And while software always gets
 out of date, even more importantly the Centre developed a database of knowledge
 about risk assessment.
 
-It became clear that risk assessment is something that the entire world is
-beginning to take seriously. From legislation regulating the use of AI in
-dangerous situations, to conflicting needs to mitigate climate change,
-these involve systems that are too complicated for any human
-mind to understand. How can we make judgements about relative risk if we cannot
-understand how the systems work? The IT Innovation Centre realised that it had 15 years of
-study that could be used to seed a new community of automated risk assessment. 
+It became clear that risk assessment is being taken seriously throughout
+society. From legislation
+[regulating the use of AI in our daily lives](https://www.europarl.europa.eu/topics/en/article/20230601STO93804/eu-ai-act-first-regulation-on-artificial-intelligence),
+to the need to [balance conflicting requirements for climate change](https://doi.org/10.1038/s44168-023-00078-x),
+there is a strong desire to understand what sorts of risks are involved. And while it seems
+counter-intuitive that we can make judgements about risks even without
+understanding how these complex systems work, that does seem to be true. 
+
+The IT Innovation Centre realised that it had 15 years of study that could be
+used to seed a new community of automated risk assessment. 
 
 In 2023 the Spyderisk open project was founded, with the IT Innovation team
 aiming for involvement and practical applications far beyond Southampton.  All
 the software tools and databases were published to the world under open
-licences, and [copies of all academic output](./docs/papers/README.md)
-was gathered together in one place. 
+licences, together with [copies of all academic output](./docs/papers/README.md).
 
 Spyderisk is a collaborative effort and we [invite anyone interested in contributing](./CONTRIBUTING.md)
 to this field to join in. The rest of this document explains how we got here,
@@ -73,9 +75,9 @@ This was really not what was expected with increased information sharing.
 This work lead to a 2010 EU project to design a system to examine data flows between
 [organisations in the air transport industry](./docs/papers/surridge2010.pdf), which is a 
 complex always-on network where restarts are not possible. The industry had been increasing
-connectivity between air traffic control and the airport operators, which could be shown
-to cause the opposite of what was intended - reducing risk and increasing the chances of things
-working smoothly.
+connectivity between air traffic control and the airport operators, which we showed 
+caused the opposite of what was intended - risk increased, and the chances of smooth operations
+reduced.
 
 # Evolving the modelling implementation
 
@@ -87,18 +89,19 @@ system, depending on the likelihood of various chains of events occurring.
 We used our demonstration system to present a [followup 2011 paper](./docs/papers/surridge2011.pdf)
 where we compared the stochastic method to
 [discrete simulation](https://en.wikipedia.org/wiki/Discrete-event_simulation) and concluded that our 
-modelling approach gave results that would be useful in the real world.
+modelling approach gave results that could be very useful in the real world.
 
 Everything until this point was in the field of [Secure Systems Modelling](./docs/papers/surridge2011-1.pdf),
-that is, secure IT systems which impact on the physical world.  We learned how
+that is, secure IT systems which impact on the physical world such as covered in the 
+[ISO2700 series](https://en.wikipedia.org/wiki/ISO/IEC_27000-series).  We learned how
 to effectively model dependencies in the tree of risks, observing that just one
 change in risk (for example, a problem being fixed) can result in a very
 different and sometimes surprising change in the overall risk assessment after
-recalculation. We concluded that ISO27000 approaches are unsuitable
+recalculation. We concluded that ISO27000-type approaches are unsuitable
 for unpredictable and unstable systems of systems such as are found in the commercial
 airline industry.
 
-Our knowledgebase was starting to become useful, as we said in 2011:
+Our knowledgebase was starting to become a useful applied tool, as we said in 2011:
 
 > Improvements to the core ontology (below) allow us to
   model physical and electronic attacks on airport connectivity and spaces.
@@ -174,15 +177,34 @@ In 2019 we explored this more [human view of health data risks](./docs/papers/pi
 
 At a policy level (that is, the things that governments and large organisations
 in society are concerned with) we are seeing laws that talk about "Trustworthy
-systems" and "Responsible AI". Spyderisk is interested in how to assess these
-things, because not only do they relate to extremely complicated systems that
-no single person can fully understand, but they also involve aspects of
-psychology and sociology. A system may be objectively safe, but people may have
-good reasons not to trust it, which may well cause other problems. All of this
-can be associated with harms. 
+systems" and "Responsible AI". Spyderisk is interested in how to assess
+concepts of trust and responsibility, because not only does nobody fully
+understand the systems these terms are applied to, but they also involve
+aspects of psychology and sociology. For example, a system may be objectively
+safe in a technical sense, but people could still have good reasons not to
+trust it, which may well cause other problems. All of this can be associated
+with harms, and thus Spyderisk can potentially assess the likelihood of these harms occurring.
 
-We want Spyderisk increasingly to model these systems, visually present the
-harms to users, and demonstrate what happens as the user changes the model for
-different scenarios.
+We want Spyderisk to become increasingly good at modelling these systems,
+visually present the harms to users, and demonstrate what happens as the user
+changes the model for different scenarios.
 
+# The role of ontologies, and Spyderisk papers
+
+Since 2009 Spyderisk has based its reasoning about risk on an underlying ontology. Ontologists often
+distinguish between three general types of ontologies:
+
+* Upper-Level/Foundational Ontologies (e.g., [Basic Formal Ontology](https://basic-formal-ontology.org/) for information retrieval and analysis)
+* Reference/Core/Mid-Level/Domain Ontologies (e.g., [Reference Ontology for Security Engineering [ROSE]](https://purl.org/security-ontology), [Common Core Cyber Ontology [C3O]](https://opensource.ieee.org/cyber-ontology-working-group/cyber-ontology-releases))
+* Application-Level (with knowledge of particular details, e.g. a statement that a "Server" may contain "Data" and some of that could be "Personal Data")
+
+Spyderisk combines a domain ontology with an application-level ontology, but
+does not have an upper-level ontology. The Spyderisk ontology continues to be
+developed, and research specifically aimed at improving ontologies in various
+Spyderisk applications and domains. Since 2023 the team has collaborated on
+three papers related to ontological challenges in Spyderisk:
+
+* [Secure Ontologies for Internet of Things Systems (SOfIoTS)](./smart2023.pdf) 
+* [Biomedical Burden Ontology: Ontology Documentation](./smart2024.pdf) 
+* [The Ethics of the Extended Mind: Mental Privacy, Manipulation and Agency](./smart2024-2.pdf)
 
