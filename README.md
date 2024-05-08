@@ -1,13 +1,34 @@
 # The Spyderisk System Modeller
 
-The Spyderisk System Modeller (SSM) provides a thorough risk assessment of
-complex systems, applying our mathematical modelling to your particular problem.
+The Spyderisk System Modeller (SSM, or just "Spyderisk") provides a thorough
+risk assessment of complex systems, applying our mathematical modelling to your
+particular problem. The [long Spyderisk story](./HISTORY.md) started in 2008.
+In 2023 we established the Spyderisk Open Project, publishing everything under
+open licenses.
 
-This README is for the [system-modeller source tree](https://github.com/Spyderisk/system-modeller) of the 
-[Spyderisk Open Project](https://github/com/Spyderisk). If you want to work with Spyderisk
-source code you are in the right place. There are other source trees for
-[installing Spyderisk and its web GUI](https://github.com/Spyderisk/system-modeller-deployment) or 
-[programming Spyderisk with Python](https://github.com/Spyderisk/system-modeller-adaptor).
+As of Mid-2024, Spyderisk is in early release. If you are a researcher in the area of risk
+modelling, or if you have a specific problem domain you need to solve (particularly in 
+cybersecurity or privacy) then Spyderisk could be for you.
+
+This README relates to the [system-modeller source tree](https://github.com/Spyderisk/system-modeller),
+which is the software that users interact with. If you only wish to install and run Spyderisk and its
+web GUI, see [the Spyderisk deployment tree](https://github.com/Spyderisk/system-modeller-deployment).
+Spyderisk will only build and run on Linux, however, it can be deployed to non-Linux systems
+using Docker containers.
+
+This source tree is for:
+
+* those who want to inspect or change the [Spyderisk source code](./src/main/java/uk/ac/soton/itinnovation/security/README.md)
+* reading all [Spyderisk technical papers](./docs/papers/README.md) in one place
+* understanding the generous [Spyderisk open licensing](./LICENSES.md)
+
+If you wish to interact programmatically with Spyderisk instead of using the
+web GUI, the [Spyderisk Python adaptor](https://github.com/Spyderisk/system-modeller-adaptor)
+may be for you. This is the way you can call the Spyderisk API to create, update, analyse and query
+system models and integrate other tools.
+
+
+# Important project information
 
 Spyderisk is created by the [Spyderisk Contributors](./CONTRIBUTORS.md), freely
 available under [Open Source terms](./LICENSE.md). Everyone is welcome, noting
@@ -20,22 +41,14 @@ You can contact us by:
 * [raising a GitHub Issue](https://github.com/Spyderisk/system-modeller/issues/new)
 * emailing [team@spyderisk.org](mailto://team@spyderisk.org)
 
-Spyderisk has a [long history](./HISTORY.md), starting in 2008 until being open sourced in 2023. 
-The establishment of the Spyderisk Open Project was an exciting new beginning.
-
 # What is the Spyderisk System Modeller?
 
-The Spyderisk System Modeller is a generic risk assessment tool
-and must be configured with a model of a domain ("knowledgebase"), describing a
-simplified version of the real world and the different threats and mitigations 
-that apply. The most advanced use case for Spyderisk relates to cybersecurity
-analysis, however the Spyderisk team is working on modelling risks in other areas,
-including medical devices and privacy.
-
-For traditional cybersecurity analysis, Spyderisk assists the user in following
-the risk assessment process defined in ISO 27005 from the
-[ISO 27001](https://en.wikipedia.org/wiki/ISO/IEC_27000-series)
-of standards.
+The Spyderisk System Modeller is a generic risk assessment tool.  Spyderisk
+must be supplied with a model of a domain of study, describing a
+simplified version of the real world and the different threats and mitigations
+that apply. The use case we have developed the most relates to cybersecurity
+analysis, however the Spyderisk team also models risks in other areas including
+medical devices and privacy. We call a domain model the "knowledgebase".
 
 Spyderisk does not come bundled with any particular knowledgebase; this is
 configurable at build/deploy time, by putting one or more zip bundles into the
@@ -44,8 +57,21 @@ maintain our most advanced
 [knowledgebase for complex networked systems](https://github.com/Spyderisk/domain-network/packages/1826148)
 in its own GitHub repository.
 
-The web-based graphical user interface guides the user through the following
-steps:
+When using our knowledgebase for cybersecurity analysis, Spyderisk assists the user in following
+the risk assessment process defined in ISO 27005 from the
+[ISO 27001](https://en.wikipedia.org/wiki/ISO/IEC_27000-series)
+of standards. We found the 27k standards do not have all the required concepts 
+for effective risk modelling, and our knowledgebase is significantly richer than 
+what is found in the standards. Since a Spyderisk knowledgebase is based on an underlying
+ontology, we have created an ontology which is broadly compatible with the ISO27k terminology.
+
+The system-modeller tree has approximately 70k lines of Java code in the core service,
+and another 20k of Java code for running tests. 
+
+# Process of using system-modeller
+
+Once installed, the Spyderisk web-based graphical user interface guides the
+user through the following steps:
 
 1. The user draws a model of their system model by dragging and dropping typed
    assets linked by typed relations onto a canvas.
@@ -89,15 +115,15 @@ path does). For the operational risk assessment, the state of the system model
 must first be synchronised with the current operational state (for instance
 through integration via the API with OpenVAS or a SIEM).
 
-This project provides both a web service and a web-based user interface. An
-API is provided to create, update, analyse and query system models and
-integrate other tools.
+This project provides both a web service and a web-based user interface. 
 
 Docker is used to provide a consistent build and test environment for
 developers and for the continuous integration (CI) system.  If you want to do a
 demo of the Spyderisk System Modeller and do not need to do any development,
 then you need to refer to the [Installing Docker](#installing-docker) section
 and then use the [system modeller deployment project](https://github.com/Spyderisk/system-modeller-deployment).
+
+# Installation
 
 ## Pre-requisites
 
@@ -146,12 +172,10 @@ Please see the [Docker website](https://www.docker.com/) for details.
 
 ### Windows
 
-To use Docker in Windows you must enable Hyper-V. This means that you can no
-longer use VirtualBox (used as Vagrant's hypervisor).
+We assume WSL2 (Windows Subsystem for Linux v2) is installed. If you do not install WSL2,
+you will need run Linux within a virtual machine, or switch to running Linux instead of Windows.
 
-Download and install "Docker Desktop".
-
-#### With WSL2
+Download and install the closed-source application "Docker Desktop" for Windows.
 
 Docker Desktop integrates with WSL2 (Windows Sub-system for Linux v2). WSL2
 provides a Linux environment deeply integrated into Windows. As many
@@ -208,7 +232,7 @@ to:
 ### Linux
 
 Many Linux distributions already have Docker installed. The following command
-will work in `apt` based systems such as Ubuntu. To install Docker:
+has been tested in `apt` based systems such as Ubuntu. To install Docker:
 
 ```shell
 sudo apt-get install docker docker-compose
