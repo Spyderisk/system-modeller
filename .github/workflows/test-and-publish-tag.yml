@@ -1,4 +1,0 @@
-name: Test and publish tag
-
-on:
-  workflow_dispatch:
