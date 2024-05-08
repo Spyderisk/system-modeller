@@ -204,7 +204,7 @@ developed, and research specifically aimed at improving ontologies in various
 Spyderisk applications and domains. Since 2023 the team has collaborated on
 three papers related to ontological challenges in Spyderisk:
 
-* [Secure Ontologies for Internet of Things Systems (SOfIoTS)](./smart2023.pdf) 
-* [Biomedical Burden Ontology: Ontology Documentation](./smart2024.pdf) 
-* [The Ethics of the Extended Mind: Mental Privacy, Manipulation and Agency](./smart2024-2.pdf)
+* [Secure Ontologies for Internet of Things Systems (SOfIoTS)](./docs/papers/smart2023.pdf) 
+* [Biomedical Burden Ontology: Ontology Documentation](./docs/papers/smart2024.pdf) 
+* [The Ethics of the Extended Mind: Mental Privacy, Manipulation and Agency](./docs/papers/smart2024-2.pdf)
 
