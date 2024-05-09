@@ -109,10 +109,15 @@ class ThreatEditor extends React.Component {
             triggeredStatus = arr[1];
         }
 
-        let emptyLevelTooltip;
+        let emptyLevelTooltip; //tooltip to display when likelihood or risk is not available ("N/A")
+        let triggerableText; //text to display for a triggerable threat
 
         if (triggeredStatus === "UNTRIGGERED") {
+            triggerableText = "N.B. This threat is not currently active. It is triggered when a particular control strategy is enabled.";
             emptyLevelTooltip = "This threat poses no risk as it has not been enabled by a control strategy";
+        }
+        else if (triggeredStatus === "TRIGGERED") {
+            triggerableText = "N.B. This threat has been triggered by a particular control strategy which is currently enabled.";
         }
         
         if (this.props.model.levels != null){
@@ -231,6 +236,9 @@ class ThreatEditor extends React.Component {
                             <p>
                                 {threat !== undefined ? threat["description"] : ""}
                             </p>
+                            {triggerableText && <p>
+                                <b>{triggerableText}</b>
+                            </p>}
                             {!isComplianceThreat && <Fragment>
                                 <div key={0} className='row head'>
                                     <span className="col-xs-2 likelihood">
