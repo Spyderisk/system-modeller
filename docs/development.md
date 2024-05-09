@@ -1,5 +1,198 @@
 # Spyderisk development
 
+This document is about development on the Spyderisk web application and backend
+service, written in Java (and Javascript, of course.) It is not for development
+using the Spyderisk Python adaptor, and it is not for development of Spyderisk
+domain models.
+
+# Contents
+
+* [Initialise for Development](#initialise-for-development)
+    * [Install git and git-lfs](#install-git-and-git-lfs)
+    * [Run an SSH Agent](#run-an-ssh-agent)
+    * [Clone the system-modeller Git Repository](#clone-the-system-modeller-git-repository)
+    * [Customise default Configuration Parameters (Optional Step)](#customise-default-configuration-parameters-(optional-step))
+    * [Download and Install default Knowledgebase(s)](#download-and-install-default-knowledgebase(s))
+    * [Starting the Containers](#starting-the-containers)
+    * [Getting a Shell](#getting-a-shell)
+    * [Viewing logs](#viewing-logs)
+    * [Port Mappings](#port-mappings)
+* [Spyderisk application development](#spyderisk-application-development)
+    * [Gradle Tasks](#gradle-tasks)
+    * [Keycloak](#keycloak)
+    * [Frontend Development](#frontend-development)
+        * [Debugging the Frontend](#debugging-the-frontend)
+    * [Backend Development](#backend-development)
+        * [Debugging the Backend](#debugging-the-backend)
+    * [Shutdown and Persistence](#shutdown-and-persistence)
+    * [Building a Spyderisk System Modeller Image](#building-a-spyderisk-system-modeller-image)
+* [OpenAPI](#openapi)
+* [License checks](#license-checks)
+    * [The LicenseFinder tool](#the-licensefinder-tool)
+        * [Installation](#installation)
+        * [Usage](#usage)
+
+# Initialise for Development
+
+## Install git and git-lfs
+
+On an Ubuntu system:
+
+```shell
+sudo apt-get update
+sudo apt-get install git git-lfs
+```
+
+## Run an SSH Agent
+
+You should be using an SSH key to authenticate with GitLab. To avoid typing in
+the private key password all the time, you should run an SSH agent which holds
+the unencrypted private key in memory. In Windows you can use e.g. `pageant`
+(part of Putty). In Linux (or WSL2) do:
+
+```shell
+eval `ssh-agent`
+ssh-add
+```
+
+## Clone the system-modeller Git Repository
+
+Cloning the `system-modeller` repository makes a copy of all the files (and
+their history) on your local machine. If you are using WSL2 then you should
+clone the repository within your chosen Linux distribution.
+
+```shell
+git clone git@github.com:SPYDERISK/system-modeller.git
+cd system-modeller
+```
+
+## Customise default Configuration Parameters (Optional Step)
+
+The default configuration of the Spyderisk service, including service ports and
+credentials, can be customized through the '.env' file. To get started, please
+make a copy of the provided `.env.template` file and rename it to `.env`. Then,
+you can modify any of the default parameters in the `.env` file to match your
+specific environment configuration.
+
+## Download and Install default Knowledgebase(s)
+
+Syderisk requires one or more knowledgebase (domain model) to be installed,
+prior to being able to develop system models in the GUI. These are available as
+zip file "bundles", containing the domain model itself, along with the icons
+and mapping file needed for generating a UI palette of visual assets.
+
+An example knowledgebase is available at:
+https://github.com/Spyderisk/domain-network/packages/1826148 Here, you will
+find the latest .zip bundle, at the bottom of the "Assets" list. This file
+should be downloaded and copied into the system-modeller/knowledgebases folder.
+Once Spyderisk has been started up (i.e. via starting the containers), these
+zip files will be automatically extracted and loaded into Spyderisk.
+
+Of course, you may choose not to install a default knowledgebase, however, when
+the Spyderisk GUI first loads in your browser, you will be directed to load in
+a new knowledgebase manually.
+
+## Starting the Containers
+
+To optimise the build, configure Docker to use "buildkit":
+
+```shell
+export DOCKER_BUILDKIT=1
+```
+
+To bring the containers (ssm, mongo, keycloak) up and leave the terminal
+attached with the log files tailed:
+
+```shell
+docker-compose up
+```
+
+Alternatively, to bring the containers up and background (detach) the process:
+
+```shell
+docker-compose up -d
+```
+
+The `docker-compose.yml` file does not set the `container_name` property for
+the containers it creates. They therefore get named after the directory
+containing the `docker-compose.yml` file (the "project name") along with the
+identifier in the `docker-compose.yml` file and a digit (for uniqueness). The
+directory containing the `docker-compose.yml` file will, by default, be called
+`system-modeller` as that is the default name when doing `git clone`. Docker
+Compose picks up this name and uses it as the "project name". If more than one
+instance of the SSM is required on one host, an alternative project name is
+needed: either by renaming the `system-modeller` folder (recommended) or by
+using the `-p` flag in `docker-compose` (e.g. `docker-compose -p <project name>
+up -d`) but you must remember to use this flag every time.
+
+## Getting a Shell
+
+To get a shell in the `ssm` container:
+
+```shell
+docker-compose exec ssm bash
+```
+
+The equivalent `docker` command requires the full container name and also the
+`-it` flags to attach an interactive terminal to the process, e.g.:
+
+```shell
+docker exec -it system-modeller_ssm_1 bash
+```
+
+## Viewing logs
+
+To see the logs from a service and `tail` the log so that it updates, the
+command is:
+
+```shell
+docker-compose logs -f <SERVICE>
+```
+
+Where `<SERVICE>` could be e.g. `ssm`.
+
+## Port Mappings
+
+The various server ports in the container are mapped by Docker to ports on the
+host. The default ports on the host are defined in `docker-compose.yml` and `docker-compose.override.yml`:
+
+* 3000: Nodejs (3000) on the `ssm` container 
+* 5005: Java debugging (5005) on the `ssm` container
+* 8080: Keycloak (8080) on the `keycloak` container
+* 8081: Tomcat (8081) on the `ssm` container
+* 8089: Nginx (80) on the `proxy` container
+
+To change the ports mapping it is best to copy the `.env.template` file to `.env` and define the port numbers there. This is necessary if you need to run multiple instances of the service on the same host.
+
+The Nginx reverse proxy forwards requests to the appropriate container and also includes redirects for documentation links. Therefore, it is advised to use port 8089 
+
+*The rest of this document assumes the default port mapping.*
+
+To see the containers created by the `docker-compose` command along with their
+ports:
+
+```shell
+$ docker-compose ps
+NAME                         IMAGE                     COMMAND                  SERVICE             CREATED             STATUS              PORTS
+system-modeller-proxy-1      nginx:stable-alpine3.17   "/tmp/import/entrypo…"   proxy               23 minutes ago      Up 23 minutes       0.0.0.0:8089->80/tcp
+system-modeller-keycloak-1   keycloak/keycloak:21.0    "/tmp/import/entrypo…"   keycloak            23 minutes ago      Up 23 minutes       0.0.0.0:8080->8080/tcp, 8443/tcp
+system-modeller-mongo-1      mongo:5.0.16-focal        "docker-entrypoint.s…"   mongo               23 minutes ago      Up 23 minutes       27017/tcp
+system-modeller-ssm-1        system-modeller-ssm       "tail -f /dev/null"      ssm                 23 minutes ago      Up 23 minutes       0.0.0.0:3000->3000/tcp, 0.0.0.0:5005->5005/tcp, 0.0.0.0:8081->8081/tcp```
+
+You might contrast that with a list of all containers on the host found through
+the `docker` command:
+
+```shell
+$ docker ps
+CONTAINER ID   IMAGE                     COMMAND                  CREATED          STATUS          PORTS                                                                    NAMES
+01cc2804cadf   nginx:stable-alpine3.17   "/tmp/import/entrypo…"   24 minutes ago   Up 24 minutes   0.0.0.0:8089->80/tcp                                                     system-modeller-proxy-1
+0a91f360c30b   system-modeller-ssm       "tail -f /dev/null"      24 minutes ago   Up 24 minutes   0.0.0.0:3000->3000/tcp, 0.0.0.0:5005->5005/tcp, 0.0.0.0:8081->8081/tcp   system-modeller-ssm-1
+1b27ac53ec18   keycloak/keycloak:21.0    "/tmp/import/entrypo…"   24 minutes ago   Up 24 minutes   0.0.0.0:8080->8080/tcp, 8443/tcp                                         system-modeller-keycloak-1
+a67ba45f70c5   mongo:5.0.16-focal        "docker-entrypoint.s…"   24 minutes ago   Up 24 minutes   27017/tcp                                                                system-modeller-mongo-1
+```
+
+# Spyderisk application development
+
 The system-modeller source code is synchronised with the `ssm` container. This
 means that you can use your favourite source code editor on your host machine
 but still do the build and execution inside the `ssm` container. The
