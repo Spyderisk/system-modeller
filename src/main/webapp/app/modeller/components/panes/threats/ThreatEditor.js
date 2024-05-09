@@ -11,6 +11,7 @@ import {getRenderedLevelText} from "../../util/Levels";
 import {bringToFrontWindow, closeWindow} from "../../../actions/ViewActions";
 import {connect} from "react-redux";
 import {openDocumentation} from "../../../../common/documentation/documentation"
+import {getThreatStatus} from "../../util/ThreatUtils.js";
 
 class ThreatEditor extends React.Component {
 
@@ -100,9 +101,23 @@ class ThreatEditor extends React.Component {
         let likelihoodRender = <strong>Error</strong>;
         let riskRender = <strong>Error</strong>;
 
-        if(this.props.model.levels!=null){
-            likelihoodRender = getRenderedLevelText(this.props.model.levels.Likelihood, likelihood);
-            riskRender = getRenderedLevelText(this.props.model.levels.RiskLevel, risk);
+        let statusString = getThreatStatus(threat, this.props.model.controlStrategies);
+        let triggeredStatus = "";
+
+        if (statusString.includes("/")) {
+            let arr = statusString.split("/");
+            triggeredStatus = arr[1];
+        }
+
+        let emptyLevelTooltip;
+
+        if (triggeredStatus === "UNTRIGGERED") {
+            emptyLevelTooltip = "This threat poses no risk as it has not been enabled by a control strategy";
+        }
+        
+        if (this.props.model.levels != null){
+            likelihoodRender = getRenderedLevelText(this.props.model.levels.Likelihood, likelihood, false, emptyLevelTooltip);
+            riskRender = getRenderedLevelText(this.props.model.levels.RiskLevel, risk, false, emptyLevelTooltip);
         }
 
         let assetLabelHeading = <OverlayTrigger delayShow={Constants.TOOLTIP_DELAY} placement="right"

@@ -547,7 +547,6 @@ class ThreatsPanel extends React.Component {
 
             let threatDescNameIdx = threat["description"].indexOf(": ");
             let threatName = threat["label"];
-            //console.log(threatName);
 
             if (threatDescNameIdx !== -1) {
                 // use name from description if found
@@ -587,15 +586,12 @@ class ThreatsPanel extends React.Component {
                 status = statusString;
             }
 
-            //console.log("status: ", status);
-            //console.log("triggeredStatus: ", triggeredStatus);
-
             let threatColorAndBE = ((status === "BLOCKED") || (status === "MITIGATED")) ?
             getThreatColor(threat, this.props.model.controlStrategies ,this.props.model.levels["TrustworthinessLevel"], true) : undefined;
-            //console.log("threatColorAndBE: ", threatColorAndBE);
 
             //status: UNMANAGED, ACCEPTED, MITIGATED, BLOCKED
             let statusText = "";
+            let emptyLevelTooltip;
             let symbol;
 
             /* Uncomment to add triggered state, e.g. for debugging
@@ -631,6 +627,7 @@ class ThreatsPanel extends React.Component {
 
             if (triggeredStatus === "UNTRIGGERED") {
                 statusText = "Untriggered side effect";
+                emptyLevelTooltip = "This threat poses no risk as it has not been enabled by a control strategy";
                 symbol = <span className="fa fa-check threat-icon"/>;
             }
 
@@ -649,19 +646,16 @@ class ThreatsPanel extends React.Component {
                 resolved = (threat['acceptanceJustification'] !== null);
             }
 
-            //console.log(threatLabel + " resolved = " + resolved);
-
             //is threat selected?
             let selected = this.props.selectedThreat && this.props.selectedThreat.id === threat.id;
 
-            //let impact = threat["impactLevel"];
             let likelihood = threat["likelihood"];
             let risk = threat["riskLevel"];
 
             let distance = threat.distance;
 
-            let likelihoodRender = getRenderedLevelText(this.props.model.levels.Likelihood, likelihood);
-            let riskRender = getRenderedLevelText(this.props.model.levels.RiskLevel, risk);
+            let likelihoodRender = getRenderedLevelText(this.props.model.levels.Likelihood, likelihood, false, emptyLevelTooltip);
+            let riskRender = getRenderedLevelText(this.props.model.levels.RiskLevel, risk, false, emptyLevelTooltip);
 
             threatsRender.push(
                 <div key={index + 1} className={

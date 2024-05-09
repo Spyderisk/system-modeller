@@ -2,10 +2,10 @@ import React from "react";
 import {OverlayTrigger, Tooltip, FormControl} from "react-bootstrap";
 import * as Constants from "../../../common/constants.js";
 
-export function getRenderedLevelText(levels, level, reverseColours) {
+export function getRenderedLevelText(levels, level, reverseColours, emptyLevelTooltip) {
 
     if (levels === null || level === undefined || level === null){
-        return renderEmptyLevel();
+        return renderEmptyLevel(emptyLevelTooltip);
     } else {
         
         let colour = getLevelColour(levels, level, reverseColours);
@@ -20,14 +20,15 @@ export function getRenderedLevelText(levels, level, reverseColours) {
 
 }
 
-function renderEmptyLevel() {
+function renderEmptyLevel(tooltip) {
+    let tooltipText = tooltip ? tooltip : "Not yet available - please run Risk Calculation";
     return (
         <OverlayTrigger 
                         delayShow={Constants.TOOLTIP_DELAY}
                         placement="bottom"
                         trigger={["hover"]}
                         overlay={<Tooltip id="empty-levels-tooltip" className={"tooltip-overlay"}>
-                            Not yet available - please run Risk Calculation</Tooltip>}>
+                            {tooltipText}</Tooltip>}>
             <strong>N/A</strong>
         </OverlayTrigger>
     );
