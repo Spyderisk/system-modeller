@@ -6,7 +6,7 @@ particular problem. The [long Spyderisk story](./HISTORY.md) started in 2008.
 In 2023 we established the Spyderisk Open Project, publishing everything under
 open licenses.
 
-As of Mid-2023, Spyderisk is in early release. If you are a researcher in the
+As of Mid-2024, Spyderisk is in early release. If you are a researcher in the
 area of risk modelling including ontologies of risk, or if you have a specific
 problem domain you need to solve (particularly in cybersecurity or privacy)
 then Spyderisk could be for you. 
