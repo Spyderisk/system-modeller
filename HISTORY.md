@@ -2,14 +2,23 @@
 
 Last updated April 2024
 
-# The journey to openness
-
 This document ([HISTORY.md](./HISTORY.md)) was first written quarter-way
 through the 21st century, where humanity faces problems of immense complexity.
 Many citizens worry they cannot escape the effects of automated systems, and
 there are quite rightly responses to these feelings by governments and others in society.
 Spyderisk is one response to this, a tool intended to visualise and present a summary 
-of the risk in a system too complicated for any human to understand or debug.
+of the risk in systems too complicated for any human to understand or debug.
+
+# Contents
+
+* [The journey to openness](#the-journey-to-openness)
+* [Threat modelling in cyber-physical systems](#threat-modelling-in-cyber-physical-systems)
+* [Evolving the modelling implementation](#evolving-the-modelling-implementation)
+* [Much larger systems, and notions of compliance](#much-larger-systems,-and-notions-of-compliance)
+* [Trust modelling in sociotechnical systems](#trust-modelling-in-sociotechnical-systems)
+* [The role of ontologies, and Spyderisk papers](#the-role-of-ontologies,-and-spyderisk-papers)
+
+# The journey to openness
 
 Our Spyderisk story starts in 2006 at the University of Southampton in England,
 where a group gathered themselves under the name 
@@ -160,7 +169,7 @@ behaviours and considering the important cases, which were: the average
 behaviour of the population, the behaviour of the best member, and the
 behaviour of the worst member.
 
-# Trust modelling in Sociotechnical systems
+# Trust modelling in sociotechnical systems
 
 So far we had mostly dealt with aspects of security in cyberphysical systems.
 The problem with a cyber-physical approach is that it tends to be less
