@@ -78,8 +78,9 @@ class ThreatAccordion extends React.Component {
         this.props.controlSets.forEach(cs => propControlSets[cs.uri] = cs);
         
         //get map of control strategy types for this threat
-        var csgTypes = this.props.threat["controlStrategies"];
+        let csgTypes = this.props.threat["controlStrategies"];
 
+        /* No longer filter out triggerable CSGs - see below
         //filter out any CSGs that are of type "TRIGGER", when not in developer mode (as we only need those that BLOCK or MITEGATE the threat)
         let csgsAsArray = Object.keys(csgTypes).map(csgUri => {
             let csgType = csgTypes[csgUri];
@@ -90,6 +91,13 @@ class ThreatAccordion extends React.Component {
                 return csg;
             }
         }).filter(csg => csg !== undefined);
+        */
+
+        //Get array of CSG objects (including triggerable ones for now)
+        let csgsAsArray = Object.keys(csgTypes).map(csgUri => {
+            let csg = this.props.controlStrategies[csgUri];
+            return csg;
+        });
 
         // We don't want to display or count CSGs where one or more CSs cannot be asserted
         csgsAsArray = csgsAsArray.filter(csg => {
