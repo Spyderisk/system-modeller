@@ -20,7 +20,7 @@ in cybersecurity or privacy) then Spyderisk could be for you.
 * [Introduction](#introduction)
 * [Important project information](#important-project-information)
 * [What is the Spyderisk System Modeller?](#what-is-the-spyderisk-system-modeller)
-* [Next steps](#next-steps)
+* [Your next steps](#your-next-steps)
 * [Process of using system-modeller](#process-of-using-system-modeller)
 
 
@@ -91,7 +91,7 @@ The system-modeller tree has approximately 70k lines of Java code in the core se
 and another 20k of Java code for running tests.
 
 
-# Next steps
+# Your next steps
 
 If you only want to run a demo of the Spyderisk System Modeller and do not need to do any development,
 then you need to follow the [Installing Docker](./INSTALL.md#installing-docker) section of [INSTALL.md](./INSTALL.md)
