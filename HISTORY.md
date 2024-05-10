@@ -200,12 +200,13 @@ changes the model for different scenarios.
 
 # The role of ontologies, and Spyderisk papers
 
-Since 2009 Spyderisk has based its reasoning about risk on an underlying ontology. Ontologists often
-distinguish between three general types of ontologies:
-
-* Upper-Level/Foundational Ontologies (e.g., [Basic Formal Ontology](https://basic-formal-ontology.org/) for information retrieval and analysis)
-* Reference/Core/Mid-Level/Domain Ontologies (e.g., [Reference Ontology for Security Engineering [ROSE]](https://purl.org/security-ontology), [Common Core Cyber Ontology [C3O]](https://opensource.ieee.org/cyber-ontology-working-group/cyber-ontology-releases))
-* Application-Level (with knowledge of particular details, e.g. a statement that a "Server" may contain "Data" and some of that could be "Personal Data")
+Since 2009 Spyderisk has based its reasoning about risk on an underlying ontology.
+Technical details of the ontological approach are in the
+[Spyderisk onotologies documentation](./docs/ontologies.md), but in terms of Spyderisk
+history this is also important. The Spyderisk Open Project aims not only to produce a
+tool widely used for risk assessment, but to collect the knowledge of experts engaged in
+risk assessment generally. These experts may never use any Spyderisk software, but we are
+all working in the same general ontological areas, and we all need a common vocabulary.
 
 Spyderisk combines a domain ontology with an application-level ontology, but
 does not have an upper-level ontology. The Spyderisk ontology continues to be
