@@ -152,11 +152,6 @@ class ThreatAccordion extends React.Component {
         // get full TWAS objects array for this threat (not for compliance threats)
         let entryPoints = !isComplianceThreat ? this.getEntryPoints(this.props.threat) : [];
         
-        //Previously we did not display CSGs for modelling errors, however there are known
-        //scenarios where there is a CSG available
-        //let showCSGs = !this.props.threat.isModellingError;
-        let showCSGs = true;
-
         //TODO: move the style to a stylesheet
         let directCauseIcon = <span style={{float:"right"}}><i className="fa fa-arrow-right"/> <i className="fa fa-crosshairs"/></span>;
         let directEffectsIcon = <span style={{float:"right"}}><i className="fa fa-crosshairs"/> <i className="fa fa-arrow-right"/></span>;
@@ -252,7 +247,7 @@ class ThreatAccordion extends React.Component {
                     </Panel.Collapse>
                 </Panel>}
 
-                {showCSGs && <Panel defaultExpanded bsStyle={csgStyle} className="csg" style={{borderColor: csgsPanelColor}}>
+                <Panel defaultExpanded bsStyle={csgStyle} className="csg" style={{borderColor: csgsPanelColor}}>
                     <Panel.Heading style={{backgroundColor: csgsPanelColor}}>
                         <Panel.Title toggle style={{color: csgsPanelColor ? "black" : "white"}}>
                             {this.renderHeaderNumbers("Control Strategies", null, "Control strategies that will address this threat", "threat-ctrl-strat", nCsgResolved, nCsgs)}
@@ -275,7 +270,7 @@ class ThreatAccordion extends React.Component {
                                                     />
                         </Panel.Body>
                     </Panel.Collapse>
-                </Panel>}
+                </Panel>
 
             </div>
         );
