@@ -1,4 +1,6 @@
-Describes version FIXME of the Spyderisk core model FIXME
+Describes version FIXME of the [Spyderisk core model](https://github.com/Spyderisk/system-modeller/blob/dev/src/main/resources/core.rdf).
+
+This document is not strictly limited to the core, because it also covers some things needed for system modelling.
 
 Includes notes on versions FIXME-FIXME of the core model
 
