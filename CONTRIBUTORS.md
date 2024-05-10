@@ -3,12 +3,12 @@
 "Contributors" refers to individual people whose work appears in Spyderisk. There are
 two kinds of individual contributors:
 
-1. Those who are in the [LICENSORS file](./LICENSORS.md), because as owners
-they have the right to license their work as open source. These individuals are
-listed there alongside Yahoo!, Microsoft and the University of Southampton.
+1. Those listed in the [LICENSORS file](./LICENSORS.md), because as owners
+they have the right to license their work as open source. Individuals are
+listed there alongside organisations including Yahoo!, Microsoft and the University of Southampton.
 2. Those who are listed in this file, who have between them contributed many
 thousands of lines of code, but who cannot be licensors because they do not own
-the code they have contributed. 
+the code they have contributed because their employer owns the code instead.
 
 The Spyderisk source trees have been worked on by many people over at least
 twelve years at the IT Innovation Centre at the University of Southampton. As
@@ -32,7 +32,7 @@ lists the roles within Spyderisk.
 * Mike Surridge <ms@it-innovation.soton.ac.uk>
 * Steve Taylor <sjt1@soton.ac.uk>
 
-# Spyderisk alumni
+# Spyderisk alumni (who are not licensors)
 
 We thank you all for your work and look forward to seeing you around.
 
@@ -53,3 +53,4 @@ We thank you all for your work and look forward to seeing you around.
 * Josh Tucker <jt6g20@soton.ac.uk>
 * Toby Wilkinson <stw@it-innovation.soton.ac.uk>
 * Josh Wright <jw18@it-innovation.soton.ac.uk>
+* Oliver Hayes IT Innovation
