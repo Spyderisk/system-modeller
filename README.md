@@ -40,7 +40,7 @@ This source tree is for:
 * building and running Spyderisk from its source code
 * reading all [Spyderisk technical papers](./docs/papers/README.md) in one place
 * understanding the generous [Spyderisk open licensing](./LICENSES.md)
-* consulting the generic [base ontology in RDF format](https://github.com/Spyderisk/system-modeller/blob/dev/src/main/resources/core.rdf) which ships with Spyderisk
+* reading the [schema explanation](./docs/triple-store-schema.md) for the [base ontology in RDF format](https://github.com/Spyderisk/system-modeller/blob/dev/src/main/resources/core.rdf) which ships with Spyderisk
 
 If you wish to interact programmatically with Spyderisk instead of using the
 web GUI, the [Spyderisk Python adaptor](https://github.com/Spyderisk/system-modeller-adaptor)
