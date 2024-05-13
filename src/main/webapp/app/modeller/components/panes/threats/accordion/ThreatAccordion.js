@@ -216,7 +216,6 @@ class ThreatAccordion extends React.Component {
         //Create map of csuri -> cs
         let propControlSets = {};
         this.props.controlSets.forEach(cs => propControlSets[cs.uri] = cs);
-        console.log("propControlSets", propControlSets);
 
         return (
             [this.renderCsgsPanel(propControlSets, this.getNonTriggerCsgs(), false),
@@ -268,7 +267,6 @@ class ThreatAccordion extends React.Component {
                                         "Control strategies that will address this threat";
 
         // We don't want to display or count CSGs where one or more CSs cannot be asserted
-        console.log("csgsAsArray", csgsAsArray);
         csgsAsArray = csgsAsArray.filter(csg => {
             let controlSetUris = csg.mandatoryControlSets.concat(csg.optionalControlSets);
             let controlSets = controlSetUris.map(csUri => {
