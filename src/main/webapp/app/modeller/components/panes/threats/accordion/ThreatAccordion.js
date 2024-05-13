@@ -31,6 +31,10 @@ class ThreatAccordion extends React.Component {
         this.getEntryPoints = this.getEntryPoints.bind(this);
         this.renderHeader = this.renderHeader.bind(this);
         this.renderHeaderNumbers = this.renderHeaderNumbers.bind(this);
+        this.renderCsgPanels = this.renderCsgPanels.bind(this);
+        this.renderCsgsPanel = this.renderCsgsPanel.bind(this);
+        this.getNonTriggerCsgs = this.getNonTriggerCsgs.bind(this);
+        this.getTriggerCsgs = this.getTriggerCsgs.bind(this);
 
         this.state = {
             expanded: {
@@ -59,89 +63,7 @@ class ThreatAccordion extends React.Component {
             return null;
         }
 
-        let isComplianceThreat = this.props.threat.isComplianceThreat;
-        
-        let statusString = getThreatStatus(this.props.threat, this.props.controlStrategies);
-        let status;
-        let triggeredStatus = "UNTRIGGERED";
-        
-        if (statusString.includes("/")) {
-            let arr = statusString.split("/");
-            status = arr[0];
-            triggeredStatus = arr[1];
-        }
-        else {
-            status = statusString;
-        }
-
-        let propControlSets = {};
-        this.props.controlSets.forEach(cs => propControlSets[cs.uri] = cs);
-        
-        //get map of control strategy types for this threat
-        let csgTypes = this.props.threat["controlStrategies"];
-
-        /* No longer filter out triggerable CSGs - see below
-        //filter out any CSGs that are of type "TRIGGER", when not in developer mode (as we only need those that BLOCK or MITEGATE the threat)
-        let csgsAsArray = Object.keys(csgTypes).map(csgUri => {
-            let csgType = csgTypes[csgUri];
-            if ((csgType === "TRIGGER") && !this.props.developerMode)
-                return undefined;
-            else {
-                let csg = this.props.controlStrategies[csgUri];
-                return csg;
-            }
-        }).filter(csg => csg !== undefined);
-        */
-
-        //Get array of CSG objects (including triggerable ones for now)
-        let csgsAsArray = Object.keys(csgTypes).map(csgUri => {
-            let csg = this.props.controlStrategies[csgUri];
-            return csg;
-        });
-
-        // We don't want to display or count CSGs where one or more CSs cannot be asserted
-        csgsAsArray = csgsAsArray.filter(csg => {
-            let controlSetUris = csg.mandatoryControlSets.concat(csg.optionalControlSets);
-            let controlSets = controlSetUris.map(csUri => {
-                let cs = propControlSets[csUri];
-                return cs;
-            });
-            let strategyNotAssertable = controlSets.map(cs => !(cs.assertable)).reduce(
-                (previousValue, currentValue) => previousValue || currentValue,
-                false
-            )
-            return !strategyNotAssertable;
-        })
-
-        // TODO: the correctly filtered list of CSGs that we now have is only used here for the count in the panel
-        // We should be passing the filtered list into the ControlStrategiesPanel for display. As it is, similar filtering code is also implemented in there.
-        // The necessary Object can be created using Object.fromEntries(csgsAsArray)
-
-        //filter only those that are resolved (enabled) 
-        let csgResolved = csgsAsArray.filter(csg => csg.enabled);
-        
-        let nCsgs = csgsAsArray.length; //total number of CGSs
-        let nCsgResolved = csgResolved.length; //number of CGSs resolved
-        
-        var csgStyle = "danger"; //no CGSs are active
-        
-        if ((status === "BLOCKED") || (status === "MITIGATED")) {
-            if (nCsgResolved === nCsgs) {
-                csgStyle = "success"; //all CGSs are active
-            }
-            else {
-                csgStyle = "warning"; //at least one CGS is active
-            }
-        }
-        else if (status === "ACCEPTED") {
-            csgStyle = "warning";
-        }
-        
-        // 7/2/2019: decided that colouring would simply be green here, if one or more CSGs are enabled (see #628)
-        //let csgsPanelColor = getThreatColor(this.props.threat, this.props.levels["TrustworthinessLevel"]);
-        let csgsPanelColor = undefined; //this just means the style is not used, so we use csgStyle instead below
-        
-        let {expanded} = this.state;
+        let isComplianceThreat = this.props.threat.isComplianceThreat;        
 
         //N.B. The causes, effects, secondaryEffects are set in populateThreatMisbehaviours()
         let causes = this.props.threat.secondaryEffectConditions;
@@ -247,30 +169,7 @@ class ThreatAccordion extends React.Component {
                     </Panel.Collapse>
                 </Panel>}
 
-                <Panel defaultExpanded bsStyle={csgStyle} className="csg" style={{borderColor: csgsPanelColor}}>
-                    <Panel.Heading style={{backgroundColor: csgsPanelColor}}>
-                        <Panel.Title toggle style={{color: csgsPanelColor ? "black" : "white"}}>
-                            {this.renderHeaderNumbers("Control Strategies", null, "Control strategies that will address this threat", "threat-ctrl-strat", nCsgResolved, nCsgs)}
-                        </Panel.Title>
-                    </Panel.Heading>
-                    <Panel.Collapse>
-                        <Panel.Body>
-                            <ControlStrategiesPanel threat={this.props.threat}
-                                                    asset={this.props.asset}
-                                                    filteredCsgs={csgsAsArray}
-                                                    controlStrategies={this.props.controlStrategies}
-                                                    controlSets={propControlSets}
-                                                    levels={this.props.levels["TrustworthinessLevel"]}
-                                                    getControl={this.getControl}
-                                                    updateThreat={this.updateThreat}
-                                                    activateAcceptancePanel={this.activateAcceptancePanel}
-                                                    toggleAcceptThreat={this.toggleAcceptThreat}
-                                                    authz={this.props.authz}
-                                                    developerMode={this.props.developerMode}
-                                                    />
-                        </Panel.Body>
-                    </Panel.Collapse>
-                </Panel>
+                {this.renderCsgPanels()}
 
             </div>
         );
@@ -311,6 +210,133 @@ class ThreatAccordion extends React.Component {
                 {overlay1}{" "}{overlay2}{icon}
             </React.Fragment>
         );
+    }
+
+    renderCsgPanels() {
+        //Create map of csuri -> cs
+        let propControlSets = {};
+        this.props.controlSets.forEach(cs => propControlSets[cs.uri] = cs);
+        console.log("propControlSets", propControlSets);
+
+        return (
+            [this.renderCsgsPanel(propControlSets, this.getNonTriggerCsgs(), false),
+            this.renderCsgsPanel(propControlSets, this.getTriggerCsgs(), true)]
+        );
+    }
+
+    // Get standard CSGs (non-triggering)
+    getNonTriggerCsgs() {
+        //get map of control strategy types for this threat
+        let csgTypes = this.props.threat["controlStrategies"];
+
+        //filter out any CSGs that are of type "TRIGGER"
+        let csgsAsArray = Object.keys(csgTypes).map(csgUri => {
+            let csgType = csgTypes[csgUri];
+            if (csgType === "TRIGGER")
+                return undefined;
+            else {
+                let csg = this.props.controlStrategies[csgUri];
+                return csg;
+            }
+        }).filter(csg => csg !== undefined);
+
+        return csgsAsArray;
+    }
+
+    // Get CSGs that are triggering
+    getTriggerCsgs() {
+        //get map of control strategy types for this threat
+        let csgTypes = this.props.threat["controlStrategies"];
+
+        //filter out any CSGs that are NOT of type "TRIGGER"
+        let csgsAsArray = Object.keys(csgTypes).map(csgUri => {
+            let csgType = csgTypes[csgUri];
+            if (csgType !== "TRIGGER")
+                return undefined;
+            else {
+                let csg = this.props.controlStrategies[csgUri];
+                return csg;
+            }
+        }).filter(csg => csg !== undefined);
+
+        return csgsAsArray;
+    }
+
+    renderCsgsPanel(propControlSets, csgsAsArray, triggering) {
+        let panelTitle = triggering ? "Triggering Control Strategies" : "Control Strategies";
+        let panelTooltip = triggering ? "Control strategies that will trigger this threat" :
+                                        "Control strategies that will address this threat";
+
+        // We don't want to display or count CSGs where one or more CSs cannot be asserted
+        console.log("csgsAsArray", csgsAsArray);
+        csgsAsArray = csgsAsArray.filter(csg => {
+            let controlSetUris = csg.mandatoryControlSets.concat(csg.optionalControlSets);
+            let controlSets = controlSetUris.map(csUri => {
+                let cs = propControlSets[csUri];
+                return cs;
+            });
+            let strategyNotAssertable = controlSets.map(cs => !(cs.assertable)).reduce(
+                (previousValue, currentValue) => previousValue || currentValue,
+                false
+            )
+            return !strategyNotAssertable;
+        })
+
+        // TODO: the correctly filtered list of CSGs that we now have is only used here for the count in the panel
+        // We should be passing the filtered list into the ControlStrategiesPanel for display. As it is, similar filtering code is also implemented in there.
+        // The necessary Object can be created using Object.fromEntries(csgsAsArray)
+
+        //filter only those that are resolved (enabled) 
+        let csgResolved = csgsAsArray.filter(csg => csg.enabled);
+        
+        let nCsgs = csgsAsArray.length; //total number of CGSs
+        let nCsgResolved = csgResolved.length; //number of CGSs resolved
+        
+        let csgStyle = "danger"; //no CGSs are active
+        let status = this.props.threatStatus;
+        
+        if ((status === "BLOCKED") || (status === "MITIGATED")) {
+            if (nCsgResolved === nCsgs) {
+                csgStyle = "success"; //all CGSs are active
+            }
+            else {
+                csgStyle = "warning"; //at least one CGS is active
+            }
+        }
+        else if (status === "ACCEPTED") {
+            csgStyle = "warning";
+        }
+        
+        // 7/2/2019: decided that colouring would simply be green here, if one or more CSGs are enabled (see #628)
+        //let csgsPanelColor = getThreatColor(this.props.threat, this.props.levels["TrustworthinessLevel"]);
+        let csgsPanelColor; //this just means the style is not used, so we use csgStyle instead below
+        
+        return (
+            <Panel defaultExpanded bsStyle={csgStyle} className="csg" style={{borderColor: csgsPanelColor}}>
+                <Panel.Heading style={{backgroundColor: csgsPanelColor}}>
+                    <Panel.Title toggle style={{color: csgsPanelColor ? "black" : "white"}}>
+                        {this.renderHeaderNumbers(panelTitle, null, panelTooltip, "threat-ctrl-strat", nCsgResolved, nCsgs)}
+                    </Panel.Title>
+                </Panel.Heading>
+                <Panel.Collapse>
+                    <Panel.Body>
+                        <ControlStrategiesPanel threat={this.props.threat}
+                                                asset={this.props.asset}
+                                                filteredCsgs={csgsAsArray}
+                                                controlStrategies={this.props.controlStrategies}
+                                                controlSets={propControlSets}
+                                                levels={this.props.levels["TrustworthinessLevel"]}
+                                                getControl={this.getControl}
+                                                updateThreat={this.updateThreat}
+                                                activateAcceptancePanel={this.activateAcceptancePanel}
+                                                toggleAcceptThreat={this.toggleAcceptThreat}
+                                                authz={this.props.authz}
+                                                developerMode={this.props.developerMode}
+                                                />
+                    </Panel.Body>
+                </Panel.Collapse>
+            </Panel>
+        )
     }
 
     activateAcceptancePanel(arg) {
@@ -511,6 +537,8 @@ ThreatAccordion.propTypes = {
     controlStrategies: PropTypes.object,
     controlSets: PropTypes.array, //all controlSets
     threat: PropTypes.object,
+    threatStatus: PropTypes.string,
+    triggeredStatus: PropTypes.string,
     threats: PropTypes.array,
     twas: PropTypes.object,
     selectedMisbehaviour: PropTypes.object,

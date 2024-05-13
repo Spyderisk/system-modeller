@@ -102,11 +102,16 @@ class ThreatEditor extends React.Component {
         let riskRender = <strong>Error</strong>;
 
         let statusString = getThreatStatus(threat, this.props.model.controlStrategies);
+        let status;
         let triggeredStatus = "";
 
         if (statusString.includes("/")) {
             let arr = statusString.split("/");
+            status = arr[0];
             triggeredStatus = arr[1];
+        }
+        else {
+            status = statusString;
         }
 
         let emptyLevelTooltip; //tooltip to display when likelihood or risk is not available ("N/A")
@@ -270,6 +275,8 @@ class ThreatEditor extends React.Component {
                             controlSets={this.props.model["controlSets"]}
                             modelId={this.props.model["id"]}
                             threat={threat}
+                            threatStatus={status}
+                            triggeredStatus={triggeredStatus}
                             threats={this.props.model["threats"]}
                             twas={this.props.model["twas"]}
                             selectedMisbehaviour={this.props.selectedMisbehaviour}
