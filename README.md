@@ -4,9 +4,11 @@ The Spyderisk System Modeller (SSM, or just "Spyderisk") provides a thorough
 risk assessment of complex systems, applying our mathematical modelling to your
 particular problem. The [long Spyderisk history](./HISTORY.md) started in 2008.
 In 2023 we established the Spyderisk Open Project, publishing everything under
-open licenses.
+open licenses: software source code, ontologies, domain model database,
+online training, documentation, and academic papers. 
 
-As of Mid-2024, Spyderisk is in early release, fully available but only working
+
+As of Mid-2024, the Spyderisk software is in early release, fully available but only working
 in quite specific circumstances. This README file signposts you to the
 different ways of trying out Spyderisk and learning about the theory behind it.
 We expect Spyderisk to become increasingly easy to install and run.
@@ -96,8 +98,10 @@ and another 20k of Java code for running tests.
 If you only want to run a demo of the Spyderisk System Modeller and do not need to do any development,
 then you need to follow the [Installing Docker](./INSTALL.md#installing-docker) section of [INSTALL.md](./INSTALL.md)
 and then use the [system modeller deployment project](https://github.com/Spyderisk/system-modeller-deployment).
+We also [have two comprehensive online training courses](https://training.spyderisk.org/courses/), covering
+both Risk Assessment and Using Spyderisk.
 
-From here, within this source tree you may:
+From here, within this source tree, you may:
 
 * [compile and install Spyderisk from source code](./INSTALL.md)
 * [start Spyderisk software development](./docs/development.md)
