@@ -308,9 +308,11 @@ class ThreatAccordion extends React.Component {
         // 7/2/2019: decided that colouring would simply be green here, if one or more CSGs are enabled (see #628)
         //let csgsPanelColor = getThreatColor(this.props.threat, this.props.levels["TrustworthinessLevel"]);
         let csgsPanelColor; //this just means the style is not used, so we use csgStyle instead below
+
+        let key = triggering ? "triggering-csgs" : "csgs";
         
         return (
-            <Panel defaultExpanded bsStyle={csgStyle} className="csg" style={{borderColor: csgsPanelColor}}>
+            <Panel defaultExpanded key={key} bsStyle={csgStyle} className="csg" style={{borderColor: csgsPanelColor}}>
                 <Panel.Heading style={{backgroundColor: csgsPanelColor}}>
                     <Panel.Title toggle style={{color: csgsPanelColor ? "black" : "white"}}>
                         {this.renderHeaderNumbers(panelTitle, null, panelTooltip, "threat-ctrl-strat", nCsgResolved, nCsgs)}
