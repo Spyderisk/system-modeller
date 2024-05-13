@@ -320,6 +320,7 @@ class ThreatAccordion extends React.Component {
                     <Panel.Body>
                         <ControlStrategiesPanel threat={this.props.threat}
                                                 asset={this.props.asset}
+                                                triggering={triggering}
                                                 filteredCsgs={csgsAsArray}
                                                 controlStrategies={this.props.controlStrategies}
                                                 controlSets={propControlSets}
