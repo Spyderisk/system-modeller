@@ -14,7 +14,6 @@ import EffectPanel from "./panels/EffectPanel";
 import CausePanel from "./panels/CausePanel";
 import ModelMisBehavPanel from "../../details/accordion/panels/ModelMisBehavPanel";
 import ControlStrategiesPanel from "./panels/ControlStrategiesPanel";
-import {getThreatStatus} from "../../../util/ThreatUtils";
 import {bringToFrontWindow} from "../../../../actions/ViewActions";
 
 class ThreatAccordion extends React.Component {
@@ -217,7 +216,6 @@ class ThreatAccordion extends React.Component {
         let propControlSets = {};
         this.props.controlSets.forEach(cs => propControlSets[cs.uri] = cs);
 
-        //TODO: only render triggering CSGs panel if there are any
         return (
             [this.renderCsgsPanel(propControlSets, this.getNonTriggerCsgs(), false),
             this.renderCsgsPanel(propControlSets, this.getTriggerCsgs(), true)]

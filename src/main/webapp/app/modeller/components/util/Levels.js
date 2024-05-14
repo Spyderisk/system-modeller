@@ -21,7 +21,8 @@ export function getRenderedLevelText(levels, level, reverseColours, emptyLevelTo
 }
 
 function renderEmptyLevel(tooltip) {
-    let tooltipText = tooltip ? tooltip : "Not yet available - please run Risk Calculation";
+    let tooltipText = tooltip || "Not yet available - please run Risk Calculation";
+    
     return (
         <OverlayTrigger 
                         delayShow={Constants.TOOLTIP_DELAY}
