@@ -217,6 +217,7 @@ class ThreatAccordion extends React.Component {
         let propControlSets = {};
         this.props.controlSets.forEach(cs => propControlSets[cs.uri] = cs);
 
+        //TODO: only render triggering CSGs panel if there are any
         return (
             [this.renderCsgsPanel(propControlSets, this.getNonTriggerCsgs(), false),
             this.renderCsgsPanel(propControlSets, this.getTriggerCsgs(), true)]
@@ -289,6 +290,11 @@ class ThreatAccordion extends React.Component {
         
         let nCsgs = csgsAsArray.length; //total number of CGSs
         let nCsgResolved = csgResolved.length; //number of CGSs resolved
+
+        // Don't display triggering CSGs panel if there aren't any
+        if (triggering && nCsgs === 0) {
+            return null;
+        }
         
         let csgStyle = "danger"; //no CGSs are active
         let status = this.props.threatStatus;
