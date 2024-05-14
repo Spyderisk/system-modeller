@@ -31,7 +31,7 @@ in cybersecurity or privacy) then Spyderisk could be for you.
 This README relates to the [system-modeller source tree](https://github.com/Spyderisk/system-modeller),
 which provides both a web service and a web-based user interface. 
 If you only wish to install and run Spyderisk and its
-web GUI, see instead the [Spyderisk deployment tree](https://github.com/Spyderisk/system-modeller-deployment).
+web GUI, see instead the [Spyderisk Deployment Project](https://github.com/Spyderisk/system-modeller-deployment).
 Spyderisk will only build and run on Linux, however, it can be deployed to non-Linux systems
 using Docker containers. Docker is used to provide a consistent build and test environment for
 developers and for the continuous integration (CI) system. 
@@ -55,7 +55,7 @@ Java application creates the reasoner service which the Python adapter can inter
 
 Spyderisk is created by the [Spyderisk Contributors](./CONTRIBUTORS.md), freely
 available under [Open Source terms](./LICENSE.md). Everyone is welcome, noting
-our [basic rules of decent behaviour](CODE-OF-CONDUCT.md) around Spyderisk,
+our [basic rules of decent behaviour](./CODE-OF-CONDUCT.md) around Spyderisk,
 which includes contact details if you want to report a behaviour problem.
 
 We try to make it easy to [contribute to Spyderisk](./CONTRIBUTING.md) whatever your skills.
@@ -97,7 +97,7 @@ and another 20k of Java code for running tests.
 
 If you only want to run a demo of the Spyderisk System Modeller and do not need to do any development,
 then you need to follow the [Installing Docker](./INSTALL.md#installing-docker) section of [INSTALL.md](./INSTALL.md)
-and then use the [system modeller deployment project](https://github.com/Spyderisk/system-modeller-deployment).
+and then use the [Spyderisk Deployment project](https://github.com/Spyderisk/system-modeller-deployment).
 We also [have two comprehensive online training courses](https://training.spyderisk.org/courses/), covering
 both Risk Assessment and Using Spyderisk.
 
