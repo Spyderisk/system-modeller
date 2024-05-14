@@ -1,17 +1,22 @@
-# The Spyderisk System Modeller
+# The Spyderisk System Modeller software
 
-The Spyderisk System Modeller (SSM, or just "Spyderisk") provides a thorough
+This is the main software part of the [Spyderisk Open Project](https://github.com/Spyderisk).
+
+The overall Spyderisk Project's mission is to:
+
+> increase global trust in Information and Communication Technology (ICT) by establishing an international Open Community supporting the research, development, use and support of open, reliable, accessible and inclusive ICT risk assessment methods and tools.
+
+The Spyderisk System Modeller software ("Spyderisk") provides a thorough
 risk assessment of complex systems, applying our mathematical modelling to your
-particular problem. The [long Spyderisk history](./HISTORY.md) started in 2008.
-In 2023 we established the Spyderisk Open Project, publishing everything under
+particular problem. This software is the result of 
+[15 years of history in risk assessment](https://github.com/Spyderisk/system-modeller/blob/dev/HISTORY.md)
+of complex systems. Starting in 2023 we publish everything under
 open licenses: software source code, ontologies, domain model database,
 online training, documentation, and academic papers. 
-
 
 As of Mid-2024, the Spyderisk software is in early release, fully available but only working
 in quite specific circumstances. This README file signposts you to the
 different ways of trying out Spyderisk and learning about the theory behind it.
-We expect Spyderisk to become increasingly easy to install and run.
 
 If you are a researcher in the area of risk modelling including ontologies of
 risk, or if you have a specific problem domain you need to solve (particularly
