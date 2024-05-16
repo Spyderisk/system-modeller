@@ -2397,20 +2397,22 @@ function updateControlStrategies(threats, controlStrategies, controlSets) {
                 return cs;
             });
 
+            //Get specific CSG type for this threat
+            let csgType = csg.threatCsgTypes[threat.uri];
+
             //CSG is enabled if there are no mandatory controls, or if one of them is not proposed
             csg.enabled = (mandatoryControlSets.length) = 0 ? true : mandatoryControlSets.find((control) => !control["proposed"]) === undefined;
 
-            if (csg.type !== "TRIGGER" && csg.enabled) {
+            if (csgType !== "TRIGGER" && csg.enabled) {
                 threat.resolved = true; //if any non-triggering CSGs are enabled, the threat is resolved
             }
-            else if (csg.type === "TRIGGER" && csg.enabled) {
+            else if (csgType === "TRIGGER" && csg.enabled) {
                 triggered = true; //if any triggering CSGs are enabled, the threat is triggered
             }
         });
 
         // Finally, if triggered state has changed, update the threat
         if (threat.triggered !== triggered) {
-            //console.log("threat " + (triggered ? "triggered" : "untriggered") + ": " + threat.label);
             threat.triggered = triggered;
         }
     });
