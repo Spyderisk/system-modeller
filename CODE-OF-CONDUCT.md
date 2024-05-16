@@ -2,7 +2,7 @@
 
 Version 1.0
 
-The Spyderisk Project is a friendly community and welcomes contributions. This document outlines both
+The Spyderisk Open Project is a friendly community and welcomes contributions. This document outlines both
 expected and prohibited behaviour.
 
 # Short summary
@@ -121,9 +121,9 @@ accepted or tolerated.
 # Reporting
 
 If you believe you're experiencing unacceptable behaviour 
-as outlined above please contact one of the 
-[current authors in AUTHORS.md](./AUTHORS.md), or send a message to 
-[code-of-conduct@spyderisk.org](mailto:code-of-conduct@spyderisk.org).
+as outlined above please contact one of the current authors 
+[in the CONTRIBUTORS](./CONTRIBUTORS.md) file, or send a message to 
+[team@spyderisk.org](mailto:team@spyderisk.org).
 
 You should certainly get a reply. After determining a precise description of your
 situation, they will review and determine next steps. 
@@ -139,6 +139,8 @@ please follow the same reporting process.
 This document is (c) 2024 The Spyderisk Licensors, under the
 [Creative Commons Attribution-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-sa/4.0/) license.
 
-*Lightly adapted from the [LumoSQL project](https://lumosql.org), which was in turn heavily adapted and compressed from the version 3.1 of the [Mozilla Participation Guidelines](https://www.mozilla.org/en-US/about/governance/policies/participation/), released under the same license.*
+*Lightly adapted from the [LumoSQL project](https://lumosql.org), which in turn heavily adapted and compressed
+version 3.1 of the [Mozilla Participation Guidelines](https://www.mozilla.org/en-US/about/governance/policies/participation/),
+released under the same license.*
 
 
