@@ -3,7 +3,7 @@
 Spyderisk is licensed under the Apache 2.0 license.
 
 The [README in the licenses directory](./LICENSES/README.md) explains *how* developers should apply
-license headers to files in Spyderisk. This document is about the *why and what* of licensing.
+license headers to files in the Spyderisk System Modeller. This document is about the *why and what* of licensing.
 
 The site [TL;DR Legal](https://www.tldrlegal.com/license/apache-license-2-0-apache-2-0)
 summarises the Apache license as:
@@ -40,7 +40,7 @@ the top in the manner specified by the SPDX standard, where the
 owners/licensors are listed in the [LICENSORS file](./LICENSORS.md). This is
 usually followed by the statement "Original by A. Person", where "A. Person" is
 listed in the [CONTRIBUTORS file](./CONTRIBUTORS.md), or occasionally in 
-LICENSORS.md if they are in fact also owners.
+LICENSORS if they are in fact also owners.
 
 # Background
 

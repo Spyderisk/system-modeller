@@ -1,4 +1,4 @@
-# Licenses in Spyderisk and how to apply them
+# Licenses in the Spyderisk System Modeller and how to apply them
 
 This is both a policy document and a practical how-to. The technical details of
 licensing can be complicated, but Spyderisk licensing is easy if you follow
@@ -24,11 +24,11 @@ specifically for including in Spyderisk:
 
 A fifth type of intellectual property is that created by external third-party
 contributors who have probably never even heard of Spyderisk, of any of the
-above four types. We already use a lot of such code because it is compatible with
-our licensing policy.
+above four types. We already use a lot of such code to avoid re-inventing existing
+functionality, all of which is compatible with our licensing policy and some of which 
+is not under the Apache license.
 
 We currently use these licenses in Spyderisk:
-BSD-3-CLAUSE.txt  CREATIVE-COMMONS-BY-SA-4.0.txt  ISC.txt  MIT.txt
 
 * *[Apache 2](./APACHE-2.0.txt)* for nearly all code, including all code created specifically for Spyderisk
 * *[Creative Commons By-SA 4.0](./CREATIVE-COMMONS-BY-SA-4.0.txt)* for all new documentation, and eventually all documentation will be copyright CC By SA unless it was created by someone 

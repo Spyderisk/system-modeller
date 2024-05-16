@@ -1,4 +1,4 @@
-# Spyderisk installation
+# Spyderisk System Modeller installation
 
 ## Pre-requisites
 

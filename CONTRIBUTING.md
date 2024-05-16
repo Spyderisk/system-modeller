@@ -1,8 +1,9 @@
-# Contributing to the Spyderisk Open Project
+# Contributing to the Spyderisk System Modeller Project
 
 Welcome!
 
-We'd love to have your contributions to the Spyderisk project. This document is about our practical principles of working. 
+We'd love to have your contributions to the Spyderisk System Modeller project. This document is
+about our practical principles of working. 
 
 The overall Spyderisk mission is to:
 
@@ -18,9 +19,9 @@ respectful.
 
 We need all the help we can get on the software and computing side
 of Spyderisk such as Java, python and web development, system configuration,
-software packaging, build/test etc. This is lots of computer science in Spyderisk.
+software packaging, build/test etc. There is lots of computer science in Spyderisk.
 
-That said, you don't need to be a coder to contribute.
+That said, some of the most important work is not by computer scientists.
 
 We also need help from:
 
@@ -32,13 +33,15 @@ We also need help from:
 * legal specialists (EU legislation on Cyber Resilience, AI, Medical Devices etc)
 * graphic designers (have you seen the corners on our icons??)
 
-If you are any of the above, including a coder, we would love to hear from you. Do please drop an email or open a discussion issue on GitHub.
+If you are any of the above, including a coder, we would love to hear from you.
+Do please drop an email to [team@spyderisk.org](mailto://team@spyderisk.org)
+or open a discussion issue on GitHub.
 
 # Getting started for software developers
 
 * The [system modeller README](../README.md) explains how to set up the development environment
 * Once you have a working local copy of Spyderisk you can run the demonstration System models to get a feel for things
-* It is likely that while doing the above you will already have noticed things that need to be fixed. Great! Thisdocument shows you how to make these fixes happen, or
+* It is likely that while doing the above you will already have noticed things that need to be fixed. Great! This document shows you how to make these fixes happen, or
 * Alternatively, you can find an issue from our [List of Open Issues](https://github.com/Spyderisk/system-modeller/issues) you think you would like to solve, and add a comment to say that you are working on a fix, or
 * Create a new query or bug report as described in the following section, and start working on a fix for it
 * Whatever you decide to work on, follow the "How to submit a patch" procedure below
@@ -77,9 +80,17 @@ But basically just talk to us using whatever means you are comfortable with, and
 
 ## Transparency trumps accuracy
 
-Spyderisk needs to be both trustable and also to progress quickly. Where there is incomplete or inaccurate work in Spyderisk code then:
-* we document this with the string "WIP: BRIEF TEXT DESCRIPTION, https://github.com/Spyderisk/system-modeller/issues/NNN". Where "BRIEF TEXT DESCRIPTION" should not exceed a couple of sentences, and NNN should be the most relevant issue.
-* This string is valid for every audience - in the graphical user interface; commandline invocations; error results; source code comments; JSON results etc.
+Spyderisk needs to be both trustable and also to progress quickly. Where there
+is incomplete or inaccurate work in the Spyderisk System Modeller code then we document
+this with the string:
+
+```
+WIP: BRIEF TEXT DESCRIPTION, https://github.com/Spyderisk/system-modeller/issues/NNN
+```
+
+Where "BRIEF TEXT DESCRIPTION" should not exceed a couple of sentences, and NNN
+should be the most relevant issue.
+
 
 # Communication with the Spyderisk community
 
