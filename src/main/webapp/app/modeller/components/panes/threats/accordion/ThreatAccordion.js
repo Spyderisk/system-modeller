@@ -294,12 +294,13 @@ class ThreatAccordion extends React.Component {
             return null;
         }
         
-        let csgStyle = "danger"; //no CGSs are active
+        //Set default CSG style (triggered threats are opposite colour)
+        let csgStyle = triggering ? "success" : "danger"; //no CGSs are active
         let status = this.props.threatStatus;
         
         if ((status === "BLOCKED") || (status === "MITIGATED") || triggering) {
             if (nCsgResolved === nCsgs) {
-                csgStyle = "success"; //all CGSs are active
+                csgStyle = triggering ? "danger" : "success"; //all CGSs are active
             }
             else if (nCsgResolved > 0) {
                 csgStyle = "warning"; //at least one CGS is active
