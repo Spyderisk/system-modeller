@@ -350,8 +350,8 @@ body {
             div.well.well-sm {
                 &.strategy {
                     padding: 5px;
-                    background-color: #bcdbe4;
-                    border: 1px ridge #bcdbe4;
+                    background-color: #d5edf2;
+                    border: 1px ridge #d5edf2;
                     margin: 0;
                     overflow: hidden;
                     .optional {
@@ -359,15 +359,18 @@ body {
                     }
 
                     &.enabled {
-                        background-color: #a1e499;
-                        border: 1px ridge #bcdbe4;
+                        background-color: #6ed1f8;
+                        border: 1px ridge #6ed1f8;
                         margin: 0;
                         overflow: hidden;
                         &.blocked {
-                            background-color: #6ee461;
+                            background-color: #a1e499;
                         }
                         &.mitigated {
-                            background-color: #a2ee54;
+                            background-color: #a1e499;
+                        }
+                        &.triggered {
+                            background-color: #f1d96b;
                         }
                     }
                 }
@@ -407,6 +410,28 @@ body {
     }
     .ui-resizable-handle {
         cursor: nwse-resize;
+    }
+}
+
+.threat {
+    color: black;
+    .clickable {
+        color: black;
+    }
+    &.blocked {
+        background-color: #a1e499;
+    }
+    &.mitigated {
+        background-color: #a1e499;
+    }
+    &.triggered {
+        background-color: #f1d96b;
+    }
+    &.normal {
+        background-color: #6ed1f8;
+    }
+    &.unmanaged {
+        background-color: #fea9a9;
     }
 }
 

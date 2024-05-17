@@ -593,6 +593,7 @@ class ThreatsPanel extends React.Component {
             let statusText = "";
             let emptyLevelTooltip;
             let symbol;
+            let threatClass = "";
 
             /* Uncomment to add triggered state, e.g. for debugging
             if (triggeredStatus === "UNTRIGGERED") {
@@ -603,6 +604,10 @@ class ThreatsPanel extends React.Component {
             }
             */
 
+            if (triggeredStatus === "TRIGGERED") {
+                threatClass = "triggered";
+            }
+
             //Is threat a normal operation
             let normalOperation = threat.normalOperation !== undefined ? threat.normalOperation : false;
 
@@ -610,18 +615,29 @@ class ThreatsPanel extends React.Component {
                 // For now, display a blank icon here, as a space filler
                 // TODO: display a better icon here, e.g. depending on a "isAdverseOp" - see issue #107
                 symbol = <span className="threat-icon" style={{borderStyle: "none"}}></span>
+                threatClass = "normal";
             } else if (status === "BLOCKED") {
                 statusText += "Managed (" + threatColorAndBE.be.label + ")";
                 symbol = <span className="fa fa-check threat-icon" style={{backgroundColor: threatColorAndBE.color}}/>;
+                threatClass = "blocked";
             } else if (status === "MITIGATED") {
                 statusText += "Managed (" + threatColorAndBE.be.label + ")";
                 symbol = <span className="fa fa-minus threat-icon" style={{backgroundColor: threatColorAndBE.color}}/>;
+                threatClass = "mitigated";
             } else if (status === "ACCEPTED") {
                 statusText += "Accepted";
                 // TODO: put these colors and style in a stylesheet
                 symbol = <span className="fa fa-thumbs-up threat-icon" style={{backgroundColor: "red", color: "white"}}/>
             } else {
-                statusText += "Unmanaged";
+                console.log(status, triggeredStatus);
+                if (triggeredStatus === "TRIGGERED") {
+                    statusText += "Triggered";
+                    threatClass = "triggered";
+                }
+                else {
+                    statusText += "Unmanaged";
+                    threatClass = "unmanaged";
+                }
                 symbol = <span className="fa fa-exclamation-triangle threat-icon" style={{backgroundColor: "red", color: "white"}}/>;
             }
 
@@ -629,6 +645,7 @@ class ThreatsPanel extends React.Component {
                 statusText = "Untriggered side effect";
                 emptyLevelTooltip = "This threat poses no risk as it has not been enabled by a control strategy";
                 symbol = <span className="fa fa-check threat-icon"/>;
+                threatClass = "blocked"; //clour as if blocked (e.g. green)
             }
 
             let root_cause = threat.rootCause;
@@ -659,7 +676,7 @@ class ThreatsPanel extends React.Component {
 
             threatsRender.push(
                 <div key={index + 1} className={
-                    `row detail-info ${
+                    `row detail-info threat ${threatClass} ${
                         selected === true ? "selected-row" : "row-hover"
                     }`
                     }
