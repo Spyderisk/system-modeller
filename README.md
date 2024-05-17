@@ -2,15 +2,15 @@
 
 This is the main software part of the [Spyderisk Open Project](https://github.com/Spyderisk).
 
-The overall Spyderisk Project's mission is to:
+The overall Spyderisk Project's aim is to:
 
-> increase global trust in Information and Communication Technology (ICT) by establishing an international Open Community supporting the research, development, use and support of open, reliable, accessible and inclusive ICT risk assessment methods and tools.
+> understand the trustworthiness of socio-technical systems by establishing an international Open Community supporting the research, development, use and support of open, effective, and accessible risk assessment methods, knowledge and tools.
 
 The Spyderisk System Modeller software ("Spyderisk") provides a thorough
 risk assessment of complex systems, applying our mathematical modelling to your
 particular problem. This software is the result of 
 [15 years of history in risk assessment](https://github.com/Spyderisk/system-modeller/blob/dev/HISTORY.md)
-of complex systems. Starting in 2023 we publish everything under
+of complex socio-technical systems. Starting in 2023 we publish everything under
 open licenses: software source code, ontologies, domain model database,
 online training, documentation, and academic papers. 
 
