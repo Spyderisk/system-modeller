@@ -629,7 +629,6 @@ class ThreatsPanel extends React.Component {
                 // TODO: put these colors and style in a stylesheet
                 symbol = <span className="fa fa-thumbs-up threat-icon" style={{backgroundColor: "red", color: "white"}}/>
             } else {
-                console.log(status, triggeredStatus);
                 if (triggeredStatus === "TRIGGERED") {
                     statusText += "Triggered";
                     threatClass = "triggered";

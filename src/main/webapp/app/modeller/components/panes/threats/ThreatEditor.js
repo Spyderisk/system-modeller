@@ -167,7 +167,7 @@ class ThreatEditor extends React.Component {
                     x: window.outerWidth * 0.25,
                     y: (100 / window.innerHeight) * window.devicePixelRatio,
                     width: 560,
-                    height: 700,
+                    height: 660,
                 }}
                 style={{ zIndex: this.props.windowOrder }}
                 minWidth={150}
