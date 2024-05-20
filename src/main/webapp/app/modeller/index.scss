@@ -418,6 +418,9 @@ body {
     .clickable {
         color: black;
     }
+    .clickable:hover {
+        color: black;
+    }
     &.blocked {
         background-color: #a1e499;
     }
@@ -435,6 +438,27 @@ body {
     }
     &.unmanaged {
         background-color: #fea9a9;
+    }
+}
+
+.threat:hover {
+    &.blocked {
+        background-color: darken(#a1e499, 10%);
+    }
+    &.mitigated {
+        background-color: darken(#a1e499, 10%);
+    }
+    &.triggered {
+        background-color: darken(#f1d96b, 10%);
+    }
+    &.untriggered {
+        background-color: darken(#e4e4e4, 10%);
+    }
+    &.normal {
+        background-color: darken(#6ed1f8, 10%);
+    }
+    &.unmanaged {
+        background-color: darken(#fea9a9, 10%);
     }
 }
 
