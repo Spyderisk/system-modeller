@@ -427,6 +427,9 @@ body {
     &.triggered {
         background-color: #f1d96b;
     }
+    &.untriggered {
+        background-color: #e4e4e4;
+    }
     &.normal {
         background-color: #6ed1f8;
     }

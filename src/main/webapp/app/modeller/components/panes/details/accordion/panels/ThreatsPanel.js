@@ -645,7 +645,7 @@ class ThreatsPanel extends React.Component {
                 statusText = "Untriggered side effect";
                 emptyLevelTooltip = "This threat poses no risk as it has not been enabled by a control strategy";
                 symbol = <span className="fa fa-check threat-icon"/>;
-                threatClass = "blocked"; //clour as if blocked (e.g. green)
+                threatClass = "untriggered";
             }
 
             let root_cause = threat.rootCause;
