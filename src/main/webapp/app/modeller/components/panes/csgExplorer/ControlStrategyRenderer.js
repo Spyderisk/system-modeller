@@ -34,7 +34,8 @@ export function renderControlStrategy(csgName, controlStrategy, csgKey, threat, 
                 bsClass={"well well-sm strategy "
                 + (controlStrategy.enabled ? csgType === "BLOCK"
                     ? "enabled blocked" : csgType === "MITIGATE"
-                        ? "enabled mitigated" : "enabled" : "")}
+                        ? "enabled mitigated" : csgType === "TRIGGER"
+                            ? "enabled triggered" : "enabled" : "")}
                 >
                 {/*TODO: If MITIGATE is deprecated this conditional is unnecessary and can just be replaced with fa-star, or arguably no icon at all*/}
                 <p>
