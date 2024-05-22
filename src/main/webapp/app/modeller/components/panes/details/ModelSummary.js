@@ -92,6 +92,7 @@ class ModelSummary extends Component {
             this.setState({
                 ...this.state,
                 controls: {
+                    filter: this.state.controls.filter,
                     updating: []
                 }
             })
@@ -636,6 +637,7 @@ class ModelSummary extends Component {
     updateControlsState(controlLabels) {                
         this.setState({...this.state,
             controls: {
+                filter: this.state.controls.filter,
                 updating: controlLabels
             }
         });

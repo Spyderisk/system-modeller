@@ -1454,7 +1454,6 @@ export function resetControls(modelId, controls) {
 
 //Update multiple controls with new proposed value
 export function updateControls(modelId, controls, proposed, workInProgress, controlsReset) {
-    console.log("updateControls: controlsReset = " + controlsReset);
     let controlsUpdateRequest = {
         controls: controls,
         proposed: proposed,
