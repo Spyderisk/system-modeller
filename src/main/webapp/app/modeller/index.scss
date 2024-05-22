@@ -902,6 +902,9 @@ select.level + .fa-spinner {
 .clickable {
     color: #337ab7;
     cursor: pointer;
+    &.proposed {
+        font-weight: bold;
+    }
 }
 
 .clickable:hover {

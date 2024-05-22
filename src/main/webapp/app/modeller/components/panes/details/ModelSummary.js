@@ -452,6 +452,7 @@ class ModelSummary extends Component {
             let name = controlSet[0]; //e.g. AccessControl 
             let csList = controlSet[1]; //list of cs uris
             let nProposedControls = this.countProposedControls(csList);
+            let proposed = nProposedControls > 0;
 
             // If filter is active, filter out control set groups that have no proposed controls
             if (this.state.controls.filter && (nProposedControls === 0)) return;
@@ -486,7 +487,7 @@ class ModelSummary extends Component {
                     <OverlayTrigger {...ctrlSetOverlayProps}>
                         <span onMouseEnter={() => this.hoverControl(assets, true)}
                              onMouseLeave={() => this.hoverControl(assets, false)}
-                             className="clickable"
+                             className={"clickable" + (proposed ? " proposed" : "")}
                              onClick={() => {
                                  this.props.dispatch(openControlExplorer(csList[0].control));
                                  this.props.dispatch(bringToFrontWindow("controlExplorer"));
