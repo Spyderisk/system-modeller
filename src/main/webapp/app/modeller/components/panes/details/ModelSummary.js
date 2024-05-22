@@ -48,6 +48,7 @@ class ModelSummary extends Component {
         this.renderPossibleModellingErrorsPanel = this.renderPossibleModellingErrorsPanel.bind(this);
         this.renderCompliancePanel = this.renderCompliancePanel.bind(this);
         this.renderControlSetsPanel = this.renderControlSetsPanel.bind(this);
+        this.renderControlSetOptions = this.renderControlSetOptions.bind(this);
         this.renderControlStrategiesPanel = this.renderControlStrategiesPanel.bind(this);
         this.resetControls = this.resetControls.bind(this);
         this.togglePanel = this.togglePanel.bind(this);
@@ -79,6 +80,7 @@ class ModelSummary extends Component {
                 selectedAssetOnly: true
             },
             controls: {
+                filter: false,
                 updating: []
             },
         }
@@ -448,6 +450,11 @@ class ModelSummary extends Component {
         controlSets.map((controlSet, index) => {
             let name = controlSet[0]; //e.g. AccessControl 
             let csList = controlSet[1]; //list of cs uris
+            let nProposedControls = this.countProposedControls(csList);
+
+            // If filter is active, filter out control set groups that have no proposed controls
+            if (this.state.controls.filter && (nProposedControls === 0)) return;
+
             let listName = "ControlSet" + index;
             var assetUris = new Map();
             csList.forEach((c) => {
@@ -483,7 +490,7 @@ class ModelSummary extends Component {
                                  this.props.dispatch(openControlExplorer(csList[0].control));
                                  this.props.dispatch(bringToFrontWindow("controlExplorer"));
                              }}>
-                             {name} : {this.countProposedControls(csList)} of {csList.length} {" "}
+                             {name} : {nProposedControls} of {csList.length} {" "}
                              {spinnerActive ? <i className="fa fa-spinner fa-pulse fa-lg fa-fw"/> : null}
                         </span>
                     </OverlayTrigger>
@@ -492,23 +499,62 @@ class ModelSummary extends Component {
                 </Row>);
         });
 
-        let controlSetReset = <FormGroup>
-            <Button bsStyle="danger" bsSize="xsmall"
-                onClick={() => this.resetControls(
-                    Array.from(this.props.model.controlSets)
-                )}>
-                Remove All Controls
-            </Button>
-        </FormGroup>
-
         return (
             <div>
-            { controlSets.length > 0 ? controlSetReset : "" }
+            { controlSets.length > 0 ? this.renderControlSetOptions() : "" }
             <PagedPanel panelData={controlsRender}
                         pageSize={15}
                         context={"controls-" + this.props.model.id}
                         noDataMessage={"No controls found"}/>
             </div>
+        )
+    }
+
+    renderControlSetOptions() {
+        return (
+            <Form>
+                <FormGroup>
+                    <Button bsStyle="danger" bsSize="xsmall"
+                        onClick={() => this.resetControls(
+                            Array.from(this.props.model.controlSets)
+                        )}>
+                        Remove All Controls
+                    </Button>
+                </FormGroup>
+                {/* TODO rework this to add text filter <FormGroup>
+                    <InputGroup>
+                        <InputGroup.Addon><i className="fa fa-lg fa-filter"/></InputGroup.Addon>
+                        <FormControl 
+                            type="text"
+                            placeholder="Filter assets by name"
+                            value={this.state.assets.search}
+                            onChange={(e) => {
+                                this.setState({
+                                    ...this.state,
+                                    assets: {...this.state.assets, search: e.nativeEvent.target.value.trim()}
+                                })
+                            }}
+                            // need to prevent the Form being submitted when Return is pressed
+                            onKeyPress={(e) => { e.key === 'Enter' && e.preventDefault(); }}
+                        />
+                    </InputGroup>
+                        </FormGroup> */}
+                <FormGroup>
+                    <Checkbox
+                        checked={this.state.controls.filter}
+                        onChange={(e) => {
+                            this.setState({
+                                ...this.state,
+                                controls: {
+                                    ...this.state.controls,
+                                    filter: e.nativeEvent.target.checked
+                                }
+                            })
+                        }}>
+                        Only asserted controls
+                    </Checkbox>
+                </FormGroup>
+            </Form>
         )
     }
 
