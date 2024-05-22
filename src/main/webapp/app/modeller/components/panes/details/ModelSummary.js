@@ -566,6 +566,8 @@ class ModelSummary extends Component {
         csgs.map((csgEntry, index) => {
             let name = csgEntry[0];
             let csgList = csgEntry[1];
+            let nProposedCsgs = this.countProposedControlStrategies(csgList);
+            let proposed = nProposedCsgs > 0;
             let context = {"selection": "csgType"};
             let spinnerActive = false; //may not need this
 
@@ -584,12 +586,12 @@ class ModelSummary extends Component {
                 >
                     <OverlayTrigger {...csgOverlayProps}>
                         <span 
-                             className="clickable"
+                             className={"clickable" + (proposed ? " proposed" : "")}
                              onClick={() => {
                                  this.props.dispatch(openControlStrategyExplorer(csgList, context));
                                  this.props.dispatch(bringToFrontWindow("controlStrategyExplorer"));
                              }}>
-                             {name} : {this.countProposedControlStrategies(csgList)} of {csgList.length} {" "}
+                             {name} : {nProposedCsgs} of {csgList.length} {" "}
                              {spinnerActive ? <i className="fa fa-spinner fa-pulse fa-lg fa-fw"/> : null}
                         </span>
                     </OverlayTrigger>
