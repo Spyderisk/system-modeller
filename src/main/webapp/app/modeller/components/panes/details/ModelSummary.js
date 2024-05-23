@@ -64,7 +64,6 @@ class ModelSummary extends Component {
         this.countProposedControls = this.countProposedControls.bind(this);
         this.countProposedControlStrategies = this.countProposedControlStrategies.bind(this);
 
-
         this.state = {
             changeRelationModal: {
                 show: false,
@@ -81,6 +80,7 @@ class ModelSummary extends Component {
                 selectedAssetOnly: true
             },
             controls: {
+                search: "",
                 filter: false,
                 updating: []
             },
@@ -458,6 +458,12 @@ class ModelSummary extends Component {
             let nProposedControls = this.countProposedControls(csList);
             let proposed = nProposedControls > 0;
 
+            // If text search filter is defined, filter out controls with names that don't match
+            if (this.state.controls.search !== "") {
+                let search = this.state.controls.search.toLowerCase();
+                if (name.toLowerCase().indexOf(search) === -1) return;
+            } 
+
             // If filter is active, filter out control set groups that have no proposed controls
             if (this.state.controls.filter && (nProposedControls === 0)) return;
 
@@ -527,24 +533,24 @@ class ModelSummary extends Component {
                         Remove All Controls
                     </Button>
                 </FormGroup>
-                {/* TODO rework this to add text filter <FormGroup>
+                <FormGroup>
                     <InputGroup>
                         <InputGroup.Addon><i className="fa fa-lg fa-filter"/></InputGroup.Addon>
                         <FormControl 
                             type="text"
-                            placeholder="Filter assets by name"
-                            value={this.state.assets.search}
+                            placeholder="Filter controls by name"
+                            value={this.state.controls.search}
                             onChange={(e) => {
                                 this.setState({
                                     ...this.state,
-                                    assets: {...this.state.assets, search: e.nativeEvent.target.value.trim()}
+                                    controls: {...this.state.controls, search: e.nativeEvent.target.value.trim()}
                                 })
                             }}
                             // need to prevent the Form being submitted when Return is pressed
                             onKeyPress={(e) => { e.key === 'Enter' && e.preventDefault(); }}
                         />
                     </InputGroup>
-                        </FormGroup> */}
+                </FormGroup>
                 <FormGroup>
                     <Checkbox
                         checked={this.state.controls.filter}
