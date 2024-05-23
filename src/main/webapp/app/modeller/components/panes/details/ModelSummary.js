@@ -50,6 +50,7 @@ class ModelSummary extends Component {
         this.renderControlSetsPanel = this.renderControlSetsPanel.bind(this);
         this.renderControlSetOptions = this.renderControlSetOptions.bind(this);
         this.renderControlStrategiesPanel = this.renderControlStrategiesPanel.bind(this);
+        this.renderCsgOptions = this.renderCsgOptions.bind(this);
         this.resetControls = this.resetControls.bind(this);
         this.togglePanel = this.togglePanel.bind(this);
         this.formatRiskCalcMode = this.formatRiskCalcMode.bind(this);
@@ -82,6 +83,9 @@ class ModelSummary extends Component {
             controls: {
                 filter: false,
                 updating: []
+            },
+            csgs: {
+                filter: false
             },
         }
     }
@@ -571,6 +575,9 @@ class ModelSummary extends Component {
             let context = {"selection": "csgType"};
             let spinnerActive = false; //may not need this
 
+            // If filter is active, filter out CSG groups that have no proposed CSGs
+            if (this.state.csgs.filter && (nProposedCsgs === 0)) return;
+
             let csgOverlayProps = {
                 delayShow: Constants.TOOLTIP_DELAY, placement: "left",
                 overlay: <Tooltip id={"csg-" + 1 + "-error-tooltip"}
@@ -600,11 +607,52 @@ class ModelSummary extends Component {
 
         return (
             <div>
+                {csgs.length > 0 ? this.renderCsgOptions() : ""}
                 <PagedPanel panelData={csgsRender}
                             pageSize={15}
                             context={"csgs-" + this.props.model.id}
                             noDataMessage={"No control strategies found"}/>
             </div>
+        )
+    }
+
+    renderCsgOptions() {
+        return (
+            <Form>
+                {/* TODO rework this to add text filter <FormGroup>
+                    <InputGroup>
+                        <InputGroup.Addon><i className="fa fa-lg fa-filter"/></InputGroup.Addon>
+                        <FormControl 
+                            type="text"
+                            placeholder="Filter assets by name"
+                            value={this.state.assets.search}
+                            onChange={(e) => {
+                                this.setState({
+                                    ...this.state,
+                                    assets: {...this.state.assets, search: e.nativeEvent.target.value.trim()}
+                                })
+                            }}
+                            // need to prevent the Form being submitted when Return is pressed
+                            onKeyPress={(e) => { e.key === 'Enter' && e.preventDefault(); }}
+                        />
+                    </InputGroup>
+                        </FormGroup> */}
+                <FormGroup>
+                    <Checkbox
+                        checked={this.state.csgs.filter}
+                        onChange={(e) => {
+                            this.setState({
+                                ...this.state,
+                                csgs: {
+                                    ...this.state.csgs,
+                                    filter: e.nativeEvent.target.checked
+                                }
+                            })
+                        }}>
+                        Only enabled control strategies
+                    </Checkbox>
+                </FormGroup>
+            </Form>
         )
     }
 
