@@ -85,6 +85,7 @@ class ModelSummary extends Component {
                 updating: []
             },
             csgs: {
+                search: "",
                 filter: false
             },
         }
@@ -581,6 +582,12 @@ class ModelSummary extends Component {
             let context = {"selection": "csgType"};
             let spinnerActive = false; //may not need this
 
+            // If text search filter is defined, filter out control strategies with names that don't match
+            if (this.state.csgs.search !== "") {
+                let search = this.state.csgs.search.toLowerCase();
+                if (name.toLowerCase().indexOf(search) === -1) return;
+            } 
+
             // If filter is active, filter out CSG groups that have no proposed CSGs
             if (this.state.csgs.filter && (nProposedCsgs === 0)) return;
 
@@ -625,24 +632,24 @@ class ModelSummary extends Component {
     renderCsgOptions() {
         return (
             <Form>
-                {/* TODO rework this to add text filter <FormGroup>
+                <FormGroup>
                     <InputGroup>
                         <InputGroup.Addon><i className="fa fa-lg fa-filter"/></InputGroup.Addon>
                         <FormControl 
                             type="text"
-                            placeholder="Filter assets by name"
-                            value={this.state.assets.search}
+                            placeholder="Filter control strategies by name"
+                            value={this.state.csgs.search}
                             onChange={(e) => {
                                 this.setState({
                                     ...this.state,
-                                    assets: {...this.state.assets, search: e.nativeEvent.target.value.trim()}
+                                    csgs: {...this.state.csgs, search: e.nativeEvent.target.value.trim()}
                                 })
                             }}
                             // need to prevent the Form being submitted when Return is pressed
                             onKeyPress={(e) => { e.key === 'Enter' && e.preventDefault(); }}
                         />
                     </InputGroup>
-                        </FormGroup> */}
+                </FormGroup>
                 <FormGroup>
                     <Checkbox
                         checked={this.state.csgs.filter}
