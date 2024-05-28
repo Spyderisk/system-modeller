@@ -7,7 +7,7 @@ about our practical principles of working.
 
 The overall Spyderisk aim is to
 
-> understand the trustworthiness of socio-technical systems by establishing an international Open Community supporting the research, development, use and support of open, effective, and accessible risk assessment methods, knowledge and tools.
+> revolutionise understanding of the trustworthiness of socio-technical systems by establishing an international Open Community supporting the research, development, use and support of open, effective, and accessible risk assessment methods, knowledge and tools.
 
 and you can read more about this in the [general Spyderisk description](https://github.com/Spyderisk/), which explains
 who we are and what we do.
