@@ -48,7 +48,9 @@ class ModelSummary extends Component {
         this.renderPossibleModellingErrorsPanel = this.renderPossibleModellingErrorsPanel.bind(this);
         this.renderCompliancePanel = this.renderCompliancePanel.bind(this);
         this.renderControlSetsPanel = this.renderControlSetsPanel.bind(this);
+        this.renderControlSetOptions = this.renderControlSetOptions.bind(this);
         this.renderControlStrategiesPanel = this.renderControlStrategiesPanel.bind(this);
+        this.renderCsgOptions = this.renderCsgOptions.bind(this);
         this.resetControls = this.resetControls.bind(this);
         this.togglePanel = this.togglePanel.bind(this);
         this.formatRiskCalcMode = this.formatRiskCalcMode.bind(this);
@@ -61,7 +63,6 @@ class ModelSummary extends Component {
         this.renderComplianceHeader = this.renderComplianceHeader.bind(this);
         this.countProposedControls = this.countProposedControls.bind(this);
         this.countProposedControlStrategies = this.countProposedControlStrategies.bind(this);
-
 
         this.state = {
             changeRelationModal: {
@@ -79,7 +80,13 @@ class ModelSummary extends Component {
                 selectedAssetOnly: true
             },
             controls: {
+                search: "",
+                filter: false,
                 updating: []
+            },
+            csgs: {
+                search: "",
+                filter: false
             },
         }
     }
@@ -90,6 +97,7 @@ class ModelSummary extends Component {
             this.setState({
                 ...this.state,
                 controls: {
+                    ...this.state.controls,
                     updating: []
                 }
             })
@@ -448,6 +456,18 @@ class ModelSummary extends Component {
         controlSets.map((controlSet, index) => {
             let name = controlSet[0]; //e.g. AccessControl 
             let csList = controlSet[1]; //list of cs uris
+            let nProposedControls = this.countProposedControls(csList);
+            let proposed = nProposedControls > 0;
+
+            // If text search filter is defined, filter out controls with names that don't match
+            if (this.state.controls.search !== "") {
+                let search = this.state.controls.search.toLowerCase();
+                if (name.toLowerCase().indexOf(search) === -1) return;
+            } 
+
+            // If filter is active, filter out control set groups that have no proposed controls
+            if (this.state.controls.filter && (nProposedControls === 0)) return;
+
             let listName = "ControlSet" + index;
             var assetUris = new Map();
             csList.forEach((c) => {
@@ -478,12 +498,12 @@ class ModelSummary extends Component {
                     <OverlayTrigger {...ctrlSetOverlayProps}>
                         <span onMouseEnter={() => this.hoverControl(assets, true)}
                              onMouseLeave={() => this.hoverControl(assets, false)}
-                             className="clickable"
+                             className={"clickable" + (proposed ? " proposed" : "")}
                              onClick={() => {
                                  this.props.dispatch(openControlExplorer(csList[0].control));
                                  this.props.dispatch(bringToFrontWindow("controlExplorer"));
                              }}>
-                             {name} : {this.countProposedControls(csList)} of {csList.length} {" "}
+                             {name} : {nProposedControls} of {csList.length} {" "}
                              {spinnerActive ? <i className="fa fa-spinner fa-pulse fa-lg fa-fw"/> : null}
                         </span>
                     </OverlayTrigger>
@@ -492,23 +512,62 @@ class ModelSummary extends Component {
                 </Row>);
         });
 
-        let controlSetReset = <FormGroup>
-            <Button bsStyle="danger" bsSize="xsmall"
-                onClick={() => this.resetControls(
-                    Array.from(this.props.model.controlSets)
-                )}>
-                Remove All Controls
-            </Button>
-        </FormGroup>
-
         return (
             <div>
-            { controlSets.length > 0 ? controlSetReset : "" }
+            { controlSets.length > 0 ? this.renderControlSetOptions() : "" }
             <PagedPanel panelData={controlsRender}
                         pageSize={15}
                         context={"controls-" + this.props.model.id}
                         noDataMessage={"No controls found"}/>
             </div>
+        )
+    }
+
+    renderControlSetOptions() {
+        return (
+            <Form>
+                <FormGroup>
+                    <Button bsStyle="danger" bsSize="xsmall"
+                        onClick={() => this.resetControls(
+                            Array.from(this.props.model.controlSets)
+                        )}>
+                        Remove All Controls
+                    </Button>
+                </FormGroup>
+                <FormGroup>
+                    <InputGroup>
+                        <InputGroup.Addon><i className="fa fa-lg fa-filter"/></InputGroup.Addon>
+                        <FormControl 
+                            type="text"
+                            placeholder="Filter controls by name"
+                            value={this.state.controls.search}
+                            onChange={(e) => {
+                                this.setState({
+                                    ...this.state,
+                                    controls: {...this.state.controls, search: e.nativeEvent.target.value.trim()}
+                                })
+                            }}
+                            // need to prevent the Form being submitted when Return is pressed
+                            onKeyPress={(e) => { e.key === 'Enter' && e.preventDefault(); }}
+                        />
+                    </InputGroup>
+                </FormGroup>
+                <FormGroup>
+                    <Checkbox
+                        checked={this.state.controls.filter}
+                        onChange={(e) => {
+                            this.setState({
+                                ...this.state,
+                                controls: {
+                                    ...this.state.controls,
+                                    filter: e.nativeEvent.target.checked
+                                }
+                            })
+                        }}>
+                        Only asserted controls
+                    </Checkbox>
+                </FormGroup>
+            </Form>
         )
     }
 
@@ -518,8 +577,19 @@ class ModelSummary extends Component {
         csgs.map((csgEntry, index) => {
             let name = csgEntry[0];
             let csgList = csgEntry[1];
+            let nProposedCsgs = this.countProposedControlStrategies(csgList);
+            let proposed = nProposedCsgs > 0;
             let context = {"selection": "csgType"};
             let spinnerActive = false; //may not need this
+
+            // If text search filter is defined, filter out control strategies with names that don't match
+            if (this.state.csgs.search !== "") {
+                let search = this.state.csgs.search.toLowerCase();
+                if (name.toLowerCase().indexOf(search) === -1) return;
+            } 
+
+            // If filter is active, filter out CSG groups that have no proposed CSGs
+            if (this.state.csgs.filter && (nProposedCsgs === 0)) return;
 
             let csgOverlayProps = {
                 delayShow: Constants.TOOLTIP_DELAY, placement: "left",
@@ -536,12 +606,12 @@ class ModelSummary extends Component {
                 >
                     <OverlayTrigger {...csgOverlayProps}>
                         <span 
-                             className="clickable"
+                             className={"clickable" + (proposed ? " proposed" : "")}
                              onClick={() => {
                                  this.props.dispatch(openControlStrategyExplorer(csgList, context));
                                  this.props.dispatch(bringToFrontWindow("controlStrategyExplorer"));
                              }}>
-                             {name} : {this.countProposedControlStrategies(csgList)} of {csgList.length} {" "}
+                             {name} : {nProposedCsgs} of {csgList.length} {" "}
                              {spinnerActive ? <i className="fa fa-spinner fa-pulse fa-lg fa-fw"/> : null}
                         </span>
                     </OverlayTrigger>
@@ -550,11 +620,52 @@ class ModelSummary extends Component {
 
         return (
             <div>
+                {csgs.length > 0 ? this.renderCsgOptions() : ""}
                 <PagedPanel panelData={csgsRender}
                             pageSize={15}
                             context={"csgs-" + this.props.model.id}
                             noDataMessage={"No control strategies found"}/>
             </div>
+        )
+    }
+
+    renderCsgOptions() {
+        return (
+            <Form>
+                <FormGroup>
+                    <InputGroup>
+                        <InputGroup.Addon><i className="fa fa-lg fa-filter"/></InputGroup.Addon>
+                        <FormControl 
+                            type="text"
+                            placeholder="Filter control strategies by name"
+                            value={this.state.csgs.search}
+                            onChange={(e) => {
+                                this.setState({
+                                    ...this.state,
+                                    csgs: {...this.state.csgs, search: e.nativeEvent.target.value.trim()}
+                                })
+                            }}
+                            // need to prevent the Form being submitted when Return is pressed
+                            onKeyPress={(e) => { e.key === 'Enter' && e.preventDefault(); }}
+                        />
+                    </InputGroup>
+                </FormGroup>
+                <FormGroup>
+                    <Checkbox
+                        checked={this.state.csgs.filter}
+                        onChange={(e) => {
+                            this.setState({
+                                ...this.state,
+                                csgs: {
+                                    ...this.state.csgs,
+                                    filter: e.nativeEvent.target.checked
+                                }
+                            })
+                        }}>
+                        Only enabled control strategies
+                    </Checkbox>
+                </FormGroup>
+            </Form>
         )
     }
 
@@ -590,6 +701,7 @@ class ModelSummary extends Component {
     updateControlsState(controlLabels) {                
         this.setState({...this.state,
             controls: {
+                ...this.state.controls,
                 updating: controlLabels
             }
         });
