@@ -11,6 +11,7 @@ import {getRenderedLevelText} from "../../util/Levels";
 import {bringToFrontWindow, closeWindow} from "../../../actions/ViewActions";
 import {connect} from "react-redux";
 import {openDocumentation} from "../../../../common/documentation/documentation"
+import {getThreatStatus} from "../../util/ThreatUtils.js";
 
 class ThreatEditor extends React.Component {
 
@@ -100,9 +101,33 @@ class ThreatEditor extends React.Component {
         let likelihoodRender = <strong>Error</strong>;
         let riskRender = <strong>Error</strong>;
 
-        if(this.props.model.levels!=null){
-            likelihoodRender = getRenderedLevelText(this.props.model.levels.Likelihood, likelihood);
-            riskRender = getRenderedLevelText(this.props.model.levels.RiskLevel, risk);
+        let statusString = getThreatStatus(threat, this.props.model.controlStrategies);
+        let status;
+        let triggeredStatus = "";
+
+        if (statusString.includes("/")) {
+            let arr = statusString.split("/");
+            status = arr[0];
+            triggeredStatus = arr[1];
+        }
+        else {
+            status = statusString;
+        }
+
+        let emptyLevelTooltip; //tooltip to display when likelihood or risk is not available ("N/A")
+        let triggerableText; //text to display for a triggerable threat
+
+        if (triggeredStatus === "UNTRIGGERED") {
+            triggerableText = "N.B. This threat is not currently active. It is triggered when a particular control strategy is enabled.";
+            emptyLevelTooltip = "This threat poses no risk as it has not been enabled by a control strategy";
+        }
+        else if (triggeredStatus === "TRIGGERED") {
+            triggerableText = "N.B. This threat has been triggered by a particular control strategy which is currently enabled.";
+        }
+        
+        if (this.props.model.levels != null){
+            likelihoodRender = getRenderedLevelText(this.props.model.levels.Likelihood, likelihood, false, emptyLevelTooltip);
+            riskRender = getRenderedLevelText(this.props.model.levels.RiskLevel, risk, false, emptyLevelTooltip);
         }
 
         let assetLabelHeading = <OverlayTrigger delayShow={Constants.TOOLTIP_DELAY} placement="right"
@@ -142,7 +167,7 @@ class ThreatEditor extends React.Component {
                     x: window.outerWidth * 0.25,
                     y: (100 / window.innerHeight) * window.devicePixelRatio,
                     width: 560,
-                    height: 700,
+                    height: 660,
                 }}
                 style={{ zIndex: this.props.windowOrder }}
                 minWidth={150}
@@ -212,10 +237,14 @@ class ThreatEditor extends React.Component {
                                     {assetLabelHeading}
                                 </h4>
                             </div>
+                            {this.props.developerMode && <p>{threat.uri}</p>}
                             {threat.normalOperation && <p>This "threat" is expected to occur in normal operation.</p>}
                             <p>
                                 {threat !== undefined ? threat["description"] : ""}
                             </p>
+                            {triggerableText && <p>
+                                <b>{triggerableText}</b>
+                            </p>}
                             {!isComplianceThreat && <Fragment>
                                 <div key={0} className='row head'>
                                     <span className="col-xs-2 likelihood">
@@ -247,6 +276,8 @@ class ThreatEditor extends React.Component {
                             controlSets={this.props.model["controlSets"]}
                             modelId={this.props.model["id"]}
                             threat={threat}
+                            threatStatus={status}
+                            triggeredStatus={triggeredStatus}
                             threats={this.props.model["threats"]}
                             twas={this.props.model["twas"]}
                             selectedMisbehaviour={this.props.selectedMisbehaviour}

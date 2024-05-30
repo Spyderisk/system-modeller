@@ -92,6 +92,9 @@ public class DomainModelController {
 		String username = keycloakAdminClient.getCurrentUser().getUsername();
 		logger.debug("Getting domain models for: {}", username);
 
+		/* The user access control system for domain models is not working correctly and is not currently a required feature. 
+		   Therefore, the list of domain models returned for any user will be all domain models, for the time being. See issue #161
+
 		// If this is the user's first login we need to add them to
 		// the management graph and set their default domain model
 		// access.
@@ -105,6 +108,9 @@ public class DomainModelController {
 			logger.debug("{}", x);
 			return x;
 		}
+		*/
+
+		return storeModelManager.getDomainModels();
 	}
 
 	@RequestMapping(value = "/upload", method = RequestMethod.POST)

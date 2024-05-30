@@ -2,55 +2,66 @@
 
 Spyderisk is licensed under the Apache 2.0 license.
 
-The [README in the licenses directory](./LICENSES/README.md) explains how to apply
-license headers to files in Spyderisk.
+The [README in the licenses directory](./LICENSES/README.md) explains *how* developers should apply
+license headers to files in the Spyderisk System Modeller. This document is about the *why and what* of licensing.
 
 The site [TL;DR Legal](https://www.tldrlegal.com/license/apache-license-2-0-apache-2-0)
 summarises the Apache license as:
 > You can do what you like with the software, as long as you include the required notices.
 > This permissive license contains a patent license from the contributors of the code.
 
+For most people most of the time, this is all you need to know - please use and enjoy Spyderisk!
+
 # Spyderisk Open Project Copyright and Licenses
 
-Regardless of who owns contributions, Spyderisk source code is entirely
-licensed under either the Apache2 license or (in some cases) licenses which are
-compatible with Apache2. A complete list of licenses is in the README file in
-the directory [```LICENSES/```](./LICENSES/README.md), which also contains the text of these licenses and
-discussion about the Spyderisk policies and practices on incorporating open source 
-code developed outside Spyderisk.
+Spyderisk source code is available entirely under [Open
+Source](https://opensource.org/osd) licenses, either the [Apache2
+license](./LICENSES/APACHE-2.0.txt) as described above, or 
+for documentation, the [Creative Commons CC-by-SA](./LICENSES/CREATIVE-COMMONS-BY-SA-4.0.txt).
 
-As of 2023, the copyright of the code in all Spyderisk source trees
-is owned by either the individual authors, or, quite often, the University of
-Southampton ("Soton"). The IT Innovation Centre of the University of Southampton
-created nearly all Spyderisk code before it was open sourced in 2023. For any 
-new contributions - and we hope there will be many - we recommend the original author retain
-copyright ownership as an individual. If you work for an organisation and are
-unsure of who owns your output while at work, see your employment contract and
-ask your management. Many files simply have "Copyright the Spyderisk Authors" at the
-top as well as the name of the original author. This is a reference to the file
-[```AUTHORS.md```](./AUTHORS.md). 
+We use two standards to maintain copyright and licensing of all artefacts in the Spyderisk system modeller project:
 
-Spyderisk documentation and configuration files are generally under a Creative Commons 
-license, again explained in [```LICENSES/```](./LICENSES/README.md). It is not necessary 
-for every file to have a copyright notice, but in Spyderisk we do insist that all source code
-files do.
+* The [REUSE](https://reuse.software/spec/) high-level system of files and directories regarding licensing
+* The [SPDX software component descriptors](https://spdx.dev/), which are Software Bill of Materials (SBOM) system
+
+Both of these standards can be read by humans and machines, so Spyderisk is
+compatible with various automated due diligence systems.
+
+# Licensor or Contributor?
+
+The distinction matters legally, but in the day-to-day we just want to
+acknowledge the work done by many people over the years. Only someone who owns
+code has the right to license that code. Many substantial Spyderisk
+contributors commit their work but do not own their contributions because of
+their employment contract, and therefore they cannot be a licensor. 
+
+Many Spyderisk source files simply state "Copyright the Spyderisk licensors" at
+the top in the manner specified by the SPDX standard, where the
+owners/licensors are listed in the [LICENSORS file](./LICENSORS.md). This is
+usually followed by the statement "Original by A. Person", where "A. Person" is
+listed in the [CONTRIBUTORS file](./CONTRIBUTORS.md), or occasionally in 
+LICENSORS if they are in fact also owners.
+
+# Background
+
+Without repeating the detailed [HISTORY file](./HISTORY.md), Spyderisk licensing
+is explained by its history:
+
+* In 2023, when all source code was open sourced, the University of Southampton (Soton) was the main copyright licensor
+* There were many individual code contributors employed by Soton who were and remain Spyderisk authors, but all of their work in Spyderisk while being Soton employees is owned by Soton. These authors (called "contributors" to avoid confusion) are therefore not copyright licensors
+* A small proportion of the Spyderisk code has been incorporated from other open source projects, and remains copyrighted by its respective owners/licensors
+* Any future contributors to Spyderisk who are not Soton employees will own their contributions, and so they will be both authors and owners/licensors
+* Some future contributors may be in a similar situation to Soton employees, and their employer will own all their Spyderisk contributons. We would respectfully request that contributors check with their employer to see if they have the right to contribute individually, because we think that is better for the project overall.
 
 # No CLA
 
-Spyderisk does *not* and will not have a Contributor License Agreement (CLA),
-for reasons similar to [Red Hat](https://opensource.com/article/19/2/cla-problems),
+As a matter of policy, Spyderisk does not and will not have a Contributor License Agreement (CLA),
+for reaons similar to [Red Hat](https://opensource.com/article/19/2/cla-problems),
 the [Software Freedom Conservancy](https://sfconservancy.org/blog/2014/jun/09/do-not-need-cla/) and
-other leading open source voices.
+other leading open source voices. 
 
-We adhere to the "inbound = outbound" open source principle, which means:
-* each code contributor (ie inbound) has the same rights as every other code contributor.
-CLAs often grant additional rights to one particular contributor, which in
-the case of Spyderisk would be our generous founding donor, the University of
-Southampton. We have chosen not to do this.
-* each code user (ie outbound) has exactly the same rights to use Spyderisk source code
-as every code contributor.
- 
-Spyderisk uses the excellent Apache 2 license from
-[apache.org](https://apache.org), but apache.org itself is an organisation serving
-large companies, and we do not use their CLAs. We are not affiliated with
-apache.org in any way.
+Spyderisk adheres to the "inbound = outbound" principle, where Licensors get
+exactly the same rights as anyone else in the world. While we use the excellent
+Apache 2 license from [apache.org](https://apache.org), Spyderisk is not
+affiliated with apache.org, and we do not use the Apache CLAs or other tools
+which do not share rights equally with all.

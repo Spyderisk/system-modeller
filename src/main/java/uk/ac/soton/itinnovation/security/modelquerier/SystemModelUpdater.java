@@ -42,6 +42,7 @@ import uk.ac.soton.itinnovation.security.model.system.Model;
 import uk.ac.soton.itinnovation.security.model.system.Relation;
 import uk.ac.soton.itinnovation.security.model.system.TrustworthinessAttributeSet;
 import uk.ac.soton.itinnovation.security.modelquerier.util.ModelStack;
+import uk.ac.soton.itinnovation.security.modelquerier.util.QuerierUtils;
 import uk.ac.soton.itinnovation.security.semanticstore.AStoreWrapper;
 import uk.ac.soton.itinnovation.security.semanticstore.util.SparqlHelper;
 
@@ -661,42 +662,6 @@ public class SystemModelUpdater {
 		return controlSets;
 	}
 
-	private Set<String> getExpandedControlSets(Set<String> controlSets) {
-		Set<String> expandedControlSets = new HashSet<>();
-
-		for (String cs : controlSets) {
-			Set<String> expCs = getControlTriplet(cs);
-			expandedControlSets.addAll(expCs);
-		}
-
-		return expandedControlSets;
-	}
-
-	private Set<String> getControlTriplet(String csuri) {
-		String[] uriFrags = csuri.split("#");
-		String uriPrefix = uriFrags[0];
-		String shortUri = uriFrags[1];
-
-		String [] shortUriFrags = shortUri.split("-");
-		String control = shortUriFrags[0] + "-" + shortUriFrags[1];
-		control = control.replace("_Min", "").replace("_Max", "");
-		String assetId = shortUriFrags[2];
-
-		//logger.debug("control: {}", control);
-		//logger.debug("assetId: {}", assetId);
-
-		String csAvg = uriPrefix + "#" + control + "-" + assetId;
-		String csMin = uriPrefix + "#" + control + "_Min" + "-" + assetId;
-		String csMax = uriPrefix + "#" + control + "_Max" + "-" + assetId;
-
-		//logger.debug("csAvg: {}", csAvg);
-		//logger.debug("csMin: {}", csMin);
-		//logger.debug("csMax: {}", csMax);
-
-		Set<String> controlSets = new HashSet<>(Arrays.asList(csAvg, csMin, csMax));
-		return controlSets;
-	}
-
 	/**
 	 * Toggle the proposed status of multiple control sets
 	 *
@@ -713,7 +678,7 @@ public class SystemModelUpdater {
 			throw new IllegalArgumentException("Controls cannot be work in progress but not proposed");
 		}
 
-		Set<String> expandedControlSets = getExpandedControlSets(controlSets);
+		Set<String> expandedControlSets = QuerierUtils.getExpandedControlSets(controlSets);
 
 		for (String cs : expandedControlSets) {
 			logger.debug("control set {}, proposed: {}", cs, proposed);

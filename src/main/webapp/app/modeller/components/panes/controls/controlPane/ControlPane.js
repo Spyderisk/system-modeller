@@ -12,6 +12,7 @@ import * as Constants from "../../../../../common/constants.js";
 import OptionsModal from "../options/OptionsModal";
 import {
     getShortestPathPlot,
+    getRecommendations,
     getValidatedModel,
     calculateRisks,
     calculateRisksBlocking,
@@ -145,7 +146,7 @@ class ControlPane extends React.Component {
         let riskLevelsValid = valid && this.props.model["riskLevelsValid"]; //if model is invalid, riskLevelsValid must also be false
         let saved = this.props.model["saved"];
         let riskModeCurrent = false;
-        //console.log("saved = " + saved);
+        let acceptableRiskLevel = Constants.ACCEPTABLE_RISK_LEVEL;
 
         return (
             <div
@@ -387,6 +388,18 @@ class ControlPane extends React.Component {
                                       this.props.dispatch(getShortestPathPlot(this.props.model["id"], "CURRENT"));
                                   }}>
                             Show attack path (current risk)
+                        </MenuItem>
+                        <MenuItem eventKey={3}
+                                  onClick={() => {
+                                      this.props.dispatch(getRecommendations(this.props.model["id"], "FUTURE", acceptableRiskLevel));
+                                  }}>
+                            Recommendations (future risk)
+                        </MenuItem>
+                        <MenuItem eventKey={4}
+                                  onClick={() => {
+                                      this.props.dispatch(getRecommendations(this.props.model["id"], "CURRENT", acceptableRiskLevel));
+                                  }}>
+                            Recommendations (current risk)
                         </MenuItem>
                     </SplitButton>
                 </OverlayTrigger>

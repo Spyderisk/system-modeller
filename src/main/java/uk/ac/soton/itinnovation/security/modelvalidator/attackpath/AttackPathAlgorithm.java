@@ -53,9 +53,7 @@ public class AttackPathAlgorithm {
         final long startTime = System.currentTimeMillis();
 
         logger.debug("STARTING Shortest Path Attack algortithm ...");
-
-        // TODO might have to delay initialisation of the dataset until risk
-        // mode is checked.
+        
         apd = new AttackPathDataset(querier);
 
         final long endTime = System.currentTimeMillis();
@@ -90,38 +88,19 @@ public class AttackPathAlgorithm {
     }
 
     public boolean checkTargetUris(List<String> targetUris) {
-        boolean retVal = true;
         logger.debug("Checking submitted list of target URIs: {}", targetUris);
+
+        // Check if the list is null or empty
+        if (targetUris == null || targetUris.isEmpty()) {
+            logger.warn("The list of target URIs is null or empty.");
+            return false;
+        }
+
         if (!apd.checkMisbehaviourList(targetUris)) {
             logger.error("shortest path, target MS URI not valid");
-            retVal = false;
+            return false;
         }
-        return retVal;
-    }
-
-    public AttackTree calculateAttack(List<String> targetUris, boolean allPaths, boolean normalOperations)
-            throws RuntimeException {
-
-        logger.debug("calculate attack tree with allPaths: {}, normalOperations: {}", allPaths, normalOperations);
-        logger.debug("target URIs: {}", targetUris);
-
-        AttackTree attackTree;
-
-        try {
-            final long startTime = System.currentTimeMillis();
-
-            // calculate attack tree, allPath dictates one or two backtrace
-            // AttackTree is initialised with FUTURE risk mode enabled
-            attackTree = new AttackTree(targetUris, true, !allPaths, apd);
-
-            final long endTime = System.currentTimeMillis();
-            logger.info("AttackPathAlgorithm.calculateAttackTree: execution time {} ms", endTime - startTime);
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        return attackTree;
+        return true;
     }
 
     public TreeJsonDoc calculateAttackTreeDoc(List<String> targetUris, String riskCalculationMode, boolean allPaths,

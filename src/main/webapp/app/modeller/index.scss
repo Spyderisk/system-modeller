@@ -255,10 +255,11 @@ body {
 .misbehaviour-explorer,
 .control-explorer,
 .control-strategy-explorer,
+.recommendations-explorer,
 .compliance-explorer,
+.explorer,
 .report-dialog {
     border: 1px inset $BLUE;
-    // border-radius: 0.3em;
     box-shadow: 0 0 2px 2px rgba(0, 0, 0, 0.3);
     background-color: $PANEL_BACKGROUND_COLOUR;
     z-index: 1065;
@@ -266,6 +267,16 @@ body {
     flex-direction: column;
     height: 100%;
     width: 100%;
+    button.header {
+        border-bottom-width: 0px;
+        border-left-width: 0px;
+        border-right-width: 0px;
+        border-top-width: 0px;
+        padding-top: 0px;
+        padding-bottom: 0px;
+        padding-right: 0px;
+        padding-left: 0px;
+    }
     .header {
         cursor: all-scroll;
         width: 100%;
@@ -273,12 +284,15 @@ body {
         background: $DARK_BLUE;
         color: $PANEL_BACKGROUND_COLOUR;
         padding: 0.3em 0em;
+        .title {
+            padding-top: 4px;
+        }
         h1 {
             margin: 0 0.3em;
             font-size: 14px;
             line-height: 20px;
             font-weight: 600;
-            display: inline-block;
+            float: left;
         }
         .menu-close {
             cursor: pointer;
@@ -286,6 +300,27 @@ body {
             margin: 1px 0.3em 0 0.3em;
             float: right;
         }
+        .button {
+            cursor: pointer;
+            font-size: 18px;
+            margin: 0px;
+            float: right;
+        }
+        button {
+            border-top-width: 0px;
+            border-right-width: 0px;
+            border-left-width: 0px;
+            border-bottom-width: 0px;
+            padding-top: 0px;
+            padding-bottom: 0px;
+            background-color: transparent
+        }
+        button, i {
+            color: $PANEL_BACKGROUND_COLOUR;
+        }
+    }
+    .header-no-padding {
+        padding: 0;
     }
     .content {
         cursor: default;
@@ -315,48 +350,27 @@ body {
             div.well.well-sm {
                 &.strategy {
                     padding: 5px;
-                    background-color: #bcdbe4;
-                    border: 1px ridge #bcdbe4;
+                    background-color: #d5edf2;
+                    border: 1px ridge #d5edf2;
                     margin: 0;
                     overflow: hidden;
-                    .control {
-                        width: 100%;
-                        background-color: #1962c0;
-                        border: 1px ridge #1962c0;
-                        color: #fff;
-                        margin: 0;
-                        overflow: hidden;
-                        padding: 2px;
-                        display: inline-flex;
-                        align-items: center;
-
-                        .control-description {
-                            margin-left: 5px;
-                            font-weight: 300;
-                            color: white;
-                        }
-
-                        &[disabled] {
-                            .control-description {
-                                color: darken(#fff, 30);
-                                cursor: not-allowed;
-                            }
-                        }
-                    }
                     .optional {
                         background-color: #3d8ed4;
                     }
 
                     &.enabled {
-                        background-color: #a1e499;
-                        border: 1px ridge #bcdbe4;
+                        background-color: #03b5fb;
+                        border: 1px ridge #03b5fb;
                         margin: 0;
                         overflow: hidden;
                         &.blocked {
-                            background-color: #6ee461;
+                            background-color: #a1e499;
                         }
                         &.mitigated {
-                            background-color: #a2ee54;
+                            background-color: #a1e499;
+                        }
+                        &.triggered {
+                            background-color: #f1d96b;
                         }
                     }
                 }
@@ -396,6 +410,80 @@ body {
     }
     .ui-resizable-handle {
         cursor: nwse-resize;
+    }
+}
+
+.threat {
+    color: black;
+    .clickable {
+        color: black;
+    }
+    .clickable:hover {
+        color: black;
+    }
+    &.blocked {
+        background-color: #a1e499;
+    }
+    &.mitigated {
+        background-color: #a1e499;
+    }
+    &.triggered {
+        background-color: #f1d96b;
+    }
+    &.untriggered {
+        background-color: #e4e4e4;
+    }
+    &.normal {
+        background-color: #6ed1f8;
+    }
+    &.unmanaged {
+        background-color: #fea9a9;
+    }
+}
+
+.threat:hover {
+    &.blocked {
+        background-color: darken(#a1e499, 10%);
+    }
+    &.mitigated {
+        background-color: darken(#a1e499, 10%);
+    }
+    &.triggered {
+        background-color: darken(#f1d96b, 10%);
+    }
+    &.untriggered {
+        background-color: darken(#e4e4e4, 10%);
+    }
+    &.normal {
+        background-color: darken(#6ed1f8, 10%);
+    }
+    &.unmanaged {
+        background-color: darken(#fea9a9, 10%);
+    }
+}
+
+.control {
+    width: 100%;
+    background-color: #1962c0;
+    border: 1px ridge #1962c0;
+    color: #fff;
+    margin: 0;
+    overflow: hidden;
+    padding: 2px;
+    display: inline-flex;
+    align-items: center;
+
+    .control-description {
+        margin-left: 5px;
+        font-weight: 300;
+        color: white;
+    }
+
+    &[disabled] {
+        .control-description {
+            color: darken(#fff, 30);
+            cursor: not-allowed;
+        }
     }
 }
 
@@ -818,6 +906,9 @@ select.level + .fa-spinner {
 .clickable {
     color: #337ab7;
     cursor: pointer;
+    &.proposed {
+        font-weight: bold;
+    }
 }
 
 .clickable:hover {
@@ -2020,4 +2111,8 @@ div.panel-title {
     font-size: 12px;
     margin: 2px 0;
     padding: 2px 0;
+}
+
+.recommendations .bare-list {
+    font-size: 14px;
 }

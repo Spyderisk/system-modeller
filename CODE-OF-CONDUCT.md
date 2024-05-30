@@ -1,8 +1,8 @@
 # Spyderisk Code of Conduct
 
-Version 1.0, November 2023
+Version 1.0
 
-The Spyderisk Project is a friendly community and welcomes contributions. This document outlines both
+The Spyderisk Open Project is a friendly community and welcomes contributions. This document outlines both
 expected and prohibited behaviour.
 
 # Short summary
@@ -121,14 +121,14 @@ accepted or tolerated.
 # Reporting
 
 If you believe you're experiencing unacceptable behaviour 
-as outlined above please contact one of the 
-[current authors in AUTHORS.md](./AUTHORS.md), or send a message to 
-[code-of-conduct@spyderisk.org](mailto:code-of-conduct@spyderisk.org).
+as outlined above please contact one of the current authors 
+[in the CONTRIBUTORS](./CONTRIBUTORS.md) file, or send a message to 
+[team@spyderisk.org](mailto:team@spyderisk.org).
 
-You should expect to receive a reply. After determining a precise description of your
-situation, the team will review and determine next steps. 
+You should certainly get a reply. After determining a precise description of your
+situation, they will review and determine next steps. 
 
-Please also report to us if you observe someone else in distress, or violations of
+Please also report to us if you observe someone else in distress or violations of
 these guidelines.
 
 If you feel you have been unfairly accused of violating these guidelines,
@@ -136,11 +136,11 @@ please follow the same reporting process.
 
 <hr>
 
-This document is (c) 2023 The Spyderisk Authors, under the
+This document is (c) 2024 The Spyderisk Licensors, under the
 [Creative Commons Attribution-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-sa/4.0/) license.
 
-*Heavily Adapted and Compressed from the quite large version 3.1 of the 
-[Mozilla Participation Guidelines](https://www.mozilla.org/en-US/about/governance/policies/participation/),
-released under the same license. We thank Mozilla for their work. First revision and compression done by [LumoSQL](https://lumosql.org).*
+*Lightly adapted from the [LumoSQL project](https://lumosql.org), which in turn heavily adapted and compressed
+version 3.1 of the [Mozilla Participation Guidelines](https://www.mozilla.org/en-US/about/governance/policies/participation/),
+released under the same license.*
 
 

@@ -1,4 +1,5 @@
 import * as instr from "../modellerConstants";
+import * as Constants from "../../common/constants.js";
 import {polyfill} from "es6-promise";
 import {axiosInstance} from "../../common/rest/rest";
 import {addAsset, addRelation} from "./InterActions"
@@ -146,7 +147,6 @@ export function getAuthz(modelId, username) {
 
 
 export function pollForValidationProgress(modelId) {
-    //console.log("pollForValidationProgress");
     return function (dispatch) {
         dispatch({
             type: instr.UPDATE_VALIDATION_PROGRESS,
@@ -160,7 +160,6 @@ export function pollForValidationProgress(modelId) {
             .then((response) => {
                 dispatch({
                     type: instr.UPDATE_VALIDATION_PROGRESS,
-                    //payload: response.data
                     payload: {
                         status: response.data["status"],
                         progress: response.data["progress"],
@@ -174,7 +173,6 @@ export function pollForValidationProgress(modelId) {
 }
 
 export function pollForRiskCalcProgress(modelId) {
-    //console.log("pollForRiskCalcProgress");
     return function (dispatch) {
         dispatch({
             type: instr.UPDATE_RISK_CALC_PROGRESS,
@@ -188,7 +186,32 @@ export function pollForRiskCalcProgress(modelId) {
             .then((response) => {
                 dispatch({
                     type: instr.UPDATE_RISK_CALC_PROGRESS,
-                    //payload: response.data
+                    payload: {
+                        status: response.data["status"],
+                        progress: response.data["progress"],
+                        message: response.data["message"],
+                        error: response.data["error"],
+                        waitingForUpdate: false
+                    }
+                });
+            });
+    };
+}
+
+export function pollForRecommendationsProgress(modelId) {
+    return function (dispatch) {
+        dispatch({
+            type: instr.UPDATE_RECOMMENDATIONS_PROGRESS,
+            payload: {
+                waitingForUpdate: true,
+            }
+        });
+
+        axiosInstance
+            .get("/models/" + modelId + "/recommendationsprogress")
+            .then((response) => {
+                dispatch({
+                    type: instr.UPDATE_RECOMMENDATIONS_PROGRESS,
                     payload: {
                         status: response.data["status"],
                         progress: response.data["progress"],
@@ -418,6 +441,53 @@ export function riskCalcFailed(modelId) {
         dispatch({
             type: instr.RISK_CALC_FAILED
         });
+    };
+}
+
+export function recommendationsCompleted(modelId, jobId) {
+    console.log("recommendationsCompleted");
+    return function (dispatch) {
+        dispatch({
+            type: instr.IS_NOT_CALCULATING_RECOMMENDATIONS,
+        });
+        axiosInstance
+            .get("/models/" + modelId + "/recommendations/" + jobId + "/result")
+            .then((response) => { 
+                dispatch({
+                    type: instr.RECOMMENDATIONS_RESULTS,
+                    payload: response.data
+                });
+                dispatch({
+                    type: instr.OPEN_WINDOW,
+                    payload: "recommendationsExplorer"
+                });
+            })
+            .catch((error) => {
+                console.log("Error:", error);
+            });
+    };
+}
+
+export function recommendationsFailed(modelId) {
+    console.log("recommendationsFailed");
+    return function (dispatch) {
+        dispatch({
+            type: instr.RECOMMENDATIONS_FAILED
+        });
+    };
+}
+
+export function abortRecommendations(modelId, jobId) {
+    console.log("abortRecommendations for model: ", modelId, jobId);
+    return function (dispatch) {
+        axiosInstance
+            .post("/models/" + modelId + "/recommendations/" + jobId + "/cancel")
+            .then((response) => {
+                console.log("Cancel sent");
+            })
+            .catch((error) => {
+                console.log("Error:", error);
+            });
     };
 }
 
@@ -1261,6 +1331,22 @@ export function closeControlStrategyExplorer() {
     };
 }
 
+export function openRecommendationsExplorer(csg, context) {
+    return function (dispatch) {
+        dispatch({
+            type: instr.OPEN_RECOMMENDATIONS_EXPLORER,
+        });
+    };
+}
+
+export function closeRecommendationsExplorer() {
+    return function (dispatch) {
+        dispatch({
+            type: instr.CLOSE_RECOMMENDATIONS_EXPLORER
+        });
+    };
+}
+
 export function openReportDialog(reportType) {
     return function (dispatch) {
         dispatch({
@@ -1363,16 +1449,15 @@ export function revertControlCoverageOnAsset(modelId, assetId, controlSet) {
 
 //Reset controls (i.e. "Reset All" button)
 export function resetControls(modelId, controls) {
-    return updateControls(modelId, controls, false, true);
+    return updateControls(modelId, controls, false, false, true);
 }
 
 //Update multiple controls with new proposed value
-export function updateControls(modelId, controls, proposed, controlsReset) {
-    console.log("updateControls: controlsReset = " + controlsReset);
+export function updateControls(modelId, controls, proposed, workInProgress, controlsReset) {
     let controlsUpdateRequest = {
         controls: controls,
         proposed: proposed,
-        workInProgress: false //this should be set to false, irrespective of whether proposed is true or false
+        workInProgress: workInProgress
     };
     
     return function (dispatch) {
@@ -1601,7 +1686,6 @@ export function getThreatGraph(modelId, riskMode, msUri) {
             payload: true
         });
         let shortUri = msUri.split("#")[1];
-        //let uri = '/models/' + modelId + "/threatgraph?longPath=true&normalOperations=false&targetURIs=system%23" + shortUri;
         let uri = '/models/' + modelId + "/threatgraph?riskMode=" + riskMode + "&allPath=false&normalOperations=false&targetURIs=system%23" + shortUri;
         axiosInstance.get(uri).then(response => {
             dispatch({
@@ -1622,7 +1706,6 @@ export function getThreatGraph(modelId, riskMode, msUri) {
 
 export function getShortestPathPlot(modelId, riskMode) {
     return function(dispatch) {
-        console.log("getShortestPathPlot with modelId: " + modelId);
         axiosInstance.get("/models/" + modelId + "/authz").then(response => {
             console.log("DATA: ", response.data.readUrl);
             let readUrl = response.data.readUrl;
@@ -1636,6 +1719,72 @@ export function getShortestPathPlot(modelId, riskMode) {
     };
 }
 
+export function getRecommendationsBlocking(modelId, riskMode) {
+    return function(dispatch) {
+        dispatch({
+            type: instr.IS_CALCULATING_RECOMMENDATIONS
+        });
+
+        axiosInstance
+            .get("/models/" + modelId + "/recommendations", {params: {riskMode: riskMode}})
+            .then((response) => { 
+                dispatch({
+                    type: instr.IS_NOT_CALCULATING_RECOMMENDATIONS,
+                });
+                dispatch({
+                    type: instr.RECOMMENDATIONS_RESULTS,
+                    payload: response.data
+                });
+                dispatch({
+                    type: instr.OPEN_WINDOW,
+                    payload: "recommendationsExplorer"
+                });
+            })
+            .catch((error) => {
+                console.log("Error:", error);
+                dispatch({
+                    type: instr.IS_NOT_CALCULATING_RECOMMENDATIONS //fix
+                });
+            });
+    };
+}
+
+export function getRecommendations(modelId, riskMode, acceptableRiskLevel, msUri, localSearch) {
+    console.log("Called getRecommendations");
+
+    let shortUri = msUri ? msUri.replace(Constants.URI_PREFIX, "") : null;
+
+    console.log("riskMode = ", riskMode);
+    console.log("acceptableRiskLevel = ", acceptableRiskLevel);
+    console.log("msUri = ", msUri);
+    console.log("shortUri = ", shortUri);
+    console.log("localSearch = ", localSearch);
+
+    return function(dispatch) {
+        dispatch({
+            type: instr.IS_CALCULATING_RECOMMENDATIONS
+        });
+
+        axiosInstance
+            .get("/models/" + modelId + "/recommendations", {params: {riskMode: riskMode, 
+                                                                acceptableRiskLevel: acceptableRiskLevel,
+                                                                targetURIs: shortUri,
+                                                                localSearch: localSearch,
+                                                            }})
+            .then((response) => {
+                dispatch({
+                    type: instr.RECOMMENDATIONS_JOB_STARTED,
+                    payload: response.data
+                });
+            })
+            .catch((error) => {
+                console.log("Error:", error);
+                dispatch({
+                    type: instr.IS_NOT_CALCULATING_RECOMMENDATIONS //fix
+                });
+            });
+    };
+}
 
 /*
  export function hoverThreat (show, threat) {

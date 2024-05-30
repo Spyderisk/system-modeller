@@ -5,6 +5,8 @@ on:
     branches: [ "dev", "main" ]
   pull_request:
     branches: [ "dev", "main" ]
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
@@ -74,24 +76,34 @@ jobs:
 
     - name: Build the Docker image
       # The metadata inside the image will include the final git commit SHA and the time of the final commit.
-      # The tag applied to the image will be like spyderisk/system-modeller:<branch-name>-<timestamp>
+      # If the commit is a tag then the image is also tagged with spyderisk/system-modeller:<tag-name> and the image will include the release number.
+      # Otherwise, the tag applied to the image will be like spyderisk/system-modeller:<branch-name>-<timestamp>
       # e.g. spyderisk/system-modeller:dev-20230405T1012
-      # Where the timestamp is the time of the final commit in the build.
-      # In addition, the image is tagged with spyderisk/system-modeller:<branch-name>-latest
+      # (where the timestamp is the time of the final commit in the build)
+      # and the image will also be tagged with spyderisk/system-modeller:<branch-name>-latest
       run: |
         TAG_ROOT=spyderisk/system-modeller
         TIMESTAMP=$(git show -s --format=%cI ${GITHUB_SHA})
         SHORT_TIME=$(echo ${TIMESTAMP} | sed 's/[-:]//g')
         REF_END=$(echo ${GITHUB_REF} | sed 's/.*\///')
-        TAG_DATE=${TAG_ROOT}:${REF_END}-${SHORT_TIME:0:13}
-        TAG_LATEST=${TAG_ROOT}:${REF_END}-latest
-        echo "TAG_DATE=${TAG_DATE}" >> ${GITHUB_ENV}
-        echo "TAG_LATEST=${TAG_LATEST}" >> ${GITHUB_ENV}
-        docker build --tag ${TAG_DATE} --tag ${TAG_LATEST} --build-arg CI_COMMIT_SHA=${GITHUB_SHA} --build-arg CI_COMMIT_TIMESTAMP=${TIMESTAMP} --file Dockerfile --target ssm-production "."
+        if [[ ${GITHUB_REF} == refs/tags/* ]]; then
+          TAG_RELEASE=${TAG_ROOT}:${REF_END}
+          echo "TAG_RELEASE=${TAG_RELEASE}" >> ${GITHUB_ENV}
+          docker build --tag ${TAG_RELEASE} --build-arg CI_RELEASE=${RELEASE} --build-arg CI_COMMIT_SHA=${GITHUB_SHA} --build-arg CI_COMMIT_TIMESTAMP=${TIMESTAMP} --file Dockerfile --target ssm-production "."
+        else
+          TAG_DATE=${TAG_ROOT}:${REF_END}-${SHORT_TIME:0:13}
+          TAG_LATEST=${TAG_ROOT}:${REF_END}-latest
+          echo "TAG_DATE=${TAG_DATE}" >> ${GITHUB_ENV}
+          echo "TAG_LATEST=${TAG_LATEST}" >> ${GITHUB_ENV}
+          docker build --tag ${TAG_DATE} --tag ${TAG_LATEST} --build-arg CI_COMMIT_SHA=${GITHUB_SHA} --build-arg CI_COMMIT_TIMESTAMP=${TIMESTAMP} --file Dockerfile --target ssm-production "."
+        fi
 
     - name: Push Docker image to registry
       run: | 
         docker login -u ${{ vars.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_RW_SECRET }}
-        docker push ${TAG_DATE}
-        docker push ${TAG_LATEST}
-    
+        if [[ ${GITHUB_REF} == refs/tags/* ]]; then
+          docker push ${TAG_RELEASE}
+        else
+          docker push ${TAG_DATE}
+          docker push ${TAG_LATEST}
+        fi

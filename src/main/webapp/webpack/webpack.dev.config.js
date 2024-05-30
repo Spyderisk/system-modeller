@@ -1,11 +1,12 @@
-var webpack = require("webpack");
-var HtmlWebpackPlugin = require("html-webpack-plugin");
-var path = require("path");
-var autoprefixer = require("autoprefixer");
+const webpack = require("webpack");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const path = require("path");
+const autoprefixer = require("autoprefixer");
 
-var ROOT = path.resolve(__dirname, "../");
-var SRC = path.resolve(ROOT, "app");
-var BUILD = path.join(ROOT, "dist");
+const ROOT = path.resolve(__dirname, "../");
+const SRC = path.resolve(ROOT, "app");
+const NODE_MODULES = path.resolve(ROOT, "node_modules");
+const BUILD = path.join(ROOT, "dist");
 
 module.exports = {
     mode: 'development',
@@ -40,7 +41,7 @@ module.exports = {
                 ]
             },
             {
-                test: /\.(sc|c)ss$/,
+                test: /\.scss$/,
                 include: SRC,
                 exclude: /node_modules/,
                 use: [
@@ -61,6 +62,21 @@ module.exports = {
                     },
                     {
                         loader: "sass-loader"  // compiles SASS to CSS
+                    }
+                ],
+            },
+            {
+                test: /\.css$/,
+                include: [SRC, NODE_MODULES],
+                use: [
+                    {
+                        loader: 'style-loader',  // creates <style> nodes from JS
+                    },
+                    {
+                        loader: 'css-loader',  // converts from CSS to CommonJS
+                    },
+                    {
+                        loader: "postcss-loader"
                     }
                 ],
             }

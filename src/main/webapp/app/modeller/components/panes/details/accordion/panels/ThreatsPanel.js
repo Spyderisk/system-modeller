@@ -547,7 +547,6 @@ class ThreatsPanel extends React.Component {
 
             let threatDescNameIdx = threat["description"].indexOf(": ");
             let threatName = threat["label"];
-            //console.log(threatName);
 
             if (threatDescNameIdx !== -1) {
                 // use name from description if found
@@ -587,16 +586,14 @@ class ThreatsPanel extends React.Component {
                 status = statusString;
             }
 
-            //console.log("status: ", status);
-            //console.log("triggeredStatus: ", triggeredStatus);
-
             let threatColorAndBE = ((status === "BLOCKED") || (status === "MITIGATED")) ?
             getThreatColor(threat, this.props.model.controlStrategies ,this.props.model.levels["TrustworthinessLevel"], true) : undefined;
-            //console.log("threatColorAndBE: ", threatColorAndBE);
 
             //status: UNMANAGED, ACCEPTED, MITIGATED, BLOCKED
             let statusText = "";
+            let emptyLevelTooltip;
             let symbol;
+            let threatClass = "";
 
             /* Uncomment to add triggered state, e.g. for debugging
             if (triggeredStatus === "UNTRIGGERED") {
@@ -607,6 +604,10 @@ class ThreatsPanel extends React.Component {
             }
             */
 
+            if (triggeredStatus === "TRIGGERED") {
+                threatClass = "triggered";
+            }
+
             //Is threat a normal operation
             let normalOperation = threat.normalOperation !== undefined ? threat.normalOperation : false;
 
@@ -614,24 +615,36 @@ class ThreatsPanel extends React.Component {
                 // For now, display a blank icon here, as a space filler
                 // TODO: display a better icon here, e.g. depending on a "isAdverseOp" - see issue #107
                 symbol = <span className="threat-icon" style={{borderStyle: "none"}}></span>
+                threatClass = "normal";
             } else if (status === "BLOCKED") {
                 statusText += "Managed (" + threatColorAndBE.be.label + ")";
                 symbol = <span className="fa fa-check threat-icon" style={{backgroundColor: threatColorAndBE.color}}/>;
+                threatClass = "blocked";
             } else if (status === "MITIGATED") {
                 statusText += "Managed (" + threatColorAndBE.be.label + ")";
                 symbol = <span className="fa fa-minus threat-icon" style={{backgroundColor: threatColorAndBE.color}}/>;
+                threatClass = "mitigated";
             } else if (status === "ACCEPTED") {
                 statusText += "Accepted";
                 // TODO: put these colors and style in a stylesheet
                 symbol = <span className="fa fa-thumbs-up threat-icon" style={{backgroundColor: "red", color: "white"}}/>
             } else {
-                statusText += "Unmanaged";
+                if (triggeredStatus === "TRIGGERED") {
+                    statusText += "Triggered";
+                    threatClass = "triggered";
+                }
+                else {
+                    statusText += "Unmanaged";
+                    threatClass = "unmanaged";
+                }
                 symbol = <span className="fa fa-exclamation-triangle threat-icon" style={{backgroundColor: "red", color: "white"}}/>;
             }
 
             if (triggeredStatus === "UNTRIGGERED") {
                 statusText = "Untriggered side effect";
+                emptyLevelTooltip = "This threat poses no risk as it has not been enabled by a control strategy";
                 symbol = <span className="fa fa-check threat-icon"/>;
+                threatClass = "untriggered";
             }
 
             let root_cause = threat.rootCause;
@@ -649,23 +662,20 @@ class ThreatsPanel extends React.Component {
                 resolved = (threat['acceptanceJustification'] !== null);
             }
 
-            //console.log(threatLabel + " resolved = " + resolved);
-
             //is threat selected?
             let selected = this.props.selectedThreat && this.props.selectedThreat.id === threat.id;
 
-            //let impact = threat["impactLevel"];
             let likelihood = threat["likelihood"];
             let risk = threat["riskLevel"];
 
             let distance = threat.distance;
 
-            let likelihoodRender = getRenderedLevelText(this.props.model.levels.Likelihood, likelihood);
-            let riskRender = getRenderedLevelText(this.props.model.levels.RiskLevel, risk);
+            let likelihoodRender = getRenderedLevelText(this.props.model.levels.Likelihood, likelihood, false, emptyLevelTooltip);
+            let riskRender = getRenderedLevelText(this.props.model.levels.RiskLevel, risk, false, emptyLevelTooltip);
 
             threatsRender.push(
                 <div key={index + 1} className={
-                    `row detail-info ${
+                    `row detail-info threat ${threatClass} ${
                         selected === true ? "selected-row" : "row-hover"
                     }`
                     }

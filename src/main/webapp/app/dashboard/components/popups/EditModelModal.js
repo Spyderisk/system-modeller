@@ -17,7 +17,7 @@ class EditModelModal extends Component {
     componentWillMount() {
         this.setState({
             ...this.state,
-            draftName: this.props.model.name,
+            draftName: this.props.model.name ? this.props.model.name : "null",
             draftDescription: this.props.model.description ? this.props.model.description : ""
         })
     }

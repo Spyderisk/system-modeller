@@ -28,6 +28,7 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.not;
@@ -77,6 +78,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import io.restassured.builder.MultiPartSpecBuilder;
 import io.restassured.http.ContentType;
+import io.restassured.path.json.JsonPath;
 import io.restassured.specification.MultiPartSpecification;
 import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
 import uk.ac.soton.itinnovation.security.modelquerier.SystemModelQuerier;
@@ -248,7 +250,7 @@ public class ModelControllerTest extends CommonTestSetup{
 				.schedule(waitToBeStopped, 0, TimeUnit.NANOSECONDS);
 
 			// Register the task as if it were a validation or risk calculation.
-			modelHelper.registerValidationExecution(testModel.getId(), task);
+			modelHelper.registerTaskExecution(testModel.getId(), task);
 
 			// Set the progress message to the message passed in.
 			// The test that generated the message can then check it is returned by the REST endpoint.
@@ -644,8 +646,11 @@ public class ModelControllerTest extends CommonTestSetup{
 	 * Test creating a system model for a domain model to which the user has no access
 	 * Asserts FORBIDDEN 403 status
 	 * Asserts error message returned
+	 * 
+	 * N.B. 17/4/2024 This test is now redundant, as we now allow all users access to all domain models
 	 */
 	@Test
+	@Ignore
 	public void testCreateModelNoDomainAccess() {
 		switchToSystemModel(0);
 
@@ -1278,8 +1283,11 @@ public class ModelControllerTest extends CommonTestSetup{
 	 * Test importing a system model for a domain model to which the user has no access
 	 * Asserts FORBIDDEN 403 status
 	 * Asserts error message returned
+	 * 
+	 * N.B. 17/4/2024 This test is now redundant, as we now allow all users access to all domain models
 	 */
 	@Test
+	@Ignore
 	public void testImportModelNoDomainAccess() {
 		given().
 			filter(userSession).
@@ -1425,6 +1433,78 @@ public class ModelControllerTest extends CommonTestSetup{
 		assertTaskCompleted();
 
 		assertEquals(RiskCalculationMode.FUTURE, querier.getModelInfo(storeModelManager.getStore()).getRiskCalculationMode());
+	}
+
+	/**
+	 * Test calculating recommendations for model (non-blocking call)
+	 * Asserts OK 200 status
+	 */
+	@Test
+	public void testRecommendationsAsyncTaskCancel() throws InterruptedException {
+		switchToSystemModel(4, 12); //use recommendations domain and system model
+        logger.debug("TEST RECOMMENDATIONS ASYNC");
+
+        String responseJson = given().
+			filter(userSession).
+            queryParam("acceptableRiskLevel", "domain#RiskLevelMedium").
+            log().all().
+		when().
+			get("/models/testModel/recommendations").
+		then().
+            log().all().
+			assertThat().statusCode(HttpStatus.SC_ACCEPTED).
+            extract().asString();
+
+        JsonPath jsonPath = new JsonPath(responseJson);
+        String jobId = jsonPath.getString("jobId");
+
+        // Poll the status endpoint until the job is finished
+        boolean jobFinished = false;
+        boolean cancelled = false;
+        String jobStatus = "";
+        while (!jobFinished) {
+            Thread.sleep(4000); // delay between status checks
+
+            jobStatus = given()
+                .filter(userSession)
+                .log().all()
+             .when()
+                .get("/models/testModel/recommendations/" + jobId + "/status")
+             .then()
+                .log().all()
+                .statusCode(HttpStatus.SC_OK)
+                .extract().asString();
+
+            jsonPath = new JsonPath(jobStatus);
+            String state = jsonPath.getString("state");
+            logger.debug("JOB STATE NAME: {}", state);
+
+			// Final status might be "FINISHED", "ABORTED" or "TIMED_OUT", so check for all or unit test may never complete!
+            jobFinished = "FINISHED".equals(state) || "ABORTED".equals(state) || "TIMED_OUT".equals(state);
+
+            if (!jobFinished && !cancelled) {
+                logger.debug("CANCELLING JOB");
+
+                jobStatus = given()
+                    .filter(userSession)
+                    .log().all()
+                .when()
+                    .post("/models/testModel/recommendations/" + jobId + "/cancel")
+                .then()
+                    .log().all()
+                    .statusCode(HttpStatus.SC_OK)
+                    .extract().asString();
+
+                cancelled = true;
+            }
+
+        }
+
+        // add a delay to complete the task, e.g. close gracefully the task
+        Thread.sleep(2000);
+
+        // Additional assertions can go here, e.g., verify the final status is as expected
+        //assertThat(jobStatus, equalTo("FINISHED"));
 	}
 
 	/**

@@ -12,7 +12,7 @@ version '0.0.1'
 buildDir = 'dist'
 
 node {
-    version = '12.13.0'
+    version = '14.21.3'
     download = true
     yarnVersion = '1.21.1'
 }

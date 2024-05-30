@@ -1,7 +1,7 @@
 import React, {Fragment} from "react";
 import PropTypes from 'prop-types';
 import {Button, Checkbox, FormControl, FormGroup} from "react-bootstrap";
-import renderControlStrategy from "../../../csgExplorer/ControlStrategyRenderer";
+import {renderControlStrategy} from "../../../csgExplorer/ControlStrategyRenderer";
 import {connect} from "react-redux";
 
 class ControlStrategiesPanel extends React.Component {
@@ -88,7 +88,7 @@ class ControlStrategiesPanel extends React.Component {
                     const controlStrategy = csgDict[csgName];
                     return renderControlStrategy(csgName, controlStrategy, index, threat, this.state, this.props, this, "threat-explorer");
                 })}
-                {!isComplianceThreat && this.props.authz.userEdit ? <AcceptancePanel acceptance={this.props.threat["acceptanceJustification"]}
+                {!isComplianceThreat && !this.props.triggering && this.props.authz.userEdit ? <AcceptancePanel acceptance={this.props.threat["acceptanceJustification"]}
                     threat={this.props.threat}
                     activateAcceptancePanel={this.props.activateAcceptancePanel}
                     submit={(a, b) => this.props.toggleAcceptThreat({ acceptThreat: a, reason: b })} />
@@ -103,6 +103,7 @@ class ControlStrategiesPanel extends React.Component {
 ControlStrategiesPanel.propTypes = {
     threat: PropTypes.object,
     asset: PropTypes.object,
+    triggering: PropTypes.bool,
     filteredCsgs: PropTypes.array,
     controlStrategies: PropTypes.object,
     controlSets: PropTypes.object,
