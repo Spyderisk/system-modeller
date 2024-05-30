@@ -187,7 +187,7 @@ class RiskTreatmentPlan extends Component {
                 <tr>
                     <th className="col-1">Consequence</th>
                     <th className="col-2">Impact</th>
-                    <th className="col-3">Threats</th>
+                    <th className="col-3">Direct Causes</th>
                     <th className="col-4">Treatment Method</th>
                     <th className="col-5">Status</th>
                     <th className="col-6">Controls</th>
