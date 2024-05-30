@@ -34,7 +34,7 @@ class RiskTreatmentPlan extends Component {
     }
 
     getThreatDescriptions(threats) {
-        return uniq(threats.map(t => t.description.split(":")[0]));
+        return uniq(threats.map(t => t.description.split(": ")[0]));
     };
 
     categoriseThreats(threats) {
