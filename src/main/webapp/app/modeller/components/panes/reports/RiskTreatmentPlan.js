@@ -136,29 +136,32 @@ class RiskTreatmentPlan extends Component {
         assets.sort(this.sortAssets).forEach(asset => {
             let rows = [];
 
-            let misbehaviours = asset.misbehaviourSets.map(ms => model.misbehaviourSets[ms]);
-            let inferredMisbehaviours = asset.inferredAssets.map(ia => this.getMisbehavioursForAsset(ia)).flat(2);
+            // Get asset misbehaviours and filter out non-visible ones
+            let misbehaviours = asset.misbehaviourSets.map(ms => model.misbehaviourSets[ms]).filter((misbehaviour) => {
+                let visible = misbehaviour["visible"];
+                let invisible = visible !== undefined && !visible;
+                return !invisible;
+            });
 
-            misbehaviours.concat(inferredMisbehaviours).forEach(misbehaviour => {
+            // Sort alphabetically
+            misbehaviours.sort((a, b) => a["misbehaviourLabel"].localeCompare(b["misbehaviourLabel"]))
+
+            misbehaviours.forEach(misbehaviour => {
                 let threatsForMisbehaviour = model.threats.filter(threat => threat.misbehaviours.includes(misbehaviour.uri));
 
-                if (!threatsForMisbehaviour.length) // we dont want to display this misbehaviour as 0 threats fall cause it = can't be treated
+                if (!threatsForMisbehaviour.length) {// we don't want to display this misbehaviour as 0 threats fall cause it = can't be treated
                     return;
-
-                if(asset.label === "WiFi")
-                    console.log(threatsForMisbehaviour);
+                }
 
                 let categorisedThreats = this.categoriseThreats(threatsForMisbehaviour);
                 let categories = ["inPlace", "workInProgress", "ignored", "accepted"];
 
-                if(asset.label === "WiFi")
-                    console.log(categorisedThreats);
-
                 categories.forEach(category => {
                     let {threats, controls} = categorisedThreats[category];
 
-                    if (!threats.length)
-                        return; // we dont want to display this split type as 0 threats fall into this category
+                    if (!threats.length) {
+                        return; // we don't want to display this split type as 0 threats fall into this category
+                    }
 
                     let controlDescriptions = uniq(controls.map(c => (c.label + " at " + this.getAssetNameFromId(c.assetId, asset.label))));
 
@@ -196,8 +199,6 @@ class RiskTreatmentPlan extends Component {
                 <tbody>{rows}</tbody>
             </table>);
         });
-
-
 
         return (
             <div className="report-content" id="risk-treatment-plan">
