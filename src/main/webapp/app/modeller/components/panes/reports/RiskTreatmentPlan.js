@@ -166,7 +166,7 @@ class RiskTreatmentPlan extends Component {
                         <td>{misbehaviour.misbehaviourLabel}</td>
                         {this.renderImpactLevel(misbehaviour, impactLevels)}
                         <td className="bullet-pt-list">
-                            <ul>{this.getThreatDescriptions(threats).map((v, i) => <li key={i}>{v}</li>)}</ul>
+                            <ul>{this.getThreatDescriptions(threats).sort((a, b) => a.localeCompare(b)).map((v, i) => <li key={i}>{v}</li>)}</ul>
                         </td>
                         <td>{this.getTreatmentMethod(category)}</td>
                         <td>{this.getStatus(category)}</td>
