@@ -1,13 +1,13 @@
-Describes version FIXME of the [Spyderisk core model](https://github.com/Spyderisk/system-modeller/blob/dev/src/main/resources/core.rdf).
+Describes version v9.7.0 of the [Spyderisk core model](https://github.com/Spyderisk/system-modeller/blob/dev/src/main/resources/core.rdf), as implemented in v3.5.0 of the [Spyderisk System Modeller](https://github.com/SPYDERISK/system-modeller).
 
 This document is not strictly limited to the core, because it also covers some things needed for system modelling.
 
-Includes notes on versions FIXME-FIXME of the core model
+Includes notes on older versions of the core model.
 
 # Introduction
 
 This document aims to describe how we represent various aspects of the
-models in the Triplestore. It originates from personal notes by Mike Surridge.
+models in the Triplestore. It draws on analysis of domain models, personal notes by Mike Surridge, and the Java System Modeller software.
 
 This document is very much incomplete and a work in progress.
 
