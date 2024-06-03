@@ -44,7 +44,12 @@ class RiskTreatmentPlan extends Component {
         let workInProgress = {threats: [], controls: []};
 
         threats.forEach(threat => {
-            let allControls = threat.allControlCombinations.flat(2);
+            let allControlCombinations = threat.allControlCombinations.flat(2);
+
+            // Get updated control set objects
+            let allControls = allControlCombinations.map(control => {
+                return this.props.controlSets[control.uri];
+            });
 
             if (threat.acceptanceJustification !== null) {
                 accepted = ({threats: accepted.threats.concat(threat), controls: []}); // set controls to [] as we don't want to view controls that haven't been implemented
@@ -214,7 +219,7 @@ class RiskTreatmentPlan extends Component {
 
 RiskTreatmentPlan.propTypes = {
     model: PropTypes.object,
-    getAssetType: PropTypes.func
+    controlSets: PropTypes.object,
 };
 
 export default RiskTreatmentPlan;

@@ -112,6 +112,7 @@ class ReportDialog extends React.Component {
                                 getAssetType={this.props.getAssetType}
                                 exportHTML={this.exportHTML}/> :
                             <RiskTreatmentPlan model={model}
+                                controlSets={this.props.controlSets}
                                 dispatch={this.props.dispatch}
                                 getAssetType={this.props.getAssetType}
                                 exportHTML={this.exportHTML}/>
@@ -150,6 +151,7 @@ class ReportDialog extends React.Component {
 ReportDialog.propTypes = {
     reportType: PropTypes.string,
     model: PropTypes.object,
+    controlSets: PropTypes.object,
     show: PropTypes.bool,
     onHide: PropTypes.func,
     getAssetType: PropTypes.func

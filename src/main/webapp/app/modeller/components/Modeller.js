@@ -353,6 +353,7 @@ class Modeller extends React.Component {
                 />
 
                 <ReportDialog model={this.props.model}
+                            controlSets={controlSetsMap}
                             reportType={this.props.reportType}
                             show={this.props.isReportDialogVisible}
                             onHide={this.closeReportDialog}
