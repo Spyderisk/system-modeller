@@ -1,8 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
-import {Button} from "react-bootstrap";
-import {controlReference, controlSetMapping} from "../../../../common/constants";
-import {getLevelColour, getThreatColor} from "../../util/Levels";
+import {getLevelColour} from "../../util/Levels";
 
 let uniq = (arr) => [...new Set(arr)];
 
@@ -20,18 +18,6 @@ class RiskTreatmentPlan extends Component {
         else
             return assetName;
     };
-
-    getAssetFromUri(uri) {
-        return this.props.model.assets.filter(asset => asset.uri === uri)[0]
-    };
-
-    getProposedControlsForThreats(threats) {
-        return threats.map(t => t.allControlCombinations).flat(2).filter(control => control.proposed);
-    };
-
-    getMisbehavioursForAsset(assetUri) {
-        return this.getAssetFromUri(assetUri).misbehaviourSets.map(ms => this.props.model.misbehaviourSets[ms]);
-    }
 
     getThreatDescriptions(threats) {
         return uniq(threats.map(t => t.description.split(": ")[0]));
@@ -113,10 +99,6 @@ class RiskTreatmentPlan extends Component {
 
     getStatus(splitType) {
         return splitType === "workInProgress" ? "Work In Progress" : splitType === "inPlace" ? "In Place" : "n/a";
-    }
-
-    getTargetDate(splitType) {
-        return splitType === "workInProgress" ? "?" : "n/a";
     }
 
     sortAssets(assetOne, assetTwo){
