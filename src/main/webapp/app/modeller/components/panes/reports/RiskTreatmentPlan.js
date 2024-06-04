@@ -33,8 +33,8 @@ class RiskTreatmentPlan extends Component {
             let allControlCombinations = threat.allControlCombinations.flat(2);
 
             // Get updated control set objects
-            let allControls = allControlCombinations.map(control => {
-                return this.props.controlSets[control.uri];
+            let allControls = allControlCombinations.map(controlUri => {
+                return this.props.controlSets[controlUri];
             });
 
             if (threat.acceptanceJustification !== null) {
