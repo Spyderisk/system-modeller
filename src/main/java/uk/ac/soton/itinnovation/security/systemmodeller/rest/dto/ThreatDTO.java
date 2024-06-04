@@ -26,6 +26,7 @@
 package uk.ac.soton.itinnovation.security.systemmodeller.rest.dto;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -239,12 +240,17 @@ public class ThreatDTO extends SemanticEntityDTO {
 	 * @return a set of control set combinations
 	 */
 	public List<SortedSet<ControlSet>> getAllControlCombinations() {
+		String threatURI = this.getUri();
 
 		//make sure the order of the CSGs is consistent. Use URI. We don't care what the order is.
 		SortedMap<String, ControlStrategy> csgsSorted = new TreeMap<>();
 		csgsSorted.putAll(this.csgs);
+
+		Collection<ControlStrategy> csgValues = csgsSorted.values();
+		csgValues.removeIf(csg -> csg.getType(threatURI).equals(ControlStrategyType.TRIGGER)); //filter out triggering CSGs
+
 		List<SortedSet<ControlSet>> combinations = new ArrayList<>();
-		for (ControlStrategy csg: csgsSorted.values()) {
+		for (ControlStrategy csg: csgValues) {
 			SortedSet<ControlSet> oneCombination = new TreeSet<>();
 			oneCombination.addAll(csg.getMandatoryControlSets().values());
 			oneCombination.addAll(csg.getOptionalControlSets().values());
