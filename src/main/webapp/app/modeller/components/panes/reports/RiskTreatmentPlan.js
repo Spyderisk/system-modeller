@@ -126,6 +126,23 @@ class RiskTreatmentPlan extends Component {
         </div>]);
     }
 
+    renderDirectCauseThreats(threats) {
+        let sortedThreats = this.getThreatDescriptions(threats).sort((a, b) => a.localeCompare(b));
+        return (
+            <ul>
+                {sortedThreats.map((v, i) => <li key={i}>{v}</li>)}
+            </ul>
+        );
+    }
+
+    renderControlsList(controlDescriptions) {
+        return (
+            <ul>
+                {controlDescriptions.map((v, i) => <li key={i}>{v}</li>)}
+            </ul>
+        );
+    }
+    
     render() {
         let model = this.props.model;
         let assets = model.assets ? model.assets.filter(a => a.asserted) : [];
@@ -167,14 +184,10 @@ class RiskTreatmentPlan extends Component {
                     rows.push(<tr key={"m-" + misbehaviour.id + "-" + category}>
                         <td>{misbehaviour.misbehaviourLabel}</td>
                         {this.renderImpactLevel(misbehaviour, impactLevels)}
-                        <td className="bullet-pt-list">
-                            <ul>{this.getThreatDescriptions(threats).sort((a, b) => a.localeCompare(b)).map((v, i) => <li key={i}>{v}</li>)}</ul>
-                        </td>
+                        <td className="bullet-pt-list">{this.renderDirectCauseThreats(threats)}</td>
                         <td>{this.getTreatmentMethod(category)}</td>
                         <td>{this.getStatus(category)}</td>
-                        <td className="bullet-pt-list">
-                            <ul>{controlDescriptions.map((v, i) => <li key={i}>{v}</li>)}</ul>
-                        </td>
+                        <td className="bullet-pt-list">{this.renderControlsList(controlDescriptions)}</td>
                     </tr>);
                 });
             });
