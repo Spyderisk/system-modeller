@@ -119,7 +119,7 @@ class RiskTreatmentPlan extends Component {
         let populationLevel = populationLevels.find((level) => level.uri === asset.population);
 
         return ([<div key={asset.id} className="title">{asset.label}</div>,
-        <div className="population">
+        <div key={"pop_"+ asset.id} className="population">
             <strong>Population:</strong>
             &nbsp;
             {renderPopulationLevel(asset, populationLevel, populationLevels, false, false)}
