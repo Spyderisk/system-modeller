@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
-import {getLevelColour} from "../../util/Levels";
+import {getLevelColour, renderPopulationLevel} from "../../util/Levels";
 
 let uniq = (arr) => [...new Set(arr)];
 
@@ -114,6 +114,18 @@ class RiskTreatmentPlan extends Component {
         return 0;
     }
 
+    renderAsset(asset) {
+        let populationLevels = this.props.model.levels["PopulationLevel"];
+        let populationLevel = populationLevels.find((level) => level.uri === asset.population);
+
+        return ([<div key={asset.id} className="title">{asset.label}</div>,
+        <div className="population">
+            <strong>Population:</strong>
+            &nbsp;
+            {renderPopulationLevel(asset, populationLevel, populationLevels, false, false)}
+        </div>]);
+    }
+
     render() {
         let model = this.props.model;
         let assets = model.assets ? model.assets.filter(a => a.asserted) : [];
@@ -170,7 +182,7 @@ class RiskTreatmentPlan extends Component {
             if (rows.length === 0)
                 return;
 
-            content.push(<div key={asset.id} className="title">{asset.label}</div>);
+            content.push(this.renderAsset(asset));
 
             content.push(<table key={"t-" + asset.id}>
                 <thead>
