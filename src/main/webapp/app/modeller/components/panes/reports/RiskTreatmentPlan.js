@@ -130,7 +130,7 @@ class RiskTreatmentPlan extends Component {
         let sortedThreats = this.getThreatDescriptions(threats).sort((a, b) => a.localeCompare(b));
         return (
             <ul>
-                {sortedThreats.map((v, i) => <li key={i}>{v}</li>)}
+                {sortedThreats.map((threat) => <li key={threat}>{threat}</li>)}
             </ul>
         );
     }
@@ -138,11 +138,11 @@ class RiskTreatmentPlan extends Component {
     renderControlsList(controlDescriptions) {
         return (
             <ul>
-                {controlDescriptions.map((v, i) => <li key={i}>{v}</li>)}
+                {controlDescriptions.map((cs) => <li key={cs}>{cs}</li>)}
             </ul>
         );
     }
-    
+
     render() {
         let model = this.props.model;
         let assets = model.assets ? model.assets.filter(a => a.asserted) : [];
