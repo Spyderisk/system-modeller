@@ -1,8 +1,10 @@
 # The Spyderisk System Modeller software
 
-This is the main software part of the [Spyderisk Open Project](https://github.com/Spyderisk).
+This is the main software component of the [Spyderisk Open Project](https://github.com/Spyderisk),
+a web service which interacts with users both graphically and via an API. The software calculates
+risk based on models drawn by the user, overlaid on a generic base model of the world. 
 
-The overall Spyderisk Project's aim is to:
+The overall [Spyderisk Project's aim](./docs/Spyderisk-Open-Project-Strategy.md) is to:
 
 > understand the trustworthiness of socio-technical systems by establishing an international Open Community supporting the research, development, use and support of open, effective, and accessible risk assessment methods, knowledge and tools.
 
@@ -10,7 +12,7 @@ The Spyderisk System Modeller software ("Spyderisk") provides a thorough
 risk assessment of complex systems, applying our mathematical modelling to your
 particular problem. This software is the result of 
 [15 years of history in risk assessment](https://github.com/Spyderisk/system-modeller/blob/dev/HISTORY.md)
-of complex socio-technical systems. Starting in 2023 we publish everything under
+of complex socio-technical systems. Starting in 2023 we now publish everything under
 open licenses: software source code, ontologies, domain model database,
 online training, documentation, and academic papers. 
 
@@ -18,8 +20,8 @@ As of Mid-2024, the Spyderisk software is in early release, fully available but 
 in quite specific circumstances. This README file signposts you to the
 different ways of trying out Spyderisk and learning about the theory behind it.
 
-If you are a researcher in the area of risk modelling including ontologies of
-risk, or if you have a specific problem domain you need to solve (particularly
+If you are a researcher in the area of risk modelling including [ontologies of
+risk](./docs/ontologies.md), or if you have a specific problem domain you need to solve (particularly
 in cybersecurity or privacy) then Spyderisk could be for you. 
 
 # Contents
@@ -54,7 +56,7 @@ web GUI, the [Spyderisk Python adaptor](https://github.com/Spyderisk/system-mode
 may be for you. This is the way you can call the Spyderisk web service API to create, update, analyse and query
 system models and integrate other tools. While this is also Spyderisk software development, it
 is much higher-level than the source code of the Spyderisk application found in this tree. The
-Java application creates the reasoner service which the Python adapter can interrogate.
+Java application creates the risk reasoner service which the Python adapter can interrogate.
 
 # Important project information
 
@@ -77,7 +79,7 @@ simplified version of the real world and the different threats and mitigations
 that apply. The use case we have developed the most relates to cybersecurity
 analysis, however the Spyderisk team also models risks in other areas including
 medical devices and privacy. We call a domain model the "knowledgebase", and it
-uses ontological methods.
+uses [ontological methods](./docs/ontology.md) to define objects and relationships in this idealised world.
 
 Spyderisk does not come bundled with any particular knowledgebase; this is
 configurable at build/deploy time, by putting one or more zip bundles into the
