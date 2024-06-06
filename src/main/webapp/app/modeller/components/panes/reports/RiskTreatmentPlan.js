@@ -15,7 +15,7 @@ class RiskTreatmentPlan extends Component {
     }
 
     static getCoverageLevelsMap(props) {
-        var levelsMap = new Map();
+        let levelsMap = new Map();
         let coverageLevals = props.model.levels["TrustworthinessLevel"];
 
         coverageLevals.forEach((level) => {
