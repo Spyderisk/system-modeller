@@ -8,6 +8,21 @@ class RiskTreatmentPlan extends Component {
 
     constructor(props) {
         super(props);
+
+        this.state = {
+            coverageLevals: RiskTreatmentPlan.getCoverageLevelsMap(props)
+        };
+    }
+
+    static getCoverageLevelsMap(props) {
+        var levelsMap = new Map();
+        let coverageLevals = props.model.levels["TrustworthinessLevel"];
+
+        coverageLevals.forEach((level) => {
+            levelsMap.set(level.uri, level);
+        });
+
+        return levelsMap;
     }
 
     getAssetNameFromId(id, assetName) {
@@ -135,7 +150,16 @@ class RiskTreatmentPlan extends Component {
         );
     }
 
-    renderControlsList(controlDescriptions) {
+    getCoverageLevel(cs) {
+        return this.state.coverageLevals.get(cs.coverageLevel).label
+    }
+
+    renderControlsList(controls, assetLabel) {
+        let controlDescriptions = uniq(controls.map(c => 
+            (c.label + " at " + this.getAssetNameFromId(c.assetId, assetLabel) + 
+                " (" + this.getCoverageLevel(c) + ")")
+        ));
+
         return (
             <ul>
                 {controlDescriptions.map((cs) => <li key={cs}>{cs}</li>)}
@@ -179,15 +203,13 @@ class RiskTreatmentPlan extends Component {
                         return; // we don't want to display this split type as 0 threats fall into this category
                     }
 
-                    let controlDescriptions = uniq(controls.map(c => (c.label + " at " + this.getAssetNameFromId(c.assetId, asset.label))));
-
                     rows.push(<tr key={"m-" + misbehaviour.id + "-" + category}>
                         <td>{misbehaviour.misbehaviourLabel}</td>
                         {this.renderImpactLevel(misbehaviour, impactLevels)}
                         <td className="bullet-pt-list">{this.renderDirectCauseThreats(threats)}</td>
                         <td>{this.getTreatmentMethod(category)}</td>
                         <td>{this.getStatus(category)}</td>
-                        <td className="bullet-pt-list">{this.renderControlsList(controlDescriptions)}</td>
+                        <td className="bullet-pt-list">{this.renderControlsList(controls, asset.label)}</td>
                     </tr>);
                 });
             });
