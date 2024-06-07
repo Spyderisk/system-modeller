@@ -9,14 +9,16 @@ class RiskTreatmentPlan extends Component {
     constructor(props) {
         super(props);
 
+        let coverageLevals = props.model.levels["TrustworthinessLevel"];
+
         this.state = {
-            coverageLevals: RiskTreatmentPlan.getCoverageLevelsMap(props)
+            coverageLevals: coverageLevals,
+            coverageLevalsMap: RiskTreatmentPlan.getCoverageLevelsMap(coverageLevals)
         };
     }
 
-    static getCoverageLevelsMap(props) {
+    static getCoverageLevelsMap(coverageLevals) {
         let levelsMap = new Map();
-        let coverageLevals = props.model.levels["TrustworthinessLevel"];
 
         coverageLevals.forEach((level) => {
             levelsMap.set(level.uri, level);
@@ -150,19 +152,27 @@ class RiskTreatmentPlan extends Component {
         );
     }
 
+    getControlDesc(c, assetLabel) {
+        return c.label + " at " + this.getAssetNameFromId(c.assetId, assetLabel);
+    }
+
     getCoverageLevel(cs) {
-        return this.state.coverageLevals.get(cs.coverageLevel).label
+        return this.state.coverageLevalsMap.get(cs.coverageLevel)
+    }
+
+    renderCoverageLevel(cs) {
+        let coverageLevel = this.getCoverageLevel(cs);
+        return (
+            <span style={{ backgroundColor: getLevelColour(this.state.coverageLevals, coverageLevel, true) }}>
+                {coverageLevel.label}
+            </span>
+        )
     }
 
     renderControlsList(controls, assetLabel) {
-        let controlDescriptions = uniq(controls.map(c => 
-            (c.label + " at " + this.getAssetNameFromId(c.assetId, assetLabel) + 
-                " (" + this.getCoverageLevel(c) + ")")
-        ));
-
         return (
             <ul>
-                {controlDescriptions.map((cs) => <li key={cs}>{cs}</li>)}
+                {controls.map((cs) => <li key={cs.id}>{this.getControlDesc(cs, assetLabel)} ({this.renderCoverageLevel(cs)})</li>)}
             </ul>
         );
     }
@@ -209,7 +219,7 @@ class RiskTreatmentPlan extends Component {
                         <td className="bullet-pt-list">{this.renderDirectCauseThreats(threats)}</td>
                         <td>{this.getTreatmentMethod(category)}</td>
                         <td>{this.getStatus(category)}</td>
-                        <td className="bullet-pt-list">{this.renderControlsList(controls, asset.label)}</td>
+                        <td className="bullet-pt-list">{this.renderControlsList(uniq(controls), asset.label)}</td>
                     </tr>);
                 });
             });
