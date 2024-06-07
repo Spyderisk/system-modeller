@@ -27,13 +27,9 @@ class RiskTreatmentPlan extends Component {
         return levelsMap;
     }
 
-    getAssetNameFromId(id, assetName) {
+    getAssetNameFromId(id) {
         let asset = this.props.model.assets.filter(asset => asset.id === id)[0];
-
-        if (asset.asserted)
-            return asset.label;
-        else
-            return assetName;
+        return asset.label;
     };
 
     getThreatDescriptions(threats) {
@@ -152,8 +148,8 @@ class RiskTreatmentPlan extends Component {
         );
     }
 
-    getControlDesc(c, assetLabel) {
-        return c.label + " at " + this.getAssetNameFromId(c.assetId, assetLabel);
+    getControlDesc(c) {
+        return c.label + " at " + this.getAssetNameFromId(c.assetId);
     }
 
     getCoverageLevel(cs) {
@@ -169,10 +165,10 @@ class RiskTreatmentPlan extends Component {
         )
     }
 
-    renderControlsList(controls, assetLabel) {
+    renderControlsList(controls) {
         return (
             <ul>
-                {controls.map((cs) => <li key={cs.id}>{this.getControlDesc(cs, assetLabel)} ({this.renderCoverageLevel(cs)})</li>)}
+                {controls.map((cs) => <li key={cs.id}>{this.getControlDesc(cs)} ({this.renderCoverageLevel(cs)})</li>)}
             </ul>
         );
     }
@@ -219,7 +215,7 @@ class RiskTreatmentPlan extends Component {
                         <td className="bullet-pt-list">{this.renderDirectCauseThreats(threats)}</td>
                         <td>{this.getTreatmentMethod(category)}</td>
                         <td>{this.getStatus(category)}</td>
-                        <td className="bullet-pt-list">{this.renderControlsList(uniq(controls), asset.label)}</td>
+                        <td className="bullet-pt-list">{this.renderControlsList(uniq(controls))}</td>
                     </tr>);
                 });
             });
