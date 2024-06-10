@@ -13,7 +13,9 @@ class RiskTreatmentPlan extends Component {
 
         this.state = {
             coverageLevals: coverageLevals,
-            coverageLevalsMap: RiskTreatmentPlan.getCoverageLevelsMap(coverageLevals)
+            coverageLevalsMap: RiskTreatmentPlan.getCoverageLevelsMap(coverageLevals),
+            includeInferredAssets: true,
+            onlyInferredAssetsWithActiveControls: false,
         };
     }
 
@@ -175,11 +177,13 @@ class RiskTreatmentPlan extends Component {
 
     render() {
         let model = this.props.model;
-        let assets = model.assets ? model.assets.filter(a => a.asserted) : [];
+        let assertedOnly = !this.state.includeInferredAssets;
+        let assets = model.assets ? (assertedOnly ? model.assets.filter(a => a.asserted) : model.assets) : [];
         let content = [];
         let impactLevels = this.props.model.levels["ImpactLevel"];
 
         assets.sort(this.sortAssets).forEach(asset => {
+            let assetHasActiveControl = false;
             let rows = [];
 
             // Get asset misbehaviours and filter out non-visible ones
@@ -209,6 +213,15 @@ class RiskTreatmentPlan extends Component {
                         return; // we don't want to display this split type as 0 threats fall into this category
                     }
 
+                    // If we are checking an inferred asset for active controls...
+                    if (!asset.asserted && this.state.onlyInferredAssetsWithActiveControls) {
+                        // For any category other than "ignored", we have an acitvei control, if list is not empty
+                        // N.B. Here, we are also counting "accepted" as a "control"
+                        if (category !=="ignored" && controls.length > 0) {
+                            assetHasActiveControl = true;
+                        }
+                    }
+
                     rows.push(<tr key={"m-" + misbehaviour.id + "-" + category}>
                         <td>{misbehaviour.misbehaviourLabel}</td>
                         {this.renderImpactLevel(misbehaviour, impactLevels)}
@@ -221,7 +234,11 @@ class RiskTreatmentPlan extends Component {
             });
 
             if (rows.length === 0)
-                return;
+                return; // No content to display for asset 
+
+            if (!asset.asserted && this.state.onlyInferredAssetsWithActiveControls && !assetHasActiveControl) {
+                return // Inferred asset has no active control
+            }
 
             content.push(this.renderAsset(asset));
 
