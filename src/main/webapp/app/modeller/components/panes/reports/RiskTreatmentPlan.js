@@ -131,11 +131,19 @@ class RiskTreatmentPlan extends Component {
     }
 
     renderAsset(asset) {
+        let assetType = this.props.getAssetType(asset["type"]);
+        if (!assetType) assetType = {"label": "unknown", "description": ""};
         let populationLevels = this.props.model.levels["PopulationLevel"];
         let populationLevel = populationLevels.find((level) => level.uri === asset.population);
 
         return ([<div key={asset.id} className="title">{asset.label}</div>,
         <div key={"pop_"+ asset.id} className="population">
+            <p>
+                <strong>Type: </strong>{assetType["label"]}
+            </p>
+            <p>
+                <strong>Description: </strong>{assetType["description"]}
+            </p>
             <strong>Population:</strong>
             &nbsp;
             {renderPopulationLevel(asset, populationLevel, populationLevels, false, false)}
@@ -289,6 +297,7 @@ class RiskTreatmentPlan extends Component {
 RiskTreatmentPlan.propTypes = {
     model: PropTypes.object,
     controlSets: PropTypes.object,
+    getAssetType: PropTypes.func,
 };
 
 export default RiskTreatmentPlan;
