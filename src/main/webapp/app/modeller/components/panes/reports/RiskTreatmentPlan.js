@@ -1,5 +1,6 @@
 import React, {Component} from "react";
 import PropTypes from "prop-types";
+import {Form, FormGroup, Checkbox} from "react-bootstrap";
 import {getLevelColour, renderPopulationLevel} from "../../util/Levels";
 
 let uniq = (arr) => [...new Set(arr)];
@@ -262,6 +263,22 @@ class RiskTreatmentPlan extends Component {
                 <div className="heading">
                     Risk Treatment Plan
                 </div>
+                {assets.length > 0 &&
+                    <Form>
+                        <FormGroup>
+                            <Checkbox
+                                checked={this.state.includeInferredAssets}
+                                onChange={(e) => {
+                                    this.setState({
+                                        ...this.state,
+                                        includeInferredAssets: e.nativeEvent.target.checked
+                                    })
+                                }}>
+                                Include inferred assets
+                            </Checkbox>
+                        </FormGroup>
+                    </Form>
+                }
                 {content}
             </div>
         );
