@@ -113,6 +113,18 @@ class RiskTreatmentPlan extends Component {
         return <td style={{backgroundColor: impact_colour, whiteSpace: "nowrap"}}>{impact}</td>
     }
 
+    renderLikelihoodLevel(ms, likelihoodLevels) {
+        let likelihood = ms.likelihood ? ms.likelihood.label : "N/A";
+        let likelihood_colour = ms.likelihood ? getLevelColour(likelihoodLevels, ms.likelihood, false) : "";
+        return <td style={{backgroundColor: likelihood_colour, whiteSpace: "nowrap"}}>{likelihood}</td>
+    }
+
+    renderRiskLevel(ms, riskLevels) {
+        let risk = ms.riskLevel ? ms.riskLevel.label : "N/A";
+        let risk_colour = ms.riskLevel ? getLevelColour(riskLevels, ms.riskLevel, false) : "";
+        return <td style={{backgroundColor: risk_colour, whiteSpace: "nowrap"}}>{risk}</td>
+    }
+
     getTreatmentMethod(splitType) {
         return splitType === "accepted" ? "Accept" : splitType === "ignored" ? "Ignore" : splitType === "uncontrolled" ? "n/a" : "Mitigate";
     }
@@ -194,6 +206,8 @@ class RiskTreatmentPlan extends Component {
         let assets = model.assets ? (assertedOnly ? model.assets.filter(a => a.asserted) : model.assets) : [];
         let content = [];
         let impactLevels = this.props.model.levels["ImpactLevel"];
+        let likelihoodLevels = this.props.model.levels["Likelihood"];
+        let riskLevels = this.props.model.levels["RiskLevel"];
 
         assets.sort(this.sortAssets).forEach(asset => {
             let assetHasActiveControl = false;
@@ -238,9 +252,11 @@ class RiskTreatmentPlan extends Component {
                     rows.push(<tr key={"m-" + misbehaviour.id + "-" + category}>
                         <td>{misbehaviour.misbehaviourLabel}</td>
                         {this.renderImpactLevel(misbehaviour, impactLevels)}
+                        {this.renderLikelihoodLevel(misbehaviour, likelihoodLevels)}
+                        {this.renderRiskLevel(misbehaviour, riskLevels)}
                         <td className="bullet-pt-list">{this.renderDirectCauseThreats(threats)}</td>
-                        <td>{this.getTreatmentMethod(category)}</td>
-                        <td>{this.getStatus(category)}</td>
+                        <td style={{whiteSpace: "nowrap"}}>{this.getTreatmentMethod(category)}</td>
+                        <td style={{whiteSpace: "nowrap"}}>{this.getStatus(category)}</td>
                         <td className="bullet-pt-list">{this.renderControlsList(uniq(controls))}</td>
                     </tr>);
                 });
@@ -260,10 +276,12 @@ class RiskTreatmentPlan extends Component {
                 <tr>
                     <th className="col-1">Consequence</th>
                     <th className="col-2">Impact</th>
-                    <th className="col-3">Direct Causes</th>
-                    <th className="col-4">Treatment Method</th>
-                    <th className="col-5">Status</th>
-                    <th className="col-6">Controls</th>
+                    <th className="col-3">Likelihood</th>
+                    <th className="col-4">Risk</th>
+                    <th className="col-5">Direct Causes</th>
+                    <th className="col-6">Treatment Method</th>
+                    <th className="col-7">Status</th>
+                    <th className="col-8">Controls</th>
                 </tr>
                 </thead>
                 <tbody>{rows}</tbody>
