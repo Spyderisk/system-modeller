@@ -44,6 +44,7 @@ class RiskTreatmentPlan extends Component {
         let ignored = {threats: [], controls: []};
         let accepted = {threats: [], controls: []};
         let workInProgress = {threats: [], controls: []};
+        let uncontrolled = {threats: [], controls: []}; //no CSG avaialble on direct cause threat
 
         threats.forEach(threat => {
             let allControlCombinations = threat.allControlCombinations.flat(2);
@@ -59,7 +60,9 @@ class RiskTreatmentPlan extends Component {
             }
 
             if (allControls.length === 0) { // some threats have no controls, we can either hide these threats or display them
-                return; // here I deciding to hide them
+                // here we put them in the "uncontrolled" group
+                uncontrolled = ({threats: uncontrolled.threats.concat(threat), controls: []});
+                return;
             }
 
             let proposed = [];
@@ -99,7 +102,8 @@ class RiskTreatmentPlan extends Component {
             inPlace: inPlace,
             workInProgress: workInProgress,
             ignored: ignored,
-            accepted: accepted
+            accepted: accepted,
+            uncontrolled: uncontrolled
         }
     }
 
@@ -110,7 +114,7 @@ class RiskTreatmentPlan extends Component {
     }
 
     getTreatmentMethod(splitType) {
-        return splitType === "accepted" ? "Accept" : splitType === "ignored" ? "Ignore" : "Mitigate";
+        return splitType === "accepted" ? "Accept" : splitType === "ignored" ? "Ignore" : splitType === "uncontrolled" ? "n/a" : "Mitigate";
     }
 
     getStatus(splitType) {
@@ -213,7 +217,7 @@ class RiskTreatmentPlan extends Component {
                 }
 
                 let categorisedThreats = this.categoriseThreats(threatsForMisbehaviour);
-                let categories = ["inPlace", "workInProgress", "ignored", "accepted"];
+                let categories = ["inPlace", "workInProgress", "ignored", "accepted", "uncontrolled"];
 
                 categories.forEach(category => {
                     let {threats, controls} = categorisedThreats[category];
