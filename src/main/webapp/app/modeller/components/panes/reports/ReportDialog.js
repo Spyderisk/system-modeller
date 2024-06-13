@@ -112,6 +112,7 @@ class ReportDialog extends React.Component {
                                 getAssetType={this.props.getAssetType}
                                 exportHTML={this.exportHTML}/> :
                             <RiskTreatmentPlan model={model}
+                                controlSets={this.props.controlSets}
                                 dispatch={this.props.dispatch}
                                 getAssetType={this.props.getAssetType}
                                 exportHTML={this.exportHTML}/>
@@ -121,7 +122,7 @@ class ReportDialog extends React.Component {
                     <Button bsClass="btn btn-primary" style={{
                         position: "absolute", right: "20px", top: "35px", zIndex: "11"
                     }}
-                            onClick={() => {this.exportHTML(model, this.props.getAssetType)}}
+                            onClick={() => {this.exportHTML(model, this.props.controlSets, this.props.getAssetType)}}
                     >Export</Button>
 
             </Rnd>
@@ -130,14 +131,15 @@ class ReportDialog extends React.Component {
 
 
 
-    exportHTML(model, assetType) {
+    exportHTML(model, controlSets, assetType) {
         let container = document.createElement('div');
         act(() => {
             ReactDOM.render( this.props.reportType === "technicalReport" ?
                     <Report model={ model }
                                               getAssetType={ assetType }/> :
-                    <RiskTreatmentPlan model={ model }
-                                            getAssetType={ assetType }/>
+                    <RiskTreatmentPlan  model={ model }
+                                        controlSets={controlSets}
+                                        getAssetType={ assetType }/>
                                             , container);
         });
         let report = container.innerHTML;
@@ -150,6 +152,7 @@ class ReportDialog extends React.Component {
 ReportDialog.propTypes = {
     reportType: PropTypes.string,
     model: PropTypes.object,
+    controlSets: PropTypes.object,
     show: PropTypes.bool,
     onHide: PropTypes.func,
     getAssetType: PropTypes.func

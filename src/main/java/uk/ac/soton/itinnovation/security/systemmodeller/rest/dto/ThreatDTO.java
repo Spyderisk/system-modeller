@@ -26,6 +26,7 @@
 package uk.ac.soton.itinnovation.security.systemmodeller.rest.dto;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -75,6 +76,8 @@ public class ThreatDTO extends SemanticEntityDTO {
 
 	//Map of control strategies to their type
 	private final Map<String, ControlStrategyType> controlStrategies;
+
+	private Map<String, ControlStrategy> csgs; //this is only used internally
 
 	private final Set<String> entryPoints;
 
@@ -174,6 +177,8 @@ public class ThreatDTO extends SemanticEntityDTO {
 	}
 
 	private void extractControlStrategiesMap(Map<String, ControlStrategy> csgs) {
+		this.csgs = csgs;
+
 		String threatURI = this.getUri();
 
 		for (ControlStrategy csg : csgs.values()) {
@@ -234,22 +239,26 @@ public class ThreatDTO extends SemanticEntityDTO {
 	 *
 	 * @return a set of control set combinations
 	 */
-	/* KEM - does not appear to be used
-	public List<SortedSet<ControlSet>> getAllControlCombinations() {
+	public List<SortedSet<String>> getAllControlCombinations() {
+		String threatURI = this.getUri();
 
 		//make sure the order of the CSGs is consistent. Use URI. We don't care what the order is.
 		SortedMap<String, ControlStrategy> csgsSorted = new TreeMap<>();
-		csgsSorted.putAll(controlStrategies);
-		List<SortedSet<ControlSet>> combinations = new ArrayList<>();
-		for (ControlStrategy csg: csgsSorted.values()) {
-			SortedSet<ControlSet> oneCombination = new TreeSet<>();
-			oneCombination.addAll(csg.getControlSets().values());
+		csgsSorted.putAll(this.csgs);
+
+		Collection<ControlStrategy> csgValues = csgsSorted.values();
+		csgValues.removeIf(csg -> csg.getType(threatURI).equals(ControlStrategyType.TRIGGER)); //filter out triggering CSGs
+
+		List<SortedSet<String>> combinations = new ArrayList<>();
+		for (ControlStrategy csg: csgValues) {
+			SortedSet<String> oneCombination = new TreeSet<>();
+			oneCombination.addAll(csg.getMandatoryControlSets().keySet());
+			oneCombination.addAll(csg.getOptionalControlSets().keySet());
 			combinations.add(oneCombination);
 		}
 
 		return combinations;
 	}
-	*/
 
 	public boolean getResolved() {
 		return resolved;

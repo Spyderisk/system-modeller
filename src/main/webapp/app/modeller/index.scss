@@ -709,37 +709,45 @@ body {
 
     &#risk-treatment-plan {
         .col-1 {
-            width: 13%;
+            width: 12%;
         }
 
         .col-2 {
-            width: 29%;
+            width: 5%;
         }
 
         .col-3 {
-            width: 10%;
+            width: 5%;
         }
 
         .col-4 {
-            width: 10%;
+            width: 5%;
         }
 
         .col-5 {
-            width: 10%;
+            width: 38%;
         }
 
         .col-6 {
-            width: 24%;
+            width: 5%;
         }
 
         .col-7 {
-            width: 24%;
+            width: 5%;
+        }
+
+        .col-8 {
+            width: 25%;
         }
 
         .title {
             font-size: 1.4em;
             font-weight: bold;
             margin-top: 30px;
+            margin-bottom: 10px;
+        }
+
+        .population {
             margin-bottom: 10px;
         }
     }
