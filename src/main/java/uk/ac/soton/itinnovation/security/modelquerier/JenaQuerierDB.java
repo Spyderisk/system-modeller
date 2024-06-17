@@ -77,6 +77,10 @@ public class JenaQuerierDB implements IQuerierDB {
     // TODO: Put gson.fromJson calls in method with error handling
 
     private static final String PREFIX = "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/";
+    private static final String IMPACTLEVEL = "core#hasImpactLevel";
+    private static final String ASSUMEDTWLEVEL = "core#hasAssertedLevel";
+    private static final String COVERAGELEVEL = "core#hasCoverageLevel";
+    private static final String PROPOSEDSTATUS = "core#isProposed";
     private static final String[] systemGraphs = {"system", "system-inf"};
     private static final String[] allGraphs = {"system", "system-inf", "system-ui"};
     private Dataset dataset;
@@ -2275,6 +2279,60 @@ public class JenaQuerierDB implements IQuerierDB {
         return true;
     }
 
+    /* Method to write a single 'level' as a property of a specified resource to a graph.
+
+       First three arguments are short format URIs. The last is the graph to write to.
+     */
+    private boolean persistLevel(String resourceURI, String propertyURI, String levelURI, String model){
+        // MUST BE IN TRANSACTION
+
+        String graphUri = stack.getGraph(model);
+        if (graphUri == null) {
+            return false;
+        }
+        Model datasetModel = dataset.getNamedModel(graphUri);
+
+        // Encode the property as a single property of the asset resource
+        Resource resource = datasetModel.getResource(getLongName(resourceURI));
+        Property property = ResourceFactory.createProperty(getLongName(propertyURI));
+        RDFNode object = ResourceFactory.createResource(getLongName(levelURI));
+
+        resource.removeAll(property);
+        resource.addProperty(property, object);
+
+        return true;
+    }
+
+    /* Method to write a single boolean status property of a specified resource to a graph.
+
+       First two arguments are short format URIs, the next is the boolean status value, and
+       the next the default value (assumed if the resource has no saved status property).
+       The last argument is the graph to write to.
+
+       Note that there is (as yet) no method that creates a stored triple if the status has
+       the default value.
+     */
+    private boolean persistBoolean(String resourceURI, String propertyURI, Boolean status, Boolean defaultValue, String model){
+        // MUST BE IN TRANSACTION
+
+        String graphUri = stack.getGraph(model);
+        if (graphUri == null) {
+            return false;
+        }
+        Model datasetModel = dataset.getNamedModel(graphUri);
+
+        // Encode the property as a single property of the asset resource
+        Resource resource = datasetModel.getResource(getLongName(resourceURI));
+        Property property = ResourceFactory.createProperty(getLongName(propertyURI));
+
+        resource.removeAll(property);
+        if(!status.equals(defaultValue)) {
+            resource.addLiteral(property, status.booleanValue());
+        }
+
+        return true;
+    }
+
     /* Stores 'entity' in the provided 'graph' (short-name of model graph, e.g. 'system-inf'). All existing properties
      * will be overridden. If the entity object was created by this querier, then a check will be made for which graphs
      * it originates from. Properties present in originating graphs not equal to 'graph' will be ignored when saving iff
@@ -2317,6 +2375,7 @@ public class JenaQuerierDB implements IQuerierDB {
     }
 
     /* Synchronise the cache, so afterwards the triple store matches the cache contents.
+       Need to refactor such that what is saved to each graph matches what should be saved.
      */
     @Override
     public void sync(String... models) {
@@ -2327,8 +2386,87 @@ public class JenaQuerierDB implements IQuerierDB {
         }
         logger.info("Synchronising model with triple store");
 
-        // Get entities to be deleted and try to delete them from the triple store
+        // Delete entities removed from the cache and tagged for deletion
+        logger.info("Removing deleted entities");
+        syncDeletedEntities();
+
+        // Get the entities that need to be updated and try to save the changes
+        logger.info("Saving new/modified entities");
+        for(String graph : models){
+            // Get entities to be stored/updated
+            Map<String, Map<String, EntityDB>> storeEntitiesByType = cache.getStoreCache(graph);
+
+            try{
+                // Start a transaction per graph
+                dataset.begin(ReadWrite.WRITE);
+
+                // Important to store assets first
+                syncAssets(storeEntitiesByType, graph);
+
+                // Then other entities related to assets that require special treatment
+                syncCardinalityConstraints(storeEntitiesByType, graph);
+                syncTrustworthinessAttributeSets(storeEntitiesByType, graph);
+                syncMisbehaviourSets(storeEntitiesByType, graph);
+                syncControlSets(storeEntitiesByType, graph);
+
+                // Store/update the remaining entities
+                Map<String, EntityDB> entities;
+                for(Map.Entry<String,Map<String,EntityDB>> entry : storeEntitiesByType.entrySet()){
+                    String typeKey = entry.getKey();
+                    // If this entity type has not already been synchronized
+                    if(!(typeKey.equals(getCacheTypeName(AssetDB.class)) || 
+                            typeKey.equals(getCacheTypeName(CardinalityConstraintDB.class)) ||
+                            typeKey.equals(getCacheTypeName(TrustworthinessAttributeSetDB.class)) || 
+                            typeKey.equals(getCacheTypeName(MisbehaviourSetDB.class)) ||
+                            typeKey.equals(getCacheTypeName(ControlSetDB.class)))) {
+
+                        syncEntities(storeEntitiesByType, typeKey, graph);
+                    }
+                }
+
+                // Commit the changes
+                dataset.commit();
+
+                // If successful, clear the map of entities to be saved
+                for(Map.Entry<String,Map<String,EntityDB>> entry : storeEntitiesByType.entrySet()){
+                    entities = entry.getValue();
+                    entities.clear();
+                }
+                storeEntitiesByType.clear();
+
+            } catch (Exception e) {
+                // Abort the changes and signal that there has been an error
+                dataset.abort();
+                String message = String.format("Error occurred when synchronising updates to triple store graph %s", graph);
+                logger.error(message);
+                throw new RuntimeException(message, e);
+            }
+            finally {
+                // Close the transaction
+                dataset.end();
+            }
+
+        }
+
+        // No need to clear the cache content, as it now matches the triple store
+
+        final long endTime = System.currentTimeMillis();
+        logger.info("JenaQuerierDB.sync(): execution time {} ms", endTime - startTime);
+        
+    }
+
+    /* Method to remove entities from the triple store if tagged as deleted in the cache.
+
+       Used within the sync() method, outside the main update transaction, so it creates
+       a transaction so either everything is deleted or nothing is deleted.
+       If the transaction fails, the method aborts deletion and throws an exception, which
+       should mean the rest of the sync() method is also aborted.
+     */
+    private void syncDeletedEntities(){
+        // Get entities to be deleted (i.e., marked for deletion in the cache)
         Map<String, Map<String, EntityDB>> deleteEntitiesByType = cache.getDeleteCache();
+
+        // Try to delete them from the triple store
         try{
             // Start a transaction
             dataset.begin(ReadWrite.WRITE);
@@ -2370,80 +2508,143 @@ public class JenaQuerierDB implements IQuerierDB {
             dataset.end();
         }
 
-        logger.info("Saving new/modified entities");
-        // Get the entities that need to be updated and try to save the changes
-        for(String graph : models){
-            // Get entities to be stored/updated
-            Map<String, Map<String, EntityDB>> storeEntitiesByType = cache.getStoreCache(graph);
+    }
 
-            try{
-                // Start a transaction per graph
-                dataset.begin(ReadWrite.WRITE);
+    /* Method to save changes to entities in the triple store where tagged as modified in the cache.
 
-                // Important to store assets first
-                String assetTypeKey = getCacheTypeName(AssetDB.class);
-                Map<String, EntityDB> entities = storeEntitiesByType.get(assetTypeKey);
-                if(entities != null){
-                    if(entities != null && entities.size() > 0){
-                        logger.info("Saving {} new/modified entities cached as {} to graph {}", entities.size(), assetTypeKey, graph);
-                    }
-                    for(EntityDB entity : entities.values()){
-                        persistEntity(entity, graph);
-                    }
-                }
-
-                // Store/update the entities
-                for(String typeKey : storeEntitiesByType.keySet()){
-                    if(typeKey.equals(getCacheTypeName(AssetDB.class))) {
-                        // Skip the assets, because they were already saved
-                        continue;
-                    }
-                    boolean savingLinks = typeKey.equals(getCacheTypeName(CardinalityConstraintDB.class));
-                    entities = storeEntitiesByType.get(typeKey);
-                    if(entities != null){
-                        if(entities != null && entities.size() > 0){
-                            logger.info("Saving {} new/modified entities cached as {} to graph {}", entities.size(), typeKey, graph);
-                        }
-                        for(EntityDB entity : entities.values()){
-                            if(savingLinks){
-                                // Save the extra triples representing asset relationships
-                                persistLink(entity, graph);
-                            }
-                            // Save the entity
-                            persistEntity(entity, graph);
-                        }
-                    }
-                }
-
-                // Commit the changes
-                dataset.commit();
-
-                // If successful, clear the map of entities to be saved
-                for(String typeKey : storeEntitiesByType.keySet()){
-                    entities = storeEntitiesByType.get(typeKey);
-                    entities.clear();
-                }
-                storeEntitiesByType.clear();
-
-            } catch (Exception e) {
-                // Abort the changes and signal that there has been an error
-                dataset.abort();
-                String message = String.format("Error occurred when synchronising updates to triple store graph %s", graph);
-                logger.error(message);
-                throw new RuntimeException(message, e);
+       Part of the synchronisation method, used inside a transaction in the calling sync() method.
+       The argument is the cached entities tagged as modified for a specific graph.
+     */
+    private void syncEntities(Map<String, Map<String, EntityDB>> storeEntitiesByType, String typeKey, String graph) {
+        Map<String, EntityDB> entities = storeEntitiesByType.get(typeKey);
+        if(entities != null){
+            if(entities.size() > 0){
+                logger.info("Saving {} new/modified entities cached as {} to graph {}", entities.size(), typeKey, graph);
             }
-            finally {
-                // Close the transaction
-                dataset.end();
+            for(EntityDB entity : entities.values()){
+                // Save the entity
+                persistEntity(entity, graph);
             }
-
         }
+    }
 
-        // No need to clear the cache content, as it now matches the triple store
+    /* Method to save changes to assets in the triple store where tagged as modified in the cache.
 
-        final long endTime = System.currentTimeMillis();
-        logger.info("JenaQuerierDB.sync(): execution time {} ms", endTime - startTime);
-        
+       Part of the synchronisation method, used inside a transaction in the calling sync() method.
+       The argument is the cached entities tagged as modified for a specific graph.
+
+       Assets are special because both AssetDB and InferredAssetDB entities  use the same typeKey.
+     */
+    private void syncAssets(Map<String, Map<String, EntityDB>> storeEntitiesByType, String graph) {
+        String typeKey = getCacheTypeName(AssetDB.class);
+        syncEntities(storeEntitiesByType, typeKey, graph);
+    }
+
+    /* Method to save changes to relationships in the triple store where tagged as modified in the cache.
+
+       Part of the synchronisation method, used inside a transaction in the calling sync() method.
+       The argument is the cached entities tagged as modified for a specific graph.
+
+       Relationships are special because they are encoded as a single property of the source asset,
+       as well as a CardinalityConstraintDB entity.
+     */
+    private void syncCardinalityConstraints(Map<String, Map<String, EntityDB>> storeEntitiesByType, String graph) {
+        String typeKey = getCacheTypeName(CardinalityConstraintDB.class);
+        Map<String, EntityDB> entities = storeEntitiesByType.get(typeKey);
+        if(entities != null){
+            if(entities != null && entities.size() > 0){
+                logger.info("Saving {} new/modified asset relationships to graph {}", entities.size(), graph);
+            }
+            for(EntityDB entity : entities.values()){
+                // Save the extra triples representing asset relationships
+                persistLink(entity, graph);
+
+                // Save the entity
+                persistEntity(entity, graph);
+            }
+        }
+    }
+
+    /* Method to save changes to TWAS in the triple store where tagged as modified in the cache.
+
+       Part of the synchronisation method, used inside a transaction in the calling sync() method.
+       The argument is the cached entities tagged as modified for a specific graph.
+
+       TWAS are special because only assumed TW level properties are stored in the asserted graph.
+     */
+    private void syncTrustworthinessAttributeSets(Map<String, Map<String, EntityDB>> storeEntitiesByType, String graph) {
+        String typeKey = getCacheTypeName(TrustworthinessAttributeSetDB.class);
+        Map<String, EntityDB> entities = storeEntitiesByType.get(typeKey);
+        if(entities != null){
+            if(entities.size() > 0){
+                logger.info("Saving {} new/modified trustworthiness attribute sets to graph {}", entities.size(), graph);
+            }
+            for(EntityDB entity : entities.values()){
+                if(graph.equals("system")){
+                    // Save only the assumed TW level property
+                    TrustworthinessAttributeSetDB twas = (TrustworthinessAttributeSetDB)entity;
+                    persistLevel(twas.getUri(), ASSUMEDTWLEVEL, twas.getAssertedLevel(), graph);
+                } else {
+                    // Save the entity
+                    persistEntity(entity, graph);       
+                }
+            }
+        }
+    }
+
+    /* Method to save changes to MS in the triple store where tagged as modified in the cache.
+
+       Part of the synchronisation method, used inside a transaction in the calling sync() method.
+       The argument is the cached entities tagged as modified for a specific graph.
+
+       MS are special because only assumed TW level properties are stored in the asserted graph.
+     */
+    private void syncMisbehaviourSets(Map<String, Map<String, EntityDB>> storeEntitiesByType, String graph) {
+        String typeKey = getCacheTypeName(MisbehaviourSetDB.class);
+        Map<String, EntityDB> entities = storeEntitiesByType.get(typeKey);
+        if(entities != null){
+            if(entities.size() > 0){
+                logger.info("Saving {} new/modified misbehaviour sets to graph {}", entities.size(), graph);
+            }
+            for(EntityDB entity : entities.values()){
+                if(graph.equals("system")){
+                    // Save only the assumed TW level property
+                    MisbehaviourSetDB ms = (MisbehaviourSetDB)entity;
+                    persistLevel(ms.getUri(), IMPACTLEVEL, ms.getImpactLevel(), graph);
+                } else {
+                    // Save the entity
+                    persistEntity(entity, graph);       
+                }
+            }
+        }
+    }
+
+    /* Method to save changes to MS in the triple store where tagged as modified in the cache.
+
+       Part of the synchronisation method, used inside a transaction in the calling sync() method.
+       The argument is the cached entities tagged as modified for a specific graph.
+
+       MS are special because only assumed TW level properties are stored in the asserted graph.
+     */
+    private void syncControlSets(Map<String, Map<String, EntityDB>> storeEntitiesByType, String graph) {
+        String typeKey = getCacheTypeName(ControlSetDB.class);
+        Map<String, EntityDB> entities = storeEntitiesByType.get(typeKey);
+        if(entities != null){
+            if(entities.size() > 0){
+                logger.info("Saving {} new/modified control sets to graph {}", entities.size(), graph);
+            }
+            for(EntityDB entity : entities.values()){
+                if(graph.equals("system")){
+                    // Save only the assumed TW level property
+                    ControlSetDB cs = (ControlSetDB)entity;
+                    persistLevel(cs.getUri(), COVERAGELEVEL, cs.getCoverageLevel(), graph);
+                    persistBoolean(cs.getUri(), PROPOSEDSTATUS, cs.isProposed(), false, graph);
+                } else {
+                    // Save the entity
+                    persistEntity(entity, graph);       
+                }
+            }
+        }
     }
 
     @Override
@@ -3399,47 +3600,40 @@ public class JenaQuerierDB implements IQuerierDB {
      */
     @Override
     public boolean updateAssertedLevel(LevelDB level, String twasURI, String model){
-        String graphUri = stack.getGraph(model);
-        if (graphUri == null) {
-            return false;
-        }
-        Model datasetModel = dataset.getNamedModel(graphUri);
-
-        // Encode the population level as a single property of the asset resource
-        Resource resource = datasetModel.getResource(getLongName(twasURI));
-        Property property = ResourceFactory.createProperty(getLongName("core#hasAssertedLevel"));
-        RDFNode object = ResourceFactory.createResource(getLongName(level.getUri()));
-
-        // Now remove the old value and save the new value
-        try {
-            dataset.begin(ReadWrite.WRITE);
-            resource.removeAll(property);
-            resource.addProperty(property, object);
-            dataset.commit();
-        } 
-        catch (Exception e) {
-            // Abort the changes and signal that there has been an error
-            dataset.abort();
-            String message = String.format("Error occurred while updating assumed TW level for TWAS %s", twasURI);
-            logger.error(message, e);
-            throw new RuntimeException(message, e);
-        }
-        finally {
-            dataset.end();
-        }
-
         if(cacheEnabled){
-            // Make the same change in the cached object, if it exists
+            // Load the object, in case it isn't already in the cache
             TrustworthinessAttributeSetDB twas = this.getTrustworthinessAttributeSet(twasURI, model);
+            
+            // Make the change in the cached object
             if(twas != null) {
                 twas.setAssertedLevel(level.getUri());
                 this.store(twas, model);
+                return true;
+            } else {
+                return false;
             }
+    
+            // Note that the calling process must change TrustworthinessAttributeSetDB objects for other graphs
 
-            // Note that the calling process must change ControlSetDB objects for other graphs        }
+        } else {
+            // Try to remove the old level (if any) and replace it with the new level
+            try {
+                dataset.begin(ReadWrite.WRITE);
+                persistLevel(twasURI, ASSUMEDTWLEVEL, level.getUri(), model);
+                dataset.commit();
+                return true;
+            } 
+            catch (Exception e) {
+                // Abort the changes and signal that there has been an error
+                dataset.abort();
+                String message = String.format("Error occurred while updating assumed TW level for TWAS %s", twasURI);
+                logger.error(message, e);
+                throw new RuntimeException(message, e);
+            }
+            finally {
+                dataset.end();
+            }
         }
-
-        return true;
     }
 
     @Override
@@ -3454,47 +3648,40 @@ public class JenaQuerierDB implements IQuerierDB {
      */
     @Override
     public boolean updateCoverageLevel(LevelDB level, String csURI, String model){
-        String graphUri = stack.getGraph(model);
-        if (graphUri == null) {
-            return false;
-        }
-        Model datasetModel = dataset.getNamedModel(graphUri);
-
-        // Encode the population level as a single property of the asset resource
-        Resource resource = datasetModel.getResource(getLongName(csURI));
-        Property property = ResourceFactory.createProperty(getLongName("core#hasCoverageLevel"));
-        RDFNode object = ResourceFactory.createResource(getLongName(level.getUri()));
-
-        // Now remove the old value and save the new value
-        try {
-            dataset.begin(ReadWrite.WRITE);
-            resource.removeAll(property);
-            resource.addProperty(property, object);
-            dataset.commit();
-        } 
-        catch (Exception e) {
-            // Abort the changes and signal that there has been an error
-            dataset.abort();
-            String message = String.format("Error occurred while updating control coverage level for CS %s", csURI);
-            logger.error(message, e);
-            throw new RuntimeException(message, e);
-        }
-        finally {
-            dataset.end();
-        }
-
         if(cacheEnabled){
-            // Make the same change in the cached object, if it exists
+            // Load the object, in case it isn't already in the cache
             ControlSetDB cs = this.getControlSet(csURI, model);
+            
+            // Make the change in the cached object
             if(cs != null) {
-                cs.setCoverageLevel(level.getUri());
+                cs.setControl(level.getUri());
                 this.store(cs, model);
+                return true;
+            } else {
+                return false;
             }
+    
+            // Note that the calling process must change ControlSetDB objects for other graphs
 
-            // Note that the calling process must change ControlSetDB objects for other graphs        }
+        } else {
+            // Try to remove the old level (if any) and replace it with the new level
+            try {
+                dataset.begin(ReadWrite.WRITE);
+                persistLevel(csURI, COVERAGELEVEL, level.getUri(), model);
+                dataset.commit();
+                return true;
+            } 
+            catch (Exception e) {
+                // Abort the changes and signal that there has been an error
+                dataset.abort();
+                String message = String.format("Error occurred while updating control coverage level for CS %s", csURI);
+                logger.error(message, e);
+                throw new RuntimeException(message, e);
+            }
+            finally {
+                dataset.end();
+            }
         }
-
-        return true;
     }
 
     @Override
@@ -3509,46 +3696,40 @@ public class JenaQuerierDB implements IQuerierDB {
      */
     @Override
     public boolean updateProposedStatus(Boolean status, String csURI, String model){
-        String graphUri = stack.getGraph(model);
-        if (graphUri == null) {
-            return false;
-        }
-        Model datasetModel = dataset.getNamedModel(graphUri);
-
-        // Encode the population level as a single property of the asset resource
-        Resource resource = datasetModel.getResource(getLongName(csURI));
-        Property property = ResourceFactory.createProperty(getLongName("core#isProposed"));
-
-        // Now remove the old value and save the new value
-        try {
-            dataset.begin(ReadWrite.WRITE);
-            resource.removeAll(property);
-            resource.addLiteral(property, status.booleanValue());
-            dataset.commit();
-        } 
-        catch (Exception e) {
-            // Abort the changes and signal that there has been an error
-            dataset.abort();
-            String message = String.format("Error occurred while updating control proposed status for CS %s", csURI);
-            logger.error(message, e);
-            throw new RuntimeException(message, e);
-        }
-        finally {
-            dataset.end();
-        }
-
         if(cacheEnabled){
-            // Make the same change in the cached object, if it exists
+            // Load the object, in case it isn't already in the cache
             ControlSetDB cs = this.getControlSet(csURI, model);
+            
+            // Make the change in the cached object
             if(cs != null) {
                 cs.setProposed(status);
                 this.store(cs, model);
+                return true;
+            } else {
+                return false;
             }
-
+    
             // Note that the calling process must change ControlSetDB objects for other graphs
-        }
 
-        return true;
+        } else {
+            // Try to remove the old status (if any) and replace it with the new status
+            try {
+                dataset.begin(ReadWrite.WRITE);
+                persistBoolean(csURI, PROPOSEDSTATUS, status, false, model);
+                dataset.commit();
+                return true;
+            } 
+            catch (Exception e) {
+                // Abort the changes and signal that there has been an error
+                dataset.abort();
+                String message = String.format("Error occurred while updating control proposed status for CS %s", csURI);
+                logger.error(message, e);
+                throw new RuntimeException(message, e);
+            }
+            finally {
+                dataset.end();
+            }
+        }
     }
 
     @Override
