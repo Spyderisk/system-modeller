@@ -72,6 +72,9 @@ LABEL org.opencontainers.image.revision=${CI_COMMIT_SHA}
 LABEL org.opencontainers.image.created=${CI_COMMIT_TIMESTAMP}
 LABEL org.opencontainers.image.release=${CI_RELEASE}
 
+ENV SPYDERISK_COMMIT_SHA=${CI_COMMIT_SHA}
+ENV SPYDERISK_COMMIT_TIMESTAMP=${CI_COMMIT_TIMESTAMP}
+ENV SPYDERISK_RELEASE=${CI_RELEASE}
 ENV SPRING_PROFILES_ACTIVE=production
 
 # Install packaged dependencies
