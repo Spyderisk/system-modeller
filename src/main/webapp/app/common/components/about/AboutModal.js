@@ -10,6 +10,8 @@ class AboutModal extends Component {
 
     render() {
         const {dispatch, info, ...modalProps} = this.props;
+        const logo = "spyderisk.svg";
+        const logo_path = process.env.config.API_END_POINT + "/images/" + logo;
 
         if (!info) {
             return null;
@@ -21,10 +23,11 @@ class AboutModal extends Component {
                     <Modal.Title>About Spyderisk</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <p>Version: <span>{info.spyderiskVersion}</span></p>
-                    <p>Commit SHA: <span>{info.spyderiskCommitSha}</span></p>
-                    <p>Commit Timestamp: <span>{info.spyderiskCommitTimestamp}</span></p>
-                    <p>Adaptor Version: <span>{info.spyderiskAdaptorVersion}</span></p>
+                    <img id="logo" src={logo_path}/>
+                    <p><strong>Version: </strong><span>{info.spyderiskVersion}</span></p>
+                    <p><strong>Commit SHA: </strong><span>{info.spyderiskCommitSha}</span></p>
+                    <p><strong>Commit Timestamp: </strong><span>{info.spyderiskCommitTimestamp}</span></p>
+                    <p><strong>Adaptor Version: </strong><span>{info.spyderiskAdaptorVersion}</span></p>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button
