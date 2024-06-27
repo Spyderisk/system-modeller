@@ -18,13 +18,13 @@ class AboutModal extends Component {
         return (
             <Modal {...modalProps}>
                 <Modal.Header closeButton>
-                    <Modal.Title>About</Modal.Title>
+                    <Modal.Title>About Spyderisk</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <p>Spyderisk Version: <span>{info.spyderiskVersion}</span></p>
-                    <p>Spyderisk Commit SHA: <span>{info.spyderiskCommitSha}</span></p>
-                    <p>Spyderisk Commit Timestamp: <span>{info.spyderiskCommitTimestamp}</span></p>
-                    <p>Spyderisk Adaptor Version: <span>{info.spyderiskAdaptorVersion}</span></p>
+                    <p>Version: <span>{info.spyderiskVersion}</span></p>
+                    <p>Commit SHA: <span>{info.spyderiskCommitSha}</span></p>
+                    <p>Commit Timestamp: <span>{info.spyderiskCommitTimestamp}</span></p>
+                    <p>Adaptor Version: <span>{info.spyderiskAdaptorVersion}</span></p>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button
