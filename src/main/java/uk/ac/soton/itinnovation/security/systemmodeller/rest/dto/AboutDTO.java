@@ -30,6 +30,10 @@ public class AboutDTO {
     private String spyderiskCommitTimestamp;
     private String spyderiskAdaptorVersion;
 
+    private AboutLinkDTO website;
+    private AboutLinkDTO license;
+    private AboutLinkDTO contributors;
+
     public String getSpyderiskVersion() {
         return spyderiskVersion;
     }
@@ -60,6 +64,30 @@ public class AboutDTO {
 
     public void setSpyderiskAdaptorVersion(String spyderiskAdaptorVersion) {
         this.spyderiskAdaptorVersion = spyderiskAdaptorVersion;
+    }
+
+    public AboutLinkDTO getWebsite() {
+        return website;
+    }
+
+    public void setWebsite(AboutLinkDTO website) {
+        this.website = website;
+    }
+
+    public AboutLinkDTO getLicense() {
+        return license;
+    }
+
+    public void setLicense(AboutLinkDTO license) {
+        this.license = license;
+    }
+
+    public AboutLinkDTO getContributors() {
+        return contributors;
+    }
+
+    public void setContributors(AboutLinkDTO contributors) {
+        this.contributors = contributors;
     }
 
 }

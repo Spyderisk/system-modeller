@@ -26,18 +26,35 @@ package uk.ac.soton.itinnovation.security.systemmodeller.rest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.AboutDTO;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.AboutLinkDTO;
 
 @RestController
 public class AboutController {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	
+	@Value("${spyderisk.website}")
+	private String spyderiskWebsite;
+
+	@Value("${spyderisk.license.link}")
+	private String spyderiskLicenseLink;
+
+	@Value("${spyderisk.license.text}")
+	private String spyderiskLicenseText;
+
+	@Value("${spyderisk.contributors.link}")
+	private String spyderiskContributorsLink;
+
+	@Value("${spyderisk.contributors.text}")
+	private String spyderiskContributorsText;
+
 	/**
 	 * REST method to GET about info for Spyderisk installation (versions, etc)
 	 *
@@ -59,10 +76,19 @@ public class AboutController {
 		logger.info("SPYDERISK_ADAPTOR_VERSION: {}", spyderiskAdaptorVersion);
 
 		AboutDTO aboutDTO = new AboutDTO();
+
 		aboutDTO.setSpyderiskVersion(spyderiskVersion);
 		aboutDTO.setSpyderiskCommitSha(spyderiskCommitSha);
 		aboutDTO.setSpyderiskCommitTimestamp(spyderiskCommitTimestamp);
 		aboutDTO.setSpyderiskAdaptorVersion(spyderiskAdaptorVersion);
+
+		AboutLinkDTO website = new AboutLinkDTO(spyderiskWebsite);
+		AboutLinkDTO license = new AboutLinkDTO(spyderiskLicenseLink, spyderiskLicenseText);
+		AboutLinkDTO contributors = new AboutLinkDTO(spyderiskContributorsLink, spyderiskContributorsText);
+
+		aboutDTO.setWebsite(website);
+		aboutDTO.setLicense(license);
+		aboutDTO.setContributors(contributors);
 
 		return ResponseEntity.status(HttpStatus.OK).body(aboutDTO);
 	}
