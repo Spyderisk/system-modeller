@@ -450,15 +450,6 @@ class Header extends React.Component {
                         <div className="header-dropdown">
                             <DropdownButton title="Help" id="help-menu">
                                 <MenuItem
-                                    key={11}
-                                    eventKey={11}
-                                    onClick={(e) =>
-                                        this.getAboutInfo()
-                                    }
-                                >
-                                    About
-                                </MenuItem>
-                                <MenuItem
                                     key={0}
                                     eventKey={0}
                                     onClick={(e) =>
@@ -551,6 +542,16 @@ class Header extends React.Component {
                                     }
                                 >
                                     8. Finishing your Session
+                                </MenuItem>
+                                <MenuItem divider />
+                                <MenuItem
+                                    key={11}
+                                    eventKey={11}
+                                    onClick={(e) =>
+                                        this.getAboutInfo()
+                                    }
+                                >
+                                    About
                                 </MenuItem>
                             </DropdownButton>
                         </div>
