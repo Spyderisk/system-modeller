@@ -36,7 +36,7 @@ class AboutModal extends Component {
                     <Button
                         onClick={modalProps.onHide}
                         autoFocus>
-                        Cancel
+                        Close
                     </Button>
                 </Modal.Footer>
             </Modal>
