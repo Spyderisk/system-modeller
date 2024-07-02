@@ -55,6 +55,18 @@ public class AboutController {
 	@Value("${spyderisk.contributors.text}")
 	private String spyderiskContributorsText;
 
+	@Value("${spyderisk.version}")
+	private String spyderiskVersion;
+
+	@Value("${spyderisk.commit.sha}")
+	private String spyderiskCommitSha;
+
+	@Value("${spyderisk.commit.timestamp}")
+	private String spyderiskCommitTimestamp;
+
+	@Value("${spyderisk.adaptor.version}")
+	private String spyderiskAdaptorVersion;
+
 	/**
 	 * REST method to GET about info for Spyderisk installation (versions, etc)
 	 *
@@ -64,11 +76,6 @@ public class AboutController {
 	public ResponseEntity<AboutDTO> getAboutInfo() {
 
 		logger.info("Called REST method to GET about info");
-
-		String spyderiskVersion = System.getenv("SPYDERISK_VERSION");
-		String spyderiskCommitSha = System.getenv("SPYDERISK_COMMIT_SHA");
-		String spyderiskCommitTimestamp = System.getenv("SPYDERISK_COMMIT_TIMESTAMP");
-		String spyderiskAdaptorVersion= System.getenv("SPYDERISK_ADAPTOR_VERSION");
 
 		logger.debug("SPYDERISK_VERSION: {}", spyderiskVersion);
 		logger.debug("SPYDERISK_COMMIT_SHA: {}", spyderiskCommitSha);

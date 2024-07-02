@@ -44,10 +44,6 @@ services:
       RESET_ON_START: ${RESET_ON_START:-true}
       DISPLAY_EULA: ${DISPLAY_EULA:-true}
       EULA_HTML: ${EULA_HTML}
-      SPYDERISK_VERSION: ${SPYDERISK_VERSION:-N/A}
-      SPYDERISK_COMMIT_SHA:  ${SPYDERISK_COMMIT_SHA:-N/A}
-      SPYDERISK_COMMIT_TIMESTAMP:  ${SPYDERISK_COMMIT_TIMESTAMP:-N/A}
-      SPYDERISK_ADAPTOR_VERSION: ${SPYDERISK_ADAPTOR_VERSION:-N/A}
     volumes:
       # Persistent named volume for the jena-tdb storage
       - type: volume

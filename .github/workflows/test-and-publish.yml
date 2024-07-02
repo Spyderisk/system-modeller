@@ -89,7 +89,7 @@ jobs:
         if [[ ${GITHUB_REF} == refs/tags/* ]]; then
           TAG_RELEASE=${TAG_ROOT}:${REF_END}
           echo "TAG_RELEASE=${TAG_RELEASE}" >> ${GITHUB_ENV}
-          docker build --tag ${TAG_RELEASE} --build-arg CI_RELEASE=${TAG_RELEASE} --build-arg CI_COMMIT_SHA=${GITHUB_SHA} --build-arg CI_COMMIT_TIMESTAMP=${TIMESTAMP} --file Dockerfile --target ssm-production "."
+          docker build --tag ${TAG_RELEASE} --build-arg CI_VERSION=${REF_END} --build-arg CI_RELEASE=${TAG_RELEASE} --build-arg CI_COMMIT_SHA=${GITHUB_SHA} --build-arg CI_COMMIT_TIMESTAMP=${TIMESTAMP} --file Dockerfile --target ssm-production "."
         else
           TAG_DATE=${TAG_ROOT}:${REF_END}-${SHORT_TIME:0:13}
           TAG_LATEST=${TAG_ROOT}:${REF_END}-latest
