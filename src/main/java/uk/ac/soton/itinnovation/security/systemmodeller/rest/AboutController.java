@@ -70,10 +70,10 @@ public class AboutController {
 		String spyderiskCommitTimestamp = System.getenv("SPYDERISK_COMMIT_TIMESTAMP");
 		String spyderiskAdaptorVersion= System.getenv("SPYDERISK_ADAPTOR_VERSION");
 
-		logger.info("SPYDERISK_VERSION: {}", spyderiskVersion);
-		logger.info("SPYDERISK_COMMIT_SHA: {}", spyderiskCommitSha);
-		logger.info("SPYDERISK_COMMIT_TIMESTAMP: {}", spyderiskCommitTimestamp);
-		logger.info("SPYDERISK_ADAPTOR_VERSION: {}", spyderiskAdaptorVersion);
+		logger.debug("SPYDERISK_VERSION: {}", spyderiskVersion);
+		logger.debug("SPYDERISK_COMMIT_SHA: {}", spyderiskCommitSha);
+		logger.debug("SPYDERISK_COMMIT_TIMESTAMP: {}", spyderiskCommitTimestamp);
+		logger.debug("SPYDERISK_ADAPTOR_VERSION: {}", spyderiskAdaptorVersion);
 
 		AboutDTO aboutDTO = new AboutDTO();
 
