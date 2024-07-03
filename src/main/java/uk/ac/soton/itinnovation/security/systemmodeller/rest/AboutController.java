@@ -77,10 +77,10 @@ public class AboutController {
 
 		logger.info("Called REST method to GET about info");
 
-		logger.debug("SPYDERISK_VERSION: {}", spyderiskVersion);
-		logger.debug("SPYDERISK_COMMIT_SHA: {}", spyderiskCommitSha);
-		logger.debug("SPYDERISK_COMMIT_TIMESTAMP: {}", spyderiskCommitTimestamp);
-		logger.debug("SPYDERISK_ADAPTOR_VERSION: {}", spyderiskAdaptorVersion);
+		logger.debug("Spyderisk version: {}", spyderiskVersion);
+		logger.debug("Spyderisk commit SHA: {}", spyderiskCommitSha);
+		logger.debug("Spyderisk commit timestamp: {}", spyderiskCommitTimestamp);
+		logger.debug("Spyderisk adaptor version: {}", spyderiskAdaptorVersion);
 
 		AboutDTO aboutDTO = new AboutDTO();
 
