@@ -17,6 +17,7 @@ license as described in the top-level Spyderisk [LICENSES/](../../LICENSES/READM
 
 | Local copy                                    | Full citation |
 | -------------                                 | ------------- |
+| [lopresti2004.pdf](./lopresti2004.pdf)        | S. Lo Presti, A. Jøsang, ‘Analysing the Relationship between Risk and Trust’, doi: [10.1007/978-3-540-24747-0_11](https://doi.org/10.1007/978-3-540-24747-0_11)
 | [boniface2010.pdf](./boniface2010.pdf)        | S. Bertram, M. Boniface, M. Surridge, N. Briscombe, M. Hall-May, ‘On-Demand Dynamic Security for Risk-Based Secure Collaboration in Clouds’, 2010 IEEE 3rd International Conference on Cloud Computing. doi: [10.1109/CLOUD.2010.83](https://doi.org/10.1109/CLOUD.2010.83) |
 | [surridge2010.pdf](./surridge2010.pdf)        | M. Bashevoy, A. Chakravarthy, M. Hall-May, M. Surridge, ‘SERSCIS-Ont: A Formal Metrics Model for Adaptive Service Oriented Frameworks’, ADAPTIVE 2010 : The Second International Conference on Adaptive and Self-Adaptive Systems and Applications, Lisbon. doi: **PENDING** |
 | [surridge2011-1.pdf](./surridge2011-1.pdf)    | M. Hall-May, R. Nossal-Tuyeni, M. Surridge, ‘Resilient critical infrastructure management using service oriented architecture - a test case using airport collaborative decision making’, International Journal of Applied Mathematics and Computer Science. doi: [10.2478/v10006-011-0019-9](https://doi.org/10.2478/v10006-011-0019-9) |

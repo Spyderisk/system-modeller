@@ -95,7 +95,7 @@ jobs:
           TAG_LATEST=${TAG_ROOT}:${REF_END}-latest
           echo "TAG_DATE=${TAG_DATE}" >> ${GITHUB_ENV}
           echo "TAG_LATEST=${TAG_LATEST}" >> ${GITHUB_ENV}
-          docker build --tag ${TAG_DATE} --tag ${TAG_LATEST} --build-arg CI_COMMIT_SHA=${GITHUB_SHA} --build-arg CI_COMMIT_TIMESTAMP=${TIMESTAMP} --file Dockerfile --target ssm-production "."
+          docker build --tag ${TAG_DATE} --tag ${TAG_LATEST} --build-arg CI_VERSION=${REF_END}-latest --build-arg CI_COMMIT_SHA=${GITHUB_SHA} --build-arg CI_COMMIT_TIMESTAMP=${TIMESTAMP} --file Dockerfile --target ssm-production "."
         fi
 
     - name: Push Docker image to registry
