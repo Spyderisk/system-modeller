@@ -15,10 +15,18 @@ released 30th April 2024. Until it is replaced, version 3.5 will be stable and
 [the ```dev``` branch](https://github.com/Spyderisk/system-modeller/tree/dev)
 is where all contributions are made, including merging short-lived feature branches.
 
+>  Until it is replaced, version 3.5 will be stable
+> 
+Technically any tagged versions are unique, so will remain stable, as they continue to exist. Any tagged versions are always made off the main branch, after code is merged in from dev.
+
 **Numbering** - in this early stage of Spyderisk, we do not do minor point releases.
 If the current release is 3.5, the next will be 3.6, even if the new release only
 fixes one critical bug. We do not have the resources yet to maintain older stable 
 releases. There will never be Spyderisk version 3.5.1 or 3.6.2.
+
+> There will never be Spyderisk version 3.5.1 or 3.6.2.
+
+I think this is wrong. We may still create a minor release when fixing a major bug found in a recent major release. See further comments [here](https://github.com/Spyderisk/system-modeller/issues/185#issuecomment-2211049801)
 
 **GitHub dependency** - we try to avoid depending on GitHub-specific features,
 many of which are of little benefit to Spyderisk and all of which are intended
