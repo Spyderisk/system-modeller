@@ -6,7 +6,7 @@ import {
     OverlayTrigger, Tooltip
 } from "react-bootstrap";
 import { connect } from "react-redux";
-import { saveDownload } from "../../../common/actions/api";
+import { getAboutInfo, hideAboutModal, getUser, saveDownload } from "../../../common/actions/api";
 import * as Constants from "../../../common/constants.js";
 import { openDocumentation, openApiDocs } from "../../../common/documentation/documentation";
 import {
@@ -16,9 +16,9 @@ import {
     showInferredRelations,
     sidePanelActivated
 } from "../../../modeller/actions/ModellerActions";
-import { getUser } from "../../actions/api";
 import * as actions from "../../reducers/auth";
 import { loadWelcomePage } from "../../rest/rest";
+import AboutModal from "../about/AboutModal.js";
 import Link from "../link/Link";
 import LoadPageMenuItem from "../link/LoadPageMenuItem";
 import "./Header.scss";
@@ -158,7 +158,7 @@ class Header extends React.Component {
     }
 
     render() {
-        let { auth, modeller, model } = this.props;
+        let { auth, about, modeller, model } = this.props;
         let modelName = model
             ? model.name
             : modeller
@@ -543,6 +543,16 @@ class Header extends React.Component {
                                 >
                                     8. Finishing your Session
                                 </MenuItem>
+                                <MenuItem divider />
+                                <MenuItem
+                                    key={11}
+                                    eventKey={11}
+                                    onClick={(e) =>
+                                        this.getAboutInfo()
+                                    }
+                                >
+                                    About
+                                </MenuItem>
                             </DropdownButton>
                         </div>
                     </div>
@@ -650,8 +660,25 @@ class Header extends React.Component {
                     <div id="app-extension-container" />
                 </div>
             )}
+
+            <AboutModal show={about.showAboutModal}
+                onHide={() => this.hideAboutModal()}
+                info={about.info}
+                dispatch={this.props.dispatch}
+                />
+
             </div>
         ) : null;
+    }
+
+    getAboutInfo() {
+        this.props.dispatch(
+            getAboutInfo()
+        );
+    }
+
+    hideAboutModal() {
+        this.props.dispatch(hideAboutModal());
     }
 
     startKeepSessionAlive() {
@@ -712,6 +739,7 @@ let getUserRole = (key) => {
 Header.propTypes = {
     modelName: PropTypes.string,
     auth: PropTypes.object,
+    about: PropTypes.object,
     sidePanelActivated: PropTypes.bool,
     dispatch: PropTypes.func,
 };
@@ -719,6 +747,7 @@ Header.propTypes = {
 let mapStateToProps = function (state) {
     return {
         auth: state.auth,
+        about: state.about,
         modeller: state.modeller,
         model: state.model,
         selection: state.selection,
