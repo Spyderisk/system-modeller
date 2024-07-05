@@ -1,6 +1,6 @@
 # Spyderisk releases
 
-Note - this draft document is discussed in [GitHub Issue ]().
+Note - this draft document is discussed in [GitHub Issue #185](https://github.com/Spyderisk/system-modeller/issues/185). 
 
 **Status** - Spyderisk releases at present are a first step towards giving our
 users an identifiable version. We do not claim Spyderisk is stable because we
