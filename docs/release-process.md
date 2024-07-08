@@ -102,14 +102,25 @@ Prior to releasing, this should be set to a proper release number, to match the 
 
 I think this section should be moved until much later - at this point, we don't yet have a system-modeller docker image that can be used/tested with system-modeller-deployment. Furthermore, the Github tag will actually get created at the point of creating the release (see further below).
 
-## Fill in the release template
+## ~~Fill in the release template~~
 
-* gives binary links
-* update deployment including stable release of system modeller
+* ~~gives binary links~~
+* ~~update deployment including stable release of system modeller~~
 
-## Push the 'Release' button
+## Create a new release
 
-[currently empty]
+1. In [releases](https://github.com/Spyderisk/system-modeller/releases), click `Draft a new release`
+2. Type in a version number for the release and select `Create new tag`
+3. For the target, select "main" branch
+4. Select `Previous tag` (this enables Github to determine changes since last release)
+5. In the `Release title`, enter the same as the release tag
+6. Above the description field, click `Generate release notes`
+7. Adjust release notes as desired (see below)
+8. If you're ready to publicize your release, click `Publish release`. To work on the release later, click `Save draft`
+
+Further details are available [here](https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes).
+
+The automatically generated release notes have a draft structure, including a list of pull requests since the last release. It is preferable to group these code changes into sections, e.g. "Bug fixes", "Improvements". A suitable example/template can be found [here](https://github.com/Spyderisk/system-modeller/releases/tag/v3.5.0).
 
 ## Post-release tasks
 
