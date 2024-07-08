@@ -41,6 +41,7 @@ commercial software forges always come and go over the years.
 The steps in the process are:
 
 * Discussion
+* Update OpenAPI doc
 * Curate issues
 * Do checks/Run tests
 * Create tag
@@ -66,6 +67,10 @@ Times to avoid making a release:
 Avoid these times because they cause us to lose the immediate testing that often
 happens in the initial burst of interest, and also the release gets lost
 in the noise of everyone returning to work.
+
+## Update OpenAPI doc
+
+Once all code contributions have been merged into dev, the OpenAPI doc should be updated, describing the REST API of Spyderisk (N.B. this step is only required if any of the Java Controller methods (endpoints or data types) have changed since the last release). See [TODO]() for further details. **(N.B. I think this section has been removed from the docs?).**
 
 ## Do checks and run tests
 
