@@ -42,8 +42,9 @@ The steps in the process are:
 
 * Discussion
 * Update OpenAPI doc
-* Curate issues
 * Do checks/Run tests
+* Curate issues
+* Set version in source code
 * Create tag
 * Do a GitHub release
 * Post-release tasks
@@ -85,10 +86,21 @@ The milestone name should match the release number.
 
 Normally, in fact, the release milestone will have already been created some time before, and several issues already assigned to it. In the final stage, any issues (or pull requests) recently closed that had not been assigned a milestone can be assigned to this one.
 
-## Tag version in GitHub
+## Set version in source code
 
-* Update the version number returned in the source code and used [elsewhere - currently empty]
-* Update the tag in system-modeller-deployment and test the deployment gives the correct version
+The system-modeller version is set in `build.gradle`. For example, in the dev branch this might be:
+```
+def systemModellerVersion = "3.6.0-SNAPSHOT"
+```
+Prior to releasing, this should be set to a proper release number, to match the version that will be tagged, e.g. `3.6.0`. This should be committed to the dev branch, then dev merged into main (N.B. After release, this version should be incremented to a suitable version, e.g. `3.7.0-SNAPSHOT`.
+
+## ~~Tag version in GitHub~~
+
+* ~~Update the tag in system-modeller-deployment and test the deployment gives the correct version~~
+
+> Update the tag in system-modeller-deployment and test the deployment gives the correct version
+
+I think this section should be moved until much later - at this point, we don't yet have a system-modeller docker image that can be used/tested with system-modeller-deployment. Furthermore, the Github tag will actually get created at the point of creating the release (see further below).
 
 ## Fill in the release template
 
