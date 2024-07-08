@@ -54,6 +54,10 @@ propose making a release from the '''dev''' branch soon, are there any merge
 requests people feel should be a release blocker?". Agree a release date and
 the new version number. This also informs any users watching the development list.
 
+> "I propose making a release from the '''dev''' branch soon
+
+Again, it should be understood that code contributions will be merged into dev, then finally dev merged into main, prior to tagging and releasing.
+
 Times to avoid making a release:
 * on a Friday [AoE](https://en.wikipedia.org/wiki/Anywhere_on_Earth)
 * just before a lot of the Spyderisk audience goes on a public
@@ -65,14 +69,16 @@ in the noise of everyone returning to work.
 
 ## Do checks and run tests
 
-[currently empty]
+See [comment](https://github.com/Spyderisk/system-modeller/issues/185#issuecomment-2211049801) in issue #185: 
 
 ## Curate issues
 
 Use
 [GitHub's Create milestone](https://docs.github.com/en/issues/using-labels-and-milestones-to-track-work/creating-and-editing-milestones-for-issues-and-pull-requests)
-facility using the for the new release, collecting all issues that will be addressed in this release.
+facility for the new release, collecting all issues that will be addressed in this release.
 The milestone name should match the release number.
+
+Normally, in fact, the release milestone will have already been created some time before, and several issues already assigned to it. In the final stage, any issues (or pull requests) recently closed that had not been assigned a milestone can be assigned to this one.
 
 ## Tag version in GitHub
 
