@@ -124,8 +124,12 @@ The automatically generated release notes have a draft structure, including a li
 
 ## Post-release tasks
 
-* update README in system-modeller
-* update README in system-modeller-deployment
+> * update README in system-modeller
+> * update README in system-modeller-deployment
+
+Not understanding the purpose of this, and why it should be post-release? Please clarify what and why we should update.
+
+Finally, once system-modeller is released, system-modeller-deployment needs to be tested with the resulting docker image (by updating .env in main branch to specify the new release version). Then we will need to release a corresponding version of system-modeller-deployment. Maybe this description needs a specific section?
 
 # Future
 
