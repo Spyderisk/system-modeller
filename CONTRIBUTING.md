@@ -12,7 +12,7 @@ The overall Spyderisk aim is to
 and you can read more about this in the [general Spyderisk description](https://github.com/Spyderisk/), which explains
 who we are and what we do.
 
-Please read our [Code of Conduct](../CODE-OF-CONDUCT.md) to keep our community approachable and
+Please read our [Code of Conduct](./CODE-OF-CONDUCT.md) to keep our community approachable and
 respectful.
 
 # Who can contribute?
@@ -39,7 +39,7 @@ or open a discussion issue on GitHub.
 
 # Getting started for software developers
 
-* The [system modeller README](../README.md) explains how to set up the development environment
+* The [system modeller README](./README.md) explains how to set up the development environment
 * Once you have a working local copy of Spyderisk you can run the demonstration System models to get a feel for things
 * It is likely that while doing the above you will already have noticed things that need to be fixed. Great! This document shows you how to make these fixes happen, or
 * Alternatively, you can find an issue from our [List of Open Issues](https://github.com/Spyderisk/system-modeller/issues) you think you would like to solve, and add a comment to say that you are working on a fix, or
