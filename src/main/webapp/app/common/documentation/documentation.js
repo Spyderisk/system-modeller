@@ -7,3 +7,8 @@ export function openApiDocs(e) {
     e.stopPropagation();
     window.open("/system-modeller/swagger-ui.html", "openapi-docs");
 }
+
+export function openAdaptorApiDocs(e) {
+    e.stopPropagation();
+    window.open("/system-modeller/adaptor/docs#/", "adaptor-openapi-docs");
+}
