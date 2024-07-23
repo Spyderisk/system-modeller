@@ -337,7 +337,7 @@ class AdditionalPropertiesPanel extends React.Component {
 
         if (this.state.tableData.length > 0){
             return (
-                <table className="table table-hover table-sm table-condensed">
+                <table className="table table-hover table-sm table-condensed additionalProperties">
                     <thead className="thead-light">
                     <tr>
                         <th>Key</th>
