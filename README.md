@@ -12,7 +12,7 @@ The Spyderisk System Modeller software ("Spyderisk") provides a thorough
 risk assessment of complex systems, applying our mathematical modelling to your
 particular problem. This software is the result of 
 [15 years of history in risk assessment](https://github.com/Spyderisk/system-modeller/blob/dev/HISTORY.md)
-of complex socio-technical systems. Starting in 2023 we now publish everything under
+of complex socio-technical systems. In 2023 we started publishing everything under
 open licenses: software source code, ontologies, domain model database,
 online training, documentation, and academic papers. 
 
@@ -45,16 +45,19 @@ developers and for the continuous integration (CI) system.
 
 This source tree is for:
 
-* those who want to inspect or change the [Spyderisk source code](./src/main/java/uk/ac/soton/itinnovation/security/README.md)
+* those who want to inspect or change the
+  [Spyderisk source code](./src/main/java/uk/ac/soton/itinnovation/security/README.md)
 * building and running Spyderisk from its source code
 * reading all [Spyderisk technical papers](./docs/papers/README.md) in one place
 * understanding the generous [Spyderisk open licensing](./LICENSES.md)
-* reading the [schema explanation](./docs/triple-store-schema.md) for the [base ontology in RDF format](https://github.com/Spyderisk/system-modeller/blob/dev/src/main/resources/core.rdf) which ships with Spyderisk
+* reading the [schema explanation](./docs/triple-store-schema.md) for the
+  [core ontology in RDF format](https://github.com/Spyderisk/system-modeller/blob/dev/src/main/resources/core.rdf)
+  which ships with Spyderisk
 
 If you wish to interact programmatically with Spyderisk instead of using the
 web GUI, the [Spyderisk Python adaptor](https://github.com/Spyderisk/system-modeller-adaptor)
 may be for you. This is the way you can call the Spyderisk web service API to create, update, analyse and query
-system models and integrate other tools. While this is also Spyderisk software development, it
+system models and integrate other tools. This form of Spyderisk software development
 is much higher-level than the source code of the Spyderisk application found in this tree. The
 Java application creates the risk reasoner service which the Python adapter can interrogate.
 
@@ -69,7 +72,9 @@ We try to make it easy to [contribute to Spyderisk](./CONTRIBUTING.md) whatever 
 
 You can contact us by:
 * [raising a GitHub Issue](https://github.com/Spyderisk/system-modeller/issues/new)
-* emailing [team@spyderisk.org](mailto://team@spyderisk.org)
+* Emailing the public [spyderisk-dev@jiscmail.ac.uk](mailto://spyderisk-dev@jiscmail.ac.uk) list, which has
+  [archives online](https://www.jiscmail.ac.uk/cgi-bin/wa-jisc.exe?A0=SPYDERISK-DEV).
+* Privately emailing [team@spyderisk.org](mailto://team@spyderisk.org)
 
 # What is the Spyderisk System Modeller?
 

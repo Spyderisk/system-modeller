@@ -15,19 +15,22 @@ twelve years at the IT Innovation Centre at the University of Southampton. As
 far as we know, anyone who has made commits to one of the Southampton Spyderisk
 trees is listed here, some with email addresses that are different from the
 ones in the source tree. If you feel you should be listed here but are not,
-then please [do get in touch](mailto://team@spyderisk.org).
+then please [send us an email](mailto://team@spyderisk.org). You can also contact us
+on the [spyderisk-dev mailing list](mailto://spyderisk-dev@jiscmail.ac.uk),
+which has [archives online](https://www.jiscmail.ac.uk/cgi-bin/wa-jisc.exe?A0=SPYDERISK-DEV).
 
 See also [MAINTAINERS-OF-SUBSYSTEMS.md](./MAINTAINERS-OF-SUBSYSTEMS.md) which
 lists the roles within Spyderisk. 
 
 # Current contributors (who are not licensors)
 
+* Don Cruikshank <dgc@soton.ac.uk>
 * Nic Fair <nsf1u11@soton.ac.uk>
 * Ken Meacham <kem@it-innovation.soton.ac.uk>
 * Panos Melas <pm@it-innovation.soton.ac.uk>
 * Stephen C. Phillips <scp@it-innovation.soton.ac.uk>
 * Samuel Senior <s.senior@soton.ac.uk>
-* Dan Shearer <dan@shearer.org> on GitHub (also <dan.shearer@soton.ac.uk> )
+* Dan Shearer <dan@shearer.org>
 * Paul Smart <ps02v@ecs.soton.ac.uk>
 * Mike Surridge <ms@it-innovation.soton.ac.uk>
 * Steve Taylor <sjt1@soton.ac.uk>

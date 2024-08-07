@@ -2,8 +2,10 @@
 
 This is both a policy document and a practical how-to. The technical details of
 licensing can be complicated, but Spyderisk licensing is easy if you follow
-these basic rules. If you have any questions do please ask
-[team@spyderisk.org](mailto://team@spyderisk.org).
+these basic rules. If you have any questions do please ask the
+[spyderisk-dev mailing list](mailto://spyderisk-dev@jiscmail.ac.uk),
+which has
+[archives online](https://www.jiscmail.ac.uk/cgi-bin/wa-jisc.exe?A0=SPYDERISK-DEV).
 
 Licenses apply to all intellectual property in the Spyderisk project.
 We apply licenses in the ways specified in
