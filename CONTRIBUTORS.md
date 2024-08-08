@@ -44,7 +44,7 @@ We thank you all for your work and look forward to seeing you around.
 * Anna Brown <a.m.brown@soton.ac.uk>
 * Ajay Chakravarthy <ajay@it-innovation.soton.ac.uk>
 * Gianluca Correndo <gc@it-innovation.soton.ac.uk>
-* Stefanie Cox <ssm@binarywood.net>
+* Stefanie Wiegand <ssm@binarywood.net>
 * Niall A J. Dickin <najd@it-innovation.soton.ac.uk>
 * Manny Dinssa <ed@it-innovation.soton.ac.uk>
 * Vahibav Gohil <vg20@it-innovation.soton.ac.uk>
