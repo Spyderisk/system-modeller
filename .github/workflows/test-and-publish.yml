@@ -31,9 +31,9 @@ jobs:
     - name: Build software
       run: |
         docker compose -f docker-compose.yml -f docker-compose.test.yml pull  # Force download of any newer dependency images
-        docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d --build
-        docker-compose -f docker-compose.yml -f docker-compose.test.yml images  # Useful for debugging
-        docker-compose -f docker-compose.yml -f docker-compose.test.yml images -q | xargs docker inspect | grep -C3 RepoTags  # Useful for debugging
+        docker compose -f docker-compose.yml -f docker-compose.test.yml up -d --build
+        docker compose -f docker-compose.yml -f docker-compose.test.yml images  # Useful for debugging
+        docker compose -f docker-compose.yml -f docker-compose.test.yml images -q | xargs docker inspect | grep -C3 RepoTags  # Useful for debugging
 
     - name: Run tests
       # Here we execute a command inside the ssm container built in the previous step.
@@ -41,7 +41,7 @@ jobs:
       # The value of ${FAIL} is written into ${GITHUB_ENV} for use in the next step.
       run: |
         FAIL=0
-        docker-compose -f docker-compose.yml -f docker-compose.test.yml exec -T ssm sh -c "cd /system-modeller && ./gradlew test" || FAIL=1
+        docker compose -f docker-compose.yml -f docker-compose.test.yml exec -T ssm sh -c "cd /system-modeller && ./gradlew test" || FAIL=1
         docker cp $(docker-compose -f docker-compose.yml -f docker-compose.test.yml ps -q ssm):/system-modeller/build/build/reports/tests/test/ test-artifacts
         echo "FAIL=${FAIL}" >> ${GITHUB_ENV}
 
