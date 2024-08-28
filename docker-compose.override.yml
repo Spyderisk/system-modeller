@@ -3,8 +3,6 @@
 # This docker-compose file is intended for developers and so leaves the source code on the host and adds various volume optimisations.
 # Port-mappings to the host are read by default from the `.env` file.
 
-version: '3.7'
-
 services:
 
   ssm:
