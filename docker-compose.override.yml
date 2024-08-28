@@ -1,5 +1,5 @@
 # This file is automatically overlaid on the base `docker-compose.yml` file.
-# To use it, just do `docker-compose up`.
+# To use it, just do `docker compose up`.
 # This docker-compose file is intended for developers and so leaves the source code on the host and adds various volume optimisations.
 # Port-mappings to the host are read by default from the `.env` file.
 

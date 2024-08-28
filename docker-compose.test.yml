@@ -1,7 +1,7 @@
 # This file is an overlay for the base `docker-compose.yml` file.
-# To use it, do `docker-compose -f docker-compose.yml -f docker-compose.test.yml --env-file .env.template up`.
+# To use it, do `docker compose -f docker-compose.yml -f docker-compose.test.yml --env-file .env.template up`.
 # This docker-compose file is used by the CI pipeline to execute the test.
-# The tests can be executed using e.g. `docker-compose exec -T ssm sh -c 'cd /system-modeller && gradle test'`
+# The tests can be executed using e.g. `docker compose exec -T ssm sh -c 'cd /system-modeller && gradle test'`
 
 version: '3.7'
 

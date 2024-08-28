@@ -28,8 +28,8 @@ the Spyderisk GUI first loads in your browser, you will be directed to load in
 a new knowledgebase manually.
 
 1. `$ cd system-modeller`
-2. `$ docker-compose up -d`
-3. `$ docker-compose exec ssm bash`
+2. `$ docker compose up -d`
+3. `$ docker compose exec ssm bash`
 4. `$ ./gradlew assemble bootTest`
 5. Go to <http://localhost:8089> in your browser.
 6. Login in using `testuser` or `testadmin` with password `password`.
@@ -134,11 +134,11 @@ container is stopped (`SIGTERM` then `SIGKILL`) then the memory state is lost.
 Commands:
 
 * List containers that relate to the local `docker-compose.yml` file with
-  `docker-compose ps`
+  `docker compose ps`
 * List running containers with `docker container ls` or just `docker ps`
 * List all containers with `docker container ls -a` or just `docker ps -a`
 * Remove the containers that relate to the local `docker-compose.yml` file with
-  `docker-compose rm`
+  `docker compose rm`
 * Remove a container with `docker container rm <container ID>`
 * Remove containers that are not running with `docker container prune` (be
   careful!)
