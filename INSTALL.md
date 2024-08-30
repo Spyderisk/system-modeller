@@ -2,7 +2,7 @@
 
 ## Pre-requisites
 
-You will need `git`, `git-lfs`, `docker` and `docker-compose`. See below for
+You will need `git`, `git-lfs`, `docker.io` and `docker-compose-v2`. See below for
 more detail.
 
 ## Quick Start
@@ -96,7 +96,7 @@ Many Linux distributions already have Docker installed. The following command
 has been tested in `apt` based systems such as Ubuntu. To install Docker:
 
 ```shell
-sudo apt-get install docker docker-compose
+sudo apt-get install docker.io docker-compose-v2
 ```
 
 ## Docker Concepts
