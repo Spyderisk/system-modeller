@@ -648,7 +648,7 @@ class Header extends React.Component {
                                     </MenuItem>
                                     <MenuItem
                                         key={3.2}
-                                        href={"/auth/realms/ssm-realm/account/"}
+                                        href={"/auth/account-management/"}
                                     >
                                         Manage Account
                                     </MenuItem>

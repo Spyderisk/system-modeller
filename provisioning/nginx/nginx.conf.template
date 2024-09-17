@@ -53,6 +53,13 @@ http {
             proxy_pass http://ssm:$tomcat_port/system-modeller/;
         }
 
+        location = /auth/account-management/ {
+	        rewrite ^.*$ $scheme://$http_host/auth/realms/$realm_name/account/ redirect;
+        }
+        location = /auth/realm-management/ {
+	        rewrite ^.*$ $scheme://$http_host/auth/admin/$realm_name/console/ redirect;
+        }
+
         location = /auth {
             rewrite ^(.*)$ $scheme://$http_host$1/ redirect;
         }
