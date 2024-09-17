@@ -1,8 +1,30 @@
 import * as actions from "../reducers/auth";
+import * as about_actions from "../reducers/about";
 import {polyfill} from "es6-promise";
 import {axiosInstance, axiosInstanceRestricted} from "../rest/rest";
 
 polyfill();
+
+export function getAboutInfo() {
+    return function (dispatch) {
+        axiosInstance
+            .get("/about")
+            .then((response) => {
+                dispatch({
+                    type: about_actions.GET_ABOUT_INFO,
+                    payload: response
+                });
+            })
+    };
+}
+
+export function hideAboutModal() {
+    return function (dispatch) {
+        dispatch({
+            type: about_actions.HIDE_ABOUT_MODAL,
+        });
+    };
+}
 
 export function getUser() {
     return function (dispatch) {

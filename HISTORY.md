@@ -1,12 +1,12 @@
 # The story of the Spyderisk Open Project
 
-Last updated April 2024
+Last updated August 2024
 
 This document ([HISTORY.md](./HISTORY.md)) was first written quarter-way
-through the 21st century, where humanity faces problems of immense complexity.
-Many citizens worry they cannot escape the effects of automated systems, and
-there are quite rightly responses to these feelings by governments and others in society.
-Spyderisk is one response to this, a tool intended to visualise and present a summary 
+through the 21st century in 2024. Humanity faces immensely complex problems, and
+many citizens worry they cannot escape the effects of automated systems.
+There are quite rightly responses to these feelings by governments and others in society.
+Spyderisk is one such response, a tool intended to visualise and present a summary 
 of the risk in systems too complicated for any human to understand or debug.
 
 # Contents
@@ -27,13 +27,14 @@ successfully bid for research funding to solve problems related to complex
 computer systems. Starting with GRID computing and then leading on to security,
 privacy, health data and bioinformatics, the Centre kept investing in software
 tools for assessing the risk in complex systems. And while software always gets
-out of date, even more importantly the Centre developed a database of knowledge
+out of date, most importantly the Centre developed a database of knowledge
 about risk assessment.
 
 It became clear that risk assessment is being taken seriously throughout
 society. From legislation
 [regulating the use of AI in our daily lives](https://www.europarl.europa.eu/topics/en/article/20230601STO93804/eu-ai-act-first-regulation-on-artificial-intelligence),
-to the need to [balance conflicting requirements for climate change](https://doi.org/10.1038/s44168-023-00078-x),
+to the need to
+[balance conflicting requirements for climate change](https://doi.org/10.1038/s44168-023-00078-x),
 there is a strong desire to understand what sorts of risks are involved. And while it seems
 counter-intuitive that we can make judgements about risks even without
 understanding how these complex systems work, that does seem to be true. 
@@ -54,7 +55,8 @@ welcoming many more.
 
 # Threat modelling in cyber-physical systems
 
-Engineer and mathematician [Mike Surridge](https://www.southampton.ac.uk/people/5wyvsw/professor-mike-surridge#research) 
+Engineer and mathematician
+[Mike Surridge](https://www.southampton.ac.uk/people/5wyvsw/professor-mike-surridge#research) 
 lead a team developing concepts in [grid computing](https://en.wikipedia.org/wiki/Grid_computing). 
 [Michael Boniface](https://www.southampton.ac.uk/wsi/about/staff/mb.page) and others implemented the
 [GRIA distributed computing system](https://web.archive.org/web/20110726132409/http:/www.gria.org/),
@@ -65,7 +67,8 @@ and it demonstrated that assessing risk in a dynamic computer system is a diffic
 In 2009 Ajay Chakravarthy implemented security models in the
 [Semantic Web Rule Language (SWRL)](https://protege.stanford.edu/conference/2009/slides/SWRL2009ProtegeConference.pdf)
 to create the first version of the Spyderisk System Modeller reasoner. The introduction 
-of semantic web approaches brought with it a need for an [ontology](https://en.wikipedia.org/wiki/Ontology_(information_science)),
+of semantic web approaches brought with it a need for an
+[ontology](https://en.wikipedia.org/wiki/Ontology_(information_science)),
 which is a formal description of knowledge. An ontology defines objects and the relationships between objects.
 This was the beginning of the Spyderisk knowledgebase.
 

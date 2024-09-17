@@ -17,6 +17,7 @@ services:
       kc_proxy_pass: '${EXTERNAL_KEYCLOAK_AUTH_SERVER_URL:-http://keycloak:8080/auth}'
       documentation_url: '${DOCUMENTATION_URL:-https://spyderisk.org/documentation/modeller/latest/}'
       tomcat_port: ${TOMCAT_PORT:-8081}
+      realm_name: '${KEYCLOAK_REALM:-ssm-realm}'
     # When nginx starts it does a health check on the "upstream" servers and if none of them in a group are present it will fail.
     # Hence, nginx must start after the ssm and keycloak.
     # See https://docs.nginx.com/nginx/admin-guide/load-balancer/tcp-health-check/

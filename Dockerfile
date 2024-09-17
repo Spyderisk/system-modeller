@@ -65,13 +65,22 @@ FROM alpine:3.11 AS ssm-production
 ARG CI_COMMIT_SHA
 ARG CI_COMMIT_TIMESTAMP
 ARG CI_RELEASE
+ARG CI_VERSION
 
 LABEL org.opencontainers.image.vendor="IT Innovation Centre"
 LABEL org.opencontainers.image.title="Spyderisk System Modeller"
+LABEL org.opencontainers.image.description="Spyderisk is a risk assessment methodology, knowledgebase and toolset"
+LABEL org.opencontainers.image.url="https://spyderisk.org"
+LABEL org.opencontainers.image.source="https://github.com/Spyderisk/system-modeller"
+LABEL org.opencontainers.image.license="Apache-2.0"
 LABEL org.opencontainers.image.revision=${CI_COMMIT_SHA}
 LABEL org.opencontainers.image.created=${CI_COMMIT_TIMESTAMP}
-LABEL org.opencontainers.image.release=${CI_RELEASE}
+LABEL org.opencontainers.image.version=${CI_VERSION}
 
+ENV SPYDERISK_COMMIT_SHA=${CI_COMMIT_SHA}
+ENV SPYDERISK_COMMIT_TIMESTAMP=${CI_COMMIT_TIMESTAMP}
+ENV SPYDERISK_RELEASE=${CI_RELEASE}
+ENV SPYDERISK_VERSION=${CI_VERSION}
 ENV SPRING_PROFILES_ACTIVE=production
 
 # Install packaged dependencies

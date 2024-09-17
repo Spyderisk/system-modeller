@@ -229,7 +229,8 @@ Dashboard.propTypes = {
     models: PropTypes.array,
     upload: PropTypes.object,
     download: PropTypes.object,
-    loading: PropTypes.object
+    loading: PropTypes.object,
+    auth: PropTypes.object,
 };
 
 export default connect(mapStateToProps)(Dashboard);

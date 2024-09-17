@@ -2120,3 +2120,20 @@ div.panel-title {
 .recommendations .bare-list {
     font-size: 14px;
 }
+
+table.additionalProperties {
+    table-layout: fixed;
+}
+
+table.additionalProperties td:nth-child(1),
+table.additionalProperties td:nth-child(2) {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+table.additionalProperties th:nth-child(3),
+table.additionalProperties th:nth-child(4) {
+    width: 20px;
+}
+    

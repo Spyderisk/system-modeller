@@ -54,6 +54,18 @@ public class ConfigurationService {
 	@Value("${reset.on.start}")
 	private boolean resetOnStart;
 
+	@Value("${spyderisk.version}")
+	private String spyderiskVersion;
+
+	@Value("${spyderisk.commit.sha}")
+	private String spyderiskCommitSha;
+
+	@Value("${spyderisk.commit.timestamp}")
+	private String spyderiskCommitTimestamp;
+
+	@Value("${spyderisk.adaptor.version}")
+	private String spyderiskAdaptorVersion;
+
 	/**
 	 * Initialises the service
 	 */
@@ -61,6 +73,10 @@ public class ConfigurationService {
 	public void init() {
 
 		logger.info("Initialising Configuration Service...");
+		logger.info("Spyderisk version: {}", spyderiskVersion);
+		logger.info("Spyderisk commit SHA: {}", spyderiskCommitSha);
+		logger.info("Spyderisk commit timestamp: {}", spyderiskCommitTimestamp);
+		logger.info("Spyderisk adaptor version: {}", spyderiskAdaptorVersion);
 
 		// check if we want to drop users collection
 		if (resetOnStart || storeModelManager.storeIsEmpty()) {
