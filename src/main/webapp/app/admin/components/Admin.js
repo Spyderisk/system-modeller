@@ -52,7 +52,7 @@ class Admin extends Component {
                                     <NavItem eventKey="1">Users</NavItem>
                                     <NavItem
                                         eventKey="1"
-                                        href="/auth/admin/ssm-realm/console/"
+                                        href="/auth/realm-management/"
                                     >
                                         Manage Accounts
                                     </NavItem>
