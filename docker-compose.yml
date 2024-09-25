@@ -1,7 +1,5 @@
 # This file provides the base orchestration.
-# The `docker-compose up` command will read this and automatically overlay the contents of the `docker-compose.override.yml` file.
-
-version: '3.7'
+# The `docker compose up` command will read this and automatically overlay the contents of the `docker-compose.override.yml` file.
 
 services:
   proxy:

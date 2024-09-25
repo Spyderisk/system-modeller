@@ -104,13 +104,13 @@ To bring the containers (ssm, mongo, keycloak) up and leave the terminal
 attached with the log files tailed:
 
 ```shell
-docker-compose up
+docker compose up
 ```
 
 Alternatively, to bring the containers up and background (detach) the process:
 
 ```shell
-docker-compose up -d
+docker compose up -d
 ```
 
 The `docker-compose.yml` file does not set the `container_name` property for
@@ -122,7 +122,7 @@ directory containing the `docker-compose.yml` file will, by default, be called
 Compose picks up this name and uses it as the "project name". If more than one
 instance of the SSM is required on one host, an alternative project name is
 needed: either by renaming the `system-modeller` folder (recommended) or by
-using the `-p` flag in `docker-compose` (e.g. `docker-compose -p <project name>
+using the `-p` flag in `docker compose` (e.g. `docker compose -p <project name>
 up -d`) but you must remember to use this flag every time.
 
 ## Getting a Shell
@@ -130,7 +130,7 @@ up -d`) but you must remember to use this flag every time.
 To get a shell in the `ssm` container:
 
 ```shell
-docker-compose exec ssm bash
+docker compose exec ssm bash
 ```
 
 The equivalent `docker` command requires the full container name and also the
@@ -146,7 +146,7 @@ To see the logs from a service and `tail` the log so that it updates, the
 command is:
 
 ```shell
-docker-compose logs -f <SERVICE>
+docker compose logs -f <SERVICE>
 ```
 
 Where `<SERVICE>` could be e.g. `ssm`.
@@ -168,11 +168,11 @@ The Nginx reverse proxy forwards requests to the appropriate container and also 
 
 *The rest of this document assumes the default port mapping.*
 
-To see the containers created by the `docker-compose` command along with their
+To see the containers created by the `docker compose` command along with their
 ports:
 
 ```shell
-$ docker-compose ps
+$ docker compose ps
 NAME                         IMAGE                     COMMAND                  SERVICE             CREATED             STATUS              PORTS
 system-modeller-proxy-1      nginx:stable-alpine3.17   "/tmp/import/entrypo…"   proxy               23 minutes ago      Up 23 minutes       0.0.0.0:8089->80/tcp
 system-modeller-keycloak-1   keycloak/keycloak:21.0    "/tmp/import/entrypo…"   keycloak            23 minutes ago      Up 23 minutes       0.0.0.0:8080->8080/tcp, 8443/tcp
@@ -268,7 +268,7 @@ in `.env` and is admin/password.
 start the backend server on port 8081 <http://localhost:8081/system-modeller/>:
 
 ```shell
-docker-compose exec ssm bash
+docker compose exec ssm bash
 cd /code
 ./gradlew build
 ./gradlew bootDev
@@ -294,7 +294,7 @@ frontend server on port 3000 (which will be used by e.g. the dashboard and
 modeller pages):
 
 ```shell
-docker-compose exec ssm bash
+docker compose exec ssm bash
 cd /code
 ./gradlew start
 ```
@@ -359,7 +359,7 @@ Get a shell on the ssm container (see above).
 Build the code and start the backend server:
 
 ```shell
-docker-compose exec ssm bash
+docker compose exec ssm bash
 cd /code
 ./gradlew build
 ./gradlew bootTest
@@ -411,27 +411,27 @@ The containers can be paused (and unpaused) which pauses the processes inside
 the container and thus releases host resources but does not lose process state:
 
 ```shell
-docker-compose pause
-docker-compose unpause
+docker compose pause
+docker compose unpause
 ```
 
 The containers can be stopped (and started) which will kill all the processes
 running in the container but leave the container present:
 
 ```shell
-docker-compose stop
-docker-compose start
+docker compose stop
+docker compose start
 ```
 
-If you originally used `docker-compose up` to start the containers without
-detaching (with `-d`) then `Ctrl-C` is the same as `docker-compose stop`.
+If you originally used `docker compose up` to start the containers without
+detaching (with `-d`) then `Ctrl-C` is the same as `docker compose stop`.
 
-The `docker-compose down` command stops the containers, removes them and
+The `docker compose down` command stops the containers, removes them and
 removes the networks they were using. There are also optional parameters to
 remove the volumes and images:
 
 ```shell
-docker-compose down
+docker compose down
 ```
 
 In all these cases, the (Docker disk) volumes are persisted and named volumes
@@ -443,13 +443,13 @@ persisted after restarting the containers.
 If the intention is to recreate the databases or reinstall the default
 knowledgebases, this may be done in the following ways:
 
-a) Use `docker-compose down -v`, then restart containers and Spyderisk as
+a) Use `docker compose down -v`, then restart containers and Spyderisk as
 normal, e.g.
 
 ```shell
-docker-compose down -v
-docker-compose up -d
-docker-compose exec ssm bash
+docker compose down -v
+docker compose up -d
+docker compose exec ssm bash
 ./gradlew assemble bootTest
 ```
 
@@ -457,7 +457,7 @@ b) Leave containers running, but set `reset.on.start=true` in your
 `application.properties` file, then restart Spyderisk, e.g.
 
 ```shell
-docker-compose exec ssm bash
+docker compose exec ssm bash
 ./gradlew assemble bootTest
 ```
 
