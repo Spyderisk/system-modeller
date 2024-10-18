@@ -16,6 +16,7 @@ services:
       # Use the DOCKER_GATEWAY_HOST value (in `.env` file) if it is set (used in Linux), fall back on "host.docker.internal"
       # See https://sthasantosh.com.np/2020/05/23/docker-tip-how-to-use-the-hosts-ip-address-inside-a-docker-container-on-macos-windows-and-linux/
       KEYCLOAK_AUTH_SERVER_URL: http://${DOCKER_GATEWAY_HOST:-host.docker.internal}:${KEYCLOAK_PORT:-8080}/auth/
+      KNOWLEDGEBASE_DOCS_CGI_SCRIPT: http://${DOCKER_GATEWAY_HOST:-host.docker.internal}/cgi-bin/docs.py
     volumes:
       # Volumes of type "bind" mount a folder from the host machine.
 

@@ -32,7 +32,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -78,6 +81,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -114,6 +118,7 @@ import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.Internal
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.MisbehaviourSetInvalidException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.ModelException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.ModelInvalidException;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.BadRequestErrorException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.NotAcceptableErrorException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.NotFoundErrorException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.RiskModeMismatchException;
@@ -165,6 +170,9 @@ public class ModelController {
 
 	@Value("${knowledgebases.install.folder}")
 	private String kbInstallFolder;
+
+    @Value("${knowledgebase.docs.cgi.script}")
+    private String kbDocsCgiScript; //CGI script for handling domain docs query
 
 	private static final String VALIDATION = "Validation";
 	private static final String RISK_CALCULATION = "Risk calculation";
@@ -483,6 +491,51 @@ public class ModelController {
 		return ResponseEntity.status(HttpStatus.OK).body(responseModel);
 	}
 
+	@RequestMapping(value = "/models/{modelId}/docs", method = RequestMethod.GET)
+	public ModelAndView getModelDocs(@PathVariable String modelId, @RequestParam() String entity, HttpServletRequest servletRequest) throws UnexpectedException {
+
+		logger.info("Called REST method to GET model docs {}", modelId);
+
+		final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
+
+		//Get basic model details only
+		model.loadModelInfo(modelObjectsHelper);
+
+		String domainGraph = model.getDomainGraph();
+		logger.debug("domainGraph: {}", domainGraph);
+
+		Map<String, Object> domainModel = storeModelManager.getDomainModel(domainGraph);
+		String domainModelName = ((String)domainModel.get("label")).toLowerCase();
+		logger.debug("domainModelName: {}", domainModelName);
+
+		String domainModelVersion = model.getDomainVersion();
+		logger.debug("domainModelVersion: {}", domainModelVersion);
+
+		String docHome = kbDocsCgiScript;
+		logger.debug("docHome: {}", docHome);
+		logger.debug("entity: {}", entity);
+
+		String typeUri = this.modelObjectsHelper.getDomainEntityType(model, entity);
+		logger.debug("typeUri: {}", typeUri);
+
+		if (typeUri != null) {
+			try {
+				String docURL = docHome + "?domain=" + domainModelName + "&version=" + domainModelVersion + 
+					"&type=" + encodeValue(typeUri) + "&entity=" + encodeValue(entity);
+				logger.info("Redirecting to: {}", docURL);
+				return new ModelAndView("redirect:" + docURL);
+			} catch (UnsupportedEncodingException e) {
+				logger.error("Could not encode URI", e);
+				throw new NotFoundErrorException("Could not encode URI");
+			}
+		}
+					
+		return null;
+	}
+
+	private String encodeValue(String value) throws UnsupportedEncodingException {
+		return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
+	}
 
 	/**
 	 * Gets the basic model details and risks data (only)

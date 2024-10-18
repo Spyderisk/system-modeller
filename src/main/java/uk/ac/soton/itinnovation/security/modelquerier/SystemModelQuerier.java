@@ -167,6 +167,36 @@ public class SystemModelQuerier extends AModelQuerier {
 		return m;
 	}
 
+	public String getDomainEntityType(AStoreWrapper store, String uri) {
+		String query = String.format("\r\nSELECT DISTINCT * WHERE {\r\n" + 
+				"    GRAPH <%s> {\r\n" + 
+				(uri != null ? "    BIND (<" + SparqlHelper.escapeURI(uri) + "> as ?uri) .\n" : "") +
+				"    ?uri rdf:type ?type .\r\n" + 
+				"    }\r\n" +
+				"}", model.getGraph("domain"));
+
+		logger.debug(query);
+
+		List<Map<String, String>> rows = store.translateSelectResult(store.querySelect(query,
+			model.getGraph("domain")
+		));
+
+		logger.debug("rows: {}", rows.size());
+
+		if (rows.size() > 1) {
+			throw new RuntimeException("Duplicate entries found for uri: " + uri);
+		}
+		else if (rows.size() == 1) {
+			Map<String, String> row = rows.get(0);
+
+			logger.debug("uri: {}", row.get("uri"));
+			logger.debug("type: {}", row.get("type"));
+			return row.get("type");
+		}
+
+		return null;
+	}
+
 	// Assets /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/**
 	 * Get all system-specific assets
