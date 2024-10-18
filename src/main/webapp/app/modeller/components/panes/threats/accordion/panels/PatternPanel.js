@@ -9,6 +9,7 @@ import {
     hideRelation,
     suppressCanvasRefresh
 } from "../../../../../actions/ModellerActions";
+import {openDomainDoc} from "../../../../../../common/documentation/documentation";
 
 class PatternPanel extends React.Component {
 
@@ -63,6 +64,10 @@ class PatternPanel extends React.Component {
             }
         }
 
+        let threatType = threat.type;
+        let patternType = threat.pattern.parent;
+        let patternLabel = threat.pattern.label;
+
         return (
             <div className="container-fluid">
                 <div className="row">
@@ -71,6 +76,7 @@ class PatternPanel extends React.Component {
                 
                 <div className="row detail-info">
                     <span className="col-xs-12">{threatLabel}</span>
+                    <button onClick={e => openDomainDoc(e, this.props.modelId, threatType)} className={"doc-help-button"}><i className="fa fa-question" /></button>
                 </div>
                 
                 <br />
@@ -83,7 +89,8 @@ class PatternPanel extends React.Component {
                      onMouseEnter={() => this.hoverPattern(true)}
                      onMouseLeave={() => this.hoverPattern(false)}
                 >
-                    <span className="col-xs-12">{this.props.threat.pattern.label}</span>
+                    <span className="col-xs-12">{patternLabel}</span>
+                    <button onClick={e => openDomainDoc(e, this.props.modelId, patternType)} className={"doc-help-button"}><i className="fa fa-question" /></button>
                 </div>
                 
                 <br />

@@ -8,7 +8,7 @@ import MisbehaviourAccordion from "../../misbehaviours/accordion/MisbehaviourAcc
 import {Rnd} from "react-rnd";
 import {connect} from "react-redux";
 import * as Constants from "../../../../../common/constants.js";
-import {openDocumentation} from "../../../../../common/documentation/documentation";
+import {openDocumentation, openDomainDoc} from "../../../../../common/documentation/documentation";
 
 var _ = require('lodash');
 
@@ -237,6 +237,7 @@ class RootCausesEditor extends React.Component {
                                     {consequenceLabelHeading}
                                     {" at "}
                                     {assetLabelHeading}
+                                    <button onClick={e => openDomainDoc(e, this.props.model.id, misbehaviour.misbehaviour)} className={"doc-help-button"}><i className="fa fa-question" /></button>
                                 </h4>
                                 {this.props.developerMode && <p>{misbehaviour.uri}</p>}
                                 <p>{consequenceDesc}</p>
