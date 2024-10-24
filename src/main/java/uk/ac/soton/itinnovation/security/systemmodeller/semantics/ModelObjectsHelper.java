@@ -615,6 +615,10 @@ public class ModelObjectsHelper {
 	// Get from store /////////////////////////////////////////////////////////////////////////////////////////////////
 	// These should be called from the REST controllers to get things from the store
 
+	public String getSystemEntityType(Model model, String entity) {
+		return model.getQuerier().getSystemEntityType(storeManager.getStore(), entity);
+	}
+
 	public String getDomainEntityType(Model model, String entity) {
 		return model.getQuerier().getDomainEntityType(storeManager.getStore(), entity);
 	}

@@ -513,15 +513,29 @@ public class ModelController {
 
 		String docHome = kbDocsCgiScript;
 		logger.debug("docHome: {}", docHome);
-		logger.debug("entity: {}", entity);
 
-		String typeUri = this.modelObjectsHelper.getDomainEntityType(model, entity);
+		String domainEntityUri;
+
+		if (entity.contains("system#")) {
+			logger.debug("uri contains system#");
+			//First get the domain type for this system entity
+			logger.debug("system entity: {}", entity);
+			domainEntityUri = this.modelObjectsHelper.getSystemEntityType(model, entity);
+		}
+		else { //assume domain#
+			logger.debug("uri contains domain#");
+			domainEntityUri = entity;
+		}
+
+		logger.debug("domain entity: {}", domainEntityUri);
+		String typeUri = this.modelObjectsHelper.getDomainEntityType(model, domainEntityUri);
+
 		logger.debug("typeUri: {}", typeUri);
 
 		if (typeUri != null) {
 			try {
 				String docURL = docHome + "?domain=" + domainModelName + "&version=" + domainModelVersion + 
-					"&type=" + encodeValue(typeUri) + "&entity=" + encodeValue(entity);
+					"&type=" + encodeValue(typeUri) + "&entity=" + encodeValue(domainEntityUri);
 				logger.info("Redirecting to: {}", docURL);
 				return new ModelAndView("redirect:" + docURL);
 			} catch (UnsupportedEncodingException e) {
