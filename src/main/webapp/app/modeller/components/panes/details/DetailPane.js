@@ -16,6 +16,7 @@ import {
     putAssertedAssetType
 } from "../../../actions/ModellerActions";
 import {renderPopulationLevel} from "../../util/Levels";
+import {openDomainDoc} from "../../../../common/documentation/documentation";
 
 class DetailPane extends React.Component {
 
@@ -161,11 +162,11 @@ class DetailPane extends React.Component {
      */
     render() {
         let asset = this.state.asset;
-        var assetType = this.props.getAssetType(asset["type"]);
+        let assetType = this.props.getAssetType(asset["type"]);
 
         //Check assetType. If this is null, display default icon (this can happen if we are using the wrong palette, for example)
-        var defaultIcon = "fallback.svg";
-        var icon = assetType ? assetType["icon"] : defaultIcon;
+        let defaultIcon = "fallback.svg";
+        let icon = assetType ? assetType["icon"] : defaultIcon;
         const icon_path = process.env.config.API_END_POINT + "/images/" + icon;
 
         if (assetType === null) {
@@ -173,7 +174,7 @@ class DetailPane extends React.Component {
             alert("ERROR: No palette icon for asset: " + asset["type"]);
         }
 
-        var iconStyles = {
+        let iconStyles = {
             backgroundImage: "url(" + icon_path + ")",
             backgroundSize: "contain",
             backgroundRepeat: "no-repeat",
@@ -225,6 +226,7 @@ class DetailPane extends React.Component {
                                                 }
                                             </OverlayTrigger>
                                         }
+                                        <button onClick={e => openDomainDoc(e, this.props.model.id, assetType["id"])} className={"doc-help-button"}><i className="fa fa-question" /></button>
                                     </p>
                                     <p>
                                         <strong>{assetType["description"] !== "" ? "Description: " : ""}</strong>{assetType["description"] === null ? "None" : assetType["description"]}

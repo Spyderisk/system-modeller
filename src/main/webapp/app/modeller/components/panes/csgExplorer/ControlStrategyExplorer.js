@@ -7,6 +7,7 @@ import {
 } from "../../../../modeller/actions/ModellerActions";
 import {connect} from "react-redux";
 import Explorer from "../common/Explorer"
+import {openDomainDoc} from "../../../../common/documentation/documentation";
 
 class ControlStrategyExplorer extends React.Component {
 
@@ -89,6 +90,12 @@ class ControlStrategyExplorer extends React.Component {
         return controlSets;
     }
 
+    renderDocButton(csg) {
+        return (
+            <button onClick={e => openDomainDoc(e, this.props.model.id, csg.uri)} className={"doc-help-button"}><i className="fa fa-question" /></button>
+        )
+    }
+
     renderDescription(csg, context) {
         if (!context) 
             return null;
@@ -97,15 +104,15 @@ class ControlStrategyExplorer extends React.Component {
 
         if (selection === "csg") {
             let asset = context.asset;
-            return (<h4>{csg.label} at "{asset.label}"</h4>);
+            return (<h4>{csg.label} at "{asset.label}" {this.renderDocButton(csg)}</h4>);
         }
         else if (selection === "csgType") {
-            return (<h4>{csg.label} (all occurrences)</h4>);
+            return (<h4>{csg.label} (all occurrences) {this.renderDocButton(csg)}</h4>);
         }
         else if (selection === "controlSet") {
             let cs = context.controlSet;
             let asset = this.getAssetByUri(cs.assetUri);
-            return (<h4>Control Strategies including: {cs.label} at "{asset.label}"</h4>);
+            return (<h4>Control Strategies including: {cs.label} at "{asset.label}" {this.renderDocButton(csg)}</h4>);
         }
         else {
             return null;
