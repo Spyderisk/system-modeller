@@ -15,3 +15,5 @@ services:
       # Port 8080 is the one exposed by keycloak by default and not related to any port-mapping.
       # Environment variables are not available at build time (only at runtime).
       KEYCLOAK_AUTH_SERVER_URL: http://keycloak:8080/auth/
+      # The following value is a placeholder, as it is not currently used in tests, but needs to be defined
+      KNOWLEDGEBASE_DOCS_CGI_SCRIPT: http://localhost/cgi-bin/docs.py
