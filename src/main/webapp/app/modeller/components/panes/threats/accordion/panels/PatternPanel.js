@@ -75,8 +75,7 @@ class PatternPanel extends React.Component {
                 </div>
                 
                 <div className="row detail-info">
-                    <span className="col-xs-12">{threatLabel}</span>
-                    <button onClick={e => openDomainDoc(e, this.props.modelId, threatType)} className={"doc-help-button"}><i className="fa fa-question" /></button>
+                    <span className="col-xs-12">{threatLabel} <button onClick={e => openDomainDoc(e, this.props.modelId, threatType)} className={"doc-help-button"}><i className="fa fa-question" /></button></span>
                 </div>
                 
                 <br />
@@ -89,8 +88,7 @@ class PatternPanel extends React.Component {
                      onMouseEnter={() => this.hoverPattern(true)}
                      onMouseLeave={() => this.hoverPattern(false)}
                 >
-                    <span className="col-xs-12">{patternLabel}</span>
-                    <button onClick={e => openDomainDoc(e, this.props.modelId, patternType)} className={"doc-help-button"}><i className="fa fa-question" /></button>
+                    <span className="col-xs-12">{patternLabel} <button onClick={e => openDomainDoc(e, this.props.modelId, patternType)} className={"doc-help-button"}><i className="fa fa-question" /></button></span>
                 </div>
                 
                 <br />
