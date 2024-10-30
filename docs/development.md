@@ -66,6 +66,13 @@ git clone git@github.com:SPYDERISK/system-modeller.git
 cd system-modeller
 ```
 
+If you want to build the project and run the tests, you should obtain
+the test RDF files through git-lfs:
+
+```shell
+git lfs pull
+```
+
 ## Customise default Configuration Parameters (Optional Step)
 
 The default configuration of the Spyderisk service, including service ports and
