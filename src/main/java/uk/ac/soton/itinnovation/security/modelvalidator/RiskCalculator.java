@@ -1358,13 +1358,12 @@ public class RiskCalculator {
                 if(csg.isEnabled() && csg.getOptionalCS().isEmpty()){
                     ControlStrategyDB domainCSG = dcsgs.get(csg.getParent());
                     Integer domainCsgLevel = twLevels.get(domainCSG.getBlockingEffect()).getLevelValue();
-                    Integer csgCoverageLevel = twLevels.get(csg.getCoverageLevel()).getLevelValue();
-                    if (domainCsgLevel > maxCsgLevel) {
-                        maxCsgLevel = domainCsgLevel;
-                    }
+                    Integer csgCoverageLevel = twLevels.get(csg.getCoverageLevel()).getLevelValue();  // coverage level of mandatory controls
+                    Integer systemCsgLevel = Math.min(domainCsgLevel, csgCoverageLevel);  // system CSG TW is limited by the coverage level
+                    maxCsgLevel = Math.max(maxCsgLevel, systemCsgLevel);  // keep track of the most TW CSG
                 }
             }
-            maxLevel = maxLevel > maxCsgLevel ? maxLevel : maxCsgLevel;
+            maxLevel = Math.max(maxLevel, maxCsgLevel);
 
             // Convert to likelihood, and impose threat frequency limit if still above that limit
             LevelDB likelihood =  invertToLikelihood(trustworthinessLevels.get(maxLevel));
