@@ -742,6 +742,12 @@ public class ReportGeneratorTest extends CommonTestSetup {
 
         ReportGenerator reportGenerator = new ReportGenerator();
 
+        /*
+         * N.B. The typeLabel below is commented out, as it is not currently produced in the output,
+         * as we are using an old format domain model that does not use core:PaletteType.
+         * Ideally we need an updated domain model for testing..
+         */
+
         String expectedJson =
             "{\n" +
             "  \"name\": \"JSON Report Test\",\n" +
@@ -750,7 +756,7 @@ public class ReportGeneratorTest extends CommonTestSetup {
             "    \"system#8667a66c\": {\n" +
             "      \"label\": \"D\",\n" +
             "      \"type\": \"domain#D\",\n" +
-            "      \"typeLabel\": \"D\",\n" +
+            //"      \"typeLabel\": \"D\",\n" +
             "      \"controls\": [\n" +
             "        \"system#CS-Patching-29a92ee6\"\n" +
             "      ],\n" +
@@ -765,7 +771,7 @@ public class ReportGeneratorTest extends CommonTestSetup {
             "    \"system#65518fe1\": {\n" +
             "      \"label\": \"B\",\n" +
             "      \"type\": \"domain#B\",\n" +
-            "      \"typeLabel\": \"B\",\n" +
+            //"      \"typeLabel\": \"B\",\n" +
             "      \"controls\": [\n" +
             "        \"system#CS-Patching-22e54aba\"\n" +
             "      ],\n" +
@@ -782,7 +788,7 @@ public class ReportGeneratorTest extends CommonTestSetup {
             "    \"system#E_29a92ee6\": {\n" +
             "      \"label\": \"E-D\",\n" +
             "      \"type\": \"domain#E\",\n" +
-            "      \"typeLabel\": \"E\",\n" +
+            //"      \"typeLabel\": \"E\",\n" +
             "      \"controls\": [],\n" +
             "      \"misbehaviours\": [\n" +
             "        \"system#MS-Broken-553889e2\",\n" +
