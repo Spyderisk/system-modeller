@@ -1210,7 +1210,7 @@ public class ModelObjectsHelper {
 			"	?asset rdfs:subClassOf* ?c .\n" +
 			"	?asset rdfs:label ?al .\n" +
 			"	?asset rdfs:subClassOf* ?category .\n" +
-			"	?category rdfs:subClassOf core:Asset .\n" +
+			"	?category rdfs:subClassOf core:PaletteType .\n" +
 			"	?category rdfs:label ?cl .\n" +
 			"	OPTIONAL { ?asset rdfs:comment ?description }\n" +
 			"	OPTIONAL { ?asset core:isAssertable ?assertable }\n" +
