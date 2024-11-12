@@ -171,8 +171,8 @@ public class ModelController {
 	@Value("${knowledgebases.install.folder}")
 	private String kbInstallFolder;
 
-    @Value("${knowledgebase.docs.cgi.script}")
-    private String kbDocsCgiScript; //CGI script for handling domain docs query
+    @Value("${knowledgebase.docs.query.url}")
+    private String kbDocsQueryUrl;
 
 	private static final String VALIDATION = "Validation";
 	private static final String RISK_CALCULATION = "Risk calculation";
@@ -527,7 +527,7 @@ public class ModelController {
 		String domainModelVersion = model.getDomainVersion();
 		logger.debug("domainModelVersion: {}", domainModelVersion);
 
-		String docHome = kbDocsCgiScript;
+		String docHome = kbDocsQueryUrl;
 		logger.debug("docHome: {}", docHome);
 
 		String domainEntityUri;
