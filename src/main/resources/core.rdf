@@ -269,7 +269,7 @@ We can define defaults in the Domain Model, but allow users to override these in
   </owl:Class>
   <owl:Class rdf:ID="PaletteType">
     <rdfs:subClassOf>
-      <owl:Class rdf:about="#CompositeThing"/>
+      <owl:Class rdf:about="#AtomicThing"/>
     </rdfs:subClassOf>
     <rdfs:comment>Defines a group of assets in the GUI palette.</rdfs:comment>
     <rdfs:label>PaletteType</rdfs:label>
