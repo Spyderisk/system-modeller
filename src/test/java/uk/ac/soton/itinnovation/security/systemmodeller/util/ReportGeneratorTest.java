@@ -742,12 +742,6 @@ public class ReportGeneratorTest extends CommonTestSetup {
 
         ReportGenerator reportGenerator = new ReportGenerator();
 
-        /*
-         * N.B. The typeLabel below is commented out, as it is not currently produced in the output,
-         * as we are using an old format domain model that does not use core:PaletteType.
-         * Ideally we need an updated domain model for testing..
-         */
-
         String expectedJson =
             "{\n" +
             "  \"name\": \"JSON Report Test\",\n" +
