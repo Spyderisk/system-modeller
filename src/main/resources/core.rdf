@@ -267,6 +267,13 @@ We can define defaults in the Domain Model, but allow users to override these in
     <rdfs:comment>This class describes assets to the system.</rdfs:comment>
     <rdfs:label>Asset</rdfs:label>
   </owl:Class>
+  <owl:Class rdf:ID="PaletteType">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#AtomicThing"/>
+    </rdfs:subClassOf>
+    <rdfs:comment>Defines a group of assets in the GUI palette.</rdfs:comment>
+    <rdfs:label>PaletteType</rdfs:label>
+  </owl:Class>
   <owl:Class rdf:ID="ThreatCategory">
     <rdfs:comment>A threat category is a label for a threat. They can be used to sort and categorise threats. Categories can represent a hierarchy, as they can be linked using the core:parent object property. A threat can belong to multiple threat categories.</rdfs:comment>
     <rdfs:label>ThreatCategory</rdfs:label>
