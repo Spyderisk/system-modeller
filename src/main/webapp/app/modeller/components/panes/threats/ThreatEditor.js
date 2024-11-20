@@ -10,7 +10,7 @@ import {changeSelectedAsset} from "../../../actions/ModellerActions";
 import {getRenderedLevelText} from "../../util/Levels";
 import {bringToFrontWindow, closeWindow} from "../../../actions/ViewActions";
 import {connect} from "react-redux";
-import {openDocumentation} from "../../../../common/documentation/documentation"
+import {openDocumentation, openDomainDoc} from "../../../../common/documentation/documentation"
 import {getThreatStatus} from "../../util/ThreatUtils.js";
 
 class ThreatEditor extends React.Component {
@@ -51,6 +51,12 @@ class ThreatEditor extends React.Component {
 
         //TODO: This could be improved to find other conditions when component should not be updated
         return shouldComponentUpdate;
+    }
+
+    renderDocButton(threat) {
+        return (
+            <button onClick={e => openDomainDoc(e, this.props.model.id, threat.type)} className={"doc-help-button"}><i className="fa fa-question" /></button>
+        )
     }
 
     render() {
@@ -235,6 +241,7 @@ class ThreatEditor extends React.Component {
                                     {threatType}
                                     {threat.isModellingError ? " Error at " : " Threat to "}
                                     {assetLabelHeading}
+                                    {this.renderDocButton(threat)}
                                 </h4>
                             </div>
                             {this.props.developerMode && <p>{threat.uri}</p>}
