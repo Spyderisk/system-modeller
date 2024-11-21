@@ -179,15 +179,6 @@ public class ModelController {
 	private static final String RECOMMENDATIONS = "Recommendations";
 	private static final String STARTING = "starting";
 
-	private String sanitizeParam(String param) {
-		if (param != null) {
-			return param.replaceAll("[\n\r]", "_");
-		}
-		else {
-			return param;
-		}
-	}
-
 	private String encodeValue(String value) throws UnsupportedEncodingException {
 		return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
 	}
@@ -488,7 +479,7 @@ public class ModelController {
 	@RequestMapping(value = "/models/{modelId}/info", method = RequestMethod.GET)
 	public ResponseEntity<ModelDTO> getModelInfo(@PathVariable String modelId, HttpServletRequest servletRequest) throws UnexpectedException {
 
-		modelId = sanitizeParam(modelId);
+		modelId = modelId.replaceAll("[\n\r]", "_");
 		logger.info("Called REST method to GET model info {}", modelId);
 
 		final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
@@ -508,8 +499,8 @@ public class ModelController {
 	@RequestMapping(value = "/models/{modelId}/docs", method = RequestMethod.GET)
 	public ModelAndView getModelDocs(@PathVariable String modelId, @RequestParam() String entity, HttpServletRequest servletRequest) throws UnexpectedException {
 
-		modelId = sanitizeParam(modelId);
-		entity = sanitizeParam(entity);
+		modelId = modelId.replaceAll("[\n\r]", "_");
+		entity = entity.replaceAll("[\n\r]", "_");
 		logger.info("Called REST method to GET model docs {}", modelId);
 
 		final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
@@ -1525,9 +1516,10 @@ public class ModelController {
 
         final List<String> finalTargetURIs = targetURIs;
 
-		modelId = sanitizeParam(modelId);
+		modelId = modelId.replaceAll("[\n\r]", "_");
+		riskMode = riskMode.replaceAll("[\n\r]", "_");
+
         logger.info("Calculating recommendations for model {}", modelId);
-		riskMode = sanitizeParam(riskMode);
         logger.info(" riskMode: {}",riskMode);
 
         RiskCalculationMode rcMode;
