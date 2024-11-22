@@ -496,7 +496,7 @@ public class ModelController {
 		return ResponseEntity.status(HttpStatus.OK).body(responseModel);
 	}
 
-	@RequestMapping(value = "/models/{modelId}/docs", method = RequestMethod.GET)
+	@GetMapping(value = "/models/{modelId}/docs")
 	public ModelAndView getModelDocs(@PathVariable String modelId, @RequestParam() String entity, HttpServletRequest servletRequest) throws UnexpectedException {
 
 		modelId = modelId.replaceAll(PARAM_REGEX, "_");
