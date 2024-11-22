@@ -179,6 +179,9 @@ public class ModelController {
 	private static final String RECOMMENDATIONS = "Recommendations";
 	private static final String STARTING = "starting";
 
+	//Regex for fixing security vulnnerability
+	private static final String PARAM_REGEX = "[\n\r]";
+
 	private String encodeValue(String value) throws UnsupportedEncodingException {
 		return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
 	}
@@ -479,7 +482,7 @@ public class ModelController {
 	@RequestMapping(value = "/models/{modelId}/info", method = RequestMethod.GET)
 	public ResponseEntity<ModelDTO> getModelInfo(@PathVariable String modelId, HttpServletRequest servletRequest) throws UnexpectedException {
 
-		modelId = modelId.replaceAll("[\n\r]", "_");
+		modelId = modelId.replaceAll(PARAM_REGEX, "_");
 		logger.info("Called REST method to GET model info {}", modelId);
 
 		final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
@@ -499,8 +502,8 @@ public class ModelController {
 	@RequestMapping(value = "/models/{modelId}/docs", method = RequestMethod.GET)
 	public ModelAndView getModelDocs(@PathVariable String modelId, @RequestParam() String entity, HttpServletRequest servletRequest) throws UnexpectedException {
 
-		modelId = modelId.replaceAll("[\n\r]", "_");
-		entity = entity.replaceAll("[\n\r]", "_");
+		modelId = modelId.replaceAll(PARAM_REGEX, "_");
+		entity = entity.replaceAll(PARAM_REGEX, "_");
 		logger.info("Called REST method to GET model docs {}", modelId);
 
 		final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
@@ -1516,8 +1519,8 @@ public class ModelController {
 
         final List<String> finalTargetURIs = targetURIs;
 
-		modelId = modelId.replaceAll("[\n\r]", "_");
-		riskMode = riskMode.replaceAll("[\n\r]", "_");
+		modelId = modelId.replaceAll(PARAM_REGEX, "_");
+		riskMode = riskMode.replaceAll(PARAM_REGEX, "_");
 
         logger.info("Calculating recommendations for model {}", modelId);
         logger.info(" riskMode: {}",riskMode);
