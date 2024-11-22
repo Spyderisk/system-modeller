@@ -1214,17 +1214,17 @@ public class ModelObjectsHelper {
 			"SELECT DISTINCT ?asset ?al (GROUP_CONCAT(?c;separator=\",\") AS ?type) ?category ?cl ?description ?a (STR(?minCardinality) AS ?min) (STR(?maxCardinality) AS ?max)\n" +
 			"WHERE {\n" +
 			//"  GRAPH <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain/> {\n" +
-			"	?c rdfs:subClassOf+ core:Asset .\n" +
-			"	?asset rdfs:subClassOf* ?c .\n" +
-			"	?asset rdfs:label ?al .\n" +
-			"	?asset rdfs:subClassOf* ?category .\n" +
-			"	?category rdfs:subClassOf core:Asset .\n" +
-			"	?category rdfs:label ?cl .\n" +
-			"	OPTIONAL { ?asset rdfs:comment ?description }\n" +
-			"	OPTIONAL { ?asset core:isAssertable ?assertable }\n" +
-			"	OPTIONAL { ?asset core:minCardinality ?minCardinality }\n" +
-			"	OPTIONAL { ?asset core:maxCardinality ?maxCardinality }\n" +
-			"	BIND(IF(BOUND(?assertable),STR(?assertable),\"false\") AS ?a)\n" +
+			"  ?c rdfs:subClassOf+ core:Asset .\n" +
+			"  ?asset rdfs:subClassOf* ?c .\n" +
+			"  ?asset rdfs:label ?al .\n" +
+			"  ?asset rdfs:subClassOf* ?category .\n" +
+			"  ?category rdfs:subClassOf core:Asset .\n" +
+			"  ?category rdfs:label ?cl .\n" +
+			"  OPTIONAL { ?asset rdfs:comment ?description }\n" +
+			"  OPTIONAL { ?asset core:isAssertable ?assertable }\n" +
+			"  OPTIONAL { ?asset core:minCardinality ?minCardinality }\n" +
+			"  OPTIONAL { ?asset core:maxCardinality ?maxCardinality }\n" +
+			"  BIND(IF(BOUND(?assertable),STR(?assertable),\"false\") AS ?a)\n" +
 			//"  }\n" +
 			"  FILTER(!isBlank(?asset))\n" +
 			"  FILTER(!isBlank(?category))\n" +
@@ -1251,30 +1251,30 @@ public class ModelObjectsHelper {
 			"PREFIX owl:<http://www.w3.org/2002/07/owl#>\n" +
 			"SELECT DISTINCT ?from ?prop ?label ?comment ?to (STR(?hidden) AS ?isHidden) WHERE {\n" +
 			//"GRAPH <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain/> {\n" +
-			"	?prop a owl:ObjectProperty .\n" +
-			"	?prop rdfs:domain ?domain .\n" +
-			"	?prop rdfs:range ?range .\n" +
-			"	?prop rdfs:label ?label .\n" +
-			"	?prop rdfs:comment ?comment .\n" +
-			"	OPTIONAL {?prop core:hidden ?hidden }\n" +
-			"	{\n" +
-			"		?dasset rdfs:subClassOf* core:Asset .\n" +
-			"		?domain rdfs:subClassOf* ?dasset .\n" +
-			"		?from rdfs:subClassOf* ?domain .\n" +
-			"	} UNION {\n" +
-			"		?domain owl:unionOf ?du .\n" +
-			"		?du (rdf:rest)*/rdf:first ?da .\n" +
-			"		?from rdfs:subClassOf* ?da .\n" +
-			"	}\n" +
-			"	{\n" +
-			"		?rasset rdfs:subClassOf* core:Asset .\n" +
-			"		?range rdfs:subClassOf* ?rasset .\n" +
-			"		?to rdfs:subClassOf* ?range .\n" +
-			"	} UNION {\n" +
-			"		?range owl:unionOf ?ru .\n" +
-			"		?ru (rdf:rest)*/rdf:first ?ra .\n" +
-			"		?to rdfs:subClassOf* ?ra .\n" +
-			"	}\n" +
+			"  ?prop a owl:ObjectProperty .\n" +
+			"  ?prop rdfs:domain ?domain .\n" +
+			"  ?prop rdfs:range ?range .\n" +
+			"  ?prop rdfs:label ?label .\n" +
+			"  ?prop rdfs:comment ?comment .\n" +
+			"  OPTIONAL {?prop core:hidden ?hidden }\n" +
+			"  {\n" +
+			"  	?dasset rdfs:subClassOf* core:Asset .\n" +
+			"  	?domain rdfs:subClassOf* ?dasset .\n" +
+			"  	?from rdfs:subClassOf* ?domain .\n" +
+			"  } UNION {\n" +
+			"  	?domain owl:unionOf ?du .\n" +
+			"  	?du (rdf:rest)*/rdf:first ?da .\n" +
+			"  	?from rdfs:subClassOf* ?da .\n" +
+			"  }\n" +
+			"  {\n" +
+			"  	?rasset rdfs:subClassOf* core:Asset .\n" +
+			"  	?range rdfs:subClassOf* ?rasset .\n" +
+			"  	?to rdfs:subClassOf* ?range .\n" +
+			"  } UNION {\n" +
+			"  	?range owl:unionOf ?ru .\n" +
+			"  	?ru (rdf:rest)*/rdf:first ?ra .\n" +
+			"  	?to rdfs:subClassOf* ?ra .\n" +
+			"  }\n" +
 			//"  }\n" +
 			"} ORDER BY ?prop ?from ?to";
 	
