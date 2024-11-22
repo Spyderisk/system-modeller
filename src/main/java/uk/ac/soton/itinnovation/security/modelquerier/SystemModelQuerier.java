@@ -168,60 +168,33 @@ public class SystemModelQuerier extends AModelQuerier {
 	}
 
 	public String getSystemEntityType(AStoreWrapper store, String uri) {
-		//Look up in the system graph
-		String query = String.format("\r\nSELECT DISTINCT * WHERE {\r\n" + 
-			"    GRAPH <%s> {\r\n" + 
-			(uri != null ? "    BIND (<" + SparqlHelper.escapeURI(uri) + "> as ?uri) .\n" : "") +
-			"    ?uri core:parent ?parent .\r\n" + 
-			"    }\r\n" +
-			"}", model.getGraph("system-inf"));
-		logger.debug(query);
-
-		List<Map<String, String>> rows = store.translateSelectResult(store.querySelect(query,
-			model.getGraph("system-inf")
-		));
-
-		logger.debug("rows: {}", rows.size());
-
-		if (rows.size() > 1) {
-			throw new RuntimeException("Duplicate entries found for uri: " + uri);
-		}
-		else if (rows.size() == 1) {
-			Map<String, String> row = rows.get(0);
-
-			logger.debug("uri: {}", row.get("uri"));
-			logger.debug("parent: {}", row.get("parent"));
-			return row.get("parent");
-		}
-
-		return null;
+		String subQuery = "?uri core:parent ?parent .";
+		return getEntityType(store, "system-inf", subQuery, uri, "parent");
 	}
 
 	public String getDomainEntityType(AStoreWrapper store, String uri) {
-		//Look up in the domain graph
+		String subQuery = "?uri rdf:type ?type .";
+		return getEntityType(store, "domain", subQuery, uri, "type");
+	}
+
+	private String getEntityType(AStoreWrapper store, String graph, String subQuery, String uri, String result) {
 		String query = String.format("\r\nSELECT DISTINCT * WHERE {\r\n" + 
 			"    GRAPH <%s> {\r\n" + 
 			(uri != null ? "    BIND (<" + SparqlHelper.escapeURI(uri) + "> as ?uri) .\n" : "") +
-			"    ?uri rdf:type ?type .\r\n" + 
+			"    " + subQuery + "\r\n" + 
 			"    }\r\n" +
-			"}", model.getGraph("domain"));
-		logger.debug(query);
+			"}", model.getGraph(graph));
 
 		List<Map<String, String>> rows = store.translateSelectResult(store.querySelect(query,
-			model.getGraph("domain")
+			model.getGraph(graph)
 		));
-
-		logger.debug("rows: {}", rows.size());
 
 		if (rows.size() > 1) {
 			throw new RuntimeException("Duplicate entries found for uri: " + uri);
 		}
 		else if (rows.size() == 1) {
 			Map<String, String> row = rows.get(0);
-
-			logger.debug("uri: {}", row.get("uri"));
-			logger.debug("type: {}", row.get("type"));
-			return row.get("type");
+			return row.get(result);
 		}
 
 		return null;
