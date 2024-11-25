@@ -496,6 +496,14 @@ public class ModelController {
 		return ResponseEntity.status(HttpStatus.OK).body(responseModel);
 	}
 
+	/**
+	 * Redirects to the domain model documentation page for a given entity URI
+	 *
+	 * @param modelId Webkey of the model
+	 * @param entity the domain model entity URI
+	 * @param servletRequest
+	 * @return the domain model webpage
+	 */
 	@GetMapping(value = "/models/{modelId}/docs")
 	public ModelAndView getModelDocs(@PathVariable String modelId, @RequestParam() String entity, HttpServletRequest servletRequest) {
 

@@ -167,11 +167,25 @@ public class SystemModelQuerier extends AModelQuerier {
 		return m;
 	}
 
+	/**
+	 * Gets the domain model type of a given system model entity
+	 *
+	 * @param store the store to query
+	 * @param uri the entity uri to query
+	 * @return type of the entity
+	 */
 	public String getSystemEntityType(AStoreWrapper store, String uri) {
 		String subQuery = "?uri core:parent ?parent .";
 		return getEntityType(store, "system-inf", subQuery, uri, "parent");
 	}
 
+	/**
+	 * Gets the domain model type of a given domain model entity
+	 *
+	 * @param store the store to query
+	 * @param uri the entity uri to query
+	 * @return type of the entity
+	 */
 	public String getDomainEntityType(AStoreWrapper store, String uri) {
 		String subQuery = "?uri rdf:type ?type .";
 		return getEntityType(store, "domain", subQuery, uri, "type");

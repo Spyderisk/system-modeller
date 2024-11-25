@@ -615,10 +615,24 @@ public class ModelObjectsHelper {
 	// Get from store /////////////////////////////////////////////////////////////////////////////////////////////////
 	// These should be called from the REST controllers to get things from the store
 
+	/**
+	 * Gets the domain model type of a given system model entity
+	 *
+	 * @param model
+	 * @param entity
+	 * @return entity type
+	 */
 	public String getSystemEntityType(Model model, String entity) {
 		return model.getQuerier().getSystemEntityType(storeManager.getStore(), entity);
 	}
 
+	/**
+	 * Gets the domain model type of a given domain model entity
+	 *
+	 * @param model
+	 * @param entity
+	 * @return entity type
+	 */
 	public String getDomainEntityType(Model model, String entity) {
 		return model.getQuerier().getDomainEntityType(storeManager.getStore(), entity);
 	}
