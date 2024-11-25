@@ -526,6 +526,9 @@ public class ModelController {
 		String domainModelVersion = model.getDomainVersion();
 		logger.debug("domainModelVersion: {}", domainModelVersion);
 
+		String validatedDomainModelVersion = model.getValidatedDomainVersion();
+		logger.debug("validatedDomainModelVersion: {}", validatedDomainModelVersion);
+
 		String docHome = kbDocsQueryUrl;
 		logger.debug("docHome: {}", docHome);
 
@@ -547,7 +550,7 @@ public class ModelController {
 
 		if (typeUri != null) {
 			try {
-				String docURL = docHome + "?domain=" + domainModelName + "&version=" + domainModelVersion + 
+				String docURL = docHome + "?domain=" + domainModelName + "&version=" + validatedDomainModelVersion + 
 					"&type=" + encodeValue(typeUri) + "&entity=" + encodeValue(domainEntityUri);
 				logger.info("Redirecting to: {}", docURL);
 				return new ModelAndView("redirect:" + docURL);
