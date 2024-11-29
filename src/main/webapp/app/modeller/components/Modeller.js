@@ -370,7 +370,6 @@ class Modeller extends React.Component {
                     onHide={this.closeDocsDialog}
                     model={this.props.model}
                     selectedDocEntity={this.props.selectedDocEntity}
-                    dispatch={this.props.dispatch}
                 />
 
                 {this.props.loading.newFact.length > 0 && <div className="creation-overlay visible"><span

@@ -52,7 +52,6 @@ ConfirmDocRedirectModal.propTypes = {
     selectedDocEntity: PropTypes.string,
     show: PropTypes.bool,
     onHide: PropTypes.func,
-    dispatch: PropTypes.func,
 };
 
 export default ConfirmDocRedirectModal;
