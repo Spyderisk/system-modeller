@@ -51,6 +51,8 @@ class ConfirmDocRedirectModal extends Component {
 ConfirmDocRedirectModal.propTypes = {
     model: PropTypes.object,
     selectedDocEntity: PropTypes.string,
+    show: PropTypes.bool,
+    onHide: PropTypes.func,
     dispatch: PropTypes.func,
 };
 
