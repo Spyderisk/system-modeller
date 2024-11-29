@@ -62,6 +62,8 @@ class ThreatAccordion extends React.Component {
             return null;
         }
 
+        console.log("modelId:", this.props.model.id);
+
         let isComplianceThreat = this.props.threat.isComplianceThreat;        
 
         //N.B. The causes, effects, secondaryEffects are set in populateThreatMisbehaviours()
@@ -89,7 +91,7 @@ class ThreatAccordion extends React.Component {
                     <Panel.Collapse>
                         <Panel.Body>
                             <PatternPanel threat={this.props.threat}
-                                          modelId={this.props.modelId}
+                                          model={this.props.model}
                                           asset={this.props.asset}
                                           assets={this.props.assets}
                                           relations={this.props.relations}
@@ -111,7 +113,7 @@ class ThreatAccordion extends React.Component {
                     <Panel.Collapse>
                         <Panel.Body>
                             <CausePanel
-                                        modelId={this.props.modelId}
+                                        modelId={this.props.model.id}
                                         secondaryThreat = {this.props.threat.secondaryThreat}
                                         causes={causes}
                                         entryPoints={entryPoints}
@@ -136,7 +138,7 @@ class ThreatAccordion extends React.Component {
                     </Panel.Heading>
                     <Panel.Collapse>
                         <Panel.Body>
-                            <EffectPanel modelId={this.props.modelId}
+                            <EffectPanel modelId={this.props.model.id}
                                          effects={effects}
                                          levels={this.props.levels["ImpactLevel"]}
                                          selectedMisbehaviour={this.props.selectedMisbehaviour}
@@ -359,7 +361,7 @@ class ThreatAccordion extends React.Component {
             };
         }
 
-        this.props.dispatch(toggleAcceptThreat(this.props.modelId, this.props.threat["id"], updatedThreat));
+        this.props.dispatch(toggleAcceptThreat(this.props.model.id, this.props.threat["id"], updatedThreat));
     }
 
     updateThreat(arg) {
@@ -388,7 +390,7 @@ class ThreatAccordion extends React.Component {
             }
 
             //Here we still want to keep the currently selected asset, not change to the asset referred to in the updatedControl
-            this.props.dispatch(updateControlOnAsset(this.props.modelId, this.props.asset["id"], arg.control));
+            this.props.dispatch(updateControlOnAsset(this.props.model.id, this.props.asset["id"], arg.control));
 
             return;
         }
@@ -403,7 +405,7 @@ class ThreatAccordion extends React.Component {
             };
         }
 
-        this.props.dispatch(updateThreat(this.props.modelId, this.props.asset["id"], updatedThreat["id"], updatedThreat));
+        this.props.dispatch(updateThreat(this.props.model.id, this.props.asset["id"], updatedThreat["id"], updatedThreat));
     }
 
     getNodes() {
@@ -510,7 +512,7 @@ class ThreatAccordion extends React.Component {
 
         let updateRootCausesModel = true;
         this.props.dispatch(bringToFrontWindow("misbehaviourExplorer"));
-        this.props.dispatch(getRootCauses(this.props.modelId, m, updateRootCausesModel));
+        this.props.dispatch(getRootCauses(this.props.model.id, m, updateRootCausesModel));
     }
 
     getEntryPoints(threat) {
@@ -535,7 +537,7 @@ class ThreatAccordion extends React.Component {
 }
 
 ThreatAccordion.propTypes = {
-    modelId: PropTypes.string,
+    model: PropTypes.object,
     levels: PropTypes.object,
     asset: PropTypes.object,
     assets: PropTypes.array,

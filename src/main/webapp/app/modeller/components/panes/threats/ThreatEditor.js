@@ -10,7 +10,7 @@ import {changeSelectedAsset} from "../../../actions/ModellerActions";
 import {getRenderedLevelText} from "../../util/Levels";
 import {bringToFrontWindow, closeWindow} from "../../../actions/ViewActions";
 import {connect} from "react-redux";
-import {openDocumentation, openDomainDoc} from "../../../../common/documentation/documentation"
+import {openDocumentation, openDomainDocEvent} from "../../../../common/documentation/documentation"
 import {getThreatStatus} from "../../util/ThreatUtils.js";
 
 class ThreatEditor extends React.Component {
@@ -55,11 +55,12 @@ class ThreatEditor extends React.Component {
 
     renderDocButton(threat) {
         return (
-            <button onClick={e => openDomainDoc(e, this.props.model.id, threat.type)} className={"doc-help-button"}><i className="fa fa-question" /></button>
+            <button onClick={e => openDomainDocEvent(e, this.props.model, threat.type, this.props.dispatch)} className={"doc-help-button"}><i className="fa fa-question" /></button>
         )
     }
 
     render() {
+        console.log("modelId:", this.props.model.id);
         let threat = this.props.threat;
 
         let asset;
@@ -281,7 +282,7 @@ class ThreatEditor extends React.Component {
                             relations={this.props.model["relations"]}
                             controlStrategies={this.props.model["controlStrategies"]}
                             controlSets={this.props.model["controlSets"]}
-                            modelId={this.props.model["id"]}
+                            model={this.props.model}
                             threat={threat}
                             threatStatus={status}
                             triggeredStatus={triggeredStatus}
@@ -329,6 +330,7 @@ ThreatEditor.propTypes = {
     renderTrustworthinessAttributes: PropTypes.func,
     authz: PropTypes.object,
     developerMode: PropTypes.bool,
+    dispatch: PropTypes.func,
 };
 
 let mapStateToProps = function (state) {

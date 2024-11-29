@@ -1,14 +1,32 @@
+import {openDocsDialog} from "../../modeller/actions/ModellerActions";
+
 export function openDocumentation(e, link) {
     e.stopPropagation();
     window.open("/documentation/" + link, "system-modeller-docs", "noopener");
 }
 
-export function openDomainDoc(e, modelId, entity) {
+export function openDomainDocEvent(e, model, entity, dispatch) {
     e.stopPropagation();
+
+    let modelId = model.id;
+    let domainVersion = model.domainVersion;
+    let validatedDomainVersion = model.validatedDomainVersion;
+
+    let versionMismatch = (validatedDomainVersion !== domainVersion);
+
+    if (versionMismatch) {
+        dispatch(openDocsDialog(entity));
+    }
+    else {
+        openDomainDoc(modelId, entity);
+    }
+}
+
+export function openDomainDoc(modelId, entity) {
     let docUrl = "/system-modeller/models/" + modelId + "/docs?entity=" + encodeURIComponent(entity);
     window.open(docUrl, 
         "domain-model-docs", "noopener");
-    }
+}
 
 export function openApiDocs(e) {
     e.stopPropagation();

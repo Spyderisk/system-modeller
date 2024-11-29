@@ -7,7 +7,7 @@ import {
 } from "../../../../modeller/actions/ModellerActions";
 import {connect} from "react-redux";
 import Explorer from "../common/Explorer"
-import {openDomainDoc} from "../../../../common/documentation/documentation";
+import {openDomainDocEvent} from "../../../../common/documentation/documentation";
 
 class ControlStrategyExplorer extends React.Component {
 
@@ -92,7 +92,7 @@ class ControlStrategyExplorer extends React.Component {
 
     renderDocButton(csg) {
         return (
-            <button onClick={e => openDomainDoc(e, this.props.model.id, csg.uri)} className={"doc-help-button"}><i className="fa fa-question" /></button>
+            <button onClick={e => openDomainDocEvent(e, this.props.model, csg.uri, this.props.dispatch)} className={"doc-help-button"}><i className="fa fa-question" /></button>
         )
     }
 

@@ -1364,6 +1364,23 @@ export function closeReportDialog() {
     };
 }
 
+export function openDocsDialog(entity) {
+    return function (dispatch) {
+        dispatch({
+            type: instr.OPEN_DOCS_DIALOG,
+            payload: {entity: entity}
+        });
+    };
+}
+
+export function closeDocsDialog() {
+    return function (dispatch) {
+        dispatch({
+            type: instr.CLOSE_DOCS_DIALOG
+        });
+    };
+}
+
 export function updateControlOnAsset(modelId, assetId, updatedControl) {
     //build request body for updated CS
     let updatedCS = {

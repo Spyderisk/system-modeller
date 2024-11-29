@@ -97,6 +97,8 @@ const modelState = {
     isRecommendationsExplorerActive: false,
     isReportDialogVisible: false,
     isReportDialogActive: false,
+    isDocsModalVisible: false,
+    selectedDocEntity: "",
     isDroppingInferredGraph: false,
     threatFiltersActive: {
         "asset-threats": false,
@@ -1678,6 +1680,23 @@ export default function modeller(state = modelState, action) {
             ...state,
             isReportDialogVisible: false,
             isReportDialogActive: false,
+        };
+    }
+
+    if (action.type === instr.OPEN_DOCS_DIALOG) {
+        let entity = action.payload["entity"];
+        return {
+            ...state,
+            isDocsModalVisible: true,
+            selectedDocEntity: entity
+        };
+    }
+
+    if (action.type === instr.CLOSE_DOCS_DIALOG) {
+        return {
+            ...state,
+            isDocsModalVisible: false,
+            selectedDocEntity: ""
         };
     }
 

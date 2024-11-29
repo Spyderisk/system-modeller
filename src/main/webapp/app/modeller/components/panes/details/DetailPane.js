@@ -16,7 +16,7 @@ import {
     putAssertedAssetType
 } from "../../../actions/ModellerActions";
 import {renderPopulationLevel} from "../../util/Levels";
-import {openDomainDoc} from "../../../../common/documentation/documentation";
+import {openDomainDocEvent} from "../../../../common/documentation/documentation";
 
 class DetailPane extends React.Component {
 
@@ -226,7 +226,7 @@ class DetailPane extends React.Component {
                                                 }
                                             </OverlayTrigger>
                                         }
-                                        <button onClick={e => openDomainDoc(e, this.props.model.id, assetType["id"])} className={"doc-help-button"}><i className="fa fa-question" /></button>
+                                        <button onClick={e => openDomainDocEvent(e, this.props.model, assetType["id"], this.props.dispatch)} className={"doc-help-button"}><i className="fa fa-question" /></button>
                                     </p>
                                     <p>
                                         <strong>{assetType["description"] !== "" ? "Description: " : ""}</strong>{assetType["description"] === null ? "None" : assetType["description"]}
