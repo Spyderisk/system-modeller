@@ -27,8 +27,7 @@ class ConfirmDocRedirectModal extends Component {
                 <Modal.Footer>
                     <Button
                         onClick={this.props.onHide}
-                        autoFocus
-                        ref="closeButtonFooter">
+                        autoFocus>
                         Cancel
                     </Button>
                     <Button
