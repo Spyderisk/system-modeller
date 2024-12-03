@@ -14,7 +14,7 @@ class ConfirmDocRedirectModal extends Component {
 
         let domainVersion = this.props.model.domainVersion;
         let validatedDomainVersion = this.props.model.validatedDomainVersion;
-        let versionWarningText = "Requested knowledgebase version (" + validatedDomainVersion + ") does not match current knowledgebase (" + domainVersion + "). Continue to docs anyway?";
+        let versionWarningText = "Requested knowledgebase version (" + validatedDomainVersion + ") used in this system model does not match current knowledgebase (" + domainVersion + "). Continue to docs anyway?";
 
         return (
             <Modal {...modalProps}>
