@@ -1243,7 +1243,7 @@ public class ModelObjectsHelper {
 			"	?prop rdfs:range ?range .\n" +
 			"	?prop rdfs:label ?label .\n" +
 			"	?prop rdfs:comment ?comment .\n" +
-			"	OPTIONAL {?prop core:hidden ?hidden }\n" +
+			"	?prop core:hidden ?hidden .\n" +
 			"	?from rdfs:subClassOf* ?domain .\n" +
 			"	?to rdfs:subClassOf* ?range .\n" +
 			"} ORDER BY ?prop ?from ?to";
