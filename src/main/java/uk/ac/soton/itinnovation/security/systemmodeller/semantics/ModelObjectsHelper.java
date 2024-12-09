@@ -1204,17 +1204,17 @@ public class ModelObjectsHelper {
 			"PREFIX core:<http://it-innovation.soton.ac.uk/ontologies/trustworthiness/core#>\n" +
 			"SELECT DISTINCT ?asset ?al (GROUP_CONCAT(?c;separator=\",\") AS ?type) ?category ?cl ?description ?a (STR(?minCardinality) AS ?min) (STR(?maxCardinality) AS ?max)\n" +
 			"WHERE {\n" +
-			"	?c rdfs:subClassOf+ core:Asset .\n" +
-			"	?asset rdfs:subClassOf* ?c .\n" +
-			"	?asset rdfs:label ?al .\n" +
-			"	?asset rdfs:subClassOf* ?category .\n" +
-			"	?category rdfs:subClassOf core:PaletteType .\n" +
-			"	?category rdfs:label ?cl .\n" +
-			"	OPTIONAL { ?asset rdfs:comment ?description }\n" +
-			"	OPTIONAL { ?asset core:isAssertable ?assertable }\n" +
-			"	OPTIONAL { ?asset core:minCardinality ?minCardinality }\n" +
-			"	OPTIONAL { ?asset core:maxCardinality ?maxCardinality }\n" +
-			"	BIND(IF(BOUND(?assertable),STR(?assertable),\"false\") AS ?a)\n" +
+			"  ?c rdfs:subClassOf+ core:Asset .\n" +
+			"  ?asset rdfs:subClassOf* ?c .\n" +
+			"  ?asset rdfs:label ?al .\n" +
+			"  ?asset rdfs:subClassOf* ?category .\n" +
+			"  ?category rdfs:subClassOf core:PaletteType .\n" +
+			"  ?category rdfs:label ?cl .\n" +
+			"  OPTIONAL { ?asset rdfs:comment ?description }\n" +
+			"  OPTIONAL { ?asset core:isAssertable ?assertable }\n" +
+			"  OPTIONAL { ?asset core:minCardinality ?minCardinality }\n" +
+			"  OPTIONAL { ?asset core:maxCardinality ?maxCardinality }\n" +
+			"  BIND(IF(BOUND(?assertable),STR(?assertable),\"false\") AS ?a)\n" +
 			"  FILTER(!isBlank(?asset))\n" +
 			"  FILTER(!isBlank(?category))\n" +
 			"} GROUP BY ?asset ?al ?category ?cl ?description ?a ?minCardinality ?maxCardinality ORDER BY ?type ?asset";
@@ -1238,14 +1238,14 @@ public class ModelObjectsHelper {
 			"PREFIX core:<http://it-innovation.soton.ac.uk/ontologies/trustworthiness/core#>\n" +
 			"PREFIX owl:<http://www.w3.org/2002/07/owl#>\n" +
 			"SELECT DISTINCT ?from ?prop ?label ?comment ?to (STR(?hidden) AS ?isHidden) WHERE {\n" +
-			"	?prop a owl:ObjectProperty .\n" +
-			"	?prop rdfs:domain ?domain .\n" +
-			"	?prop rdfs:range ?range .\n" +
-			"	?prop rdfs:label ?label .\n" +
-			"	?prop rdfs:comment ?comment .\n" +
-			"	?prop core:hidden ?hidden .\n" +
-			"	?from rdfs:subClassOf* ?domain .\n" +
-			"	?to rdfs:subClassOf* ?range .\n" +
+			"  ?prop a owl:ObjectProperty .\n" +
+			"  ?prop rdfs:domain ?domain .\n" +
+			"  ?prop rdfs:range ?range .\n" +
+			"  ?prop rdfs:label ?label .\n" +
+			"  ?prop rdfs:comment ?comment .\n" +
+			"  ?prop core:hidden ?hidden .\n" +
+			"  ?from rdfs:subClassOf* ?domain .\n" +
+			"  ?to rdfs:subClassOf* ?range .\n" +
 			"} ORDER BY ?prop ?from ?to";
 	
 	AStoreWrapper store = storeManager.getStore();
