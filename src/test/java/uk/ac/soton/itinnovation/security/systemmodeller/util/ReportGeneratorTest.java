@@ -750,6 +750,7 @@ public class ReportGeneratorTest extends CommonTestSetup {
             "    \"system#8667a66c\": {\n" +
             "      \"label\": \"D\",\n" +
             "      \"type\": \"domain#D\",\n" +
+            "      \"typeLabel\": \"D\",\n" +
             "      \"controls\": [\n" +
             "        \"system#CS-Patching-29a92ee6\"\n" +
             "      ],\n" +
@@ -764,6 +765,7 @@ public class ReportGeneratorTest extends CommonTestSetup {
             "    \"system#65518fe1\": {\n" +
             "      \"label\": \"B\",\n" +
             "      \"type\": \"domain#B\",\n" +
+            "      \"typeLabel\": \"B\",\n" +
             "      \"controls\": [\n" +
             "        \"system#CS-Patching-22e54aba\"\n" +
             "      ],\n" +
@@ -780,6 +782,7 @@ public class ReportGeneratorTest extends CommonTestSetup {
             "    \"system#E_29a92ee6\": {\n" +
             "      \"label\": \"E-D\",\n" +
             "      \"type\": \"domain#E\",\n" +
+            "      \"typeLabel\": \"E\",\n" +
             "      \"controls\": [],\n" +
             "      \"misbehaviours\": [\n" +
             "        \"system#MS-Broken-553889e2\",\n" +
