@@ -3,8 +3,6 @@
 # This docker-compose file is used by the CI pipeline to execute the test.
 # The tests can be executed using e.g. `docker compose exec -T ssm sh -c 'cd /system-modeller && gradle test'`
 
-version: '3.7'
-
 services:
 
   ssm:
@@ -15,3 +13,5 @@ services:
       # Port 8080 is the one exposed by keycloak by default and not related to any port-mapping.
       # Environment variables are not available at build time (only at runtime).
       KEYCLOAK_AUTH_SERVER_URL: http://keycloak:8080/auth/
+      # The following value is a placeholder, as it is not currently used in tests, but needs to be defined
+      KNOWLEDGEBASE_DOCS_QUERY_URL: https://docs.spyderisk.org/knowledgebase/q

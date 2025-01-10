@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import ControlAccordion from "./ControlAccordion";
 import {connect} from "react-redux";
 import Explorer from "../common/Explorer"
+import {openDomainDocEvent} from "../../../../common/documentation/documentation";
 
 class ControlExplorer extends React.Component {
 
@@ -52,6 +53,7 @@ class ControlExplorer extends React.Component {
                     <div className="descriptor">
                         <h4>
                             {label}
+                            <button onClick={e => openDomainDocEvent(e, this.props.model, controlUri, dispatch)} className={"doc-help-button"}><i className="fa fa-question" /></button>
                         </h4>
                         <p>
                             {description}

@@ -167,6 +167,53 @@ public class SystemModelQuerier extends AModelQuerier {
 		return m;
 	}
 
+	/**
+	 * Gets the domain model type of a given system model entity
+	 *
+	 * @param store the store to query
+	 * @param uri the entity uri to query
+	 * @return type of the entity
+	 */
+	public String getSystemEntityType(AStoreWrapper store, String uri) {
+		String subQuery = "?uri core:parent ?parent .";
+		return getEntityType(store, "system-inf", subQuery, uri, "parent");
+	}
+
+	/**
+	 * Gets the domain model type of a given domain model entity
+	 *
+	 * @param store the store to query
+	 * @param uri the entity uri to query
+	 * @return type of the entity
+	 */
+	public String getDomainEntityType(AStoreWrapper store, String uri) {
+		String subQuery = "?uri rdf:type ?type .";
+		return getEntityType(store, "domain", subQuery, uri, "type");
+	}
+
+	private String getEntityType(AStoreWrapper store, String graph, String subQuery, String uri, String result) {
+		String query = String.format("\r\nSELECT DISTINCT * WHERE {\r\n" + 
+			"    GRAPH <%s> {\r\n" + 
+			(uri != null ? "    BIND (<" + SparqlHelper.escapeURI(uri) + "> as ?uri) .\n" : "") +
+			"    " + subQuery + "\r\n" + 
+			"    }\r\n" +
+			"}", model.getGraph(graph));
+
+		List<Map<String, String>> rows = store.translateSelectResult(store.querySelect(query,
+			model.getGraph(graph)
+		));
+
+		if (rows.size() > 1) {
+			throw new RuntimeException("Duplicate entries found for uri: " + uri);
+		}
+		else if (rows.size() == 1) {
+			Map<String, String> row = rows.get(0);
+			return row.get(result);
+		}
+
+		return null;
+	}
+
 	// Assets /////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/**
 	 * Get all system-specific assets

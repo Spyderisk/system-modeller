@@ -10,6 +10,8 @@ import {
     closeRecommendationsExplorer,
     closeMisbehaviourExplorer,
     closeReportDialog,
+    openDocsDialog,
+    closeDocsDialog,
     getModel,
     postAssertedAsset,
     toggleThreatEditor,
@@ -31,6 +33,8 @@ import ControlPane from "./panes/controls/controlPane/ControlPane";
 import OverviewPane from "./panes/controls/overviewPane/OverviewPane";
 import Canvas from "./canvas/Canvas";
 import ReportDialog from "./panes/reports/ReportDialog";
+import ConfirmDocRedirectModal from "./panes/common/popups/ConfirmDocRedirectModal";
+
 import * as Constants from "../../common/constants.js"
 import "../index.scss";
 import { axiosInstance } from "../../common/rest/rest";
@@ -71,6 +75,8 @@ class Modeller extends React.Component {
         this.closeControlStrategyExplorer = this.closeControlStrategyExplorer.bind(this);
         this.closeRecommendationsExplorer = this.closeRecommendationsExplorer.bind(this);
         this.closeReportDialog = this.closeReportDialog.bind(this);
+        this.openDocsDialog = this.openDocsDialog.bind(this);
+        this.closeDocsDialog = this.closeDocsDialog.bind(this);
         this.populateThreatMisbehaviours = this.populateThreatMisbehaviours.bind(this);
         this.getSystemThreats = this.getSystemThreats.bind(this);
         this.getComplianceSetsData = this.getComplianceSetsData.bind(this);
@@ -358,6 +364,12 @@ class Modeller extends React.Component {
                             show={this.props.isReportDialogVisible}
                             onHide={this.closeReportDialog}
                             getAssetType={this.getAssetType}
+                />
+
+                <ConfirmDocRedirectModal show={this.props.isDocsModalVisible} 
+                    onHide={this.closeDocsDialog}
+                    model={this.props.model}
+                    selectedDocEntity={this.props.selectedDocEntity}
                 />
 
                 {this.props.loading.newFact.length > 0 && <div className="creation-overlay visible"><span
@@ -719,6 +731,14 @@ class Modeller extends React.Component {
         this.props.dispatch(closeReportDialog());
     }
 
+    openDocsDialog() {
+        this.props.dispatch(openDocsDialog());
+    }
+
+    closeDocsDialog() {
+        this.props.dispatch(closeDocsDialog());
+    }
+
     /**
      * AssertedAsset Creation: Called through PaletteAsset -> AssetList -> AssetPanel -> Modeller (dispatched)
      * @param assetTypeId The asset type to use in the creation.
@@ -1052,6 +1072,8 @@ var mapStateToProps = function (state) {
         isRecommendationsExplorerActive: state.modeller.isRecommendationsExplorerActive,
         isReportDialogVisible: state.modeller.isReportDialogVisible,
         isReportDialogActive: state.modeller.isReportDialogActive,
+        isDocsModalVisible: state.modeller.isDocsModalVisible,
+        selectedDocEntity: state.modeller.selectedDocEntity,
         threatFiltersActive: state.modeller.threatFiltersActive,
         isAcceptancePanelActive: state.modeller.isAcceptancePanelActive,
         loading: state.modeller.loading,
@@ -1106,6 +1128,8 @@ Modeller.propTypes = {
     isMisbehaviourExplorerActive: PropTypes.bool,
     isReportDialogVisible: PropTypes.bool,
     isReportDialogActive: PropTypes.bool,
+    isDocsModalVisible: PropTypes.bool,
+    selectedDocEntity: PropTypes.string,
     threatFiltersActive: PropTypes.object,
     isAcceptancePanelActive: PropTypes.bool,
     reportType: PropTypes.string,

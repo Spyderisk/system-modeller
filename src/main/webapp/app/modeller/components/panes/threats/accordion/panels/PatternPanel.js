@@ -9,6 +9,7 @@ import {
     hideRelation,
     suppressCanvasRefresh
 } from "../../../../../actions/ModellerActions";
+import {openDomainDocEvent} from "../../../../../../common/documentation/documentation";
 
 class PatternPanel extends React.Component {
 
@@ -63,6 +64,10 @@ class PatternPanel extends React.Component {
             }
         }
 
+        let threatType = threat.type;
+        let patternType = threat.pattern.parent;
+        let patternLabel = threat.pattern.label;
+
         return (
             <div className="container-fluid">
                 <div className="row">
@@ -70,7 +75,7 @@ class PatternPanel extends React.Component {
                 </div>
                 
                 <div className="row detail-info">
-                    <span className="col-xs-12">{threatLabel}</span>
+                    <span className="col-xs-12">{threatLabel} <button onClick={e => openDomainDocEvent(e, this.props.model, threatType, this.props.dispatch)} className={"doc-help-button"}><i className="fa fa-question" /></button></span>
                 </div>
                 
                 <br />
@@ -83,7 +88,7 @@ class PatternPanel extends React.Component {
                      onMouseEnter={() => this.hoverPattern(true)}
                      onMouseLeave={() => this.hoverPattern(false)}
                 >
-                    <span className="col-xs-12">{this.props.threat.pattern.label}</span>
+                    <span className="col-xs-12">{patternLabel} <button onClick={e => openDomainDocEvent(e, this.props.model, patternType, this.props.dispatch)} className={"doc-help-button"}><i className="fa fa-question" /></button></span>
                 </div>
                 
                 <br />
@@ -501,7 +506,7 @@ class PatternPanel extends React.Component {
             console.log("Deleting relation: " + relation["id"]);
             this.props.dispatch(suppressCanvasRefresh(false));
             var typeSuffix = relation["type"].split("#")[1]
-            this.props.dispatch(deleteAssertedRelation(this.props.modelId, relation["relationId"], relation["fromId"], typeSuffix, relation["toId"]));
+            this.props.dispatch(deleteAssertedRelation(this.props.model.id, relation["relationId"], relation["fromId"], typeSuffix, relation["toId"]));
         }
         else {
             alert("ERROR: Could not locate relation");
@@ -510,7 +515,7 @@ class PatternPanel extends React.Component {
 }
 
 PatternPanel.propTypes = {
-    modelId: PropTypes.string,
+    model: PropTypes.object,
     threat: PropTypes.object,
     asset: PropTypes.object,
     assets: PropTypes.array,

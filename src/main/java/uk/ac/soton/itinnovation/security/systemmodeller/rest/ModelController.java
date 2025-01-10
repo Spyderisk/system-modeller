@@ -32,7 +32,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -78,6 +81,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -90,7 +94,6 @@ import uk.ac.soton.itinnovation.security.modelvalidator.ModelValidator;
 import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackPathAlgorithm;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.AttackPathDataset;
-import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithm;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithmConfig;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.TreeJsonDoc;
 import uk.ac.soton.itinnovation.security.semanticstore.AStoreWrapper;
@@ -123,7 +126,6 @@ import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHe
 import uk.ac.soton.itinnovation.security.systemmodeller.semantics.StoreModelManager;
 import uk.ac.soton.itinnovation.security.systemmodeller.util.ReportGenerator;
 import uk.ac.soton.itinnovation.security.systemmodeller.util.SecureUrlHelper;
-import uk.ac.soton.itinnovation.security.systemmodeller.model.RecommendationEntity;
 import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.RecommendationRepository;
 import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService;
 import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService.RecommendationJobState;
@@ -166,10 +168,20 @@ public class ModelController {
 	@Value("${knowledgebases.install.folder}")
 	private String kbInstallFolder;
 
+    @Value("${knowledgebase.docs.query.url}")
+    private String kbDocsQueryUrl;
+
 	private static final String VALIDATION = "Validation";
 	private static final String RISK_CALCULATION = "Risk calculation";
 	private static final String RECOMMENDATIONS = "Recommendations";
 	private static final String STARTING = "starting";
+
+	//Regex for fixing security vulnnerability
+	private static final String PARAM_REGEX = "[\n\r]";
+
+	private String encodeValue(String value) throws UnsupportedEncodingException {
+		return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
+	}
 
 	/**
 	 * Take the user IDs of the model owner, editor and modifier and look up the current username for them
@@ -467,6 +479,7 @@ public class ModelController {
 	@RequestMapping(value = "/models/{modelId}/info", method = RequestMethod.GET)
 	public ResponseEntity<ModelDTO> getModelInfo(@PathVariable String modelId, HttpServletRequest servletRequest) throws UnexpectedException {
 
+		modelId = modelId.replaceAll(PARAM_REGEX, "_");
 		logger.info("Called REST method to GET model info {}", modelId);
 
 		final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
@@ -483,6 +496,72 @@ public class ModelController {
 		return ResponseEntity.status(HttpStatus.OK).body(responseModel);
 	}
 
+	/**
+	 * Redirects to the domain model documentation page for a given entity URI
+	 *
+	 * @param modelId Webkey of the model
+	 * @param entity the domain model entity URI
+	 * @param servletRequest
+	 * @return the domain model webpage
+	 */
+	@GetMapping(value = "/models/{modelId}/docs")
+	public ModelAndView getModelDocs(@PathVariable String modelId, @RequestParam() String entity, HttpServletRequest servletRequest) {
+
+		modelId = modelId.replaceAll(PARAM_REGEX, "_");
+		entity = entity.replaceAll(PARAM_REGEX, "_");
+		logger.info("Called REST method to GET model docs {}", modelId);
+
+		final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
+
+		//Get basic model details only
+		model.loadModelInfo(modelObjectsHelper);
+
+		String domainGraph = model.getDomainGraph();
+		logger.debug("domainGraph: {}", domainGraph);
+
+		Map<String, Object> domainModel = storeModelManager.getDomainModel(domainGraph);
+		String domainModelName = ((String)domainModel.get("label")).toLowerCase();
+		logger.debug("domainModelName: {}", domainModelName);
+
+		String domainModelVersion = model.getDomainVersion();
+		logger.debug("domainModelVersion: {}", domainModelVersion);
+
+		String validatedDomainModelVersion = model.getValidatedDomainVersion();
+		logger.debug("validatedDomainModelVersion: {}", validatedDomainModelVersion);
+
+		String docHome = kbDocsQueryUrl;
+		logger.debug("docHome: {}", docHome);
+
+		String domainEntityUri;
+
+		if (entity.contains("system#")) {
+			//First get the domain type for this system entity
+			logger.debug("system entity: {}", entity);
+			domainEntityUri = this.modelObjectsHelper.getSystemEntityType(model, entity);
+		}
+		else { //assume domain#
+			domainEntityUri = entity;
+		}
+
+		logger.debug("domain entity: {}", domainEntityUri);
+		String typeUri = this.modelObjectsHelper.getDomainEntityType(model, domainEntityUri);
+
+		logger.debug("typeUri: {}", typeUri);
+
+		if (typeUri != null) {
+			try {
+				String docURL = docHome + "?domain=" + domainModelName + "&version=" + validatedDomainModelVersion + 
+					"&type=" + encodeValue(typeUri) + "&entity=" + encodeValue(domainEntityUri);
+				logger.info("Redirecting to: {}", docURL);
+				return new ModelAndView("redirect:" + docURL);
+			} catch (UnsupportedEncodingException e) {
+				logger.error("Could not encode URI", e);
+				throw new NotFoundErrorException("Could not encode URI");
+			}
+		}
+					
+		return null;
+	}
 
 	/**
 	 * Gets the basic model details and risks data (only)
@@ -1448,8 +1527,10 @@ public class ModelController {
 
         final List<String> finalTargetURIs = targetURIs;
 
+		modelId = modelId.replaceAll(PARAM_REGEX, "_");
+		riskMode = riskMode.replaceAll(PARAM_REGEX, "_");
+
         logger.info("Calculating recommendations for model {}", modelId);
-		riskMode = riskMode.replaceAll("[\n\r]", "_");
         logger.info(" riskMode: {}",riskMode);
 
         RiskCalculationMode rcMode;
