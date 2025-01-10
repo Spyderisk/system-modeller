@@ -141,10 +141,13 @@ public class PaletteGenerator {
 
 		assets.forEach((asset) -> {
 		if (asset != null){
+			String cl = asset.get("cl"); //category label
+			String category = cl != null ? cl : "";
+			
 			palettebuilder.startObject();
 			palettebuilder.key("id").value(asset.get("asset"));
 			palettebuilder.key("label").value(asset.get("al"));
-			palettebuilder.key("category").value(asset.get("cl")); //category label
+			palettebuilder.key("category").value(category);
 			palettebuilder.key("assertable").value(Boolean.valueOf(asset.get("a")));
 
 			String type = asset.get("type");

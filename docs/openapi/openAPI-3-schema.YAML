@@ -12,7 +12,7 @@ info:
     url: https://www.apache.org/licenses/LICENSE-2.0.html
 servers:
 - url: http://localhost:8089/system-modeller
-    description: Local server
+  description: Local server
 paths:
   /models/{modelid}:
     put:
