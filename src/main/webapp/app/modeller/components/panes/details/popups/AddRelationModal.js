@@ -42,24 +42,6 @@ class AddRelationModal extends React.Component {
                     </Modal.Header>
                     {this.props.links !== null ?
                         <Modal.Body>
-                            <FormGroup controlId="relation">
-                                <ControlLabel>Relation</ControlLabel>
-                                <FormControl componentClass="select"
-                                    placeholder="Select..."
-                                    onChange={this.handleRelUpdate}
-                                    value={self.state.selectedRel}
-                                    ref="select-rel"
-                                    disabled={this.props.links === null}>
-                                    <option key={0} disabled value="">Select relation type...</option>
-                                    {this.props.links.sort((linkA, linkB) => {
-                                        return linkA.label > linkB.label
-                                    }).map((link, index) => {
-                                        return <option key={index + 1} value={link["type"]}>
-                                            {link["label"]}
-                                        </option>
-                                    })};
-                                </FormControl>
-                            </FormGroup>
                             {!this.props.isIncoming ?
                                 <Fragment>
                                     <FormGroup>
@@ -108,6 +90,24 @@ class AddRelationModal extends React.Component {
                                     </FormGroup>
                                 </Fragment>
                             }
+                            <FormGroup controlId="relation">
+                                <ControlLabel>Relation</ControlLabel>
+                                <FormControl componentClass="select"
+                                    placeholder="Select..."
+                                    onChange={this.handleRelUpdate}
+                                    value={self.state.selectedRel}
+                                    ref="select-rel"
+                                    disabled={this.props.links === null}>
+                                    <option key={0} disabled value="">Select relation type...</option>
+                                    {this.props.links.sort((linkA, linkB) => {
+                                        return linkA.label > linkB.label
+                                    }).map((link, index) => {
+                                        return <option key={index + 1} value={link["type"]}>
+                                            {link["label"]}
+                                        </option>
+                                    })};
+                                </FormControl>
+                            </FormGroup>
                         </Modal.Body>
                     :
                         <Modal.Body>
