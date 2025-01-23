@@ -115,7 +115,7 @@ class AddRelationModal extends React.Component {
                                             onChange={this.handleAssetUpdate}
                                             ref="select-to">
                                             <option key={0} disabled selected value="">Select asset...</option>
-                                            {self.state.selectableAssets.sort((assetA, assetB) => assetA["label"] > assetB["label"]).map((asset, index) => {
+                                            {self.state.selectableAssets.sort((assetA, assetB) => assetA["label"].localeCompare(assetB["label"])).map((asset, index) => {
                                                 return <option key={index + 1} value={asset["id"]}>
                                                     {asset["label"]}
                                                 </option>
@@ -135,7 +135,7 @@ class AddRelationModal extends React.Component {
                                             value={self.state.selectedAsset}
                                             ref="select-from">
                                             <option key={0} disabled selected value="">Select asset...</option>
-                                            {self.state.selectableAssets.sort((assetA, assetB) => assetA["label"] > assetB["label"]).map((asset, index) => {
+                                            {self.state.selectableAssets.sort((assetA, assetB) => assetA["label"].localeCompare(assetB["label"])).map((asset, index) => {
                                                 return <option key={index + 1} value={asset["id"]}>
                                                     {asset["label"]}
                                                 </option>
@@ -158,7 +158,7 @@ class AddRelationModal extends React.Component {
                                     disabled={this.props.links === null}>
                                     <option key={0} disabled value="">Select relation type...</option>
                                     {this.state.selectableLinks.sort((linkA, linkB) => {
-                                        return linkA.label > linkB.label
+                                        return linkA.label.localeCompare(linkB.label)
                                     }).map((link, index) => {
                                         return <option key={index + 1} value={link["uri"]}>
                                             {link["label"]}
