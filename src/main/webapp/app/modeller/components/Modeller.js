@@ -60,6 +60,8 @@ class Modeller extends React.Component {
         this.getAssetTypeById = this.getAssetTypeById.bind(this);
         this.isAssetDisplayed = this.isAssetDisplayed.bind(this);
         this.isRelationDisplayed = this.isRelationDisplayed.bind(this);
+        this.getValidStartpoints = this.getValidStartpoints.bind(this);
+        this.getValidEndpoints = this.getValidEndpoints.bind(this);
         this.getLink = this.getLink.bind(this);
         this.getMisbehaviour = this.getMisbehaviour.bind(this);
         this.getTwasForMisbehaviourSet = this.getTwasForMisbehaviourSet.bind(this);
@@ -307,6 +309,8 @@ class Modeller extends React.Component {
                         loading={this.props.loading}
                         isAssetDisplayed={this.isAssetDisplayed}
                         isRelationDisplayed={this.isRelationDisplayed}
+                        linkFromTypes={this.getValidStartpoints}
+                        linkToTypes={this.getValidEndpoints}
                         selectedLayers={this.props.selectedLayers}
                         selectedAsset={this.props.selectedAsset}
                         selectedThreat={this.props.selectedThreat}
@@ -340,6 +344,8 @@ class Modeller extends React.Component {
                             expanded={this.props.expanded}
                             filters={this.props.filters}
                             loading={this.props.loading}
+                            linkFromTypes={this.getValidStartpoints}
+                            linkToTypes={this.getValidEndpoints}
                             getAssetType={this.getAssetType}
                             getAssetsForType={this.getAssetsForType}
                             getLink={this.getLink}
@@ -910,6 +916,82 @@ class Modeller extends React.Component {
             return true;
         }
         return false;*/
+    }
+    
+    /**
+     * Get all assets from which a connection could be made
+     *
+     * @param {type} assetType the type of the asset for which to check for incoming connections
+     * @returns {unresolved} the valid startpoints in the asset model on the canvas
+     */
+    getValidStartpoints(assetType) {
+        let self = this;
+        let linkTypes = this.props.model["palette"]["links"][assetType];
+        let validStartpoints = {};
+
+        if (linkTypes === undefined || linkTypes["linksTo"] === undefined) {
+            return validStartpoints;
+        }
+
+        //iterate over all allowed links
+        for (let conn of linkTypes["linksTo"]) {
+
+            //this is a new relationship type
+            if (validStartpoints[conn["type"]] === undefined) {
+                validStartpoints[conn["type"]] = {label: conn["label"], comment: conn["comment"],
+                                                assets: []};
+
+                //check all existing assets to see if they're of the allowed type
+                for (let asset of self.props.model["assets"]) {
+                    //if they are add them to the list of allowed endpoints
+                    if (conn["options"].indexOf(asset["type"]) >= 0) {
+                        validStartpoints[conn["type"]]["assets"].push(asset["id"]);
+                    }
+                }
+            } else {
+                console.warn("duplicate entry for for connection type " + conn["type"] + ", ignoring");
+            }
+        }
+
+        return validStartpoints;
+    }
+
+    /**
+     * Get all assets to which a connection could be made
+     *
+     * @param {type} assetType the type of the asset for which to check for outgoing connections
+     * @returns {unresolved} the valid endpoints in the asset model on the canvas
+     */
+    getValidEndpoints(assetType) {
+        let self = this;
+        let linkTypes = this.props.model["palette"]["links"][assetType];
+        let validEndpoints = {};
+
+        if (linkTypes === undefined || linkTypes["linksFrom"] === undefined) {
+            return validEndpoints;
+        }
+
+        //iterate over all allowed links
+        for (let conn of linkTypes["linksFrom"]) {
+
+            //this is a new relationship type
+            if (validEndpoints[conn["type"]] === undefined) {
+                validEndpoints[conn["type"]] = {label: conn["label"], comment: conn["comment"],
+                                                assets: []};
+
+                //check all existing assets to see if they're of the allowed type
+                for (let asset of self.props.model["assets"]) {
+                    //if they are add them to the list of allowed endpoints
+                    if (conn["options"].indexOf(asset["type"]) >= 0) {
+                        validEndpoints[conn["type"]]["assets"].push(asset["id"]);
+                    }
+                }
+            } else {
+                console.warn("duplicate entry for for connection type " + conn["type"] + ", ignoring");
+            }
+        }
+
+        return validEndpoints;
     }
     
     getLink(assetType, relType, direction) {
