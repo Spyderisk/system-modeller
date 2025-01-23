@@ -7,6 +7,9 @@ class AddRelationModal extends React.Component {
     constructor(props) {
         super(props);
 
+        this.getLinkTypesMap = this.getLinkTypesMap.bind(this);
+        this.getConnectableAssets = this.getConnectableAssets.bind(this);
+        this.getAvaialableLinksForAsset = this.getAvaialableLinksForAsset.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleRelUpdate = this.handleRelUpdate.bind(this);
         this.handleAssetUpdate = this.handleAssetUpdate.bind(this);
@@ -14,24 +17,79 @@ class AddRelationModal extends React.Component {
 
     componentWillMount() {
         this.setState({
-            selectedRel: "",
             selectedAsset: "",
-            selectableAssets: []
+            selectedRel: "",
+            selectableAssets: [],
+            selectableLinks: [],
+            linkTypesMap: {}
         })
     }
 
     componentWillReceiveProps(nextProps) {
-        if(nextProps.show && !this.props.show){
+        let linkTypesMap = this.getLinkTypesMap(nextProps);
+        let assetIds = this.getConnectableAssets(nextProps, linkTypesMap);
+        let selectableAssets = this.props.assets.filter((asset) => {
+            return assetIds.has(asset['id']);
+        });
+
+        if (nextProps.show && !this.props.show){
             this.setState({
-                selectedRel: "",
                 selectedAsset: "",
-                selectableAssets: []
+                selectedRel: "",
+                selectableAssets: selectableAssets,
+                linkTypesMap: linkTypesMap
             })
         }
     }
 
+    getLinkTypesMap(props) {
+        let linkTypesMap = props.isIncoming ? props.linkFromTypes(props.host['type']) : props.linkToTypes(props.host['type']);
+        return linkTypesMap;
+    }
+
+    getConnectableAssets(props, linkTypesMap) {
+        let linkTypes = Object.values(linkTypesMap);
+
+        let assetsSet = new Set();
+
+        linkTypes.forEach((linkData, i) => {
+            let assets = linkData.assets;
+            assets.forEach((assetid, i) => {
+                if (assetid !== props.host.id) {
+                    assetsSet.add(assetid);
+                }
+            });
+        });
+
+        return assetsSet;
+    }
+
+    getAvaialableLinksForAsset(assetId) {
+        let linkTypesMap = this.state.linkTypesMap;
+        let linksSet = new Set();
+
+        Object.keys(linkTypesMap).forEach((linkTypeUri, i) => {
+            let linkType = linkTypesMap[linkTypeUri];
+            let assets = linkType.assets;
+            if (assets.includes(assetId)) {
+                linksSet.add(linkTypeUri);
+            }
+        });
+
+        let selectableLinkUris = Array.from(linksSet);
+
+        let selectableLinks = selectableLinkUris.map((uri, i) => {
+            let linkType = linkTypesMap[uri];
+            linkType.uri = uri;
+            return linkType;
+        });
+
+        return selectableLinks;
+    }
+
     render() {
-        var self = this;
+        let self = this;
+
         return (
             <div>
                 <Modal show={this.props.show} onHide={this.props.onHide} backdrop={true} bsSize="small">
@@ -99,10 +157,10 @@ class AddRelationModal extends React.Component {
                                     ref="select-rel"
                                     disabled={this.props.links === null}>
                                     <option key={0} disabled value="">Select relation type...</option>
-                                    {this.props.links.sort((linkA, linkB) => {
+                                    {this.state.selectableLinks.sort((linkA, linkB) => {
                                         return linkA.label > linkB.label
                                     }).map((link, index) => {
-                                        return <option key={index + 1} value={link["type"]}>
+                                        return <option key={index + 1} value={link["uri"]}>
                                             {link["label"]}
                                         </option>
                                     })};
@@ -130,7 +188,7 @@ class AddRelationModal extends React.Component {
     }
 
     handleSubmit() {
-        var assetTo = this.props.isIncoming ? this.props.host["id"] : this.state.selectedAsset,
+        let assetTo = this.props.isIncoming ? this.props.host["id"] : this.state.selectedAsset,
             assetFrom = this.props.isIncoming ? this.state.selectedAsset : this.props.host["id"],
             relType = this.state.selectedRel;
             
@@ -140,23 +198,23 @@ class AddRelationModal extends React.Component {
     }
 
     handleRelUpdate(e) {
-        var options = this.props.links.find((link) => link['type'] == [e.nativeEvent.target.value])['options'];
-        var outAssets = this.props.assets.filter((asset) => {
-            return options.includes(asset['type']) && asset['id'] !== this.props.host['id'];
-        });
+        let selectedRel = e.nativeEvent.target.value;
 
         this.setState({
             ...this.state,
-            selectedRel: e.nativeEvent.target.value,
-            selectedAsset: "",
-            selectableAssets: outAssets
+            selectedRel: selectedRel
         });
     }
 
     handleAssetUpdate(e) {
+        let selectedAsset = e.nativeEvent.target.value;
+        let selectableLinks = this.getAvaialableLinksForAsset(selectedAsset);
+
         this.setState({
             ...this.state,
-            selectedAsset: e.nativeEvent.target.value
+            selectedAsset: selectedAsset,
+            selectedRel: "", //clear relations selection
+            selectableLinks: selectableLinks
         })
     }
 
@@ -165,6 +223,8 @@ class AddRelationModal extends React.Component {
 AddRelationModal.propTypes = {
     isIncoming: PropTypes.bool,
     assets: PropTypes.array,
+    linkFromTypes: PropTypes.func,
+    linkToTypes: PropTypes.func,
     links: PropTypes.array,
     host: PropTypes.object,
     show: PropTypes.bool,
