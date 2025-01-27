@@ -1,6 +1,7 @@
 import React, {Fragment} from "react";
 import PropTypes from 'prop-types';
-import {Modal, Button, FormControl, FormGroup, ControlLabel} from "react-bootstrap";
+import {Modal, Button, FormControl, FormGroup, ControlLabel, OverlayTrigger, Tooltip} from "react-bootstrap";
+import * as Constants from "../../../../../common/constants.js";
 
 class AddRelationModal extends React.Component {
 
@@ -10,6 +11,7 @@ class AddRelationModal extends React.Component {
         this.getLinkTypesMap = this.getLinkTypesMap.bind(this);
         this.getConnectableAssets = this.getConnectableAssets.bind(this);
         this.getAvaialableLinksForAsset = this.getAvaialableLinksForAsset.bind(this);
+        this.renderRelationOption = this.renderRelationOption.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.handleRelUpdate = this.handleRelUpdate.bind(this);
         this.handleAssetUpdate = this.handleAssetUpdate.bind(this);
@@ -26,18 +28,28 @@ class AddRelationModal extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        let linkTypesMap = this.getLinkTypesMap(nextProps);
-        let assetIds = this.getConnectableAssets(nextProps, linkTypesMap);
-        let selectableAssets = this.props.assets.filter((asset) => {
-            return assetIds.has(asset['id']);
-        });
-
-        if (nextProps.show && !this.props.show){
+        if (nextProps.show && !this.props.show) {
+            let linkTypesMap = this.getLinkTypesMap(nextProps);
+            let assetIds = this.getConnectableAssets(nextProps, linkTypesMap);
+            let selectableAssets = this.props.assets.filter((asset) => {
+                return assetIds.has(asset['id']);
+            });
+    
             this.setState({
                 selectedAsset: "",
                 selectedRel: "",
                 selectableAssets: selectableAssets,
+                selectableLinks: [],
                 linkTypesMap: linkTypesMap
+            })
+        }
+        else if (!nextProps.show && this.props.show) {
+            this.setState({
+                selectedAsset: "",
+                selectedRel: "",
+                selectableAssets: [],
+                selectableLinks: [],
+                linkTypesMap: []
             })
         }
     }
@@ -112,9 +124,11 @@ class AddRelationModal extends React.Component {
                                         </ControlLabel>
                                         <FormControl componentClass="select"
                                             placeholder="Select..."
+                                            value={this.state.selectedAsset}
+                                            autoFocus={true}
                                             onChange={this.handleAssetUpdate}
                                             ref="select-to">
-                                            <option key={0} disabled selected value="">Select asset...</option>
+                                            <option key={0} disabled value="">Select asset...</option>
                                             {self.state.selectableAssets.sort((assetA, assetB) => assetA["label"].localeCompare(assetB["label"])).map((asset, index) => {
                                                 return <option key={index + 1} value={asset["id"]}>
                                                     {asset["label"]}
@@ -131,10 +145,11 @@ class AddRelationModal extends React.Component {
                                         </ControlLabel>
                                         <FormControl componentClass="select"
                                             placeholder="Select..."
+                                            value={this.state.selectedAsset}
+                                            autoFocus={true}
                                             onChange={this.handleAssetUpdate}
-                                            value={self.state.selectedAsset}
                                             ref="select-from">
-                                            <option key={0} disabled selected value="">Select asset...</option>
+                                            <option key={0} disabled value="">Select asset...</option>
                                             {self.state.selectableAssets.sort((assetA, assetB) => assetA["label"].localeCompare(assetB["label"])).map((asset, index) => {
                                                 return <option key={index + 1} value={asset["id"]}>
                                                     {asset["label"]}
@@ -152,17 +167,16 @@ class AddRelationModal extends React.Component {
                                 <ControlLabel>Relation</ControlLabel>
                                 <FormControl componentClass="select"
                                     placeholder="Select..."
+                                    size={this.state.selectableLinks.length}
                                     onChange={this.handleRelUpdate}
                                     value={self.state.selectedRel}
                                     ref="select-rel"
-                                    disabled={this.props.links === null}>
+                                    disabled={(this.props.links === null)}>
                                     <option key={0} disabled value="">Select relation type...</option>
                                     {this.state.selectableLinks.sort((linkA, linkB) => {
                                         return linkA.label.localeCompare(linkB.label)
-                                    }).map((link, index) => {
-                                        return <option key={index + 1} value={link["uri"]}>
-                                            {link["label"]}
-                                        </option>
+                                    }).map((link) => {
+                                        return this.renderRelationOption(link);
                                     })};
                                 </FormControl>
                             </FormGroup>
@@ -185,6 +199,21 @@ class AddRelationModal extends React.Component {
                 </Modal>
             </div>
         );
+    }
+
+    renderRelationOption(link) {
+        let props = {
+            delayShow: Constants.TOOLTIP_DELAY, placement: "right",
+            key: "ot-" + link["label"], defaultOverlayShown: false,
+            overlay: <Tooltip id={"tt-" + link["label"]}
+                              className={"tooltip-overlay"}>
+                {link["comment"]}
+            </Tooltip>
+        };
+        return <OverlayTrigger {...props}>
+            <option key={"option-" + link["label"]}
+                    value={link["uri"]}>{link["label"]}</option>
+        </OverlayTrigger>;
     }
 
     handleSubmit() {
