@@ -1244,6 +1244,23 @@ export default function modeller(state = modelState, action) {
         }
     }
 
+    if (action.type === instr.HIDE_RELATIONS_OF_TYPE) {
+        let relationType = action.payload["relationType"];
+
+        return {
+            ...state,
+            model: {
+                ...state.model,
+                relations: [...state.model.relations.map((relation) => {
+                    if (relation["type"] === relationType) {
+                        relation.hidden = !relation.hidden;
+                    }
+                    return relation;
+                })]
+            }
+        }
+    }
+
     if (action.type === instr.PATCH_UPDATED_CONTROL) {
         return state;
     }

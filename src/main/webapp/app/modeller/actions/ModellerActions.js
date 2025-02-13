@@ -1615,6 +1615,17 @@ export function hideRelation(relationId) {
     }
 }
 
+export function hideRelationsOfType(relationType) {
+    return function (dispatch) {
+        dispatch({
+            type: instr.HIDE_RELATIONS_OF_TYPE,
+            payload: {
+                relationType: relationType,
+            }
+        });
+    }
+}
+
 export function putRelationRedefine(modelId, relation) {
     let { assetIdFrom, assetIdTo, relType, relationId } = relation;
     console.log(`Updating relation ${relationId} from ${assetIdFrom} to ${assetIdTo}`);

@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import {deleteAssertedRelation, hideRelation, putRelationRedefine} from "../../../actions/ModellerActions";
+import {deleteAssertedRelation, hideRelation, hideRelationsOfType, putRelationRedefine} from "../../../actions/ModellerActions";
 import {ContextMenu, ContextMenuTrigger, MenuItem, SubMenu} from "react-contextmenu";
 import {wordWrap} from "../../util/wordWrap"
 
@@ -13,6 +13,7 @@ class RelationCtxMenu extends React.Component {
         this.handleCardinalities = this.handleCardinalities.bind(this);
         this.handleChangeRelation = this.handleChangeRelation.bind(this);
         this.handleHideRelation = this.handleHideRelation.bind(this);
+        this.handleHideRelationsOfType = this.handleHideRelationsOfType.bind(this);
 
         this.state = {
             loading: false,
@@ -75,6 +76,9 @@ class RelationCtxMenu extends React.Component {
                             <MenuItem onClick={this.handleHideRelation}>{this.props.relation.hidden ? "Unhide" : "Hide"}
                             </MenuItem>
 
+                            <MenuItem onClick={this.handleHideRelationsOfType}>{"Hide all relations of this type"}
+                            </MenuItem>
+                            
                             <MenuItem onClick={this.handleDeleteRelation}
                                 disabled={!this.props.relation.asserted}>Delete
                             </MenuItem>
@@ -172,6 +176,9 @@ class RelationCtxMenu extends React.Component {
         this.props.dispatch(hideRelation(this.props.relation.id));
     }
 
+    handleHideRelationsOfType() {
+        this.props.dispatch(hideRelationsOfType(this.props.relation.type));
+    }
 }
 
 /**
