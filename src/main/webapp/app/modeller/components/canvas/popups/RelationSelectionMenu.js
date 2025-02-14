@@ -86,9 +86,7 @@ class RelationSelectionMenu extends React.Component {
     }
     
     renderOption(option, index) {
-        //let label = option["label"] + " (" + option["direction"] + ")"; //show label with direction
         let label = option["from"] + " " + option["label"] + " " + option["to"]; //show label with asset names (labels)
-        //console.log(index, option);
         let value = index;
         if (option["comment"].length && option["comment"].length > 0) {
             let props = {

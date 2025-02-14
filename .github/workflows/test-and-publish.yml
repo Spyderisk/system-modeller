@@ -46,7 +46,7 @@ jobs:
         echo "FAIL=${FAIL}" >> ${GITHUB_ENV}
 
     - name: Archive test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-artifacts
         path: test-artifacts/

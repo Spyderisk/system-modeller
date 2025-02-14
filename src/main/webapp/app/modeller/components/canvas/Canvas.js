@@ -110,8 +110,6 @@ class Canvas extends React.Component {
         this.handleAssetMouseOver = this.handleAssetMouseOver.bind(this);
         this.handleAssetMouseOut = this.handleAssetMouseOut.bind(this);
         this.handleRelationClick = this.handleRelationClick.bind(this);
-        this.getValidStartpoints = this.getValidStartpoints.bind(this);
-        this.getValidEndpoints = this.getValidEndpoints.bind(this);
         this.getPaletteLink = this.getPaletteLink.bind(this);
         this.getPalette = this.getPalette.bind(this);
         this.isSelectedAsset = this.isSelectedAsset.bind(this);
@@ -885,8 +883,8 @@ class Canvas extends React.Component {
                 assetType={assetType}
                 getPalette={this.getPalette}
                 canvasZoom={this.props.canvas.zoom}
-                linkFromTypes={self.getValidStartpoints}
-                linkToTypes={self.getValidEndpoints}
+                linkFromTypes={this.props.linkFromTypes}
+                linkToTypes={this.props.linkToTypes}
                 loading={this.props.loading["asset"]}
                 handleAssetDrag={ self.handleAssetDrag }
                 handleAssetMouseDown={ self.handleAssetMouseDown }
@@ -2189,95 +2187,11 @@ class Canvas extends React.Component {
         this.canvasContextTriggerVar = c;
     }
     
-    /**
-     * Get all assets from which a connection could be made
-     *
-     * @param {type} assetType the type of the asset for which to check for incoming connections
-     * @returns {unresolved} the valid startpoints in the asset model on the canvas
-     */
-    getValidStartpoints(assetType) {
-        var self = this;
-        //console.log("Finding valid startpoints for asset type " + assetType);
-
-        var linkTypes = this.props.model["palette"]["links"][assetType];
-        //console.log(linkTypes["linksTo"]);
-
-        var validStartpoints = {};
-        if (linkTypes === undefined || linkTypes["linksTo"] === undefined) {
-            return validStartpoints;
-        }
-
-        //iterate over all allowed links
-        for (var conn of linkTypes["linksTo"]) {
-
-            //this is a new relationship type
-            if (validStartpoints[conn["type"]] === undefined) {
-                validStartpoints[conn["type"]] = {label: conn["label"], comment: conn["comment"],
-                                                assets: []};
-
-                //check all existing assets to see if they're of the allowed type
-                for (var asset of self.props.model["assets"]) {
-                    //if they are add them to the list of allowed endpoints
-                    if (conn["options"].indexOf(asset["type"]) >= 0) {
-                        validStartpoints[conn["type"]]["assets"].push(asset["id"]);
-                    }
-                }
-            } else {
-                console.warn("duplicate entry for for connection type " + conn["type"] + ", ignoring");
-            }
-        }
-        //console.log("valid startpoints:");
-        //console.log(validStartpoints);
-        return validStartpoints;
-    }
-
-    /**
-     * Get all assets to which a connection could be made
-     *
-     * @param {type} assetType the type of the asset for which to check for outgoing connections
-     * @returns {unresolved} the valid endpoints in the asset model on the canvas
-     */
-    getValidEndpoints(assetType) {
-        var self = this;
-        //console.log("Finding valid endpoints for asset type " + assetType);
-
-        var linkTypes = this.props.model["palette"]["links"][assetType];
-        //console.log(linkTypes["linksFrom"]);
-
-        var validEndpoints = {};
-        if (linkTypes === undefined || linkTypes["linksFrom"] === undefined) {
-            return validEndpoints;
-        }
-
-        //iterate over all allowed links
-        for (var conn of linkTypes["linksFrom"]) {
-
-            //this is a new relationship type
-            if (validEndpoints[conn["type"]] === undefined) {
-                validEndpoints[conn["type"]] = {label: conn["label"], comment: conn["comment"],
-                                                assets: []};
-
-                //check all existing assets to see if they're of the allowed type
-                for (var asset of self.props.model["assets"]) {
-                    //if they are add them to the list of allowed endpoints
-                    if (conn["options"].indexOf(asset["type"]) >= 0) {
-                        validEndpoints[conn["type"]]["assets"].push(asset["id"]);
-                    }
-                }
-            } else {
-                console.warn("duplicate entry for for connection type " + conn["type"] + ", ignoring");
-            }
-        }
-        //console.log("valid endpoints:");
-        //console.log(validEndpoints);
-        return validEndpoints;
-    }
-    
     getPaletteLink(fromAssetType, linkType) {
         //console.log("getPaletteLink from " + fromAssetType + " linkType: " + linkType);
         let fromPaletteAssetType = this.props.getAssetType(fromAssetType);
         //console.log("fromPaletteAssetType:", fromPaletteAssetType);
-        let validEndpoints = this.getValidEndpoints(fromPaletteAssetType["id"]);
+        let validEndpoints = this.props.linkToTypes(fromPaletteAssetType["id"]);
         let link = validEndpoints[linkType];
         //console.log("link:", link);
         return link;
@@ -2373,6 +2287,8 @@ Canvas.propTypes = {
     loading: PropTypes.object,
     isAssetDisplayed: PropTypes.func,
     isRelationDisplayed: PropTypes.func,
+    linkFromTypes: PropTypes.func,
+    linkToTypes: PropTypes.func,
     selectedLayers: PropTypes.array,
     selectedAsset: PropTypes.object,
     selectedThreat: PropTypes.object,
