@@ -284,6 +284,8 @@ class DetailPane extends React.Component {
                                   assets={this.props.model.assets}
                                   host={this.state.addRelationModal.host}
                                   links={this.state.addRelationModal.links}
+                                  linkFromTypes={this.props.linkFromTypes}
+                                  linkToTypes={this.props.linkToTypes}
                                   isIncoming={this.state.addRelationModal.isIncoming}
                                   isRelationExists={this.isRelationExists}
                                   submit={this.submitAddRelationModal}
@@ -367,8 +369,8 @@ class DetailPane extends React.Component {
     }
 
     handleAdd(asset, isIncoming) {
-        var linkTypes = this.props.model.palette["links"];
-        var assetType = this.props.getAssetType(asset["type"]);
+        let linkTypes = this.props.model.palette["links"];
+        let assetType = this.props.getAssetType(asset["type"]);
         this.openAddRelationModal(asset, isIncoming ? linkTypes[assetType["id"]]["linksTo"] : linkTypes[assetType["id"]]["linksFrom"], isIncoming);
     }
 
@@ -481,6 +483,8 @@ DetailPane.propTypes = {
     getAssetType: PropTypes.func,
     getAssetsForType: PropTypes.func,
     getLink: PropTypes.func,
+    linkFromTypes: PropTypes.func,
+    linkToTypes: PropTypes.func,
     model: PropTypes.object,
     threats: PropTypes.array,
     complianceSetsData: PropTypes.object,
