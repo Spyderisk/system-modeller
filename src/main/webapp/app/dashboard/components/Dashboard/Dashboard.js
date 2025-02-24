@@ -54,14 +54,20 @@ class Dashboard extends Component {
 
         if (prevProps.loading.ontologies && !this.props.loading.ontologies) {
             if (ontologies.length == 0) {
-                let userRole = this.props.auth.user.role;
-                if (userRole === 1) { //admin only
-                    alert("No knowledgebases available! Will redirect to Knowledgebase Manager..");
-                    let kbManagerURL = process.env.config.END_POINT + "/domain-manager";
-                    console.log("Redirecting to: " + kbManagerURL);
-                    window.location.replace(kbManagerURL);
+                if (this.props.auth.user) {
+                    let userRole = this.props.auth.user.role;
+                    if (userRole === 1) { //admin only
+                        alert("No knowledgebases available! Will redirect to Knowledgebase Manager..");
+                        let kbManagerURL = process.env.config.END_POINT + "/domain-manager";
+                        console.log("Redirecting to: " + kbManagerURL);
+                        window.location.replace(kbManagerURL);
+                    }
+                    else { //standard users
+                        alert("No knowledgebases available! Please contact administrator.");
+                    }
                 }
-                else { //standard users
+                else {
+                    console.warn("auth.user not yet available");
                     alert("No knowledgebases available! Please contact administrator.");
                 }
             }    
