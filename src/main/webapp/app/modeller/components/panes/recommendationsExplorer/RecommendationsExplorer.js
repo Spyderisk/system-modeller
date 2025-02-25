@@ -8,6 +8,8 @@ import Explorer from "../common/Explorer";
 import ControlStrategiesPanel from "../details/accordion/panels/ControlStrategiesPanel";
 import * as Constants from "../../../../common/constants.js";
 import {renderControlSet} from "../csgExplorer/ControlStrategyRenderer";
+import {getRenderedLevelText} from "../../util/Levels";
+
 import {
     updateControlOnAsset,
     updateControls,
@@ -18,11 +20,13 @@ class RecommendationsExplorer extends React.Component {
     constructor(props) {
         super(props);
 
+        this.createLevelsMap = this.createLevelsMap.bind(this);
         this.renderContent = this.renderContent.bind(this);
         this.renderJson = this.renderJson.bind(this);
         this.renderRecommendations = this.renderRecommendations.bind(this);
         this.renderNoRecommendations = this.renderNoRecommendations.bind(this);
         this.renderControlSets = this.renderControlSets.bind(this);
+        this.renderConsequences = this.renderConsequences.bind(this);
         this.getControlSets = this.getControlSets.bind(this);
         this.getRiskVector = this.getRiskVector.bind(this);
         this.getHighestRiskLevel = this.getHighestRiskLevel.bind(this);
@@ -39,8 +43,35 @@ class RecommendationsExplorer extends React.Component {
     }
 
     componentWillReceiveProps(nextProps) {
+        let levelsMap = this.state.levelsMap;
+
+        if (!this.props.model.levels && nextProps.model.levels) {
+            levelsMap = this.createLevelsMap(nextProps.model.levels);
+        }
+
         this.setState({...this.state,
-            updatingControlSets: {}
+            updatingControlSets: {},
+            levelsMap: levelsMap
+        });
+    }
+
+    createLevelsMap(levels) {
+        let levelsMap = {};
+        this.addLevels(levelsMap, levels["ImpactLevel"]);
+        this.addLevels(levelsMap, levels["Likelihood"]);
+        this.addLevels(levelsMap, levels["RiskLevel"]);
+
+        return levelsMap;
+    }
+
+    addLevels(levelsMap, levels) {
+        levels.forEach(level => {
+            let shortUri = level.uri.replace(Constants.URI_PREFIX, "");
+            let levelObj = {
+                "label": level.label,
+                "value": level.value
+            };
+            levelsMap[shortUri] = levelObj;
         });
     }
 
@@ -124,6 +155,7 @@ class RecommendationsExplorer extends React.Component {
                         let reccsgs = rec.controlStrategies;
                         let riskVectorString = this.getRiskVectorString(rec.state.riskVector);
                         let riskLevel = this.getHighestRiskLevel(rec.state.riskVector);
+                        let consequences = rec.state.consequences;
                         let csgsByName = new Map();
 
                         reccsgs.forEach((reccsg) => {
@@ -150,6 +182,7 @@ class RecommendationsExplorer extends React.Component {
                                 <Panel.Collapse>
                                     <Panel.Body>
                                         <p>Residual risk: {riskLevel.label} ({riskVectorString})</p>
+                                        {this.renderConsequences(consequences)}
                                         <p>Control Strategies to enable</p>
                                         <ControlStrategiesPanel dispatch={this.props.dispatch}
                                             modelId={this.props.model["id"]}
@@ -199,6 +232,72 @@ class RecommendationsExplorer extends React.Component {
                 })}
             </div>
         );
+    }
+
+    renderConsequences(consequences) {
+        let levels = this.props.model.levels["Likelihood"];
+        let levelsMap = this.state.levelsMap ? this.state.levelsMap : {};
+
+        return (
+            <div>
+                <div key={0} className='row head'>
+                    <span className="col-xs-3">
+                        Consequence
+                    </span>
+                    <span className="col-xs-3">
+                        Asset
+                    </span>
+                    <span className="impact col-xs-1">
+                        Direct Impact
+                    </span>
+                    <span className="likelihood col-xs-1">
+                        Likelihood
+                    </span>
+                    <span className="risk col-xs-1">
+                        Direct Risk
+                    </span>
+                </div>
+                <div>
+                    {consequences.map((consequence, index) => {
+                        let selected = false; //TODO
+                        let active = true; //TODO
+
+                        let impact = levelsMap[consequence.impact];
+                        let impactRender = getRenderedLevelText(levels, impact);
+
+                        let likelihood = levelsMap[consequence.likelihood];
+                        let likelihoodRender = getRenderedLevelText(levels, likelihood);
+
+                        let risk = levelsMap[consequence.risk];
+                        let riskRender = getRenderedLevelText(levels, risk);
+                
+                        return (
+                            <div key={index + 1} className={
+                                `row misbehaviour-item misbehaviour-${active ? "active" : "inactive"} ` +
+                                `detail-info ${selected ? "selected-row" : "row-hover"}`
+                            }>
+                                <span className="misbehaviour col-xs-3">
+                                    {consequence.label}
+                                </span>
+                                <span className="misbehaviour col-xs-3">
+                                    {consequence.asset.label}
+                                </span>
+                                <span className="likelihood col-xs-1">
+                                    {impactRender}
+                                </span>
+                                <span className="likelihood col-xs-1">
+                                    {likelihoodRender}
+                                </span>
+                                <span className="risk col-xs-1">
+                                    {riskRender}
+                                </span>
+                            </div>
+                        )
+                    })}
+                    <p></p>
+                </div>
+            </div>
+        )
     }
 
     getControlSets(controls) {
