@@ -15,6 +15,7 @@ import {
     updateControls,
 } from "../../../../modeller/actions/ModellerActions";
 
+const _ = require('lodash');
 class RecommendationsExplorer extends React.Component {
 
     constructor(props) {
@@ -23,9 +24,11 @@ class RecommendationsExplorer extends React.Component {
         this.createLevelsMap = this.createLevelsMap.bind(this);
         this.renderContent = this.renderContent.bind(this);
         this.renderJson = this.renderJson.bind(this);
+        this.getSelectedRecommendations =this.getSelectedRecommendations.bind(this);
         this.renderRecommendations = this.renderRecommendations.bind(this);
         this.renderNoRecommendations = this.renderNoRecommendations.bind(this);
         this.renderControlSets = this.renderControlSets.bind(this);
+        this.getSortedConsequences = this.getSortedConsequences.bind(this);
         this.renderConsequences = this.renderConsequences.bind(this);
         this.getControlSets = this.getControlSets.bind(this);
         this.getRiskVector = this.getRiskVector.bind(this);
@@ -36,23 +39,57 @@ class RecommendationsExplorer extends React.Component {
         this.updateThreat = this.updateThreat.bind(this);
         this.applyRecommendation = this.applyRecommendation.bind(this);
 
-        this.state = {
-            updatingControlSets: {}
+        const sortDefaults = {
+            column: 'riskValue', //main sortBy column (indicated by caret)
+            direction: 'desc', //main sortBy direction (indicated by caret)
+            columns: ['riskValue', 'label'], //initial sort columns (for _.orderBy function)
+            directions: ['desc', 'asc'] //initial sort directions (for _.orderBy function)
         }
 
+        this.state = {
+            selected_recommendations: [],
+            sortedConsequences: {},
+            sortDefaults: {...sortDefaults},
+            updatingControlSets: {}
+        }
     }
 
     componentWillReceiveProps(nextProps) {
         let levelsMap = this.state.levelsMap;
+        let selected_recommendations = this.state.selected_recommendations;
+        let sortedConsequences = this.state.sortedConsequences;
 
         if (!this.props.model.levels && nextProps.model.levels) {
             levelsMap = this.createLevelsMap(nextProps.model.levels);
         }
 
+        if (_.isEmpty(this.props.recommendations) && !_.isEmpty(nextProps.recommendations)) {
+            console.log("Received recommendations");
+            sortedConsequences = {}; //initialise map
+            let recommendations = nextProps.recommendations.recommendations || [];
+            selected_recommendations = this.getSelectedRecommendations(recommendations);
+            selected_recommendations.forEach(rec => {
+                let consequences = this.getSortedConsequences(rec.state.consequences);
+                sortedConsequences[rec.identifier] = consequences;
+            });
+        }
+
         this.setState({...this.state,
+            selected_recommendations: selected_recommendations,
+            sortedConsequences: sortedConsequences,
             updatingControlSets: {},
             levelsMap: levelsMap
         });
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        // Need to re-render if the window order has changed,
+        // or if recommendations have arrived
+        return !!( (nextProps.windowOrder != this.props.windowOrder) ||
+             (_.isEmpty(this.props.recommendations) && !_.isEmpty(nextProps.recommendations)) ||
+             (_.isEmpty(this.state.updatingControlSets) && !_.isEmpty(nextState.updatingControlSets)) ||
+             (!_.isEmpty(this.state.updatingControlSets) && _.isEmpty(nextState.updatingControlSets))
+        );
     }
 
     createLevelsMap(levels) {
@@ -79,6 +116,8 @@ class RecommendationsExplorer extends React.Component {
         if (!this.props.show) {
             return null;
         }
+
+        console.log("render recommendations");
 
         return (
             <Explorer
@@ -118,13 +157,8 @@ class RecommendationsExplorer extends React.Component {
         )
     }
 
-    renderRecommendations(report) {
-        if (jQuery.isEmptyObject(report)) {
-            return null;
-        }
-
+    getSelectedRecommendations(recommendations) {
         let max_recommendations = Constants.MAX_RECOMMENDATIONS; //max number to display
-        let recommendations = report.recommendations || [];
         let selected_recommendations = [];
 
         recommendations.forEach(rec => {
@@ -136,6 +170,17 @@ class RecommendationsExplorer extends React.Component {
         //Select recommendations from the top of the list, up to the max number
         selected_recommendations = recommendations.slice(0, max_recommendations);
 
+        return selected_recommendations;
+    }
+
+    renderRecommendations(report) {
+        if (jQuery.isEmptyObject(report)) {
+            return null;
+        }
+
+        let recommendations = report.recommendations || [];
+        let max_recommendations = Constants.MAX_RECOMMENDATIONS; //max number to display
+        let selected_recommendations = this.state.selected_recommendations;
         let csgAssets = this.props.csgAssets;
 
         return (
@@ -155,7 +200,7 @@ class RecommendationsExplorer extends React.Component {
                         let reccsgs = rec.controlStrategies;
                         let riskVectorString = this.getRiskVectorString(rec.state.riskVector);
                         let riskLevel = this.getHighestRiskLevel(rec.state.riskVector);
-                        let consequences = rec.state.consequences;
+                        let consequences = this.state.sortedConsequences[id];
                         let csgsByName = new Map();
 
                         reccsgs.forEach((reccsg) => {
@@ -234,9 +279,41 @@ class RecommendationsExplorer extends React.Component {
         );
     }
 
-    renderConsequences(consequences) {
-        let levels = this.props.model.levels["Likelihood"];
+    //Get sorted consequences from a recommendation
+    getSortedConsequences(recConsequences) {
         let levelsMap = this.state.levelsMap ? this.state.levelsMap : {};
+
+        let consequences = recConsequences.map((consequence, index) => {
+            let impact = levelsMap[consequence.impact];
+            let likelihood = levelsMap[consequence.likelihood];
+            let risk = levelsMap[consequence.risk];
+
+            return {
+                'uri': consequence.uri,
+                'label': consequence.label,
+                'asset': consequence.asset.label,
+                'impact': impact,
+                'impactValue': impact.value,
+                'likelihood': likelihood,
+                'likelihoodValue': likelihood.value,
+                'risk': risk,
+                'riskValue': risk.value
+            }
+        });
+        
+        let sortedConsequences = _.orderBy(consequences, this.state.sortDefaults.columns, this.state.sortDefaults.directions);
+
+        return sortedConsequences;
+    }
+
+    renderConsequences(consequences) {
+        if (!consequences) {
+            return null;
+        }
+
+        let impactLevels = this.props.model.levels["ImpactLevel"];
+        let likelihoodLevels = this.props.model.levels["Likelihood"];
+        let riskLevels = this.props.model.levels["RiskLevel"];
 
         return (
             <div>
@@ -262,14 +339,14 @@ class RecommendationsExplorer extends React.Component {
                         let selected = false; //TODO
                         let active = true; //TODO
 
-                        let impact = levelsMap[consequence.impact];
-                        let impactRender = getRenderedLevelText(levels, impact);
+                        let impact = consequence.impact;
+                        let impactRender = getRenderedLevelText(impactLevels, impact);
 
-                        let likelihood = levelsMap[consequence.likelihood];
-                        let likelihoodRender = getRenderedLevelText(levels, likelihood);
+                        let likelihood = consequence.likelihood;
+                        let likelihoodRender = getRenderedLevelText(likelihoodLevels, likelihood);
 
-                        let risk = levelsMap[consequence.risk];
-                        let riskRender = getRenderedLevelText(levels, risk);
+                        let risk = consequence.risk;
+                        let riskRender = getRenderedLevelText(riskLevels, risk);
                 
                         return (
                             <div key={index + 1} className={
@@ -280,7 +357,7 @@ class RecommendationsExplorer extends React.Component {
                                     {consequence.label}
                                 </span>
                                 <span className="misbehaviour col-xs-3">
-                                    {consequence.asset.label}
+                                    {consequence.asset}
                                 </span>
                                 <span className="likelihood col-xs-1">
                                     {impactRender}
