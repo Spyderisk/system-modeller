@@ -83,9 +83,13 @@ class RecommendationsExplorer extends React.Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        // Need to re-render if the window order has changed,
-        // or if recommendations have arrived
-        return !!( (nextProps.windowOrder != this.props.windowOrder) ||
+        // Need to re-render if: 
+        // one or more controls have changed,
+        // window order has changed,
+        // recommendations have arrived
+        return !!( 
+             (!this.props.controlsUpdated && nextProps.controlsUpdated) ||
+             (this.props.windowOrder != nextProps.windowOrder) ||
              (_.isEmpty(this.props.recommendations) && !_.isEmpty(nextProps.recommendations)) ||
              (_.isEmpty(this.state.updatingControlSets) && !_.isEmpty(nextState.updatingControlSets)) ||
              (!_.isEmpty(this.state.updatingControlSets) && _.isEmpty(nextState.updatingControlSets))
@@ -512,6 +516,7 @@ function shouldExpandRecommendationsNode(level) {
 RecommendationsExplorer.propTypes = {
     model: PropTypes.object,
     controlSets: PropTypes.object,
+    controlsUpdated: PropTypes.bool,
     csgAssets: PropTypes.object,
     selectedAsset: PropTypes.object,
     isActive: PropTypes.bool, // is in front of other panels

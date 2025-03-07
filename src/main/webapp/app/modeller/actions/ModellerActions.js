@@ -1390,6 +1390,10 @@ export function updateControlOnAsset(modelId, assetId, updatedControl) {
     };
 
     return function (dispatch) {
+        dispatch({
+            type: instr.UPDATE_CONTROLS,
+            payload: false
+        });
         axiosInstance.put("/models/" + modelId + "/assets/" + assetId + "/control", updatedCS)
             .then((response) => {
                 dispatch({
@@ -1422,6 +1426,10 @@ export function updateControlCoverageOnAsset(modelId, assetId, updatedControl) {
     };
     
     return function (dispatch) {
+        dispatch({
+            type: instr.UPDATE_CONTROLS,
+            payload: false
+        });
         axiosInstance.put("/models/" + modelId + "/assets/" + assetId + "/control", updatedCS)
             .then((response) => {
                 dispatch({
@@ -1478,6 +1486,10 @@ export function updateControls(modelId, controls, proposed, workInProgress, cont
     };
     
     return function (dispatch) {
+        dispatch({
+            type: instr.UPDATE_CONTROLS,
+            payload: false
+        });
         axiosInstance
             .put("/models/" + modelId + "/assets/controls", controlsUpdateRequest)
             .then((response) => {
