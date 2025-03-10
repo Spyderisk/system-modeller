@@ -84,10 +84,12 @@ class RecommendationsExplorer extends React.Component {
 
     shouldComponentUpdate(nextProps, nextState) {
         // Need to re-render if: 
+        // show state has changed
         // one or more controls have changed,
         // window order has changed,
         // recommendations have arrived
         return !!( 
+             (this.props.show != nextProps.show) ||
              (!this.props.controlsUpdated && nextProps.controlsUpdated) ||
              (this.props.windowOrder != nextProps.windowOrder) ||
              (_.isEmpty(this.props.recommendations) && !_.isEmpty(nextProps.recommendations)) ||
