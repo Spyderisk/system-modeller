@@ -22,6 +22,7 @@ class RecommendationsExplorer extends React.Component {
         super(props);
 
         this.createLevelsMap = this.createLevelsMap.bind(this);
+        this.createPackagesMap = this.createPackagesMap.bind(this);
         this.renderContent = this.renderContent.bind(this);
         this.renderJson = this.renderJson.bind(this);
         this.getSelectedRecommendations =this.getSelectedRecommendations.bind(this);
@@ -56,11 +57,13 @@ class RecommendationsExplorer extends React.Component {
 
     componentWillReceiveProps(nextProps) {
         let levelsMap = this.state.levelsMap;
+        let packagesMap = this.state.packagesMap;
         let selected_recommendations = this.state.selected_recommendations;
         let sortedConsequences = this.state.sortedConsequences;
 
         if (!this.props.model.levels && nextProps.model.levels) {
             levelsMap = this.createLevelsMap(nextProps.model.levels);
+            packagesMap = this.createPackagesMap(nextProps.model.misbehaviourSets);
         }
 
         if (_.isEmpty(this.props.recommendations) && !_.isEmpty(nextProps.recommendations)) {
@@ -78,7 +81,8 @@ class RecommendationsExplorer extends React.Component {
             selected_recommendations: selected_recommendations,
             sortedConsequences: sortedConsequences,
             updatingControlSets: {},
-            levelsMap: levelsMap
+            levelsMap: levelsMap,
+            packagesMap: packagesMap
         });
     }
 
@@ -105,6 +109,30 @@ class RecommendationsExplorer extends React.Component {
         this.addLevels(levelsMap, levels["RiskLevel"]);
 
         return levelsMap;
+    }
+
+    createPackagesMap(misbehaviourSets) {
+        //TODO: get this info via REST API. The following is for testing purposes only
+        let domainPackagesMap = {
+            "domain#AbsenceOfDiagnosis": "package#PatientHarms",
+            "domain#AbsenceOfTreatment": "package#PatientHarms",
+            "domain#DelayedDiagnosis": "package#PatientHarms",
+            "domain#DelayedTreatment": "package#PatientHarms",
+            "domain#InappropriateTreatment": "package#PatientHarms",
+            "domain#Misdiagnosis": "package#PatientHarms",
+        }
+
+        let packagesMap = {};
+
+        Object.values(misbehaviourSets).map((ms) => {
+            let msuri = ms.uri.replace(Constants.URI_PREFIX, "");
+            let muri = ms.misbehaviour.replace(Constants.URI_PREFIX, "");
+            let packge = domainPackagesMap[muri];
+            if (!packge) packge = "package#Default";
+            packagesMap[msuri] = packge;
+        });
+
+        return packagesMap;
     }
 
     addLevels(levelsMap, levels) {
@@ -288,8 +316,10 @@ class RecommendationsExplorer extends React.Component {
     //Get sorted consequences from a recommendation
     getSortedConsequences(recConsequences) {
         let levelsMap = this.state.levelsMap ? this.state.levelsMap : {};
+        let packagesMap = this.state.packagesMap ? this.state.packagesMap : {};
 
         let consequences = recConsequences.map((consequence, index) => {
+            let packge = packagesMap[consequence.uri];
             let impact = levelsMap[consequence.impact];
             let likelihood = levelsMap[consequence.likelihood];
             let risk = levelsMap[consequence.risk];
@@ -303,7 +333,8 @@ class RecommendationsExplorer extends React.Component {
                 'likelihood': likelihood,
                 'likelihoodValue': likelihood.value,
                 'risk': risk,
-                'riskValue': risk.value
+                'riskValue': risk.value,
+                'package': packge
             }
         });
         
@@ -345,6 +376,12 @@ class RecommendationsExplorer extends React.Component {
                         let selected = false; //TODO
                         let active = true; //TODO
 
+                        let packge = consequence.package;
+
+                        //TODO: make the following more generic, i.e not refer to patient harms specifically
+                        let isHarm = (packge === 'package#PatientHarms');
+                        let fontWeight = isHarm ? "800" : "400"; 
+
                         let impact = consequence.impact;
                         let impactRender = getRenderedLevelText(impactLevels, impact);
 
@@ -359,10 +396,10 @@ class RecommendationsExplorer extends React.Component {
                                 `row misbehaviour-item misbehaviour-${active ? "active" : "inactive"} ` +
                                 `detail-info ${selected ? "selected-row" : "row-hover"}`
                             }>
-                                <span className="misbehaviour col-xs-3">
+                                <span className="misbehaviour col-xs-3" style={{ fontWeight: fontWeight }}>
                                     {consequence.label}
                                 </span>
-                                <span className="misbehaviour col-xs-3">
+                                <span className="misbehaviour col-xs-3" style={{ fontWeight: fontWeight }}>
                                     {consequence.asset}
                                 </span>
                                 <span className="likelihood col-xs-1">
