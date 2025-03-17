@@ -69,10 +69,21 @@ class RecommendationsExplorer extends React.Component {
         if (_.isEmpty(this.props.recommendations) && !_.isEmpty(nextProps.recommendations)) {
             console.log("Received recommendations");
             sortedConsequences = {}; //initialise map
+
+            let currentconsequences = nextProps.recommendations.current.consequences;
+            let consequences = this.getSortedConsequences(currentconsequences);
+
+            // Create map of consequence URI to current consequence
+            let currentConsequencesMap = {};
+            consequences.forEach(cons => {
+                currentConsequencesMap[cons.uri] = cons;
+            });
+
             let recommendations = nextProps.recommendations.recommendations || [];
+
             selected_recommendations = this.getSelectedRecommendations(recommendations);
             selected_recommendations.forEach(rec => {
-                let consequences = this.getSortedConsequences(rec.state.consequences);
+                let consequences = this.getSortedConsequences(rec.state.consequences, currentConsequencesMap);
                 sortedConsequences[rec.identifier] = consequences;
             });
         }
@@ -271,7 +282,7 @@ class RecommendationsExplorer extends React.Component {
                                         />
                                         <p style={{marginTop: "10px"}}>Controls to enable</p>
                                         {this.renderControlSets(rec.controls)}
-                                        <p style={{marginTop: "5px", marginBottom: "0px"}}>
+                                        <p style={{marginTop: "5px", marginBottom: "10px"}}>
                                             <OverlayTrigger delayShow={Constants.TOOLTIP_DELAY} placement="right"
                                                 overlay={<Tooltip id={"risklevel-tooltip-" + id} className={"tooltip-overlay"}>
                                                     <strong>{applyButtonTooltipText}</strong></Tooltip>}>
@@ -314,7 +325,7 @@ class RecommendationsExplorer extends React.Component {
     }
 
     //Get sorted consequences from a recommendation
-    getSortedConsequences(recConsequences) {
+    getSortedConsequences(recConsequences, currentConsequencesMap) {
         let levelsMap = this.state.levelsMap ? this.state.levelsMap : {};
         let packagesMap = this.state.packagesMap ? this.state.packagesMap : {};
 
@@ -323,6 +334,34 @@ class RecommendationsExplorer extends React.Component {
             let impact = levelsMap[consequence.impact];
             let likelihood = levelsMap[consequence.likelihood];
             let risk = levelsMap[consequence.risk];
+            let arrow, icon, color;
+
+            if (currentConsequencesMap) {
+                let currentCons = currentConsequencesMap[consequence.uri];
+
+                // Here, if the currentCons is not in the list, we assume that its risk value its very low
+                let currentRisk = currentCons ? currentCons.risk.value : 0;
+
+                // Determine direction and color of arrow icon,
+                // depending on whether the risk has increased or decreased
+                if (risk.value > currentRisk) {
+                    icon = "fa-long-arrow-up";
+                    color = "red";
+                }
+                else if (risk.value < currentRisk) {
+                    icon = "fa-long-arrow-down";
+                    color = "green";
+                }
+                else {
+                    icon = "fa-long-arrow-right";
+                    color = "blue";
+                }
+
+                arrow = {
+                    'icon': icon,
+                    'color': color,
+                }
+            }
 
             return {
                 'uri': consequence.uri,
@@ -334,6 +373,7 @@ class RecommendationsExplorer extends React.Component {
                 'likelihoodValue': likelihood.value,
                 'risk': risk,
                 'riskValue': risk.value,
+                'arrow': arrow,
                 'package': packge
             }
         });
@@ -378,10 +418,6 @@ class RecommendationsExplorer extends React.Component {
 
                         let packge = consequence.package;
 
-                        //TODO: make the following more generic, i.e not refer to patient harms specifically
-                        let isHarm = (packge === 'package#PatientHarms');
-                        let fontWeight = isHarm ? "800" : "400"; 
-
                         let impact = consequence.impact;
                         let impactRender = getRenderedLevelText(impactLevels, impact);
 
@@ -390,16 +426,35 @@ class RecommendationsExplorer extends React.Component {
 
                         let risk = consequence.risk;
                         let riskRender = getRenderedLevelText(riskLevels, risk);
-                
+
+                        // Color the package icon according to whether it is above acceptable threshold
+                        // TODO: configure the threshold (currently hardwired to 2 = Medium)
+                        let color = consequence.riskValue > 2 ? "red" : "green";
+
+                        //TODO: make the following more generic, i.e not refer to patient harms specifically
+                        let isHarm = (packge === 'package#PatientHarms');
+                        let symbol;
+
+                        if (isHarm) {
+                            symbol = <span className="fa fa-ambulance threat-icon" style={{backgroundColor: color, color: "white"}}/>;
+                        }
+                        else {
+                            symbol = <span className="fa fa-exclamation-triangle threat-icon" style={{backgroundColor: color, color: "white"}}/>;
+                        }
+
+                        let arrowClass = "fa " + consequence.arrow.icon;
+                        let arrowColor = consequence.arrow.color;
+                        let arrow = <span className={arrowClass} style={{backgroundColor: "white", color: {arrowColor}}}/>;
+
                         return (
                             <div key={index + 1} className={
                                 `row misbehaviour-item misbehaviour-${active ? "active" : "inactive"} ` +
                                 `detail-info ${selected ? "selected-row" : "row-hover"}`
                             }>
-                                <span className="misbehaviour col-xs-3" style={{ fontWeight: fontWeight }}>
-                                    {consequence.label}
+                                <span className="misbehaviour col-xs-3">
+                                    {symbol} {arrow} {consequence.label}
                                 </span>
-                                <span className="misbehaviour col-xs-3" style={{ fontWeight: fontWeight }}>
+                                <span className="misbehaviour col-xs-3">
                                     {consequence.asset}
                                 </span>
                                 <span className="likelihood col-xs-1">
