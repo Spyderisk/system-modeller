@@ -330,11 +330,34 @@ class RecommendationsExplorer extends React.Component {
         let packagesMap = this.state.packagesMap ? this.state.packagesMap : {};
 
         let consequences = recConsequences.map((consequence, index) => {
-            let packge = packagesMap[consequence.uri];
+            let packageUri = packagesMap[consequence.uri];
             let impact = levelsMap[consequence.impact];
             let likelihood = levelsMap[consequence.likelihood];
             let risk = levelsMap[consequence.risk];
-            let arrow, icon, color;
+            let packageIcon, packageTooltip, arrow, icon, arrowColor, tooltip;
+
+            //TODO: need to configure this
+            let isHarm = (packageUri === 'package#PatientHarms');
+
+            if (isHarm) {
+                packageIcon = "fa-ambulance"
+                packageTooltip = "Patient Harm";
+            }
+            else {
+                packageIcon = "fa-exclamation-triangle";
+                packageTooltip = "Cybersecurity";
+            }
+
+            // Color the package icon according to whether it is above acceptable threshold
+            // TODO: configure the threshold (currently hardwired to 2 = Medium)
+            let packageColor = risk.value > 2 ? "red" : "green";
+
+            let packge = {
+                'uri': packageUri,
+                'icon': packageIcon,
+                'color': packageColor,
+                'tooltip': packageTooltip
+            }
 
             if (currentConsequencesMap) {
                 let currentCons = currentConsequencesMap[consequence.uri];
@@ -346,20 +369,24 @@ class RecommendationsExplorer extends React.Component {
                 // depending on whether the risk has increased or decreased
                 if (risk.value > currentRisk) {
                     icon = "fa-long-arrow-up";
-                    color = "red";
+                    arrowColor = "red";
+                    tooltip = "Increased risk";
                 }
                 else if (risk.value < currentRisk) {
                     icon = "fa-long-arrow-down";
-                    color = "green";
+                    arrowColor = "green";
+                    tooltip = "Decreased risk";
                 }
                 else {
                     icon = "fa-long-arrow-right";
-                    color = "blue";
+                    arrowColor = "blue";
+                    tooltip = "Unchanged risk";
                 }
 
                 arrow = {
                     'icon': icon,
-                    'color': color,
+                    'color': arrowColor,
+                    'tooltip': tooltip
                 }
             }
 
@@ -373,8 +400,8 @@ class RecommendationsExplorer extends React.Component {
                 'likelihoodValue': likelihood.value,
                 'risk': risk,
                 'riskValue': risk.value,
-                'arrow': arrow,
-                'package': packge
+                'package': packge,
+                'arrow': arrow
             }
         });
         
@@ -416,8 +443,6 @@ class RecommendationsExplorer extends React.Component {
                         let selected = false; //TODO
                         let active = true; //TODO
 
-                        let packge = consequence.package;
-
                         let impact = consequence.impact;
                         let impactRender = getRenderedLevelText(impactLevels, impact);
 
@@ -427,23 +452,14 @@ class RecommendationsExplorer extends React.Component {
                         let risk = consequence.risk;
                         let riskRender = getRenderedLevelText(riskLevels, risk);
 
-                        // Color the package icon according to whether it is above acceptable threshold
-                        // TODO: configure the threshold (currently hardwired to 2 = Medium)
-                        let color = consequence.riskValue > 2 ? "red" : "green";
-
-                        //TODO: make the following more generic, i.e not refer to patient harms specifically
-                        let isHarm = (packge === 'package#PatientHarms');
-                        let symbol;
-
-                        if (isHarm) {
-                            symbol = <span className="fa fa-ambulance threat-icon" style={{backgroundColor: color, color: "white"}}/>;
-                        }
-                        else {
-                            symbol = <span className="fa fa-exclamation-triangle threat-icon" style={{backgroundColor: color, color: "white"}}/>;
-                        }
+                        let packageClass = "fa " + consequence.package.icon + " threat-icon";
+                        let packageColor = consequence.package.color;
+                        let packageTooltip = consequence.package.tooltip;
+                        let packageSymbol = <span className={packageClass} style={{backgroundColor: packageColor, color: "white"}}/>;
 
                         let arrowClass = "fa " + consequence.arrow.icon;
                         let arrowColor = consequence.arrow.color;
+                        let arrowTooltip = consequence.arrow.tooltip;
                         let arrow = <span className={arrowClass} style={{backgroundColor: "white", color: {arrowColor}}}/>;
 
                         return (
@@ -452,7 +468,29 @@ class RecommendationsExplorer extends React.Component {
                                 `detail-info ${selected ? "selected-row" : "row-hover"}`
                             }>
                                 <span className="misbehaviour col-xs-3">
-                                    {symbol} {arrow} {consequence.label}
+                                    <OverlayTrigger 
+                                        delayShow={Constants.TOOLTIP_DELAY} placement="left"
+                                        trigger={["hover"]}
+                                        overlay={
+                                            <Tooltip id={`package-${index + 1}-tooltip`} className="tooltip-overlay">
+                                                {packageTooltip}
+                                            </Tooltip>
+                                        }
+                                    >
+                                        {packageSymbol}
+                                    </OverlayTrigger>
+                                    <OverlayTrigger 
+                                        delayShow={Constants.TOOLTIP_DELAY} placement="left"
+                                        trigger={["hover"]}
+                                        overlay={
+                                            <Tooltip id={`arrow-${index + 1}-tooltip`} className="tooltip-overlay">
+                                                {arrowTooltip}
+                                            </Tooltip>
+                                        }
+                                    >
+                                        {arrow}
+                                    </OverlayTrigger>
+                                    &nbsp;{consequence.label}
                                 </span>
                                 <span className="misbehaviour col-xs-3">
                                     {consequence.asset}
