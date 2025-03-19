@@ -379,7 +379,7 @@ class RecommendationsExplorer extends React.Component {
                 }
                 else {
                     icon = "fa-long-arrow-right";
-                    arrowColor = "blue";
+                    arrowColor = "black";
                     tooltip = "Unchanged risk";
                 }
 
@@ -460,7 +460,7 @@ class RecommendationsExplorer extends React.Component {
                         let arrowClass = "fa " + consequence.arrow.icon;
                         let arrowColor = consequence.arrow.color;
                         let arrowTooltip = consequence.arrow.tooltip;
-                        let arrow = <span className={arrowClass} style={{backgroundColor: "white", color: {arrowColor}}}/>;
+                        let arrow = <span className={arrowClass} style={{backgroundColor: "white", color: arrowColor}}/>;
 
                         return (
                             <div key={index + 1} className={
