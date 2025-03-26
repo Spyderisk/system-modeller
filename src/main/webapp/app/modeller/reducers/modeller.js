@@ -85,6 +85,7 @@ const modelState = {
     },
     misbehaviourTwas: {},
     csgAssets: {},
+    controlsUpdated: false,
     isMisbehaviourExplorerVisible: false,
     isMisbehaviourExplorerActive: false,
     isComplianceExplorerVisible: false,
@@ -1360,6 +1361,13 @@ export default function modeller(state = modelState, action) {
     }
 
     if (action.type === instr.UPDATE_CONTROLS) {
+        if (!action.payload) {
+            return {
+                ...state,
+                controlsUpdated: false
+            };
+        }
+        
         let controlsReset = action.payload.controlsReset ? action.payload.controlsReset : false;
         let controlsUpdate = action.payload.controlsUpdate;
         
@@ -1396,7 +1404,8 @@ export default function modeller(state = modelState, action) {
             },
             selectedAsset: {
                 ...state.selectedAsset,
-            }
+            },
+            controlsUpdated: true
         };
     }
 

@@ -289,6 +289,7 @@ class Modeller extends React.Component {
                 <RecommendationsExplorer
                     model={this.props.model}
                     controlSets={controlSetsMap}
+                    controlsUpdated={this.props.controlsUpdated}
                     csgAssets={this.props.csgAssets}
                     selectedAsset={this.props.selectedAsset}
                     isActive={this.props.isRecommendationsExplorerActive} // is window displayed at front
@@ -1142,6 +1143,7 @@ var mapStateToProps = function (state) {
         filters: state.modeller.filters,
         misbehaviourTwas: state.modeller.misbehaviourTwas,
         csgAssets: state.modeller.csgAssets,
+        controlsUpdated: state.modeller.controlsUpdated,
         isMisbehaviourExplorerVisible: state.modeller.isMisbehaviourExplorerVisible,
         isMisbehaviourExplorerActive: state.modeller.isMisbehaviourExplorerActive,
         isComplianceExplorerVisible: state.modeller.isComplianceExplorerVisible,
@@ -1200,6 +1202,7 @@ Modeller.propTypes = {
     filters: PropTypes.object,
     misbehaviourTwas: PropTypes.object,
     csgAssets: PropTypes.object,
+    controlsUpdated: PropTypes.bool,
     isControlExplorerVisible: PropTypes.bool,
     isControlExplorerActive: PropTypes.bool,
     isControlStrategyExplorerVisible: PropTypes.bool,
