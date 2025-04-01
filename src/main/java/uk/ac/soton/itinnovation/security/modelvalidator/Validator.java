@@ -161,9 +161,9 @@ public class Validator {
 
         progress.updateProgress(0.2, "Generating implicit assets/relationships");
         logger.info("Generating implicit assets/relationships");
-        calculateAssertedCardinalityConstraints();
         executeConstructionPatterns();
         deleteConstructionState();
+        calculateAssertedCardinalityConstraints();
 
         progress.updateProgress(0.4, "Generating asset trustworthiness attributes, behaviours and controls");
         logger.info("Generating asset trustworthiness attributes, behaviours and controls");
