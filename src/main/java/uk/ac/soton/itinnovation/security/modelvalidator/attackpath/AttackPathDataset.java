@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -158,9 +159,10 @@ public class AttackPathDataset {
             return;
         }
 
-        for (String msUri : misbehaviourAssertedImpact.keySet()) {
+        for (Entry<String, String> entry : misbehaviourAssertedImpact.entrySet()) {
+            String msUri = entry.getKey();
+            String impactLevel = entry.getValue();
             MisbehaviourSetDB ms = misbehaviourSets.get(msUri);
-            String impactLevel = misbehaviourAssertedImpact.get(msUri);
             ms.setImpactLevel(impactLevel);
         }
     }
