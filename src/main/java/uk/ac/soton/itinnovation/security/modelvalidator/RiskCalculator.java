@@ -118,6 +118,7 @@ public class RiskCalculator {
 
     private Map<String, MisbehaviourSetDB> entryPointMisbehaviour = new HashMap<>();                    // Map of system model MS associated with a TWAS, indexed by the TWAS URI
     private Map<String, String> misbehaviourTWAS = new HashMap<>();                                     // Map of system model TWAS URI associated with an MS, indexed by the MS URI
+    private Map<String, String> misbehaviourAssertedImpact = new HashMap<>();                           // Map of system model MS to its asserted impact level
 
     private Map<String, Set<String>> suppressedMisbehaviours = new HashMap<>();                         // Map of system model MS URIs suppressed by each CS, indexed by the CS URI
     private Map<String, Set<String>> triggeringMisbehaviours = new HashMap<>();                         // Map of system model MSs suppressed by each CS leading to side-effect triggering, indexed by the CS URI
@@ -191,6 +192,10 @@ public class RiskCalculator {
         final long endTime = System.currentTimeMillis();
         logger.info("RiskCalculator.RiskCalculator(IQuerierDB querier): execution time {} ms", endTime - startTime);
 
+    }
+
+    public Map<String, String> getMisbehaviourAssertedImpact() {
+        return misbehaviourAssertedImpact;
     }
 
     /* Create maps required by the risk calculation to find TWAS, MS and their relationship to roles
@@ -1034,7 +1039,13 @@ public class RiskCalculator {
     private void restoreDefaultLevels(){
         for(MisbehaviourSetDB ms : misbehaviourSets.values()){
             if(ms.getDefaultLevel() != null) {
+                // Save the asserted impact level for this misbehaviour
+                misbehaviourAssertedImpact.put(ms.getUri(), ms.getImpactLevel());
+
+                // Set impact level back to its default value
                 ms.setImpactLevel(ms.getDefaultLevel());
+
+                // Remove the default value
                 ms.setDefaultLevel(null);
             }
         }
