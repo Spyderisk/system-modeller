@@ -2287,7 +2287,16 @@ public class Validator {
         String sourcePopulation = fromAsset.getPopulation();
         String targetPopulation = toAsset.getPopulation();
 
+        if (sourcePopulation == null) {
+            logger.warn("sourcePopulation is null for asset: {}", fromAsset.getUri());
+            sourcePopulation = "domain#PopLevelSingleton";
+        }
 
+        if (targetPopulation == null) {
+            logger.warn("targetPopulation is null for asset: {}", toAsset.getUri());
+            targetPopulation = "domain#PopLevelSingleton";
+        }
+        
         int sourcePopulationLevel = poLevels.get(sourcePopulation).getLevelValue();
         int targetPopulationLevel = poLevels.get(targetPopulation).getLevelValue();
 
