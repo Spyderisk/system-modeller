@@ -1880,7 +1880,7 @@ paths:
           items:
             type: string
       responses:
-        "200":
+        "202":
           description: OK
           content:
             '*/*':
