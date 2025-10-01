@@ -467,6 +467,9 @@ public class Validator {
                     // Find the default average level and statistical distribution type
                     CASettingDB setting = querier.getCASetting(asset, avgControl);
                     Integer defaultLevel = twLevels.size()-1;
+                    LevelDB averageLevel;
+                    LevelDB inferredLevel;
+                    LevelDB adjustedLevel;
                     Boolean assertible = false;
                     Boolean independentLevels = false;
                     if (setting != null) {
@@ -485,9 +488,11 @@ public class Validator {
                     // Create the average coverage CS, and get any properties defined in the asserted graph
                     String uri = querier.generateControlSetUri(avgControl, asset);
                     ControlSetDB savg = new ControlSetDB();
+                    averageLevel = trustworthinessLevels.get(defaultLevel);
                     savg.setUri(uri);
                     savg.setControl(avgControl);
                     savg.setLocatedAt(asset.getUri());
+                    savg.setDefaultLevel(averageLevel.getUri());
                     ControlSetDB savgInput = querier.getControlSet(savg.getUri(), "system");
 
                     /* If the asset is non-singleton and the domain model specifies a full triplet is needed, create
@@ -503,6 +508,7 @@ public class Validator {
                         smin.setUri(uriMin);
                         smin.setControl(minControl);
                         smin.setLocatedAt(asset.getUri());
+                        smin.setDefaultLevel(querier.lookupLowestTWLevel(averageLevel, popLevel, independentLevels).getUri());
                         smin.setMinOf(savg.getUri());
                         savg.setHasMin(smin.getUri());
                         ControlSetDB sminInput = querier.getControlSet(smin.getUri(), "system");
@@ -514,6 +520,7 @@ public class Validator {
                         smax.setUri(uriMax);
                         smax.setControl(maxControl);
                         smax.setLocatedAt(asset.getUri());
+                        smin.setDefaultLevel(querier.lookupHighestTWLevel(averageLevel, popLevel, independentLevels).getUri());
                         smax.setMaxOf(savg.getUri());
                         savg.setHasMax(smax.getUri());
                         ControlSetDB smaxInput = querier.getControlSet(smax.getUri(), "system");
@@ -544,48 +551,54 @@ public class Validator {
                         Integer[] adjustedValues = querier.getAdjustedLevels(asset, defaultLevel, assertedValues);
 
                         // Now compare the levels and update asserted graph values and/or set inferred graph values
-                        LevelDB averageLevel = trustworthinessLevels.get(adjustedValues[1]); 
-                        LevelDB inferredLevel = null;
-                        LevelDB adjustedLevel = null;
+                        averageLevel = trustworthinessLevels.get(adjustedValues[1]); 
+                        inferredLevel = null;
+                        adjustedLevel = null;
 
                         if(assertedValues[0] != null) {
+                            // There is a lowest level in the asserted graph
                             if(adjustedValues[0] != assertedValues[0]) {
                                 // Need to modify the lowest level in the asserted graph
                                 adjustedLevel = trustworthinessLevels.get(adjustedValues[0]); 
                                 querier.updateCoverageLevel(adjustedLevel, smin, "system");
                             }
+                        } else {
+                            // Insert a calculated lowest value in the inferred graph
+                            if(adjustedValues[0] == null)
+                                adjustedValues[0] = querier.lookupLowestTWLevel(averageLevel, popLevel, independentLevels).getLevelValue();
+                            inferredLevel = trustworthinessLevels.get(adjustedValues[0]); 
+                            smin.setCoverageLevel(inferredLevel.getUri());
                         }
-                        // Insert a calculated lowest value in the inferred graph
-                        if(adjustedValues[0] == null)
-                            adjustedValues[0] = querier.lookupLowestTWLevel(averageLevel, popLevel, independentLevels).getLevelValue();
-                        inferredLevel = trustworthinessLevels.get(adjustedValues[0]); 
-                        smin.setCoverageLevel(inferredLevel.getUri());
 
                         if(assertedValues[1] != null) {
+                            // There is an average level in the asserted graph
                             if(adjustedValues[1] != assertedValues[1]) {
                                 // Need to modify the average level in the asserted graph
                                 adjustedLevel = trustworthinessLevels.get(adjustedValues[1]); 
                                 querier.updateCoverageLevel(adjustedLevel, savg, "system");
                             }
+                        } else {
+                            // Insert a default or constrained average value in the inferred graph
+                            if(adjustedValues[1] == null)
+                                adjustedValues[1] = defaultLevel;
+                            inferredLevel = trustworthinessLevels.get(adjustedValues[1]); 
+                            savg.setCoverageLevel(inferredLevel.getUri());
                         }
-                        // Insert a default or constrained average value in the inferred graph
-                        if(adjustedValues[1] == null)
-                            adjustedValues[1] = defaultLevel;
-                        inferredLevel = trustworthinessLevels.get(adjustedValues[1]); 
-                        savg.setCoverageLevel(inferredLevel.getUri());
 
                         if(assertedValues[2] != null) {
+                            // There is a highest level in the asserted graph
                             if(adjustedValues[2] != assertedValues[2]) {
                                 // Need to modify the highest level in the asserted graph
                                 adjustedLevel = trustworthinessLevels.get(adjustedValues[2]); 
                                 querier.updateCoverageLevel(adjustedLevel, smax, "system");
                             }
-                        } 
-                        // Insert a calculated highest value in the inferred graph
-                        if(adjustedValues[2] == null)
-                            adjustedValues[2] = querier.lookupHighestTWLevel(averageLevel, popLevel, independentLevels).getLevelValue();
-                        inferredLevel = trustworthinessLevels.get(adjustedValues[2]); 
-                        smax.setCoverageLevel(inferredLevel.getUri());
+                        } else {
+                            // Insert a calculated highest value in the inferred graph
+                            if(adjustedValues[2] == null)
+                                adjustedValues[2] = querier.lookupHighestTWLevel(averageLevel, popLevel, independentLevels).getLevelValue();
+                            inferredLevel = trustworthinessLevels.get(adjustedValues[2]); 
+                            smax.setCoverageLevel(inferredLevel.getUri());
+                        }
 
                         // Ensure the asserted graph proposed status is consistent across the triplet
                         Boolean enabled = proposedStatus[0] || proposedStatus[1] || proposedStatus[2];
@@ -687,12 +700,17 @@ public class Validator {
                     savg.setMisbehaviour(avgMisbehaviour);
                     savg.setLocatedAt(asset.getUri());
 
-                    /* Put the default impact level in the inferred graph, whether or not there is a user/
-                     * client specified impact level in the asserted graph. See note in issue #1364. */
+                    /* Put the default impact level in the inferred graph, as discussed in issue #255. */
                     if(setting != null) {
-                        savg.setImpactLevel(setting.getLevel());
+                        savg.setDefaultLevel(setting.getLevel());
                     } else {
-                        savg.setImpactLevel(minImpactLevel);
+                        savg.setDefaultLevel(minImpactLevel);
+                    }
+
+                    /* If there is no asserted impact level, use the default level */
+                    MisbehaviourSetDB savgInput = querier.getMisbehaviourSet(savg.getUri(), "system");
+                    if((savgInput == null) || (savgInput.getImpactLevel() == null)) {
+                        savg.setImpactLevel(savg.getDefaultLevel());
                     }
 
                     /* If the asset is non-singleton and the domain model specifies a full triplet is needed, create
@@ -711,9 +729,14 @@ public class Validator {
                         smin.setMinOf(savg.getUri());
                         savg.setHasMin(smin.getUri());
 
-                        /* Put the default impact level in the inferred graph, whether or not there is a user/
-                         * client specified impact level in the asserted graph. See note in issue #1364. */
-                        smin.setImpactLevel(minImpactLevel);
+                        /* Put the default impact level in the inferred graph, as discussed in issue #255. */
+                        smin.setDefaultLevel(minImpactLevel);
+
+                        /* If there is no asserted impact level, use the default level */
+                        MisbehaviourSetDB sminInput = querier.getMisbehaviourSet(smin.getUri(), "system");
+                        if((sminInput == null) || (sminInput.getImpactLevel() == null)) {
+                            smin.setImpactLevel(smin.getDefaultLevel());
+                        }
 
                         // Now save this MS in the map used to create threats, and via the querier
                         msThisAsset.put(smin.getMisbehaviour(), smin);
@@ -728,9 +751,14 @@ public class Validator {
                         smax.setMaxOf(savg.getUri());
                         savg.setHasMax(smax.getUri());
 
-                        /* Put the default impact level in the inferred graph, whether or not there is a user/
-                         * client specified impact level in the asserted graph. See note in issue #1364. */
-                        smax.setImpactLevel(minImpactLevel);
+                        /* Put the default impact level in the inferred graph, as discussed in issue #255. */
+                        smax.setDefaultLevel(minImpactLevel);
+
+                        /* If there is no asserted impact level, use the default level */
+                        MisbehaviourSetDB smaxInput = querier.getMisbehaviourSet(smax.getUri(), "system");
+                        if((smaxInput == null) || (smaxInput.getImpactLevel() == null)) {
+                            smax.setImpactLevel(smax.getDefaultLevel());
+                        }
 
                         // Now save this MS in the map used to create threats, and via the querier
                         msThisAsset.put(smax.getMisbehaviour(), smax);
@@ -798,6 +826,9 @@ public class Validator {
             Map<String, TrustworthinessAttributeSetDB> twasThisAsset = twasByAsset.computeIfAbsent(asset.getUri(), k -> new HashMap<>());
             String assetType = asset.getType();
             LevelDB popLevel = poLevels.get(asset.getPopulation());
+            LevelDB averageLevel;
+            LevelDB inferredLevel;
+            LevelDB adjustedLevel;
             for(String avgTWA : dssavg.values()){
                 // Check if the asset is a subtype of a TWA location - if yes, create a triplet
                 if(dsassets.get(avgTWA).contains(assetType)){
@@ -811,6 +842,7 @@ public class Validator {
                             independentLevels = setting.getIndependentLevels();
                         }
                     }
+                    averageLevel = trustworthinessLevels.get(defaultLevel);
 
                     // Create the average TWAS, and get any properties defined in the asserted graph
                     String uri = querier.generateTrustworthinessAttributeSetUri(avgTWA, asset);
@@ -818,6 +850,7 @@ public class Validator {
                     savg.setUri(uri);
                     savg.setTrustworthinessAttribute(avgTWA);
                     savg.setLocatedAt(asset.getUri());
+                    savg.setDefaultLevel(averageLevel.getUri());
                     TrustworthinessAttributeSetDB savgInput = querier.getTrustworthinessAttributeSet(savg.getUri(), "system");
 
                     /* If the asset is non-singleton and the domain model specifies a full triplet is needed, create
@@ -832,6 +865,7 @@ public class Validator {
                         smin.setUri(uriMin);
                         smin.setTrustworthinessAttribute(minTWA);
                         smin.setLocatedAt(asset.getUri());
+                        smin.setDefaultLevel(querier.lookupLowestTWLevel(averageLevel, popLevel, independentLevels).getUri());
                         smin.setMinOf(savg.getUri());
                         savg.setHasMin(smin.getUri());
                         TrustworthinessAttributeSetDB sminInput = querier.getTrustworthinessAttributeSet(smin.getUri(), "system");
@@ -843,6 +877,7 @@ public class Validator {
                         smax.setUri(uriMax);
                         smax.setTrustworthinessAttribute(maxTWA);
                         smax.setLocatedAt(asset.getUri());
+                        smax.setDefaultLevel(querier.lookupHighestTWLevel(averageLevel, popLevel, independentLevels).getUri());
                         smax.setMaxOf(savg.getUri());
                         savg.setHasMax(smax.getUri());
                         TrustworthinessAttributeSetDB smaxInput = querier.getTrustworthinessAttributeSet(smax.getUri(), "system");
@@ -863,48 +898,54 @@ public class Validator {
                         Integer[] adjustedValues = querier.getAdjustedLevels(asset, defaultLevel, assertedValues);
 
                         // Now compare the levels and update asserted graph values and/or set inferred graph values
-                        LevelDB averageLevel = trustworthinessLevels.get(adjustedValues[1]); 
-                        LevelDB inferredLevel = null;
-                        LevelDB adjustedLevel = null;
+                        averageLevel = trustworthinessLevels.get(adjustedValues[1]); 
+                        inferredLevel = null;
+                        adjustedLevel = null;
 
                         if(assertedValues[0] != null) {
+                            // There is a lowest level in the asserted graph
                             if(adjustedValues[0] != assertedValues[0]) {
                                 // Need to modify the lowest level in the asserted graph
                                 adjustedLevel = trustworthinessLevels.get(adjustedValues[0]); 
                                 querier.updateAssertedLevel(adjustedLevel, smin, "system");
                             }
+                        } else {
+                            // Insert a calculated lowest value in the inferred graph
+                            if(adjustedValues[0] == null)
+                                adjustedValues[0] = querier.lookupLowestTWLevel(averageLevel, popLevel, independentLevels).getLevelValue();
+                            inferredLevel = trustworthinessLevels.get(adjustedValues[0]); 
+                            smin.setAssertedLevel(inferredLevel.getUri());
                         }
-                        // Insert a calculated lowest value in the inferred graph
-                        if(adjustedValues[0] == null)
-                            adjustedValues[0] = querier.lookupLowestTWLevel(averageLevel, popLevel, independentLevels).getLevelValue();
-                        inferredLevel = trustworthinessLevels.get(adjustedValues[0]); 
-                        smin.setAssertedLevel(inferredLevel.getUri());
 
                         if(assertedValues[1] != null) {
+                            // There is an average level in the asserted graph
                             if(adjustedValues[1] != assertedValues[1]) {
                                 // Need to modify the average level in the asserted graph
                                 adjustedLevel = trustworthinessLevels.get(adjustedValues[1]); 
                                 querier.updateAssertedLevel(adjustedLevel, savg, "system");
                             }
+                        } else {
+                            // Insert a default or constrained average value in the inferred graph
+                            if(adjustedValues[1] == null)
+                                adjustedValues[1] = defaultLevel;
+                            inferredLevel = trustworthinessLevels.get(adjustedValues[1]); 
+                            savg.setAssertedLevel(inferredLevel.getUri());
                         }
-                        // Insert a default or constrained average value in the inferred graph
-                        if(adjustedValues[1] == null)
-                            adjustedValues[1] = defaultLevel;
-                        inferredLevel = trustworthinessLevels.get(adjustedValues[1]); 
-                        savg.setAssertedLevel(inferredLevel.getUri());
 
                         if(assertedValues[2] != null) {
+                            // There is a highest level in the asserted graph
                             if(adjustedValues[2] != assertedValues[2]) {
                                 // Need to modify the highest level in the asserted graph
                                 adjustedLevel = trustworthinessLevels.get(adjustedValues[2]); 
                                 querier.updateAssertedLevel(adjustedLevel, smax, "system");
                             }
-                        } 
-                        // Insert a calculated highest value in the inferred graph
-                        if(adjustedValues[2] == null)
-                            adjustedValues[2] = querier.lookupHighestTWLevel(averageLevel, popLevel, independentLevels).getLevelValue();
-                        inferredLevel = trustworthinessLevels.get(adjustedValues[2]); 
-                        smax.setAssertedLevel(inferredLevel.getUri());
+                        } else {
+                            // Insert a calculated highest value in the inferred graph
+                            if(adjustedValues[2] == null)
+                                adjustedValues[2] = querier.lookupHighestTWLevel(averageLevel, popLevel, independentLevels).getLevelValue();
+                            inferredLevel = trustworthinessLevels.get(adjustedValues[2]); 
+                            smax.setAssertedLevel(inferredLevel.getUri());
+                        }
 
                         // Store the new TWAS in the inferred graph, and save them in the map used later in threat creation
                         twasThisAsset.put(smin.getTrustworthinessAttribute(),smin);
@@ -916,8 +957,10 @@ public class Validator {
 
                     }
                     else {
-                        // Just put the default level into the inferred graph
-                        savg.setAssertedLevel(trustworthinessLevels.get(defaultLevel).getUri());
+                        // Just put the default level into the inferred graph if there is no asserted level
+                        if((savgInput == null) || (savgInput.getAssertedLevel() == null)) {
+                            savg.setAssertedLevel(trustworthinessLevels.get(defaultLevel).getUri());
+                        }
 
                         // Store the new TWAS in the inferred graph, and save them in the map used later in threat creation
                         twasThisAsset.put(savg.getTrustworthinessAttribute(),savg);
@@ -1051,6 +1094,7 @@ public class Validator {
                 ThreatDB systemThreatAvg = new ThreatDB();
                 systemThreatAvg.setUri(String.format("%s-%s", domainThreat.getUri().replace("domain#", "system#"),
                                                 threatMatchingPattern.getUri().replace("system#", "")));
+                systemThreatAvg.setId(systemThreatAvg.generateID());
                 systemThreatAvg.setLabel(String.format("%s_%s", domainThreat.getUri().replace("domain#", ""), 
                                                 threatMatchingPattern.getLabel()));
                 systemThreatAvg.setDescription(generateDescription(domainThreat.getDescription(), threatMatchingPattern));
@@ -1077,6 +1121,7 @@ public class Validator {
                     systemThreatMin = new ThreatDB();
                     systemThreatMin.setUri(String.format("%s-%s", domainThreatMinURI.replace("domain#", "system#"),
                                                     threatMatchingPattern.getUri().replace("system#", "")));
+                    systemThreatMin.setId(systemThreatMin.generateID());
                     systemThreatMin.setLabel(String.format("%s_%s", domainThreatMinURI.replace("domain#", ""),
                                                     threatMatchingPattern.getLabel()));
                     systemThreatMin.setDescription(generateDescription(domainThreat.getDescription(), threatMatchingPattern));
@@ -1106,6 +1151,7 @@ public class Validator {
                     systemThreatMax = new ThreatDB();
                     systemThreatMax.setUri(String.format("%s-%s", domainThreatMaxURI.replace("domain#", "system#"),
                                                     threatMatchingPattern.getUri().replace("system#", "")));
+                    systemThreatMax.setId(systemThreatMax.generateID());
                     systemThreatMax.setLabel(String.format("%s_%s", domainThreatMaxURI.replace("domain#", ""),
                                                     threatMatchingPattern.getLabel()));
                     systemThreatMax.setDescription(generateDescription(domainThreat.getDescription(), threatMatchingPattern));

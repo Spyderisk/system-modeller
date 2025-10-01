@@ -505,9 +505,6 @@ public class RiskCalculator {
             progress.updateProgress(0.8, "Calculating attack paths and effects");
             calculateAttackPaths();
 
-            // Restore default levels to the inferred graph
-            restoreDefaultLevels();
-
             // Save to the triple store if the user/client asked for that to be done
             if (saveResults) {
                 progress.updateProgress(0.9, "Saving risk calculation results");
@@ -588,7 +585,8 @@ public class RiskCalculator {
                         }
                     }
                 }
-    
+                LevelDB averageLevel = trustworthinessLevels.get(defaultLevel);
+
                 // Get data from the asserted graph for this TWAS
                 TrustworthinessAttributeSetDB twasavgInput = querier.getTrustworthinessAttributeSet(twasavg.getUri(), "system");
 
@@ -628,21 +626,25 @@ public class RiskCalculator {
                     }
 
                     // If there is no lowest or highest level assumed TW, calculate it from the average
-                    LevelDB averageLevel = trustworthinessLevels.get(adjustedValues[1]); 
+                    averageLevel = trustworthinessLevels.get(adjustedValues[1]); 
                     if(adjustedValues[0] == null)
                         adjustedValues[0] = querier.lookupLowestTWLevel(averageLevel, popLevel, independentLevels).getLevelValue();
                     if(adjustedValues[2] == null)
                         adjustedValues[2] = querier.lookupHighestTWLevel(averageLevel, popLevel, independentLevels).getLevelValue();
 
-                    // Now set the inferred graph asserted levels based on this
-                    twasmin.setAssertedLevel(trustworthinessLevels.get(adjustedValues[0]).getUri());
-                    twasavg.setAssertedLevel(averageLevel.getUri());
-                    twasmax.setAssertedLevel(trustworthinessLevels.get(adjustedValues[2]).getUri());
-
-                    // Now set the inferred levels based on that
-                    twasmin.setInferredLevel(twasmin.getAssertedLevel());
-                    twasavg.setInferredLevel(twasavg.getAssertedLevel());
-                    twasmax.setInferredLevel(twasmax.getAssertedLevel());
+                    // Now set the inferred graph inferred levels based on this
+                    twasmin.setInferredLevel(trustworthinessLevels.get(adjustedValues[0]).getUri());
+                    if(assertedValues[0] != null){
+                        twasmin.setAssertedLevel(twasmin.getInferredLevel());                        
+                    }
+                    twasavg.setInferredLevel(averageLevel.getUri());
+                    if(assertedValues[1] != null){
+                        twasavg.setAssertedLevel(twasavg.getInferredLevel());                        
+                    }
+                    twasmax.setInferredLevel(trustworthinessLevels.get(adjustedValues[2]).getUri());
+                    if(assertedValues[2] != null){
+                        twasmax.setAssertedLevel(twasmax.getInferredLevel());                        
+                    }
 
                     // Store the reinitialised TWAS in the inferred graph
                     querier.store(twasmin,"system-inf");
@@ -650,10 +652,13 @@ public class RiskCalculator {
                     querier.store(twasmax,"system-inf");
 
                 } else {                                                            // With an old domain model neither min nor max exists
-                    // This is an old domain model, just initialise from the asserted graph if required
-                    if(twasavgInput != null && twasavgInput.getAssertedLevel() != null)
-                        twasavg.setAssertedLevel(twasavgInput.getAssertedLevel());
-                    twasavg.setInferredLevel(twasavg.getAssertedLevel());
+                    // This is an old domain model, just initialise from the asserted graph or default, as required
+                    if(twasavgInput != null && twasavgInput.getAssertedLevel() != null) {
+                        twasavg.setInferredLevel(twasavgInput.getAssertedLevel());
+                    } else {
+                        twasavg.setAssertedLevel(averageLevel.getUri());
+                        twasavg.setInferredLevel(twasavg.getAssertedLevel());
+                    }
 
                     // Store the reinitialised TWAS in the inferred graph
                     querier.store(twasavg,"system-inf");
@@ -688,6 +693,7 @@ public class RiskCalculator {
                         independentLevels = false;
                     }
                 }
+                LevelDB averageLevel = trustworthinessLevels.get(defaultLevel);
 
                 // Get data from the asserted graph for this CS
                 ControlSetDB csavgInput = querier.getControlSet(csavg.getUri(), "system");
@@ -746,16 +752,33 @@ public class RiskCalculator {
                         logger.warn("...asserted graph levels (min, avg, max) were ({},{},{}), adjusted to ({},{},{})",
                                     assertedValues[0], assertedValues[1], assertedValues[2],
                                     adjustedValues[0], adjustedValues[1], adjustedValues[2]);
+                    
+                        if(assertedValues[0] != null && assertedValues[0] != adjustedValues[0]){
+                            logger.warn("Correcting worst case coverage level in asserted graph for control {} at asset {} to {}", 
+                                        csavg.getControl(), csavg.getLocatedAt(), trustworthinessLevels.get(adjustedValues[0]).getUri());
+                            querier.updateCoverageLevel(trustworthinessLevels.get(adjustedValues[0]), csminInput, "system");
+                        }
+                        if(assertedValues[0] != null && assertedValues[0] != adjustedValues[0]){
+                            logger.warn("Correcting average coverage level in asserted graph for control {} at asset {} to {}", 
+                                        csavg.getControl(), csavg.getLocatedAt(), trustworthinessLevels.get(adjustedValues[1]).getUri());
+                            querier.updateCoverageLevel(trustworthinessLevels.get(adjustedValues[0]), csavgInput, "system");
+                        }
+                        if(assertedValues[0] != null && assertedValues[0] != adjustedValues[0]){
+                            logger.warn("Correcting best case coverage level in asserted graph for control {} at asset {} to {}", 
+                                        csavg.getControl(), csavg.getLocatedAt(), trustworthinessLevels.get(adjustedValues[2]).getUri());
+                            querier.updateCoverageLevel(trustworthinessLevels.get(adjustedValues[0]), csmaxInput, "system");
+                        }
+
                     }
 
                     // If there is no lowest or highest level, calculate them from the average
-                    LevelDB averageLevel = trustworthinessLevels.get(adjustedValues[1]); 
+                    averageLevel = trustworthinessLevels.get(adjustedValues[1]); 
                     if(adjustedValues[0] == null)
                         adjustedValues[0] = querier.lookupLowestTWLevel(averageLevel, popLevel, independentLevels).getLevelValue();
                     if(adjustedValues[2] == null)
                         adjustedValues[2] = querier.lookupHighestTWLevel(averageLevel, popLevel, independentLevels).getLevelValue();
 
-                    // Now set the inferred graph asserted levels based on this
+                    // Now set the inferred graph levels based on this
                     csmin.setCoverageLevel(trustworthinessLevels.get(adjustedValues[0]).getUri());
                     csavg.setCoverageLevel(trustworthinessLevels.get(adjustedValues[1]).getUri());
                     csmax.setCoverageLevel(trustworthinessLevels.get(adjustedValues[2]).getUri());
