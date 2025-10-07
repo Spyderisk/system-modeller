@@ -904,28 +904,13 @@ public class RiskCalculator {
                 AssetDB asset = assets.get(msavg.getLocatedAt());
                 MADefaultSettingDB setting = querier.getMADefaultSetting(asset, msavg.getMisbehaviour());
 
-                // Temporarily save the inferred impact level
-                if(msavg.getImpactLevel() != null) {
-                    // Save the previous inferred graph value if there is one
-                    msavg.setDefaultLevel(msavg.getImpactLevel());
-                }
-                else if(setting != null) {
-                    // Save the default setting if there is one
-                    msavg.setDefaultLevel(setting.getLevel());
-                }
-                else {
-                    // Save the lowest impact level as a last resort
-                    msavg.setDefaultLevel(lowestImpact);
-                }
-
                 // Check if there is an impact level in the asserted graph, and if so, use it 
                 MisbehaviourSetDB msavgInput = querier.getMisbehaviourSet(msavg.getUri(), "system");
                 if(msavgInput != null && msavgInput.getImpactLevel() != null){
                     msavg.setImpactLevel(msavgInput.getImpactLevel());
                 } else {
-                    // If there is no level in the asserted graph, restore the saved level
+                    // If there is no level in the asserted graph, use the default level
                     msavg.setImpactLevel(msavg.getDefaultLevel());
-                    msavg.setDefaultLevel(null);
                 }
 
                 // Initialise the live object and save to the inferred graph
@@ -939,16 +924,6 @@ public class RiskCalculator {
                     // Get the lowest likelihood member of the triplet
                     MisbehaviourSetDB msmin = misbehaviourSets.get(msavg.getHasMin());
 
-                    // Temporarily save the inferred impact level
-                    if(msmin.getImpactLevel() != null) {
-                        // Save the previous inferred graph value if there is one
-                        msmin.setDefaultLevel(msmin.getImpactLevel());
-                    }
-                    else {
-                        // Save the lowest impact level otherwise
-                        msmin.setDefaultLevel(lowestImpact);
-                    }
-
                     // Check if there is an impact level in the asserted graph, and if so, use it 
                     MisbehaviourSetDB msminInput = querier.getMisbehaviourSet(msmin.getUri(), "system");
 
@@ -959,7 +934,6 @@ public class RiskCalculator {
                     else {
                         // If there is no level in the asserted graph, restore the saved level
                         msmin.setImpactLevel(msmin.getDefaultLevel());
-                        msmin.setDefaultLevel(null);
                     }
 
                     // Initialise the live object and save to the inferred graph
@@ -971,16 +945,6 @@ public class RiskCalculator {
                     // Get the highest likelihood member of the triplet
                     MisbehaviourSetDB msmax = misbehaviourSets.get(msavg.getHasMax());
 
-                    // Temporarily save the inferred impact level
-                    if(msmax.getImpactLevel() != null) {
-                        // Save the previous inferred graph value if there is one
-                        msmax.setDefaultLevel(msmax.getImpactLevel());
-                    }
-                    else {
-                        // Save the lowest impact level otherwise
-                        msmax.setDefaultLevel(lowestImpact);
-                    }
-                    
                     // Check if there is an impact level in the asserted graph, and if so, use it 
                     MisbehaviourSetDB msmaxInput = querier.getMisbehaviourSet(msmax.getUri(), "system");
                     if(msmaxInput != null && msmaxInput.getImpactLevel() != null) {
@@ -989,7 +953,6 @@ public class RiskCalculator {
                     else {
                         // If there is no level in the asserted graph, restore the saved level
                         msmax.setImpactLevel(msmax.getDefaultLevel());
-                        msmax.setDefaultLevel(null);
                     }
 
                     // Initialise the live object and save to the inferred graph
