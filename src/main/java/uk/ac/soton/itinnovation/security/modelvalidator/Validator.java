@@ -622,7 +622,9 @@ public class Validator {
                     }
                     else {
                         // Just put the default level into the inferred graph
-                        savg.setCoverageLevel(trustworthinessLevels.get(defaultLevel).getUri());
+                        if(savgInput == null || savgInput.getCoverageLevel() == null) {
+                            savg.setCoverageLevel(trustworthinessLevels.get(defaultLevel).getUri());
+                        }
 
                         // Store the new control set in the inferred graph and in the map used later to create CSGs
                         csThisAsset.put(savg.getControl(), savg);

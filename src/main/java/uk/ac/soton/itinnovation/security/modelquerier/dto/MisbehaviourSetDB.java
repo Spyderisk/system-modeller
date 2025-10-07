@@ -39,7 +39,6 @@ import lombok.ToString;
 @ToString(callSuper=true)
 public class MisbehaviourSetDB extends EntityDB {
 	public MisbehaviourSetDB(){
-		this.defaultLevel = null;
 		this.causedThreats = new ArrayList<>();
 		this.causedBy = new HashSet<>();
 	}
