@@ -634,31 +634,32 @@ public class RiskCalculator {
 
                     // Now set the inferred graph inferred levels based on this
                     twasmin.setInferredLevel(trustworthinessLevels.get(adjustedValues[0]).getUri());
-                    if(assertedValues[0] != null){
-                        twasmin.setAssertedLevel(twasmin.getInferredLevel());                        
-                    }
-                    twasavg.setInferredLevel(averageLevel.getUri());
-                    if(assertedValues[1] != null){
-                        twasavg.setAssertedLevel(twasavg.getInferredLevel());                        
-                    }
+                    twasavg.setInferredLevel(trustworthinessLevels.get(adjustedValues[1]).getUri());
                     twasmax.setInferredLevel(trustworthinessLevels.get(adjustedValues[2]).getUri());
-                    if(assertedValues[2] != null){
-                        twasmax.setAssertedLevel(twasmax.getInferredLevel());                        
-                    }
+
+                    // Now copy the inferred levels to the asserted (assumed) levels. Note that this will
+                    // mean the triples specifying the assumed level will be duplicated in the asserted and
+                    // inferred graphs, but it ensures every cached object has a value.
+                    twasmin.setAssertedLevel(twasmin.getInferredLevel());
+                    twasavg.setAssertedLevel(twasavg.getInferredLevel());
+                    twasmax.setAssertedLevel(twasmax.getInferredLevel());
 
                     // Store the reinitialised TWAS in the inferred graph
                     querier.store(twasmin,"system-inf");
                     querier.store(twasavg,"system-inf");
                     querier.store(twasmax,"system-inf");
 
-                } else {                                                            // With an old domain model neither min nor max exists
-                    // This is an old domain model, just initialise from the asserted graph or default, as required
+                } else {        // Min and max do not exist so this is an old domain model or a singleton asset class 
                     if(twasavgInput != null && twasavgInput.getAssertedLevel() != null) {
-                        twasavg.setInferredLevel(twasavgInput.getAssertedLevel());
+                        twasavg.setAssertedLevel(twasavgInput.getAssertedLevel());
                     } else {
                         twasavg.setAssertedLevel(averageLevel.getUri());
-                        twasavg.setInferredLevel(twasavg.getAssertedLevel());
                     }
+
+                    // Now copy the inferred levels to the asserted (assumed) levels. Note that this will
+                    // mean the triples specifying the assumed level will be duplicated in the asserted and
+                    // inferred graphs, but it ensures every cached object has a value.
+                    twasavg.setInferredLevel(twasavg.getAssertedLevel());
 
                     // Store the reinitialised TWAS in the inferred graph
                     querier.store(twasavg,"system-inf");
@@ -791,9 +792,15 @@ public class RiskCalculator {
                 } else {                                                            // With an old domain model neither min nor max exists
                     // This is an old domain model, just initialise from the asserted graph if required
                     if(csavgInput != null) {
-                        csavg.setProposed(csavgInput.isProposed());                    
-                        if(csavgInput.getCoverageLevel() != null)
-                            csavg.setCoverageLevel(csavgInput.getCoverageLevel());
+                        // Set the proposed status from the asserted graph (isProposed defaults to false)
+                        csavg.setProposed(csavgInput.isProposed());
+                    }
+                    if(csavgInput != null && csavgInput.getCoverageLevel() != null) {
+                        // Set the coverage level from the asserted graph
+                        csavg.setCoverageLevel(csavgInput.getCoverageLevel());
+                    } else {
+                        // Set the coverage level to the default level
+                        csavg.setCoverageLevel(averageLevel.getUri());
                     }
 
                     // Store the reinitialised CS in the inferred graph
