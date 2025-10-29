@@ -917,7 +917,12 @@ public class RiskCalculator {
                     msavg.setImpactLevel(msavgInput.getImpactLevel());
                 } else {
                     // If there is no level in the asserted graph, use the default level
-                    msavg.setImpactLevel(msavg.getDefaultLevel());
+                    if(msavg.getDefaultLevel()!=null) {
+                        msavg.setImpactLevel(msavg.getDefaultLevel());
+                    } else {
+                        logger.warn("MS {} has no default impact level", msavg.getUri());
+                        msavg.setImpactLevel(lowestImpact);
+                    }
                 }
 
                 // Initialise the live object and save to the inferred graph
@@ -940,7 +945,12 @@ public class RiskCalculator {
                     }
                     else {
                         // If there is no level in the asserted graph, restore the saved level
-                        msmin.setImpactLevel(msmin.getDefaultLevel());
+                        if(msmin.getDefaultLevel()!=null) {
+                            msmin.setImpactLevel(msmin.getDefaultLevel());
+                        } else {
+                            logger.warn("MS {} has no default impact level", msmin.getUri());
+                            msmin.setImpactLevel(lowestImpact);
+                        }
                     }
 
                     // Initialise the live object and save to the inferred graph
@@ -959,7 +969,12 @@ public class RiskCalculator {
                     }
                     else {
                         // If there is no level in the asserted graph, restore the saved level
-                        msmax.setImpactLevel(msmax.getDefaultLevel());
+                        if(msmax.getDefaultLevel()!=null) {
+                            msmax.setImpactLevel(msmax.getDefaultLevel());
+                        } else {
+                            logger.warn("MS {} has no default impact level", msmax.getUri());
+                            msmax.setImpactLevel(lowestImpact);
+                        }
                     }
 
                     // Initialise the live object and save to the inferred graph
@@ -2170,6 +2185,9 @@ public class RiskCalculator {
      * @param impact the input impact level
      * @param likelihood the input likelihood
      * @return the risk level based on the inputs
+     * 
+     * Note that the two inputs are passed by reference, and may not be null pointers,
+     * so test for that beforehand, if necessary.
      */
     private LevelDB lookupRiskLevel(LevelDB impact, LevelDB likelihood) {
         // Lookup tables for different impact, likelihood and risk level scales
@@ -2204,7 +2222,6 @@ public class RiskCalculator {
             { 0, 2, 3, 5, 5, 5}};
         
         int riskValue;
-
         int i = impact.getLevelValue();
         int l = likelihood.getLevelValue();
 

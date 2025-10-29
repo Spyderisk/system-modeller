@@ -684,6 +684,9 @@ public class Validator {
 
         // Get the fallback default level = lowest impact level
         String minImpactLevel = impactLevels.get(0).getUri();
+        if(minImpactLevel == null){
+            logger.warn("Domain model has no minimum impact level");
+        }
 
         // Get the system assets, and iterate over them creating their MisbehaviourSets
         Map<String,AssetDB> assets = querier.getAssets("system", "system-inf");
@@ -703,8 +706,13 @@ public class Validator {
                     savg.setLocatedAt(asset.getUri());
 
                     /* Put the default impact level in the inferred graph, as discussed in issue #255. */
-                    if(setting != null) {
-                        savg.setDefaultLevel(setting.getLevel());
+                    if(setting != null){
+                        if(setting.getLevel() != null) {
+                            savg.setDefaultLevel(setting.getLevel());
+                        } else {
+                            logger.warn("MADefaultSetting {} has no default impact level", setting.getUri());
+                            savg.setDefaultLevel(minImpactLevel);
+                        }
                     } else {
                         savg.setDefaultLevel(minImpactLevel);
                     }

@@ -1867,7 +1867,7 @@ public class SystemModelQuerier extends AModelQuerier {
 					}
 				}
 				else {
-					logger.warn("Coud not locate threat: {}", csgThreat);
+					logger.warn("Could not locate threat: {}", csgThreat);
 				}
 			}
 		}
