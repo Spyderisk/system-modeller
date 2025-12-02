@@ -2019,6 +2019,8 @@ public class Validator {
                     link.setLinksFrom(fromAssetUri);
                     link.setLinksTo(toAssetUri);
                     link.setLinkType(infLink.getLinkType());
+                    link.setCreatedByPattern(constructionPattern.getUri());
+                    
                     //asset.getLinks().add(link);
                     inferredLinks.add(link);
                 }
