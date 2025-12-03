@@ -37,4 +37,5 @@ public class CardinalityConstraintDB extends EntityDB {
 	private String linkType;
 	private Integer sourceCardinality;
 	private Integer targetCardinality;
+	private String createdByPattern;
 }
