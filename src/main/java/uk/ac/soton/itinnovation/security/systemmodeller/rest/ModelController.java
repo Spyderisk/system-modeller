@@ -1454,6 +1454,9 @@ public class ModelController {
             @RequestParam(defaultValue = "false") boolean normalOperations,
             @RequestParam List<String> targetURIs) {
 
+		modelId = modelId.replaceAll(PARAM_REGEX, "_");
+		targetURIs.replaceAll(s -> s.replaceAll(PARAM_REGEX, "_"));		
+
         logger.info("Calculating threat graph for model {}", modelId);
         logger.info(" with target URIs: {}, all-paths: {}, normal-operations: {} riskMode: {}",
                 targetURIs, allPaths, normalOperations, riskMode);
