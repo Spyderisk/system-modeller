@@ -198,6 +198,7 @@ public class AttackTree {
     private void backtrace(boolean computeLogic) {
 
         for (String targetUri : this.targetUris) {
+            targetUri = targetUri.replaceAll("[\n\r]", "_");
             logger.info("targetUri: {}", targetUri);
 
             AttackNode node = this.getOrCreateNode(targetUri, maxEndTime);
