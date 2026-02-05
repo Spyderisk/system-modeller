@@ -49,6 +49,7 @@ public class AttackNode {
     private AttackTree nodes;
     private boolean isTargetMS = false;
     private int id = -1;
+    private long maxEndTime;
 
     private LogicalExpression controlStrategies = null;
     private LogicalExpression controls = null;
@@ -165,13 +166,14 @@ public class AttackNode {
      * @param nodes
      * @param id 
      */
-    public AttackNode(String uri, AttackPathDataset apd, AttackTree nodes, int id) {
+    public AttackNode(String uri, AttackPathDataset apd, AttackTree nodes, int id, long maxEndTime) {
 
         this.apd = apd;
         this.uri = uri;
         this.nodes = nodes;
         this.isTargetMS = false;
         this.id = id;
+        this.maxEndTime = maxEndTime;
 
         /*
          * if the containing AttackTree defines a bound on the nodes to explore then we apply it here by discarding parent not in the bounding_urirefs set
@@ -369,6 +371,12 @@ public class AttackNode {
      */
     public InnerResult backtrace(Set<String> cPath, boolean computeLogic) throws TreeTraversalException, Exception {
 
+        long timeNow = System.currentTimeMillis();
+        boolean timedOut = timeNow > this.maxEndTime;
+        if (timedOut) {
+            throw new Exception("Attack path timed out");
+        }
+
         Set<String> currentPath = new HashSet<>();
 
         if (!cPath.isEmpty()) {
@@ -530,7 +538,7 @@ public class AttackNode {
                         + " └─>" + sortedCauses);
 
                 for (String parentUri : sortedCauses) {
-                    AttackNode parent = this.nodes.getOrCreateNode(parentUri);
+                    AttackNode parent = this.nodes.getOrCreateNode(parentUri, this.maxEndTime);
 
                     boolean success = true; // need this for try->except->ELSE* python equivalent
 
@@ -655,7 +663,7 @@ public class AttackNode {
                         + " └─>" + sortedCauses);
 
                 for (String parentUri : sortedCauses) {
-                    AttackNode parent = this.nodes.getOrCreateNode(parentUri);
+                    AttackNode parent = this.nodes.getOrCreateNode(parentUri, this.maxEndTime);
 
                     boolean success = true; // need this for try->except->else python equivalent
 

@@ -155,7 +155,7 @@ public class RecommendationTester extends TestCase {
 			RecommendationsAlgorithmConfig config = new RecommendationsAlgorithmConfig(querierDB, tester.getGraph("system"), "CURRENT",
                     true, "domain#RiskLevelMedium", null);
 			Integer recommendationsTimeoutSecs = 300; //5 min timeout
-			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(config, recommendationsTimeoutSecs);
+			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(config, recommendationsTimeoutSecs, 30);
 
 			reca.checkRequestedRiskCalculationMode("CURRENT");
 

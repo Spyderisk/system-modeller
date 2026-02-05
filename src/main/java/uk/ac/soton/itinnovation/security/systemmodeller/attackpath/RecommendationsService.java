@@ -52,6 +52,9 @@ public class RecommendationsService {
 	@Value("${recommendations.timeout.secs: 900}")
 	private Integer recommendationsTimeoutSecs;
 
+    @Value("${attackpath.timeout.secs: 30}")
+	private Integer attackPathTimeoutSecs;
+
     public void startRecommendationTask(String jobId, RecommendationsAlgorithmConfig config, Progress progress) {
 
         logger.debug("startRecommendationTask for {}", jobId);
@@ -66,7 +69,7 @@ public class RecommendationsService {
         logger.debug("rec entity saved for {}", recEntity.getId());
 
         try {
-			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(config, recommendationsTimeoutSecs);
+			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(config, recommendationsTimeoutSecs, this.attackPathTimeoutSecs);
 
             if (!reca.checkRiskCalculationMode(config.getRiskMode())) {
                 throw new RiskModeMismatchException();

@@ -171,6 +171,9 @@ public class ModelController {
     @Value("${knowledgebase.docs.query.url}")
     private String kbDocsQueryUrl;
 
+    @Value("${attackpath.timeout.secs: 10}")
+	private Integer attackPathTimeoutSecs;
+
 	private static final String VALIDATION = "Validation";
 	private static final String RISK_CALCULATION = "Risk calculation";
 	private static final String RECOMMENDATIONS = "Recommendations";
@@ -1473,7 +1476,7 @@ public class ModelController {
 
             logger.info("Calculating attack tree");
 
-            AttackPathAlgorithm apa = new AttackPathAlgorithm(querierDB);
+            AttackPathAlgorithm apa = new AttackPathAlgorithm(querierDB, this.attackPathTimeoutSecs);
 
             if (!apa.checkTargetUris(targetURIs)) {
                 logger.error("Invalid target URIs set");

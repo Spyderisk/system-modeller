@@ -81,9 +81,10 @@ public class RecommendationsAlgorithm {
 
     // used to implement timeout
     private Integer maxSecs;
+    private Integer maxAttackPathSecs;
     private long maxEndTime;
 
-    public RecommendationsAlgorithm(RecommendationsAlgorithmConfig config, Integer maxSecs) {
+    public RecommendationsAlgorithm(RecommendationsAlgorithmConfig config, Integer maxSecs, Integer attackPathTimeoutSecs) {
         this.querier = config.getQuerier();
         this.modelId = config.getModelId();
         this.riskMode = config.getRiskMode();
@@ -92,6 +93,7 @@ public class RecommendationsAlgorithm {
         this.report = new RecommendationReportDTO();
         this.localSearch = config.getLocalSearch();
         this.maxSecs = maxSecs;
+        this.maxAttackPathSecs = attackPathTimeoutSecs;
 
         initializeAttackPathDataset();
     }
@@ -179,7 +181,9 @@ public class RecommendationsAlgorithm {
 
         try {
             final long startTime = System.currentTimeMillis();
-            attackTree = new AttackTree(targetUris, isFutureRisk, shortestPath, apd);
+            final long maxAttackPathEndTime = startTime + maxAttackPathSecs * 1000; 
+            
+            attackTree = new AttackTree(targetUris, isFutureRisk, shortestPath, apd, maxAttackPathEndTime);
             attackTree.stats();
             final long endTime = System.currentTimeMillis();
             logger.info("AttackPathAlgorithm.calculateAttackTree: execution time {} ms", endTime - startTime);

@@ -28,14 +28,12 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.ac.soton.itinnovation.security.model.system.RiskCalculationMode;
 import uk.ac.soton.itinnovation.security.modelquerier.IQuerierDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.ModelDB;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.Graph;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.dto.TreeJsonDoc;
-import uk.ac.soton.itinnovation.security.systemmodeller.semantics.ModelObjectsHelper;
 
 public class AttackPathAlgorithm {
     private static final Logger logger = LoggerFactory.getLogger(AttackPathAlgorithm.class);
@@ -43,16 +41,16 @@ public class AttackPathAlgorithm {
     private AttackPathDataset apd;
     private IQuerierDB querier;
 
-    @Autowired
-    private ModelObjectsHelper modelObjectsHelper;
+	private Integer attackPathTimeoutSecs;
 
-    public AttackPathAlgorithm(IQuerierDB querier) {
+    public AttackPathAlgorithm(IQuerierDB querier, Integer attackPathTimeoutSecs) {
 
         this.querier = querier;
+        this.attackPathTimeoutSecs = attackPathTimeoutSecs;
 
         final long startTime = System.currentTimeMillis();
 
-        logger.debug("STARTING Shortest Path Attack algortithm ...");
+        logger.info("STARTING Shortest Path Attack algortithm ...");
         
         apd = new AttackPathDataset(querier);
 
@@ -117,10 +115,21 @@ public class AttackPathAlgorithm {
         TreeJsonDoc doc = null;
         try {
             final long startTime = System.currentTimeMillis();
+            Integer maxSecs = this.attackPathTimeoutSecs;
+            long maxEndTime;
+
+            // Determine end time for attack path (i.e. after which no further iterations will be completed)
+            if (maxSecs != null) {
+                maxEndTime = startTime + maxSecs * 1000;
+            }
+            else {
+                logger.warn("No attackpath.timeout.secs property set. Not setting timeout...");
+                maxEndTime = Long.MAX_VALUE;
+            }
 
             // calculate attack tree, allPath dictates one or two backtrace
             // runs which is represented in AttackTree as boolean shortestPath
-            AttackTree attackTree = new AttackTree(targetUris, isFutureRisk, !allPaths, apd);
+            AttackTree attackTree = new AttackTree(targetUris, isFutureRisk, !allPaths, apd, maxEndTime);
 
             doc = attackTree.calculateTreeJsonDoc(allPaths, normalOperations);
 
