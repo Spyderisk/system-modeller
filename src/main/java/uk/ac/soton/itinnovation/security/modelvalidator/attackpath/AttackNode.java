@@ -374,7 +374,7 @@ public class AttackNode {
         long timeNow = System.currentTimeMillis();
         boolean timedOut = timeNow > this.maxEndTime;
         if (timedOut) {
-            throw new Exception("Attack path timed out");
+            throw new TimeoutException("Attack path timed out");
         }
 
         Set<String> currentPath = new HashSet<>();

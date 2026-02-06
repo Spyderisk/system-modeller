@@ -129,6 +129,7 @@ import uk.ac.soton.itinnovation.security.systemmodeller.util.SecureUrlHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.RecommendationRepository;
 import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService;
 import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService.RecommendationJobState;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.TimeoutException;
 
 /**
  * Includes all operations of the Model Controller Service.
@@ -1498,6 +1499,9 @@ public class ModelController {
             logger.error("Threat graph calculation failed due to invalid misbehaviour set", e);
             throw e;
         } catch (BadRequestErrorException e) {
+            throw e;
+        } catch (TimeoutException e) {
+            logger.error("Attack path failed: " + e.getMessage());
             throw e;
         } catch (Exception e) {
             logger.error("Threat path failed due to an error", e);

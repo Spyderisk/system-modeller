@@ -187,6 +187,9 @@ public class RecommendationsAlgorithm {
             attackTree.stats();
             final long endTime = System.currentTimeMillis();
             logger.info("AttackPathAlgorithm.calculateAttackTree: execution time {} ms", endTime - startTime);
+        } catch (TimeoutException e) {
+            logger.error("Timeout error in calculateAttackTree: " + e.getMessage());
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -139,7 +139,8 @@ public class AttackPathAlgorithm {
 
             final long endTime = System.currentTimeMillis();
             logger.info("AttackPathAlgorithm.calculateAttackTreeDoc: execution time {} ms", endTime - startTime);
-
+        } catch (TimeoutException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

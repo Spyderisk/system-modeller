@@ -208,12 +208,14 @@ public class AttackTree {
                 long timeNow = System.currentTimeMillis();
                 boolean timedOut = timeNow > this.maxEndTime;
                 if (timedOut) {
-                    throw new Exception("Attack path timed out");
+                    throw new TimeoutException("Attack path timed out");
                 }
 
                 node.backtrace(new HashSet<String>(), computeLogic);
             } catch (TreeTraversalException e) {
                 logger.error("Tree traversal error: " + e.getMessage(), e);
+            } catch (TimeoutException e) {
+                throw e;
             } catch (Exception e) {
                 logger.error("Exception error: " + e.getMessage());
             }
