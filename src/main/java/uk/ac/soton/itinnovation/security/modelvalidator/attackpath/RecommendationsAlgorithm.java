@@ -620,7 +620,8 @@ public class RecommendationsAlgorithm {
                     logger.debug("  └──> csgs: {}", csgDTO.getUri().substring(7));
                 }
             }
-
+        } catch (TimeoutException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -114,6 +114,7 @@ import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.BadRequestErrorException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.BadRiskModeException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.InternalServerErrorException;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.ServiceTimeoutException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.MisbehaviourSetInvalidException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.ModelException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.ModelInvalidException;
@@ -1502,7 +1503,7 @@ public class ModelController {
             throw e;
         } catch (TimeoutException e) {
             logger.error("Attack path failed: " + e.getMessage());
-            throw e;
+            throw new ServiceTimeoutException("Attack path calculation timed out");
         } catch (Exception e) {
             logger.error("Threat path failed due to an error", e);
             throw new InternalServerErrorException(
@@ -1612,6 +1613,9 @@ public class ModelController {
                 success = true;
             } catch (BadRequestErrorException e) {
                 throw e;
+			} catch (TimeoutException e) {
+				logger.error("Recommendations failed: " + e.getMessage());
+				throw new ServiceTimeoutException("Recommendations calculation timed out");
             } catch (Exception e) {
                 logger.error("Recommendations failed due to an error", e);
                 throw new InternalServerErrorException(
@@ -1619,7 +1623,14 @@ public class ModelController {
             } finally {
                 //always reset the flags even if the risk calculation crashes
                 model.finishedCalculatingRisks(success, rcMode, false);
-                progress.updateProgress(1.0, "Recommendations complete");
+				if (success) {
+					logger.info("Calling updateProgress(1.0, \"Recommendations complete\")");
+					progress.updateProgress(1.0, "Recommendations complete");
+				}
+				else {
+					logger.info("Calling updateProgress(1.0, \"Recommendations failed\")");
+					progress.updateProgress(1.0, "Recommendations failed");
+				}
             }
 			return true;
 		}, 0, TimeUnit.SECONDS);

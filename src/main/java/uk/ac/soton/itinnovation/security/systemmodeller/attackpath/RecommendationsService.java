@@ -36,6 +36,7 @@ import java.util.Optional;
 import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithm;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithmConfig;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.TimeoutException;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.RecommendationEntity;
 import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.RecommendationRepository;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations.RecommendationReportDTO;
@@ -83,6 +84,10 @@ public class RecommendationsService {
 
             RecommendationJobState finalState = reca.getFinalState() != null ? reca.getFinalState() : RecommendationJobState.FINISHED;
             updateRecommendationJobState(jobId, finalState);
+        } catch (TimeoutException e) {
+            logger.info("Updating jobs state to " + RecommendationJobState.TIMED_OUT);
+            updateRecommendationJobState(jobId, RecommendationJobState.TIMED_OUT);
+            throw e;
         } catch (Exception e) {
             updateRecommendationJobState(jobId, RecommendationJobState.FAILED);
         }
