@@ -92,7 +92,7 @@ class MisbehaviourAccordion extends React.Component {
     }
 
     getAttackPath() {
-        this.setState({...this.state, showAttackPathModal: false});
+        this.setState({showAttackPathModal: false});
         this.props.dispatch(getThreatGraph(
             this.props.model.id,
             this.props.model.riskCalculationMode,
@@ -100,7 +100,7 @@ class MisbehaviourAccordion extends React.Component {
     }
 
     getRecommendations() {
-        this.setState({...this.state, showRecommendationsModal: false});
+        this.setState({showRecommendationsModal: false});
         this.props.dispatch(getRecommendations(
             this.props.model.id,
             this.props.model.riskCalculationMode,
@@ -149,7 +149,7 @@ class MisbehaviourAccordion extends React.Component {
             }
             else {
                 //Misbehaviour risk level is less than or equal to acceptable value: get confirmation first
-                this.setState({...this.state, showAttackPathModal: true});
+                this.setState({showAttackPathModal: true});
             }
         };
 
@@ -164,7 +164,7 @@ class MisbehaviourAccordion extends React.Component {
             }
             else {
                 //Misbehaviour risk level is less than or equal to acceptable value: get confirmation first
-                this.setState({...this.state, showRecommendationsModal: true});
+                this.setState({showRecommendationsModal: true});
             }
         };
 
@@ -327,11 +327,11 @@ class MisbehaviourAccordion extends React.Component {
                     </Panel.Collapse>
                 </Panel>
                 <ConfirmAttackPathModal show={this.state.showAttackPathModal} 
-                    onHide={() => this.setState({...this.state, showAttackPathModal: false})}
+                    onHide={() => this.setState({showAttackPathModal: false})}
                     getAttackPath={this.getAttackPath}
                 />
                 <ConfirmRecommendationsModal show={this.state.showRecommendationsModal} 
-                    onHide={() => this.setState({...this.state, showRecommendationsModal: false})}
+                    onHide={() => this.setState({showRecommendationsModal: false})}
                     getRecommendations={this.getRecommendations}
                 />
             </div>
