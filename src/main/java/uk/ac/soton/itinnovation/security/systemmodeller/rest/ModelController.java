@@ -1502,7 +1502,7 @@ public class ModelController {
         } catch (BadRequestErrorException e) {
             throw e;
         } catch (TimeoutException e) {
-            logger.error("Attack path failed: " + e.getMessage());
+            logger.error("Attack path failed: {}", e.getMessage());
             throw new ServiceTimeoutException("Attack path calculation timed out");
         } catch (Exception e) {
             logger.error("Threat path failed due to an error", e);
@@ -1614,7 +1614,7 @@ public class ModelController {
             } catch (BadRequestErrorException e) {
                 throw e;
 			} catch (TimeoutException e) {
-				logger.error("Recommendations failed: " + e.getMessage());
+				logger.error("Recommendations failed: {}", e.getMessage());
 				throw new ServiceTimeoutException("Recommendations calculation timed out");
             } catch (Exception e) {
                 logger.error("Recommendations failed due to an error", e);

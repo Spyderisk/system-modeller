@@ -85,7 +85,7 @@ public class RecommendationsService {
             RecommendationJobState finalState = reca.getFinalState() != null ? reca.getFinalState() : RecommendationJobState.FINISHED;
             updateRecommendationJobState(jobId, finalState);
         } catch (TimeoutException e) {
-            logger.info("Updating jobs state to " + RecommendationJobState.TIMED_OUT);
+            logger.info("Updating jobs state to {}", RecommendationJobState.TIMED_OUT);
             updateRecommendationJobState(jobId, RecommendationJobState.TIMED_OUT);
             throw e;
         } catch (Exception e) {

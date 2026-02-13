@@ -213,11 +213,11 @@ public class AttackTree {
 
                 node.backtrace(new HashSet<String>(), computeLogic);
             } catch (TreeTraversalException e) {
-                logger.error("Tree traversal error: " + e.getMessage(), e);
+                logger.error("Tree traversal error: {}", e.getMessage(), e);
             } catch (TimeoutException e) {
                 throw e;
             } catch (Exception e) {
-                logger.error("Exception error: " + e.getMessage());
+                logger.error("Exception error: {}", e.getMessage());
             }
         }
     }
