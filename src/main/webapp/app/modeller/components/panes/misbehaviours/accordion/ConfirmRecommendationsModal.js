@@ -24,8 +24,7 @@ class ConfirmRecommendationsModal extends Component {
                 <Modal.Footer>
                     <Button
                         onClick={this.props.onHide}
-                        autoFocus
-                        ref="cancelButton">
+                        autoFocus>
                         Cancel
                     </Button>
                     <Button
