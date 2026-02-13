@@ -157,11 +157,12 @@ public class RecommendationsAlgorithm {
      * @return the attack graph
      */
     private AttackTree calculateAttackTree() {
+        logger.info("Acceptable risk level: {}", acceptableRiskLevel);
         if (!targetMS.isEmpty()) {
-            logger.debug("caclulate attack tree using MS list: {}", targetMS);
+            logger.info("Calculate attack tree using MS list: {}", targetMS);
             return calculateAttackTree(targetMS);
         } else {
-            logger.debug("caclulate attack tree using acceptable risk level: {}", acceptableRiskLevel);
+            logger.info("Calculate attack tree using acceptable risk level: {}", acceptableRiskLevel);
             return calculateAttackTree(apd.filterMisbehavioursByRiskLevel(acceptableRiskLevel));
         }
     }
