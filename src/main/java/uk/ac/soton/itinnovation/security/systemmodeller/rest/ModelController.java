@@ -1614,8 +1614,7 @@ public class ModelController {
             } catch (BadRequestErrorException e) {
                 throw e;
 			} catch (TimeoutException e) {
-				logger.error("Recommendations failed: {}", e.getMessage());
-				throw new ServiceTimeoutException("Recommendations calculation timed out");
+				throw new ServiceTimeoutException("Recommendations calculation timed out", e);
             } catch (Exception e) {
                 logger.error("Recommendations failed due to an error", e);
                 throw new InternalServerErrorException(

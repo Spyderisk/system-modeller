@@ -30,4 +30,7 @@ public class TimeoutException extends RuntimeException {
 		super(message);
 	}
 
+    public TimeoutException(String message, Exception e) {
+		super(message, e);
+	}
 }

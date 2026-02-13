@@ -37,4 +37,8 @@ public class ServiceTimeoutException extends RuntimeException {
     public ServiceTimeoutException(String message) {
         super(message);
     }
+
+    public ServiceTimeoutException(String message, Exception e) {
+        super(message, e);
+    }
 } 
