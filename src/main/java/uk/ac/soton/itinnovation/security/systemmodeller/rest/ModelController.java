@@ -114,6 +114,7 @@ import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.BadRequestErrorException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.BadRiskModeException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.InternalServerErrorException;
+import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.ServiceTimeoutException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.MisbehaviourSetInvalidException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.ModelException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.ModelInvalidException;
@@ -129,6 +130,7 @@ import uk.ac.soton.itinnovation.security.systemmodeller.util.SecureUrlHelper;
 import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.RecommendationRepository;
 import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService;
 import uk.ac.soton.itinnovation.security.systemmodeller.attackpath.RecommendationsService.RecommendationJobState;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.TimeoutException;
 
 /**
  * Includes all operations of the Model Controller Service.
@@ -170,6 +172,9 @@ public class ModelController {
 
     @Value("${knowledgebase.docs.query.url}")
     private String kbDocsQueryUrl;
+
+    @Value("${attackpath.timeout.secs: 10}")
+	private Integer attackPathTimeoutSecs;
 
 	private static final String VALIDATION = "Validation";
 	private static final String RISK_CALCULATION = "Risk calculation";
@@ -1451,6 +1456,9 @@ public class ModelController {
             @RequestParam(defaultValue = "false") boolean normalOperations,
             @RequestParam List<String> targetURIs) {
 
+		modelId = modelId.replaceAll(PARAM_REGEX, "_");
+		targetURIs.replaceAll(s -> s.replaceAll(PARAM_REGEX, "_"));		
+
         logger.info("Calculating threat graph for model {}", modelId);
         logger.info(" with target URIs: {}, all-paths: {}, normal-operations: {} riskMode: {}",
                 targetURIs, allPaths, normalOperations, riskMode);
@@ -1473,7 +1481,7 @@ public class ModelController {
 
             logger.info("Calculating attack tree");
 
-            AttackPathAlgorithm apa = new AttackPathAlgorithm(querierDB);
+            AttackPathAlgorithm apa = new AttackPathAlgorithm(querierDB, this.attackPathTimeoutSecs);
 
             if (!apa.checkTargetUris(targetURIs)) {
                 logger.error("Invalid target URIs set");
@@ -1493,6 +1501,9 @@ public class ModelController {
             throw e;
         } catch (BadRequestErrorException e) {
             throw e;
+        } catch (TimeoutException e) {
+            logger.error("Attack path failed: {}", e.getMessage());
+            throw new ServiceTimeoutException("Attack path calculation timed out");
         } catch (Exception e) {
             logger.error("Threat path failed due to an error", e);
             throw new InternalServerErrorException(
@@ -1602,6 +1613,8 @@ public class ModelController {
                 success = true;
             } catch (BadRequestErrorException e) {
                 throw e;
+			} catch (TimeoutException e) {
+				throw new ServiceTimeoutException("Recommendations calculation timed out", e);
             } catch (Exception e) {
                 logger.error("Recommendations failed due to an error", e);
                 throw new InternalServerErrorException(
@@ -1609,7 +1622,14 @@ public class ModelController {
             } finally {
                 //always reset the flags even if the risk calculation crashes
                 model.finishedCalculatingRisks(success, rcMode, false);
-                progress.updateProgress(1.0, "Recommendations complete");
+				if (success) {
+					logger.info("Calling updateProgress(1.0, \"Recommendations complete\")");
+					progress.updateProgress(1.0, "Recommendations complete");
+				}
+				else {
+					logger.info("Calling updateProgress(1.0, \"Recommendations failed\")");
+					progress.updateProgress(1.0, "Recommendations failed");
+				}
             }
 			return true;
 		}, 0, TimeUnit.SECONDS);

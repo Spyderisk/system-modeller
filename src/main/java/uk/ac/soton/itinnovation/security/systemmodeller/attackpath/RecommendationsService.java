@@ -36,6 +36,7 @@ import java.util.Optional;
 import uk.ac.soton.itinnovation.security.modelvalidator.Progress;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithm;
 import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.RecommendationsAlgorithmConfig;
+import uk.ac.soton.itinnovation.security.modelvalidator.attackpath.TimeoutException;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.RecommendationEntity;
 import uk.ac.soton.itinnovation.security.systemmodeller.mongodb.RecommendationRepository;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.dto.recommendations.RecommendationReportDTO;
@@ -52,6 +53,9 @@ public class RecommendationsService {
 	@Value("${recommendations.timeout.secs: 900}")
 	private Integer recommendationsTimeoutSecs;
 
+    @Value("${attackpath.timeout.secs: 30}")
+	private Integer attackPathTimeoutSecs;
+
     public void startRecommendationTask(String jobId, RecommendationsAlgorithmConfig config, Progress progress) {
 
         logger.debug("startRecommendationTask for {}", jobId);
@@ -66,7 +70,7 @@ public class RecommendationsService {
         logger.debug("rec entity saved for {}", recEntity.getId());
 
         try {
-			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(config, recommendationsTimeoutSecs);
+			RecommendationsAlgorithm reca = new RecommendationsAlgorithm(config, recommendationsTimeoutSecs, this.attackPathTimeoutSecs);
 
             if (!reca.checkRiskCalculationMode(config.getRiskMode())) {
                 throw new RiskModeMismatchException();
@@ -80,6 +84,10 @@ public class RecommendationsService {
 
             RecommendationJobState finalState = reca.getFinalState() != null ? reca.getFinalState() : RecommendationJobState.FINISHED;
             updateRecommendationJobState(jobId, finalState);
+        } catch (TimeoutException e) {
+            logger.info("Updating jobs state to {}", RecommendationJobState.TIMED_OUT);
+            updateRecommendationJobState(jobId, RecommendationJobState.TIMED_OUT);
+            throw e;
         } catch (Exception e) {
             updateRecommendationJobState(jobId, RecommendationJobState.FAILED);
         }
