@@ -2,6 +2,8 @@ import React from "react";
 import PropTypes from "prop-types";
 import {OverlayTrigger, Panel, Tooltip, Button, ButtonToolbar} from "react-bootstrap";
 import ThreatsPanel from "../../details/accordion/panels/ThreatsPanel";
+import ConfirmRecommendationsModal from "./ConfirmRecommendationsModal";
+import ConfirmAttackPathModal from "./ConfirmAttackPathModal";
 import * as Constants from "../../../../../common/constants.js";
 import {getThreatGraph, getRecommendations} from "../../../../actions/ModellerActions";
 
@@ -22,13 +24,38 @@ class MisbehaviourAccordion extends React.Component {
         this.updateThreats = this.updateThreats.bind(this);
         this.getRootCausesDesc = this.getRootCausesDesc.bind(this);
         this.getDirectEffectsDesc = this.getDirectEffectsDesc.bind(this);
+        this.getAttackPath = this.getAttackPath.bind(this);
+        this.getRecommendations = this.getRecommendations.bind(this);
+
+        const acceptableRiskLevel = MisbehaviourAccordion.getAcceptableRiskLevel(props);
 
         this.state = {
+            acceptableRiskLevel: acceptableRiskLevel,
             expanded: {
                 threats: true,
                 causes: true
-            }
+            },
+            showAttackPathModal: false,
+            showRecommendationsModal: false
         }
+    }
+
+    static getAcceptableRiskLevel(props) {
+        let riskLevels = props.model.levels.RiskLevel;
+        let riskLevelsMap = MisbehaviourAccordion.getRiskLevelsMap(riskLevels);
+        let acceptableRiskLevelShortUri = Constants.ACCEPTABLE_RISK_LEVEL;
+        let acceptableRiskLevelUri = Constants.URI_PREFIX + acceptableRiskLevelShortUri;
+        let acceptableRiskLevel = riskLevelsMap[acceptableRiskLevelUri];
+
+        return acceptableRiskLevel;
+    }
+
+    static getRiskLevelsMap(levelsArray) {
+        let levelsMap = {};
+        levelsArray.forEach(level => {
+            levelsMap[level.uri] = level;
+        });
+        return levelsMap;
     }
 
     // Uncomment/modify if props or state needs to be checked
@@ -64,6 +91,24 @@ class MisbehaviourAccordion extends React.Component {
         </p>
     }
 
+    getAttackPath() {
+        this.setState({showAttackPathModal: false});
+        this.props.dispatch(getThreatGraph(
+            this.props.model.id,
+            this.props.model.riskCalculationMode,
+            this.props.selectedMisbehaviour.misbehaviour.uri));
+    }
+
+    getRecommendations() {
+        this.setState({showRecommendationsModal: false});
+        this.props.dispatch(getRecommendations(
+            this.props.model.id,
+            this.props.model.riskCalculationMode,
+            Constants.ACCEPTABLE_RISK_LEVEL,
+            this.props.selectedMisbehaviour.misbehaviour.uri,
+            false));
+    }
+
     render() {
         let {expanded} = this.state;
         let misbehaviourThreats = this.getMisbehaviourThreats();
@@ -94,21 +139,33 @@ class MisbehaviourAccordion extends React.Component {
         let loadingAttackPath = this.props.selectedMisbehaviour.loadingAttackPath;
 
         const handleThreatGraphButtonClick = () => {
-            this.props.dispatch(getThreatGraph(
-                this.props.model.id,
-                this.props.model.riskCalculationMode,
-                this.props.selectedMisbehaviour.misbehaviour.uri));
+            //Check risk value against acceptable value and call getRecommendations or open confirm dialog
+            let misbRiskLevel = this.props.selectedMisbehaviour.misbehaviour.riskLevel;
+            let acceptableRiskLevel = this.state.acceptableRiskLevel;
+
+            if (misbRiskLevel.value > acceptableRiskLevel.value) {
+                //Misbehaviour risk level is higher than acceptable value: get attack path
+                this.getAttackPath();
+            }
+            else {
+                //Misbehaviour risk level is less than or equal to acceptable value: get confirmation first
+                this.setState({showAttackPathModal: true});
+            }
         };
 
-        let acceptableRiskLevel = Constants.ACCEPTABLE_RISK_LEVEL;
-
         const handleRecommendationsButtonClick = () => {
-            this.props.dispatch(getRecommendations(
-                this.props.model.id,
-                this.props.model.riskCalculationMode,
-                acceptableRiskLevel,
-                this.props.selectedMisbehaviour.misbehaviour.uri,
-                false));
+            //Check risk value against acceptable value and call getRecommendations or open confirm dialog
+            let misbRiskLevel = this.props.selectedMisbehaviour.misbehaviour.riskLevel;
+            let acceptableRiskLevel = this.state.acceptableRiskLevel;
+
+            if (misbRiskLevel.value > acceptableRiskLevel.value) {
+                //Misbehaviour risk level is higher than acceptable value: get recommendations
+                this.getRecommendations();
+            }
+            else {
+                //Misbehaviour risk level is less than or equal to acceptable value: get confirmation first
+                this.setState({showRecommendationsModal: true});
+            }
         };
 
         return (
@@ -269,6 +326,14 @@ class MisbehaviourAccordion extends React.Component {
                         </Panel.Body>
                     </Panel.Collapse>
                 </Panel>
+                <ConfirmAttackPathModal show={this.state.showAttackPathModal} 
+                    onHide={() => this.setState({showAttackPathModal: false})}
+                    getAttackPath={this.getAttackPath}
+                />
+                <ConfirmRecommendationsModal show={this.state.showRecommendationsModal} 
+                    onHide={() => this.setState({showRecommendationsModal: false})}
+                    getRecommendations={this.getRecommendations}
+                />
             </div>
         );
     }

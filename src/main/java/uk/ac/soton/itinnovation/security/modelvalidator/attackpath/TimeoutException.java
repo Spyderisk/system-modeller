@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////
 //
-// © University of Southampton IT Innovation Centre, 2019
+// © University of Southampton IT Innovation Centre, 2026
 //
 // Copyright in this software belongs to University of Southampton
 // IT Innovation Centre of Gamma House, Enterprise Road,
@@ -17,25 +17,20 @@
 // PURPOSE, except where stated in the Licence Agreement supplied with
 // the software.
 //
-//      Created By :            Lee Mason
-//      Created Date :          21/08/2019
-//      Created for Project :   RESTASSURED
+//      Created By:				Ken Meacham
+//      Created Date:			2026-02-6
+//      Created for Project :   THEMIS
 //
 /////////////////////////////////////////////////////////////////////////
-package uk.ac.soton.itinnovation.security.modelquerier.dto;
+package uk.ac.soton.itinnovation.security.modelvalidator.attackpath;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+public class TimeoutException extends RuntimeException {
 
-@Data
-@EqualsAndHashCode(callSuper=true)
-@ToString(callSuper=true)
-public class CardinalityConstraintDB extends EntityDB {
-	private String linksFrom;
-	private String linksTo;
-	private String linkType;
-	private Integer sourceCardinality;
-	private Integer targetCardinality;
-	private String createdByPattern;
+    public TimeoutException(String message) {
+		super(message);
+	}
+
+    public TimeoutException(String message, Exception e) {
+		super(message, e);
+	}
 }

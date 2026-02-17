@@ -159,7 +159,7 @@ public class AttackPathTester extends TestCase {
 		try {
 			logger.info("Gathering datasets for the attack graph");
 
-			AttackPathAlgorithm apa = new AttackPathAlgorithm(querierDB);
+			AttackPathAlgorithm apa = new AttackPathAlgorithm(querierDB, 30);
 
 			List<String> targetUris = new ArrayList<>();
 			targetUris.add("system#MS-LossOfAuthenticity-a40e98cc");
