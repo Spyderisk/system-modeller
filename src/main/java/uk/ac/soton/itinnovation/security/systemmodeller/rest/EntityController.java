@@ -625,6 +625,42 @@ public class EntityController {
         }
     }
 
+    /**
+     * Retrieves all domain model control strategies for a specific system model.
+     *
+     * @param modelId the String representation of the model object to seacrh
+     * @return A JSON representation of a control strategy object map
+     * @throws InternalServerErrorException if an error occurs during report generation
+     */
+    @RequestMapping(value = "/models/{modelId}/entity/domain/controlStrategies", method = RequestMethod.GET)
+    public ResponseEntity<Map<String, ControlStrategyDB>> getEntityDomainControlStrategies(@PathVariable String modelId) {
+
+        logger.info("Get domain Control Strategies for model {}", modelId);
+
+        final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
+
+        AStoreWrapper store = storeModelManager.getStore();
+
+        try {
+            JenaQuerierDB querierDB = new JenaQuerierDB(((JenaTDBStoreWrapper) store).getDataset(),
+                    model.getModelStack(), false);
+
+            querierDB.init();
+
+            logger.info("Getting domain control strategies");
+
+            Map<String, ControlStrategyDB> controlStrategies = querierDB.getControlStrategies("domain");
+
+            return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(controlStrategies);
+
+        } catch (Exception e) {
+            logger.error("Simple API get control strategies failed due to an error", e);
+            throw new InternalServerErrorException(
+                    "Control Strategies fetch failed. Please contact support for further assistance.");
+        }
+    }
+
+
 
     /**
      * Retrieves domain model control for a specific control URI.

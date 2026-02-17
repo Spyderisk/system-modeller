@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -111,7 +112,7 @@ public class AttackPathDataset {
         // Load system model assets, matching patterns and nodes
         assets = querier.getAssets("system", "system-inf");
 
-        updateDatasets();
+        updateDatasets(null);
 
         final long endTime = System.currentTimeMillis();
         logger.info("AttackPathDataset.AttackPathDataset(IQuerierDB querier): execution time {} ms",
@@ -119,7 +120,7 @@ public class AttackPathDataset {
 
     }
 
-    private void updateDatasets() {
+    private void updateDatasets(Map<String, String> misbehaviourAssertedImpact) {
 
         // Load system model trustworthiness attribute sets
         trustworthinessAttributeSets = querier.getTrustworthinessAttributeSets("system-inf");
@@ -129,6 +130,9 @@ public class AttackPathDataset {
 
         // Load system model misbehaviour sets
         misbehaviourSets = querier.getMisbehaviourSets("system-inf");
+
+        // Override default misbehaviour impact levels with any asserted values
+        getAssertedImpactLevels(misbehaviourAssertedImpact);
 
         // Load system model threats
         threats = querier.getThreats("system-inf");
@@ -146,6 +150,22 @@ public class AttackPathDataset {
 
     }
 
+    /*
+     * Override default misbehaviour impact levels with any asserted values
+     */
+    private void getAssertedImpactLevels(Map<String, String> misbehaviourAssertedImpact) {
+        if (misbehaviourAssertedImpact == null) {
+            logger.warn("No asserted impact levels available");
+            return;
+        }
+
+        for (Entry<String, String> entry : misbehaviourAssertedImpact.entrySet()) {
+            String msUri = entry.getKey();
+            String impactLevel = entry.getValue();
+            MisbehaviourSetDB ms = misbehaviourSets.get(msUri);
+            ms.setImpactLevel(impactLevel);
+        }
+    }
 
     /*
      * Create maps required by the risk calculation to find TWAS, MS and their relationship to roles
@@ -611,7 +631,10 @@ public class AttackPathDataset {
             RiskCalculator rc = new RiskCalculator(querier);
             rc.calculateRiskLevels(riskMode, false, new Progress(modelId));
 
-            updateDatasets();
+            //Get asserted impact levels for misbehaviours
+            Map<String, String> misbehaviourAssertedImpact = rc.getMisbehaviourAssertedImpact();
+
+            updateDatasets(misbehaviourAssertedImpact);
 
             return getRiskVector();
         } catch (Exception e) {

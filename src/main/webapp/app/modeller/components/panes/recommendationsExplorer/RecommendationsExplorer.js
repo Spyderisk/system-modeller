@@ -8,21 +8,29 @@ import Explorer from "../common/Explorer";
 import ControlStrategiesPanel from "../details/accordion/panels/ControlStrategiesPanel";
 import * as Constants from "../../../../common/constants.js";
 import {renderControlSet} from "../csgExplorer/ControlStrategyRenderer";
+import {getRenderedLevelText} from "../../util/Levels";
+
 import {
     updateControlOnAsset,
     updateControls,
 } from "../../../../modeller/actions/ModellerActions";
 
+const _ = require('lodash');
 class RecommendationsExplorer extends React.Component {
 
     constructor(props) {
         super(props);
 
+        this.createLevelsMap = this.createLevelsMap.bind(this);
+        this.createPackagesMap = this.createPackagesMap.bind(this);
         this.renderContent = this.renderContent.bind(this);
         this.renderJson = this.renderJson.bind(this);
+        this.getSelectedRecommendations =this.getSelectedRecommendations.bind(this);
         this.renderRecommendations = this.renderRecommendations.bind(this);
         this.renderNoRecommendations = this.renderNoRecommendations.bind(this);
         this.renderControlSets = this.renderControlSets.bind(this);
+        this.getSortedConsequences = this.getSortedConsequences.bind(this);
+        this.renderConsequences = this.renderConsequences.bind(this);
         this.getControlSets = this.getControlSets.bind(this);
         this.getRiskVector = this.getRiskVector.bind(this);
         this.getHighestRiskLevel = this.getHighestRiskLevel.bind(this);
@@ -32,15 +40,120 @@ class RecommendationsExplorer extends React.Component {
         this.updateThreat = this.updateThreat.bind(this);
         this.applyRecommendation = this.applyRecommendation.bind(this);
 
-        this.state = {
-            updatingControlSets: {}
+        const sortDefaults = {
+            column: 'riskValue', //main sortBy column (indicated by caret)
+            direction: 'desc', //main sortBy direction (indicated by caret)
+            columns: ['riskValue', 'label'], //initial sort columns (for _.orderBy function)
+            directions: ['desc', 'asc'] //initial sort directions (for _.orderBy function)
         }
 
+        this.state = {
+            selected_recommendations: [],
+            sortedConsequences: {},
+            sortDefaults: {...sortDefaults},
+            updatingControlSets: {}
+        }
     }
 
     componentWillReceiveProps(nextProps) {
+        let levelsMap = this.state.levelsMap;
+        let packagesMap = this.state.packagesMap;
+        let selected_recommendations = this.state.selected_recommendations;
+        let sortedConsequences = this.state.sortedConsequences;
+
+        if (!this.props.model.levels && nextProps.model.levels) {
+            levelsMap = this.createLevelsMap(nextProps.model.levels);
+            packagesMap = this.createPackagesMap(nextProps.model.misbehaviourSets);
+        }
+
+        if (_.isEmpty(this.props.recommendations) && !_.isEmpty(nextProps.recommendations)) {
+            console.log("Received recommendations");
+            sortedConsequences = {}; //initialise map
+
+            let currentconsequences = nextProps.recommendations.current.consequences;
+            let consequences = this.getSortedConsequences(currentconsequences);
+
+            // Create map of consequence URI to current consequence
+            let currentConsequencesMap = {};
+            consequences.forEach(cons => {
+                currentConsequencesMap[cons.uri] = cons;
+            });
+
+            let recommendations = nextProps.recommendations.recommendations || [];
+
+            selected_recommendations = this.getSelectedRecommendations(recommendations);
+            selected_recommendations.forEach(rec => {
+                let consequences = this.getSortedConsequences(rec.state.consequences, currentConsequencesMap);
+                sortedConsequences[rec.identifier] = consequences;
+            });
+        }
+
         this.setState({...this.state,
-            updatingControlSets: {}
+            selected_recommendations: selected_recommendations,
+            sortedConsequences: sortedConsequences,
+            updatingControlSets: {},
+            levelsMap: levelsMap,
+            packagesMap: packagesMap
+        });
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        // Need to re-render if: 
+        // show state has changed
+        // one or more controls have changed,
+        // window order has changed,
+        // recommendations have arrived
+        return !!( 
+             (this.props.show != nextProps.show) ||
+             (!this.props.controlsUpdated && nextProps.controlsUpdated) ||
+             (this.props.windowOrder != nextProps.windowOrder) ||
+             (_.isEmpty(this.props.recommendations) && !_.isEmpty(nextProps.recommendations)) ||
+             (_.isEmpty(this.state.updatingControlSets) && !_.isEmpty(nextState.updatingControlSets)) ||
+             (!_.isEmpty(this.state.updatingControlSets) && _.isEmpty(nextState.updatingControlSets))
+        );
+    }
+
+    createLevelsMap(levels) {
+        let levelsMap = {};
+        this.addLevels(levelsMap, levels["ImpactLevel"]);
+        this.addLevels(levelsMap, levels["Likelihood"]);
+        this.addLevels(levelsMap, levels["RiskLevel"]);
+
+        return levelsMap;
+    }
+
+    createPackagesMap(misbehaviourSets) {
+        //TODO: get this info via REST API. The following is for testing purposes only
+        let domainPackagesMap = {
+            "domain#AbsenceOfDiagnosis": "package#PatientHarms",
+            "domain#AbsenceOfTreatment": "package#PatientHarms",
+            "domain#DelayedDiagnosis": "package#PatientHarms",
+            "domain#DelayedTreatment": "package#PatientHarms",
+            "domain#InappropriateTreatment": "package#PatientHarms",
+            "domain#Misdiagnosis": "package#PatientHarms",
+        }
+
+        let packagesMap = {};
+
+        Object.values(misbehaviourSets).map((ms) => {
+            let msuri = ms.uri.replace(Constants.URI_PREFIX, "");
+            let muri = ms.misbehaviour.replace(Constants.URI_PREFIX, "");
+            let packge = domainPackagesMap[muri];
+            if (!packge) packge = "package#Default";
+            packagesMap[msuri] = packge;
+        });
+
+        return packagesMap;
+    }
+
+    addLevels(levelsMap, levels) {
+        levels.forEach(level => {
+            let shortUri = level.uri.replace(Constants.URI_PREFIX, "");
+            let levelObj = {
+                "label": level.label,
+                "value": level.value
+            };
+            levelsMap[shortUri] = levelObj;
         });
     }
 
@@ -48,6 +161,8 @@ class RecommendationsExplorer extends React.Component {
         if (!this.props.show) {
             return null;
         }
+
+        console.log("render recommendations");
 
         return (
             <Explorer
@@ -87,13 +202,8 @@ class RecommendationsExplorer extends React.Component {
         )
     }
 
-    renderRecommendations(report) {
-        if (jQuery.isEmptyObject(report)) {
-            return null;
-        }
-
+    getSelectedRecommendations(recommendations) {
         let max_recommendations = Constants.MAX_RECOMMENDATIONS; //max number to display
-        let recommendations = report.recommendations || [];
         let selected_recommendations = [];
 
         recommendations.forEach(rec => {
@@ -105,6 +215,17 @@ class RecommendationsExplorer extends React.Component {
         //Select recommendations from the top of the list, up to the max number
         selected_recommendations = recommendations.slice(0, max_recommendations);
 
+        return selected_recommendations;
+    }
+
+    renderRecommendations(report) {
+        if (jQuery.isEmptyObject(report)) {
+            return null;
+        }
+
+        let recommendations = report.recommendations || [];
+        let max_recommendations = Constants.MAX_RECOMMENDATIONS; //max number to display
+        let selected_recommendations = this.state.selected_recommendations;
         let csgAssets = this.props.csgAssets;
 
         return (
@@ -124,6 +245,7 @@ class RecommendationsExplorer extends React.Component {
                         let reccsgs = rec.controlStrategies;
                         let riskVectorString = this.getRiskVectorString(rec.state.riskVector);
                         let riskLevel = this.getHighestRiskLevel(rec.state.riskVector);
+                        let consequences = this.state.sortedConsequences[id];
                         let csgsByName = new Map();
 
                         reccsgs.forEach((reccsg) => {
@@ -150,16 +272,17 @@ class RecommendationsExplorer extends React.Component {
                                 <Panel.Collapse>
                                     <Panel.Body>
                                         <p>Residual risk: {riskLevel.label} ({riskVectorString})</p>
-                                        <p>Control Strategies to enable</p>
+                                        {this.renderConsequences(consequences)}
+                                        <p>Control Strategies to enable:</p>
                                         <ControlStrategiesPanel dispatch={this.props.dispatch}
                                             modelId={this.props.model["id"]}
                                             assetCsgs={csgsArray}
                                             displayAssetName={true}
                                             authz={this.props.authz}
                                         />
-                                        <p style={{marginTop: "10px"}}>Controls to enable</p>
+                                        <p style={{marginTop: "10px"}}>Controls to enable:</p>
                                         {this.renderControlSets(rec.controls)}
-                                        <p style={{marginTop: "5px", marginBottom: "0px"}}>
+                                        <p style={{marginTop: "5px", marginBottom: "10px"}}>
                                             <OverlayTrigger delayShow={Constants.TOOLTIP_DELAY} placement="right"
                                                 overlay={<Tooltip id={"risklevel-tooltip-" + id} className={"tooltip-overlay"}>
                                                     <strong>{applyButtonTooltipText}</strong></Tooltip>}>
@@ -199,6 +322,195 @@ class RecommendationsExplorer extends React.Component {
                 })}
             </div>
         );
+    }
+
+    //Get sorted consequences from a recommendation
+    getSortedConsequences(recConsequences, currentConsequencesMap) {
+        let levelsMap = this.state.levelsMap ? this.state.levelsMap : {};
+        let packagesMap = this.state.packagesMap ? this.state.packagesMap : {};
+
+        let consequences = recConsequences.map((consequence, index) => {
+            let packageUri = packagesMap[consequence.uri];
+            let impact = levelsMap[consequence.impact];
+            let likelihood = levelsMap[consequence.likelihood];
+            let risk = levelsMap[consequence.risk];
+            let packageIcon, packageTooltip, arrow, icon, arrowColor, tooltip;
+
+            //TODO: need to configure this
+            let isHarm = (packageUri === 'package#PatientHarms');
+
+            if (isHarm) {
+                packageIcon = "fa-ambulance"
+                packageTooltip = "Patient Harm";
+            }
+            else {
+                packageIcon = "fa-exclamation-triangle";
+                packageTooltip = "Cybersecurity";
+            }
+
+            // Color the package icon according to whether it is above acceptable threshold
+            // TODO: configure the threshold (currently hardwired to 2 = Medium)
+            let packageColor = risk.value > 2 ? "red" : "green";
+
+            let packge = {
+                'uri': packageUri,
+                'icon': packageIcon,
+                'color': packageColor,
+                'tooltip': packageTooltip
+            }
+
+            if (currentConsequencesMap) {
+                let currentCons = currentConsequencesMap[consequence.uri];
+
+                // Here, if the currentCons is not in the list, we assume that its risk value its very low
+                let currentRisk = currentCons ? currentCons.risk.value : 0;
+
+                // Determine direction and color of arrow icon,
+                // depending on whether the risk has increased or decreased
+                if (risk.value > currentRisk) {
+                    icon = "fa-long-arrow-up";
+                    arrowColor = "red";
+                    tooltip = "Increased risk";
+                }
+                else if (risk.value < currentRisk) {
+                    icon = "fa-long-arrow-down";
+                    arrowColor = "green";
+                    tooltip = "Decreased risk";
+                }
+                else {
+                    icon = "fa-long-arrow-right";
+                    arrowColor = "black";
+                    tooltip = "Unchanged risk";
+                }
+
+                arrow = {
+                    'icon': icon,
+                    'color': arrowColor,
+                    'tooltip': tooltip
+                }
+            }
+
+            return {
+                'uri': consequence.uri,
+                'label': consequence.label,
+                'asset': consequence.asset.label,
+                'impact': impact,
+                'impactValue': impact.value,
+                'likelihood': likelihood,
+                'likelihoodValue': likelihood.value,
+                'risk': risk,
+                'riskValue': risk.value,
+                'package': packge,
+                'arrow': arrow
+            }
+        });
+        
+        let sortedConsequences = _.orderBy(consequences, this.state.sortDefaults.columns, this.state.sortDefaults.directions);
+
+        return sortedConsequences;
+    }
+
+    renderConsequences(consequences) {
+        if (!consequences) {
+            return null;
+        }
+
+        let impactLevels = this.props.model.levels["ImpactLevel"];
+        let likelihoodLevels = this.props.model.levels["Likelihood"];
+        let riskLevels = this.props.model.levels["RiskLevel"];
+
+        return (
+            <div>
+                <div key={0} className='row head'>
+                    <span className="col-xs-3">
+                        Consequence
+                    </span>
+                    <span className="col-xs-3">
+                        Asset
+                    </span>
+                    <span className="impact col-xs-1">
+                        Direct Impact
+                    </span>
+                    <span className="likelihood col-xs-1">
+                        Likelihood
+                    </span>
+                    <span className="risk col-xs-1">
+                        Direct Risk
+                    </span>
+                </div>
+                <div>
+                    {consequences.map((consequence, index) => {
+                        let selected = false; //TODO
+                        let active = true; //TODO
+
+                        let impact = consequence.impact;
+                        let impactRender = getRenderedLevelText(impactLevels, impact);
+
+                        let likelihood = consequence.likelihood;
+                        let likelihoodRender = getRenderedLevelText(likelihoodLevels, likelihood);
+
+                        let risk = consequence.risk;
+                        let riskRender = getRenderedLevelText(riskLevels, risk);
+
+                        let packageClass = "fa " + consequence.package.icon + " threat-icon";
+                        let packageColor = consequence.package.color;
+                        let packageTooltip = consequence.package.tooltip;
+                        let packageSymbol = <span className={packageClass} style={{backgroundColor: packageColor, color: "white"}}/>;
+
+                        let arrowClass = "fa " + consequence.arrow.icon;
+                        let arrowColor = consequence.arrow.color;
+                        let arrowTooltip = consequence.arrow.tooltip;
+                        let arrow = <span className={arrowClass} style={{backgroundColor: "white", color: arrowColor}}/>;
+
+                        return (
+                            <div key={index + 1} className={
+                                `row misbehaviour-item misbehaviour-${active ? "active" : "inactive"} ` +
+                                `detail-info ${selected ? "selected-row" : "row-hover"}`
+                            }>
+                                <span className="misbehaviour col-xs-3">
+                                    <OverlayTrigger 
+                                        delayShow={Constants.TOOLTIP_DELAY} placement="left"
+                                        trigger={["hover"]}
+                                        overlay={
+                                            <Tooltip id={`package-${index + 1}-tooltip`} className="tooltip-overlay">
+                                                {packageTooltip}
+                                            </Tooltip>
+                                        }
+                                    >
+                                        {packageSymbol}
+                                    </OverlayTrigger>
+                                    <OverlayTrigger 
+                                        delayShow={Constants.TOOLTIP_DELAY} placement="left"
+                                        trigger={["hover"]}
+                                        overlay={
+                                            <Tooltip id={`arrow-${index + 1}-tooltip`} className="tooltip-overlay">
+                                                {arrowTooltip}
+                                            </Tooltip>
+                                        }
+                                    >
+                                        {arrow}
+                                    </OverlayTrigger>
+                                    &nbsp;{consequence.label}
+                                </span>
+                                <span className="misbehaviour col-xs-3">
+                                    {consequence.asset}
+                                </span>
+                                <span className="likelihood col-xs-1">
+                                    {impactRender}
+                                </span>
+                                <span className="likelihood col-xs-1">
+                                    {likelihoodRender}
+                                </span>
+                                <span className="risk col-xs-1">
+                                    {riskRender}
+                                </span>
+                            </div>
+                        )
+                    })}
+                    <p></p>
+                </div>
+            </div>
+        )
     }
 
     getControlSets(controls) {
@@ -336,6 +648,7 @@ function shouldExpandRecommendationsNode(level) {
 RecommendationsExplorer.propTypes = {
     model: PropTypes.object,
     controlSets: PropTypes.object,
+    controlsUpdated: PropTypes.bool,
     csgAssets: PropTypes.object,
     selectedAsset: PropTypes.object,
     isActive: PropTypes.bool, // is in front of other panels
