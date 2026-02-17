@@ -95,6 +95,9 @@ function globalErrorHandler(error, responseOnForbidden) {
             case vars.HTTPStatusCode.LOCKED:
                 restLockedModal();
                 break;
+            case vars.HTTPStatusCode.SERVICE_UNAVAILABLE:
+                reportDetailedError(error, "Service timed out or unavailable");
+                break;
             default:
                 reportError(error, "Something went wrong. Check with an administrator for further help.");
         }

@@ -2019,6 +2019,8 @@ public class Validator {
                     link.setLinksFrom(fromAssetUri);
                     link.setLinksTo(toAssetUri);
                     link.setLinkType(infLink.getLinkType());
+                    link.setCreatedByPattern(constructionPattern.getUri());
+                    
                     //asset.getLinks().add(link);
                     inferredLinks.add(link);
                 }
@@ -2287,7 +2289,16 @@ public class Validator {
         String sourcePopulation = fromAsset.getPopulation();
         String targetPopulation = toAsset.getPopulation();
 
+        if (sourcePopulation == null) {
+            logger.warn("sourcePopulation is null for asset: {}", fromAsset.getUri());
+            sourcePopulation = "domain#PopLevelSingleton";
+        }
 
+        if (targetPopulation == null) {
+            logger.warn("targetPopulation is null for asset: {}", toAsset.getUri());
+            targetPopulation = "domain#PopLevelSingleton";
+        }
+        
         int sourcePopulationLevel = poLevels.get(sourcePopulation).getLevelValue();
         int targetPopulationLevel = poLevels.get(targetPopulation).getLevelValue();
 

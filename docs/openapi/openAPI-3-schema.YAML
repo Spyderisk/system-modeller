@@ -1880,7 +1880,7 @@ paths:
           items:
             type: string
       responses:
-        "200":
+        "202":
           description: OK
           content:
             '*/*':
@@ -2530,6 +2530,29 @@ paths:
             '*/*':
               schema:
                 $ref: '#/components/schemas/ControlDB'
+  /models/{modelId}/entity/domain/controlStrategies:
+    get:
+      tags:
+      - entity-controller
+      description: Retrieves all domain model control strategies for a specific system
+        model.
+      operationId: getEntityDomainControlStrategies
+      parameters:
+      - name: modelId
+        in: path
+        description: the String representation of the model object to seacrh
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A JSON representation of a control strategy object map
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/ControlStrategyDB'
   /models/{modelId}/controls:
     get:
       tags:
@@ -2819,6 +2842,20 @@ paths:
             '*/*':
               schema:
                 type: object
+  /about:
+    get:
+      tags:
+      - about-controller
+      description: "REST method to GET about info for Spyderisk installation (versions,\
+        \ etc)"
+      operationId: getAboutInfo
+      responses:
+        "200":
+          description: an AboutDTO object containing info about Spyderisk installation
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/AboutDTO'
   /models/{modelId}/assetGroups/{groupId}:
     delete:
       tags:
@@ -2876,7 +2913,7 @@ paths:
     get:
       tags:
       - json-error-controller
-      operationId: error_6
+      operationId: error_1
       responses:
         "200":
           description: OK
@@ -2887,7 +2924,7 @@ paths:
     put:
       tags:
       - json-error-controller
-      operationId: error_1
+      operationId: error_4
       responses:
         "200":
           description: OK
@@ -2898,7 +2935,7 @@ paths:
     post:
       tags:
       - json-error-controller
-      operationId: error_2
+      operationId: error_6
       responses:
         "200":
           description: OK
@@ -2909,7 +2946,7 @@ paths:
     delete:
       tags:
       - json-error-controller
-      operationId: error_3
+      operationId: error
       responses:
         "200":
           description: OK
@@ -2931,7 +2968,7 @@ paths:
     head:
       tags:
       - json-error-controller
-      operationId: error
+      operationId: error_2
       responses:
         "200":
           description: OK
@@ -2942,7 +2979,7 @@ paths:
     patch:
       tags:
       - json-error-controller
-      operationId: error_4
+      operationId: error_3
       responses:
         "200":
           description: OK
@@ -3517,6 +3554,13 @@ components:
           $ref: '#/components/schemas/Level'
         rootCause:
           type: boolean
+        allControlCombinations:
+          type: array
+          items:
+            uniqueItems: true
+            type: array
+            items:
+              type: string
         id:
           type: string
     TrustworthinessAttributeSet:
@@ -4412,6 +4456,30 @@ components:
         strength:
           type: string
         id:
+          type: string
+    AboutDTO:
+      type: object
+      properties:
+        spyderiskVersion:
+          type: string
+        spyderiskCommitSha:
+          type: string
+        spyderiskCommitTimestamp:
+          type: string
+        spyderiskAdaptorVersion:
+          type: string
+        website:
+          $ref: '#/components/schemas/AboutLinkDTO'
+        license:
+          $ref: '#/components/schemas/AboutLinkDTO'
+        contributors:
+          $ref: '#/components/schemas/AboutLinkDTO'
+    AboutLinkDTO:
+      type: object
+      properties:
+        link:
+          type: string
+        text:
           type: string
     DeleteRelationResponse:
       type: object
