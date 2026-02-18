@@ -2609,6 +2609,26 @@ public class SystemModelQuerier extends AModelQuerier {
 		return row.get("defaultImpactLevel");
 	}
 
+	public String getTwasDefaultLevel(AStoreWrapper store, String twasURI) {
+		String sparql = String.format("SELECT DISTINCT * WHERE {\n" +
+				"  GRAPH <%s> {\n" +
+				"    BIND (<" + SparqlHelper.escapeURI(twasURI) + "> as ?twas) .\n" +
+				"    ?twas core:hasDefaultLevel ?defaultTwLevel .\n" +
+				"  }" +
+				"}", model.getGraph("system-inf"));
+		
+		logger.debug(sparql);
+
+		List<Map<String, String>> rows = store.translateSelectResult(store.querySelect(sparql, model.getGraph("system-inf")));
+		logger.debug("Result rows: {}", rows.size());
+		if (rows.size() > 1) {
+			throw new RuntimeException("Duplicate TWAS found.");
+		}
+
+		Map<String, String> row = rows.iterator().next();
+		return row.get("defaultTwLevel");
+	}
+
 	/**
 	 * Get a system-specific misbehaviour set
 	 *

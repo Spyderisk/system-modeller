@@ -804,9 +804,16 @@ public class AssetController {
 			throw new AssetInvalidException();
 		}
 
+		logger.info("Getting default trustworthiness level");
+		String defaultTwLevel = model.getQuerier().getTwasDefaultLevel(storeManager.getStore(), twas.getUri());
+		logger.info("defaultTwLevel: {}", defaultTwLevel);
+
 		//do it
-		logger.info("Deleting asserted TW level for twas {} for asset {}", twas, asset);
-		model.getUpdater().deleteAssertedTwLevel(storeManager.getStore(), twas);
+		//logger.info("Deleting asserted TW level for twas {} for asset {}", twas, asset);
+		//model.getUpdater().deleteAssertedTwLevel(storeManager.getStore(), twas);
+
+		logger.info("Resetting default trustworthiness level for {} to {}", twas.getUri(), defaultTwLevel);
+		model.getUpdater().resetTWASdefaultLevel(storeManager.getStore(), twas.getUri(), defaultTwLevel);
 
 		logger.info("Getting reverted TWAS: {}", twas.getUri());
 		TrustworthinessAttributeSet revertedTWAS = model.getQuerier().getTrustworthinessAttributeSet(storeManager.getStore(), twas.getUri());

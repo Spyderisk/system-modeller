@@ -893,11 +893,49 @@ public class SystemModelUpdater {
 	}
 
 	/**
+	 * Deletes the asserted trustworthiness level and restores the default level.
+	 *
+	 * @param store the store
+	 * @param twasURI the TrustworthinessAttributeSet URI
+	 * @param defaultTwLevel the default trustworthiness level
+	 */
+	public void resetTWASdefaultLevel(AStoreWrapper store, String twasURI, String defaultTwLevel) {
+
+		String sparql = "DELETE {\n" +
+		"   GRAPH <" + model.getGraph("system") + "> {\n" +
+		"      ?twas core:hasAssertedLevel ?twaslAsserted\n" +
+		"   }\n" +
+		"   GRAPH <" + model.getGraph("system-inf") + "> {\n" +
+		"      ?twas core:hasAssertedLevel ?twaslInferred\n" +
+		"   }\n" +
+		"} INSERT {\n" +
+		"   GRAPH <" + model.getGraph("system-inf") + "> {\n" +
+		"      ?twas core:hasAssertedLevel <" + SparqlHelper.escapeURI(defaultTwLevel) + ">\n" +
+		"   }\n" +
+		"} WHERE {\n" +
+		"   BIND (<" + SparqlHelper.escapeURI(twasURI) + "> as ?twas)\n" +
+		"   OPTIONAL {\n" +
+		"      GRAPH <" + model.getGraph("system") + "> {\n" +
+		"         ?twas core:hasAssertedLevel ?twaslAsserted .\n" +
+		"      }\n" +
+		"   }\n" +
+		"   OPTIONAL {\n" +
+		"      GRAPH <" + model.getGraph("system-inf") + "> {\n" +
+		"         ?twas core:hasAssertedLevel ?twaslInferred .\n" +
+		"      }\n" +
+		"   }\n" +
+		"}";
+		logger.warn(sparql);
+		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
+	}
+
+	/**
 	 * Delete asserted TWAS level
 	 *
 	 * @param store the store
 	 * @param twas the TWAS to be reverted
 	 */
+	/*
 	public void deleteAssertedTwLevel(AStoreWrapper store, TrustworthinessAttributeSet twas) {
 
 		logger.debug("Deleting asserted TW level {}", twas.getUri());
@@ -906,7 +944,9 @@ public class SystemModelUpdater {
 
 		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
 	}
+	*/
 
+	/*
 	private String createRevertTwasSparql(String uri) {
 		String sparql =  "DELETE {\n" +
 		"	GRAPH <" + model.getGraph("system") + "> {\n" +
@@ -923,6 +963,7 @@ public class SystemModelUpdater {
 
 		return sparql;
 	}
+	*/
 
 	/**
 	 * Writes the updated MS back to the store. Note that only the impact level will be written and the update is only
