@@ -958,6 +958,44 @@ public class SystemModelUpdater {
 		"		}\n" +
 		"	}\n" +
 		"}";
+		logger.warn(sparql);
+		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
+	}
+
+	/**
+	 * Deletes the asserted impact level and restores the default level.
+	 *
+	 * @param store the store
+	 * @param msURI the MisbehaviourSet URI
+	 * @param defaultImpactLevel the default impact level
+	 */
+	public void resetMSdefaultImpact(AStoreWrapper store, String msURI, String defaultImpactLevel) {
+
+		String sparql = "DELETE {\n" +
+		"   GRAPH <" + model.getGraph("system") + "> {\n" +
+		"      ?ms core:hasImpactLevel ?mslAsserted\n" +
+		"   }\n" +
+		"   GRAPH <" + model.getGraph("system-inf") + "> {\n" +
+		"      ?ms core:hasImpactLevel ?mslInferred\n" +
+		"   }\n" +
+		"} INSERT {\n" +
+		"   GRAPH <" + model.getGraph("system-inf") + "> {\n" +
+		"      ?ms core:hasImpactLevel <" + SparqlHelper.escapeURI(defaultImpactLevel) + ">\n" +
+		"   }\n" +
+		"} WHERE {\n" +
+		"   BIND (<" + SparqlHelper.escapeURI(msURI) + "> as ?ms)\n" +
+		"   OPTIONAL {\n" +
+		"      GRAPH <" + model.getGraph("system") + "> {\n" +
+		"         ?ms core:hasImpactLevel ?mslAsserted .\n" +
+		"      }\n" +
+		"   }\n" +
+		"   OPTIONAL {\n" +
+		"      GRAPH <" + model.getGraph("system-inf") + "> {\n" +
+		"         ?ms core:hasImpactLevel ?mslInferred .\n" +
+		"      }\n" +
+		"   }\n" +
+		"}";
+		logger.warn(sparql);
 		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
 	}
 
@@ -967,6 +1005,7 @@ public class SystemModelUpdater {
 	 * @param store the store
 	 * @param ms the MisbehaviourSet to be reverted
 	 */
+	/*
 	public void deleteAssertedImpactLevel(AStoreWrapper store, MisbehaviourSet ms) {
 
 		logger.debug("Deleting asserted impact level {}", ms.getUri());
@@ -976,11 +1015,16 @@ public class SystemModelUpdater {
 
 		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
 	}
+	*/
 
+	/*
 	private String createRevertImpactSparql(String uri) {
 		String sparql =  "DELETE {\n" +
 		"	GRAPH <" + model.getGraph("system") + "> {\n" +
 		"		?ms core:hasImpactLevel ?mslAsserted .\n" +
+		"	}\n" +
+		"	GRAPH <" + model.getGraph("system-inf") + "> {\n" +
+		"		?ms core:hasImpactLevel ?mslInferred .\n" +
 		"	}\n" +
 		"} WHERE {\n" +
 		"	BIND(<" + SparqlHelper.escapeURI(uri) + "> AS ?ms)\n" +
@@ -989,10 +1033,18 @@ public class SystemModelUpdater {
 		"			?ms core:hasImpactLevel ?mslAsserted .\n" +
 		"		}\n" +
 		"	}\n" +
+		"	OPTIONAL {\n" +
+		"		GRAPH <" + model.getGraph("system-inf") + "> {\n" +
+		"			?ms core:hasImpactLevel ?mslInferred .\n" +
+		"		}\n" +
+		"	}\n" +
 		"}";
+
+		logger.warn(sparql);
 
 		return sparql;
 	}
+	*/
 
 	/**
 	 * Remove all references to inferred assets from the asserted graph
