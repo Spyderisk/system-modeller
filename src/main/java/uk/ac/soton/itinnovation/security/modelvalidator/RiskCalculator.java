@@ -62,6 +62,7 @@ import java.util.HashSet;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class RiskCalculator {
@@ -615,9 +616,9 @@ public class RiskCalculator {
                     Integer[] adjustedValues = querier.getAdjustedLevels(asset, defaultLevel, assertedValues);
 
                     // Log any inconsistencies
-                    if( (assertedValues[0] != null && assertedValues[0] != adjustedValues[0]) ||
-                        (assertedValues[1] != null && assertedValues[1] != adjustedValues[1]) ||
-                        (assertedValues[2] != null && assertedValues[2] != adjustedValues[2]) ) {
+                    if( (assertedValues[0] != null && !Objects.equals(assertedValues[0], adjustedValues[0])) ||
+                        (assertedValues[1] != null && !Objects.equals(assertedValues[1], adjustedValues[1])) ||
+                        (assertedValues[2] != null && !Objects.equals(assertedValues[2], adjustedValues[2])) ) {
                         logger.warn("Client/User input TW levels for TW attribute {} at asset {} needed adjustment",
                                     twasavg.getTrustworthinessAttribute(), twasavg.getLocatedAt());
                         logger.warn("...asserted graph levels (min, avg, max) were ({},{},{}), adjusted to ({},{},{})",
@@ -745,26 +746,26 @@ public class RiskCalculator {
                     Integer[] adjustedValues = querier.getAdjustedLevels(asset, defaultLevel, assertedValues);
 
                     // Log any inconsistencies in coverage levels
-                    if( (assertedValues[0] != null && assertedValues[0] != adjustedValues[0]) ||
-                        (assertedValues[1] != null && assertedValues[1] != adjustedValues[1]) ||
-                        (assertedValues[2] != null && assertedValues[2] != adjustedValues[2]) ) {
+                    if( (assertedValues[0] != null && !Objects.equals(assertedValues[0], adjustedValues[0])) ||
+                        (assertedValues[1] != null && !Objects.equals(assertedValues[1], adjustedValues[1])) ||
+                        (assertedValues[2] != null && !Objects.equals(assertedValues[2], adjustedValues[2])) ) {
                         logger.warn("Client/User input coverage levels for control {} at asset {} needed adjustment",
                                     csavg.getControl(), csavg.getLocatedAt());
                         logger.warn("...asserted graph levels (min, avg, max) were ({},{},{}), adjusted to ({},{},{})",
                                     assertedValues[0], assertedValues[1], assertedValues[2],
                                     adjustedValues[0], adjustedValues[1], adjustedValues[2]);
                     
-                        if(assertedValues[0] != null && assertedValues[0] != adjustedValues[0]){
+                        if(assertedValues[0] != null && !Objects.equals(assertedValues[0], adjustedValues[0])){
                             logger.warn("Correcting worst case coverage level in asserted graph for control {} at asset {} to {}", 
                                         csavg.getControl(), csavg.getLocatedAt(), trustworthinessLevels.get(adjustedValues[0]).getUri());
                             querier.updateCoverageLevel(trustworthinessLevels.get(adjustedValues[0]), csminInput, "system");
                         }
-                        if(assertedValues[0] != null && assertedValues[0] != adjustedValues[0]){
+                        if(assertedValues[0] != null && !Objects.equals(assertedValues[0], adjustedValues[0])){
                             logger.warn("Correcting average coverage level in asserted graph for control {} at asset {} to {}", 
                                         csavg.getControl(), csavg.getLocatedAt(), trustworthinessLevels.get(adjustedValues[1]).getUri());
                             querier.updateCoverageLevel(trustworthinessLevels.get(adjustedValues[0]), csavgInput, "system");
                         }
-                        if(assertedValues[0] != null && assertedValues[0] != adjustedValues[0]){
+                        if(assertedValues[0] != null && !Objects.equals(assertedValues[0], adjustedValues[0])){
                             logger.warn("Correcting best case coverage level in asserted graph for control {} at asset {} to {}", 
                                         csavg.getControl(), csavg.getLocatedAt(), trustworthinessLevels.get(adjustedValues[2]).getUri());
                             querier.updateCoverageLevel(trustworthinessLevels.get(adjustedValues[0]), csmaxInput, "system");
