@@ -2629,6 +2629,26 @@ public class SystemModelQuerier extends AModelQuerier {
 		return row.get("defaultTwLevel");
 	}
 
+	public String getControlSetDefaultCoverageLevel(AStoreWrapper store, String csURI) {
+		String sparql = String.format("SELECT DISTINCT * WHERE {\n" +
+				"  GRAPH <%s> {\n" +
+				"    BIND (<" + SparqlHelper.escapeURI(csURI) + "> as ?cs) .\n" +
+				"    ?cs core:hasDefaultLevel ?defaultCoverageLevel .\n" +
+				"  }" +
+				"}", model.getGraph("system-inf"));
+		
+		logger.debug(sparql);
+
+		List<Map<String, String>> rows = store.translateSelectResult(store.querySelect(sparql, model.getGraph("system-inf")));
+		logger.debug("Result rows: {}", rows.size());
+		if (rows.size() > 1) {
+			throw new RuntimeException("Duplicate ControlSet found.");
+		}
+
+		Map<String, String> row = rows.iterator().next();
+		return row.get("defaultCoverageLevel");
+	}
+
 	/**
 	 * Get a system-specific misbehaviour set
 	 *

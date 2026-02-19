@@ -663,6 +663,43 @@ public class SystemModelUpdater {
 	}
 
 	/**
+	 * Deletes the asserted coverage level and restores the default level.
+	 *
+	 * @param store the store
+	 * @param csURI the ControlSet URI
+	 * @param defaultCoverageLevel the default coverage level
+	 */
+	public void resetControlSetDefaultLevel(AStoreWrapper store, String csURI, String defaultCoverageLevel) {
+
+		String sparql = "DELETE {\n" +
+		"   GRAPH <" + model.getGraph("system") + "> {\n" +
+		"      ?cs core:hasCoverageLevel ?coverageLevelAsserted\n" +
+		"   }\n" +
+		"   GRAPH <" + model.getGraph("system-inf") + "> {\n" +
+		"      ?cs core:hasCoverageLevel ?coverageLevelInferred\n" +
+		"   }\n" +
+		"} INSERT {\n" +
+		"   GRAPH <" + model.getGraph("system-inf") + "> {\n" +
+		"      ?cs core:hasCoverageLevel <" + SparqlHelper.escapeURI(defaultCoverageLevel) + ">\n" +
+		"   }\n" +
+		"} WHERE {\n" +
+		"   BIND (<" + SparqlHelper.escapeURI(csURI) + "> as ?cs)\n" +
+		"   OPTIONAL {\n" +
+		"      GRAPH <" + model.getGraph("system") + "> {\n" +
+		"         ?cs core:hasCoverageLevel ?coverageLevelAsserted .\n" +
+		"      }\n" +
+		"   }\n" +
+		"   OPTIONAL {\n" +
+		"      GRAPH <" + model.getGraph("system-inf") + "> {\n" +
+		"         ?cs core:hasCoverageLevel ?coverageLevelInferred .\n" +
+		"      }\n" +
+		"   }\n" +
+		"}";
+		logger.warn(sparql);
+		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
+	}
+
+	/**
 	 * Toggle the proposed status of multiple control sets
 	 *
 	 * @param store the store
@@ -696,6 +733,7 @@ public class SystemModelUpdater {
 	 * @param store the store
 	 * @param cs the control set to be reverted
 	 */
+	/*
 	public void deleteCoverageForControlSet(AStoreWrapper store, ControlSet cs) {
 
 		logger.debug("Deleting control set coverage {}", cs.toString());
@@ -705,7 +743,9 @@ public class SystemModelUpdater {
 
 		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
 	}
+	*/
 
+	/*
 	private String createRevertControlSetCoverageSparql(String uri) {
 		String sparql =  "DELETE {\n" +
 		"	GRAPH <" + model.getGraph("system") + "> {\n" +
@@ -723,6 +763,7 @@ public class SystemModelUpdater {
 
 		return sparql;
 	}
+	*/
 
 	private String createUpdateControlSetSparql(String uri, String assetUri, String controlUri, boolean proposed, boolean workInProgress, String coverageLevel) {
 		String sparql =  "DELETE {\n" +

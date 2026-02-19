@@ -701,9 +701,16 @@ public class AssetController {
 			throw new AssetInvalidException();
 		}
 
+		logger.info("Getting default coverage level");
+		String defaultCoverageLevel = model.getQuerier().getControlSetDefaultCoverageLevel(storeManager.getStore(), controlSet.getUri());
+		logger.info("defaultCoverageLevel: {}", defaultCoverageLevel);
+
 		//do it
-		logger.info("Deleting coverage assertion for control {} for asset {}", controlSet, asset);
-		model.getUpdater().deleteCoverageForControlSet(storeManager.getStore(), controlSet);
+		//logger.info("Deleting coverage assertion for control {} for asset {}", controlSet, asset);
+		//model.getUpdater().deleteCoverageForControlSet(storeManager.getStore(), controlSet);
+
+		logger.info("Resetting default coverage level for {} to {}", controlSet.getUri(), defaultCoverageLevel);
+		model.getUpdater().resetControlSetDefaultLevel(storeManager.getStore(), controlSet.getUri(), defaultCoverageLevel);
 
 		logger.info("Getting reverted control set: {}", controlSet.getUri());
 		ControlSet revertedCS = model.getQuerier().getControlSet(storeManager.getStore(), controlSet.getUri());
