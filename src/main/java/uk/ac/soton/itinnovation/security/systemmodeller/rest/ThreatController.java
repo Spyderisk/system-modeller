@@ -229,8 +229,6 @@ public class ThreatController {
 		String defaultImpactLevel = model.getQuerier().getMisbehaviourDefaultImpact(storeManager.getStore(), misbehaviour.getUri());
 		logger.info("defaultImpactLevel: {}", defaultImpactLevel);
 
-		//model.getQuerier().checkMisbehaviourImpact(storeManager.getStore());
-
 		logger.info("Resetting default impact level for {} to {}", misbehaviour.getUri(), defaultImpactLevel);
 		model.getUpdater().resetMSdefaultImpact(storeManager.getStore(), misbehaviour.getUri(), defaultImpactLevel);
 

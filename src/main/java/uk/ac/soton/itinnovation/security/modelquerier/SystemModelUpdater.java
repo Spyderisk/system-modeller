@@ -727,44 +727,6 @@ public class SystemModelUpdater {
 		return expandedControlSets;
 	}
 
-	/**
-	 * Delete the coverage level assertion for a control set
-	 *
-	 * @param store the store
-	 * @param cs the control set to be reverted
-	 */
-	/*
-	public void deleteCoverageForControlSet(AStoreWrapper store, ControlSet cs) {
-
-		logger.debug("Deleting control set coverage {}", cs.toString());
-
-		String sparql = createRevertControlSetCoverageSparql(cs.getUri());
-		//logger.info(sparql);
-
-		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
-	}
-	*/
-
-	/*
-	private String createRevertControlSetCoverageSparql(String uri) {
-		String sparql =  "DELETE {\n" +
-		"	GRAPH <" + model.getGraph("system") + "> {\n" +
-		"		?cs core:hasCoverageLevel ?coverageLevel .\n" +
-		"	}\n" +
-		"} WHERE {\n" +
-		"	BIND(<" + SparqlHelper.escapeURI(uri) + "> AS ?cs)\n" +
-		"	GRAPH <" + model.getGraph("system-inf") + "> {\n" +
-		"		?cs a core:ControlSet .\n" +
-		"	}\n" +
-		"	OPTIONAL {\n" +
-		"		?cs core:hasCoverageLevel ?coverageLevel .\n" +
-		"	}\n" +
-		"}";
-
-		return sparql;
-	}
-	*/
-
 	private String createUpdateControlSetSparql(String uri, String assetUri, String controlUri, boolean proposed, boolean workInProgress, String coverageLevel) {
 		String sparql =  "DELETE {\n" +
 		"	GRAPH <" + model.getGraph("system") + "> {\n" +
@@ -971,42 +933,6 @@ public class SystemModelUpdater {
 	}
 
 	/**
-	 * Delete asserted TWAS level
-	 *
-	 * @param store the store
-	 * @param twas the TWAS to be reverted
-	 */
-	/*
-	public void deleteAssertedTwLevel(AStoreWrapper store, TrustworthinessAttributeSet twas) {
-
-		logger.debug("Deleting asserted TW level {}", twas.getUri());
-
-		String sparql = createRevertTwasSparql(twas.getUri());
-
-		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
-	}
-	*/
-
-	/*
-	private String createRevertTwasSparql(String uri) {
-		String sparql =  "DELETE {\n" +
-		"	GRAPH <" + model.getGraph("system") + "> {\n" +
-		"		?twas core:hasAssertedLevel ?twaslAsserted .\n" +
-		"	}\n" +
-		"} WHERE {\n" +
-		"	BIND(<" + SparqlHelper.escapeURI(uri) + "> AS ?twas)\n" +
-		"	OPTIONAL {\n" +
-		"		GRAPH <" + model.getGraph("system") + "> {\n" +
-		"			?twas core:hasAssertedLevel ?twaslAsserted .\n" +
-		"		}\n" +
-		"	}\n" +
-		"}";
-
-		return sparql;
-	}
-	*/
-
-	/**
 	 * Writes the updated MS back to the store. Note that only the impact level will be written and the update is only
 	 * executed if the MS already exists in the store.
 	 *
@@ -1080,53 +1006,6 @@ public class SystemModelUpdater {
 		logger.warn(sparql);
 		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
 	}
-
-	/**
-	 * Delete asserted impact level for misbehaviour
-	 *
-	 * @param store the store
-	 * @param ms the MisbehaviourSet to be reverted
-	 */
-	/*
-	public void deleteAssertedImpactLevel(AStoreWrapper store, MisbehaviourSet ms) {
-
-		logger.debug("Deleting asserted impact level {}", ms.getUri());
-
-		String sparql = createRevertImpactSparql(ms.getUri());
-		logger.info(sparql);
-
-		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
-	}
-	*/
-
-	/*
-	private String createRevertImpactSparql(String uri) {
-		String sparql =  "DELETE {\n" +
-		"	GRAPH <" + model.getGraph("system") + "> {\n" +
-		"		?ms core:hasImpactLevel ?mslAsserted .\n" +
-		"	}\n" +
-		"	GRAPH <" + model.getGraph("system-inf") + "> {\n" +
-		"		?ms core:hasImpactLevel ?mslInferred .\n" +
-		"	}\n" +
-		"} WHERE {\n" +
-		"	BIND(<" + SparqlHelper.escapeURI(uri) + "> AS ?ms)\n" +
-		"	OPTIONAL {\n" +
-		"		GRAPH <" + model.getGraph("system") + "> {\n" +
-		"			?ms core:hasImpactLevel ?mslAsserted .\n" +
-		"		}\n" +
-		"	}\n" +
-		"	OPTIONAL {\n" +
-		"		GRAPH <" + model.getGraph("system-inf") + "> {\n" +
-		"			?ms core:hasImpactLevel ?mslInferred .\n" +
-		"		}\n" +
-		"	}\n" +
-		"}";
-
-		logger.warn(sparql);
-
-		return sparql;
-	}
-	*/
 
 	/**
 	 * Remove all references to inferred assets from the asserted graph

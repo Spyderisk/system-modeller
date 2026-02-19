@@ -2559,36 +2559,6 @@ public class SystemModelQuerier extends AModelQuerier {
 		return result.get(msURI);
 	}
 
-	/*
-	public void checkMisbehaviourImpact(AStoreWrapper store) {
-		String sparql = "SELECT ?g ?ms ?mslInferred\r\n" + //
-				"WHERE {\r\n" + //
-				"  BIND(<http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#MS-LossOfControl-7162f914> AS ?ms)\r\n" + //
-				"  GRAPH ?g { ?ms core:hasImpactLevel ?mslInferred }\r\n" + //
-				"}\r\n" + //
-				"";
-		logger.warn("Checking current hasImpactLevel");
-		logger.warn(sparql);
-
-		List<Map<String, String>> rows = store.translateSelectResult(store.querySelect(sparql, model.getGraph("system-inf")));
-		logger.warn("Result rows: {}", rows.size());
-		if (rows.size() > 1) {
-			logger.warn("Duplicate misbehaviour found.");
-		}
-
-		if (rows.size() == 0) {
-			logger.warn("No impact levels currently defined in any graph");
-			return;
-		}
-		
-		Map<String, String> row = rows.iterator().next();
-		logger.warn("graph: {}", row.get("g"));
-		logger.warn("ms: {}", row.get("ms"));
-		logger.warn("mslInferred: {}", row.get("mslInferred"));
-		//return row.get("defaultImpactLevel");
-	}
-	*/
-
 	public String getMisbehaviourDefaultImpact(AStoreWrapper store, String msURI) {
 		String sparql = String.format("SELECT DISTINCT * WHERE {\n" +
 				"  GRAPH <%s> {\n" +
