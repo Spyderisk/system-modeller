@@ -701,9 +701,12 @@ public class AssetController {
 			throw new AssetInvalidException();
 		}
 
-		//do it
-		logger.info("Deleting coverage assertion for control {} for asset {}", controlSet, asset);
-		model.getUpdater().deleteCoverageForControlSet(storeManager.getStore(), controlSet);
+		logger.info("Getting default coverage level");
+		String defaultCoverageLevel = model.getQuerier().getControlSetDefaultCoverageLevel(storeManager.getStore(), controlSet.getUri());
+		logger.info("defaultCoverageLevel: {}", defaultCoverageLevel);
+
+		logger.info("Resetting default coverage level for {} to {}", controlSet.getUri(), defaultCoverageLevel);
+		model.getUpdater().resetControlSetDefaultLevel(storeManager.getStore(), controlSet.getUri(), defaultCoverageLevel);
 
 		logger.info("Getting reverted control set: {}", controlSet.getUri());
 		ControlSet revertedCS = model.getQuerier().getControlSet(storeManager.getStore(), controlSet.getUri());
@@ -804,9 +807,12 @@ public class AssetController {
 			throw new AssetInvalidException();
 		}
 
-		//do it
-		logger.info("Deleting asserted TW level for twas {} for asset {}", twas, asset);
-		model.getUpdater().deleteAssertedTwLevel(storeManager.getStore(), twas);
+		logger.info("Getting default trustworthiness level");
+		String defaultTwLevel = model.getQuerier().getTwasDefaultLevel(storeManager.getStore(), twas.getUri());
+		logger.info("defaultTwLevel: {}", defaultTwLevel);
+
+		logger.info("Resetting default trustworthiness level for {} to {}", twas.getUri(), defaultTwLevel);
+		model.getUpdater().resetTWASdefaultLevel(storeManager.getStore(), twas.getUri(), defaultTwLevel);
 
 		logger.info("Getting reverted TWAS: {}", twas.getUri());
 		TrustworthinessAttributeSet revertedTWAS = model.getQuerier().getTrustworthinessAttributeSet(storeManager.getStore(), twas.getUri());

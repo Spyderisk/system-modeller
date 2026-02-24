@@ -39,7 +39,6 @@ import lombok.ToString;
 @ToString(callSuper=true)
 public class MisbehaviourSetDB extends EntityDB {
 	public MisbehaviourSetDB(){
-		this.defaultLevel = null;
 		this.causedThreats = new ArrayList<>();
 		this.causedBy = new HashSet<>();
 	}
@@ -54,7 +53,8 @@ public class MisbehaviourSetDB extends EntityDB {
 	private String locatedAt;							// The asset (or in the domain model, role) where it occurs
 	@SerializedName("hasImpactLevel")
 	private String impactLevel;							// Impact of this misbehaviour located at this asset, should it occur
-	private String defaultLevel;						// Default impact level - currently used to temporarily store this level during the risk calculation
+	@SerializedName("hasDefaultLevel")
+	private String defaultLevel;						// Default impact level - saved by the validator so we can revert if a user specified level is revoked
 
 	// Properties set during risk calculation
 	@SerializedName("hasPrior")

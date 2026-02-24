@@ -46,6 +46,8 @@ public class ControlSetDB extends EntityDB {
 	private String control;						// Control type
 	@SerializedName("isProposed")
 	private Boolean proposed;					// Control status
+	@SerializedName("hasDefaultLevel")
+	private String defaultLevel;				// Default coverage level - saved by the validator so we can revert if a user specified level is revoked
 	@SerializedName("hasCoverageLevel")
 	private String coverageLevel;				// Control coverage level
 

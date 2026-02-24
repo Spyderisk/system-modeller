@@ -221,12 +221,16 @@ public class ThreatController {
 	public ResponseEntity<MisbehaviourSet> revertMisbehaviourImpact(@PathVariable String modelId, @PathVariable String misbehaviourId,
 			@RequestBody MisbehaviourSet misbehaviour) {
 
-		logger.info("Called REST method to revert misbehaviour impact {} in model {}", misbehaviourId, modelId);
+		logger.info("Called REST method to revert misbehaviour impact {} in model {}", misbehaviour.getUri(), modelId);
 
 		final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.WRITE);
 
-		logger.info("Deleting asserted impact level for misbehaviour {}", misbehaviour.getUri());
-		model.getUpdater().deleteAssertedImpactLevel(storeManager.getStore(), misbehaviour);
+		logger.info("Getting default impact level");
+		String defaultImpactLevel = model.getQuerier().getMisbehaviourDefaultImpact(storeManager.getStore(), misbehaviour.getUri());
+		logger.info("defaultImpactLevel: {}", defaultImpactLevel);
+
+		logger.info("Resetting default impact level for {} to {}", misbehaviour.getUri(), defaultImpactLevel);
+		model.getUpdater().resetMSdefaultImpact(storeManager.getStore(), misbehaviour.getUri(), defaultImpactLevel);
 
 		logger.info("Getting updated misbehaviour: {}", misbehaviour.getUri());
 		MisbehaviourSet updatedMS = model.getQuerier().getMisbehaviourSet(storeManager.getStore(), misbehaviour.getUri(), false);
