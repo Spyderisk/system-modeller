@@ -520,7 +520,7 @@ public class Validator {
                         smax.setUri(uriMax);
                         smax.setControl(maxControl);
                         smax.setLocatedAt(asset.getUri());
-                        smin.setDefaultLevel(querier.lookupHighestTWLevel(averageLevel, popLevel, independentLevels).getUri());
+                        smax.setDefaultLevel(querier.lookupHighestTWLevel(averageLevel, popLevel, independentLevels).getUri());
                         smax.setMaxOf(savg.getUri());
                         savg.setHasMax(smax.getUri());
                         ControlSetDB smaxInput = querier.getControlSet(smax.getUri(), "system");
