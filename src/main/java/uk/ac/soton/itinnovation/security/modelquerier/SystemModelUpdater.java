@@ -663,6 +663,43 @@ public class SystemModelUpdater {
 	}
 
 	/**
+	 * Deletes the asserted coverage level and restores the default level.
+	 *
+	 * @param store the store
+	 * @param csURI the ControlSet URI
+	 * @param defaultCoverageLevel the default coverage level
+	 */
+	public void resetControlSetDefaultLevel(AStoreWrapper store, String csURI, String defaultCoverageLevel) {
+
+		String sparql = "DELETE {\n" +
+		"   GRAPH <" + model.getGraph("system") + "> {\n" +
+		"      ?cs core:hasCoverageLevel ?coverageLevelAsserted\n" +
+		"   }\n" +
+		"   GRAPH <" + model.getGraph("system-inf") + "> {\n" +
+		"      ?cs core:hasCoverageLevel ?coverageLevelInferred\n" +
+		"   }\n" +
+		"} INSERT {\n" +
+		"   GRAPH <" + model.getGraph("system-inf") + "> {\n" +
+		"      ?cs core:hasCoverageLevel <" + SparqlHelper.escapeURI(defaultCoverageLevel) + ">\n" +
+		"   }\n" +
+		"} WHERE {\n" +
+		"   BIND (<" + SparqlHelper.escapeURI(csURI) + "> as ?cs)\n" +
+		"   OPTIONAL {\n" +
+		"      GRAPH <" + model.getGraph("system") + "> {\n" +
+		"         ?cs core:hasCoverageLevel ?coverageLevelAsserted .\n" +
+		"      }\n" +
+		"   }\n" +
+		"   OPTIONAL {\n" +
+		"      GRAPH <" + model.getGraph("system-inf") + "> {\n" +
+		"         ?cs core:hasCoverageLevel ?coverageLevelInferred .\n" +
+		"      }\n" +
+		"   }\n" +
+		"}";
+		logger.warn(sparql);
+		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
+	}
+
+	/**
 	 * Toggle the proposed status of multiple control sets
 	 *
 	 * @param store the store
@@ -688,40 +725,6 @@ public class SystemModelUpdater {
 		}
 
 		return expandedControlSets;
-	}
-
-	/**
-	 * Delete the coverage level assertion for a control set
-	 *
-	 * @param store the store
-	 * @param cs the control set to be reverted
-	 */
-	public void deleteCoverageForControlSet(AStoreWrapper store, ControlSet cs) {
-
-		logger.debug("Deleting control set coverage {}", cs.toString());
-
-		String sparql = createRevertControlSetCoverageSparql(cs.getUri());
-		//logger.info(sparql);
-
-		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
-	}
-
-	private String createRevertControlSetCoverageSparql(String uri) {
-		String sparql =  "DELETE {\n" +
-		"	GRAPH <" + model.getGraph("system") + "> {\n" +
-		"		?cs core:hasCoverageLevel ?coverageLevel .\n" +
-		"	}\n" +
-		"} WHERE {\n" +
-		"	BIND(<" + SparqlHelper.escapeURI(uri) + "> AS ?cs)\n" +
-		"	GRAPH <" + model.getGraph("system-inf") + "> {\n" +
-		"		?cs a core:ControlSet .\n" +
-		"	}\n" +
-		"	OPTIONAL {\n" +
-		"		?cs core:hasCoverageLevel ?coverageLevel .\n" +
-		"	}\n" +
-		"}";
-
-		return sparql;
 	}
 
 	private String createUpdateControlSetSparql(String uri, String assetUri, String controlUri, boolean proposed, boolean workInProgress, String coverageLevel) {
@@ -893,35 +896,40 @@ public class SystemModelUpdater {
 	}
 
 	/**
-	 * Delete asserted TWAS level
+	 * Deletes the asserted trustworthiness level and restores the default level.
 	 *
 	 * @param store the store
-	 * @param twas the TWAS to be reverted
+	 * @param twasURI the TrustworthinessAttributeSet URI
+	 * @param defaultTwLevel the default trustworthiness level
 	 */
-	public void deleteAssertedTwLevel(AStoreWrapper store, TrustworthinessAttributeSet twas) {
+	public void resetTWASdefaultLevel(AStoreWrapper store, String twasURI, String defaultTwLevel) {
 
-		logger.debug("Deleting asserted TW level {}", twas.getUri());
-
-		String sparql = createRevertTwasSparql(twas.getUri());
-
-		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
-	}
-
-	private String createRevertTwasSparql(String uri) {
-		String sparql =  "DELETE {\n" +
-		"	GRAPH <" + model.getGraph("system") + "> {\n" +
-		"		?twas core:hasAssertedLevel ?twaslAsserted .\n" +
-		"	}\n" +
+		String sparql = "DELETE {\n" +
+		"   GRAPH <" + model.getGraph("system") + "> {\n" +
+		"      ?twas core:hasAssertedLevel ?twaslAsserted\n" +
+		"   }\n" +
+		"   GRAPH <" + model.getGraph("system-inf") + "> {\n" +
+		"      ?twas core:hasAssertedLevel ?twaslInferred\n" +
+		"   }\n" +
+		"} INSERT {\n" +
+		"   GRAPH <" + model.getGraph("system-inf") + "> {\n" +
+		"      ?twas core:hasAssertedLevel <" + SparqlHelper.escapeURI(defaultTwLevel) + ">\n" +
+		"   }\n" +
 		"} WHERE {\n" +
-		"	BIND(<" + SparqlHelper.escapeURI(uri) + "> AS ?twas)\n" +
-		"	OPTIONAL {\n" +
-		"		GRAPH <" + model.getGraph("system") + "> {\n" +
-		"			?twas core:hasAssertedLevel ?twaslAsserted .\n" +
-		"		}\n" +
-		"	}\n" +
+		"   BIND (<" + SparqlHelper.escapeURI(twasURI) + "> as ?twas)\n" +
+		"   OPTIONAL {\n" +
+		"      GRAPH <" + model.getGraph("system") + "> {\n" +
+		"         ?twas core:hasAssertedLevel ?twaslAsserted .\n" +
+		"      }\n" +
+		"   }\n" +
+		"   OPTIONAL {\n" +
+		"      GRAPH <" + model.getGraph("system-inf") + "> {\n" +
+		"         ?twas core:hasAssertedLevel ?twaslInferred .\n" +
+		"      }\n" +
+		"   }\n" +
 		"}";
-
-		return sparql;
+		logger.warn(sparql);
+		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
 	}
 
 	/**
@@ -958,40 +966,45 @@ public class SystemModelUpdater {
 		"		}\n" +
 		"	}\n" +
 		"}";
+		logger.warn(sparql);
 		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
 	}
 
 	/**
-	 * Delete asserted impact level for misbehaviour
+	 * Deletes the asserted impact level and restores the default level.
 	 *
 	 * @param store the store
-	 * @param ms the MisbehaviourSet to be reverted
+	 * @param msURI the MisbehaviourSet URI
+	 * @param defaultImpactLevel the default impact level
 	 */
-	public void deleteAssertedImpactLevel(AStoreWrapper store, MisbehaviourSet ms) {
+	public void resetMSdefaultImpact(AStoreWrapper store, String msURI, String defaultImpactLevel) {
 
-		logger.debug("Deleting asserted impact level {}", ms.getUri());
-
-		String sparql = createRevertImpactSparql(ms.getUri());
-		logger.info(sparql);
-
-		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
-	}
-
-	private String createRevertImpactSparql(String uri) {
-		String sparql =  "DELETE {\n" +
-		"	GRAPH <" + model.getGraph("system") + "> {\n" +
-		"		?ms core:hasImpactLevel ?mslAsserted .\n" +
-		"	}\n" +
+		String sparql = "DELETE {\n" +
+		"   GRAPH <" + model.getGraph("system") + "> {\n" +
+		"      ?ms core:hasImpactLevel ?mslAsserted\n" +
+		"   }\n" +
+		"   GRAPH <" + model.getGraph("system-inf") + "> {\n" +
+		"      ?ms core:hasImpactLevel ?mslInferred\n" +
+		"   }\n" +
+		"} INSERT {\n" +
+		"   GRAPH <" + model.getGraph("system-inf") + "> {\n" +
+		"      ?ms core:hasImpactLevel <" + SparqlHelper.escapeURI(defaultImpactLevel) + ">\n" +
+		"   }\n" +
 		"} WHERE {\n" +
-		"	BIND(<" + SparqlHelper.escapeURI(uri) + "> AS ?ms)\n" +
-		"	OPTIONAL {\n" +
-		"		GRAPH <" + model.getGraph("system") + "> {\n" +
-		"			?ms core:hasImpactLevel ?mslAsserted .\n" +
-		"		}\n" +
-		"	}\n" +
+		"   BIND (<" + SparqlHelper.escapeURI(msURI) + "> as ?ms)\n" +
+		"   OPTIONAL {\n" +
+		"      GRAPH <" + model.getGraph("system") + "> {\n" +
+		"         ?ms core:hasImpactLevel ?mslAsserted .\n" +
+		"      }\n" +
+		"   }\n" +
+		"   OPTIONAL {\n" +
+		"      GRAPH <" + model.getGraph("system-inf") + "> {\n" +
+		"         ?ms core:hasImpactLevel ?mslInferred .\n" +
+		"      }\n" +
+		"   }\n" +
 		"}";
-
-		return sparql;
+		logger.warn(sparql);
+		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
 	}
 
 	/**

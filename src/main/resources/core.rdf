@@ -28,6 +28,13 @@
       <owl:Class rdf:ID="Pattern"/>
     </rdfs:subClassOf>
   </owl:Class>
+  <owl:Class rdf:ID="AssetProperty">
+    <rdfs:subClassOf>
+      <owl:Class rdf:about="#AtomicThing"/>
+    </rdfs:subClassOf>
+    <rdfs:label>AssetProperty</rdfs:label>
+    <rdfs:comment>Base class for TrustworthinessAttributeSet, MisbehaviourSet and ControlSet, all of which model a property at a specific asset.</rdfs:comment>
+  </owl:Class>
   <owl:Class rdf:ID="TripletMember">
     <rdfs:subClassOf>
       <owl:Class rdf:about="#AtomicThing"/>
@@ -612,12 +619,8 @@ We can define defaults in the Domain Model, but allow users to override these in
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:ID="hasDefaultLevel">
     <rdfs:label>hasDefaultLevel</rdfs:label>
-    <rdfs:range rdf:resource="#TrustworthinessLevel"/>
-    <rdfs:subPropertyOf>
-      <owl:ObjectProperty rdf:ID="hasLevel"/>
-    </rdfs:subPropertyOf>
-    <rdfs:domain rdf:resource="#TrustworthinessImpactSet"/>
-    <rdfs:domain rdf:resource="#TrustworthinessAttributeSet"/>
+    <rdfs:domain rdf:resource="#AssetProperty"/>
+    <rdfs:range rdf:resource="#Level"/>
   </owl:ObjectProperty>
   <owl:ObjectProperty rdf:ID="hasSecondaryEffectCondition">
     <rdfs:domain rdf:resource="#Threat"/>

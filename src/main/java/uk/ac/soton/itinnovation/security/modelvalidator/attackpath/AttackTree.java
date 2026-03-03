@@ -57,6 +57,8 @@ public class AttackTree {
 
     private Map<String, Map<String, Integer>> pathNodes = new HashMap<>();
 
+    private long maxEndTime;
+
     private class InnerLink {
         AttackNode node = null;
         String predicate = "";
@@ -99,9 +101,10 @@ public class AttackTree {
      * @param shortestPath A boolean flag indicating whether the shortest path should be calculated.
      * @param apDataset    An AttackPathDataset object containing attack path data.
      */
-    public AttackTree(List<String> targetUris, boolean futureRisk, boolean shortestPath, AttackPathDataset apDataset) {
+    public AttackTree(List<String> targetUris, boolean futureRisk, boolean shortestPath, AttackPathDataset apDataset, long maxEndTime) {
 
         final long startTime = System.currentTimeMillis();
+        this.maxEndTime = maxEndTime;
 
         logger.info("*******************************************************");
         logger.info("Starting ThreatTree with {} target MS, futureRisk {}, and shortestPath {} flags.", targetUris,
@@ -177,10 +180,10 @@ public class AttackTree {
      * @param uri The URI of the AttackNode to get or create.
      * @return The AttackNode object with the specified URI.
      */
-    public AttackNode getOrCreateNode(String uri) {
+    public AttackNode getOrCreateNode(String uri, long maxEndTime) {
 
         if (!this.nodeByUri.containsKey(uri)) {
-            AttackNode treeNode = new AttackNode(uri, this.apd, this, ++nodeCounter);
+            AttackNode treeNode = new AttackNode(uri, this.apd, this, ++nodeCounter, maxEndTime);
             this.nodeByUri.put(uri, treeNode);
         }
 
@@ -195,16 +198,26 @@ public class AttackTree {
     private void backtrace(boolean computeLogic) {
 
         for (String targetUri : this.targetUris) {
+            targetUri = targetUri.replaceAll("[\n\r]", "_");
+            logger.info("targetUri: {}", targetUri);
 
-            AttackNode node = this.getOrCreateNode(targetUri);
+            AttackNode node = this.getOrCreateNode(targetUri, maxEndTime);
             node.setIsTargetMS(true);
 
             try {
+                long timeNow = System.currentTimeMillis();
+                boolean timedOut = timeNow > this.maxEndTime;
+                if (timedOut) {
+                    throw new TimeoutException("Attack path timed out");
+                }
+
                 node.backtrace(new HashSet<String>(), computeLogic);
             } catch (TreeTraversalException e) {
-                logger.error("Tree traversal error: " + e.getMessage(), e);
+                logger.error("Tree traversal error: {}", e.getMessage(), e);
+            } catch (TimeoutException e) {
+                throw e;
             } catch (Exception e) {
-                logger.error("Exception error: " + e.getMessage(), e);
+                logger.error("Exception error: {}", e.getMessage());
             }
         }
     }

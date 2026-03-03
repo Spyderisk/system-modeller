@@ -47,6 +47,8 @@ public class TrustworthinessAttributeSetDB extends EntityDB {
 	@SerializedName("hasTrustworthinessAttribute")
 	private String trustworthinessAttribute;			// Type of trustworthiness attribute
 	private String locatedAt;							// Asset with which it is associated
+	@SerializedName("hasDefaultLevel")
+	private String defaultLevel;						// Default assumed TW level - saved by the validator so we can revert if a user specified level is revoked
 	@SerializedName("hasAssertedLevel")
 	private String assertedLevel;						// Assumed TW level - user specified or default assumption
 	@SerializedName("hasInferredLevel")
