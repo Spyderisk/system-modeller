@@ -321,6 +321,7 @@ class DetailsAccordion extends React.Component {
                                 misbehaviours={misbehaviours}
                                 selectedMisbehaviour={this.props.selectedMisbehaviour}
                                 loading={this.props.loading}
+                                filters={this.props.filters}
                                 authz={this.props.authz}
                             />
                         </Panel.Body>

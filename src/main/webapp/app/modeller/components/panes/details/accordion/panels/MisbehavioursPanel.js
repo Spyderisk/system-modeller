@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from 'prop-types';
-import {getRootCauses, updateMisbehaviourImpact, revertMisbehaviourImpact} from "../../../../../actions/ModellerActions";
-import {FormControl, OverlayTrigger, Tooltip} from 'react-bootstrap';
+import {getRootCauses, updateMisbehaviourImpact, revertMisbehaviourImpact, toggleFilter} from "../../../../../actions/ModellerActions";
+import {FormControl, OverlayTrigger, Tooltip, Form, FormGroup, Checkbox} from 'react-bootstrap';
 import {getLevelColour, getRenderedLevelText} from "../../../../util/Levels";
 import * as Constants from "../../../../../../common/constants.js";
 import {bringToFrontWindow} from "../../../../../actions/ViewActions";
@@ -21,7 +21,6 @@ class MisbehavioursPanel extends React.Component {
     }
     
     getUpdatedState(props) {
-        //console.log("getUpdatedState: misbehaviours:", props.misbehaviours);
         let levels = Object.values(props.levels).sort(function(a, b) {
             return b.value - a.value;
         });
@@ -51,7 +50,6 @@ class MisbehavioursPanel extends React.Component {
             updating: updating,
         };
         
-        //console.log("updatedState:", updatedState);
         return updatedState;
     }
 
@@ -62,21 +60,17 @@ class MisbehavioursPanel extends React.Component {
 
     //N.B. this method is deprecated, so code will need to be refactored to use preferred methods!
     componentWillReceiveProps(nextProps) {
-        //console.log("componentWillReceiveProps: ", nextProps);
         let updatedState = this.getUpdatedState(nextProps);
         this.setState(updatedState);
     }
     
 
     render() {
-        //console.log("MisbehavioursPanel render");
         if (this.props.selectedAsset["loadingControlsAndThreats"]) {
             return (<div className="container-fluid"><div className="row"><span className="col-md-12">Loading...</span></div></div>);
         }
 
-        //console.log("MisbehavioursPanel: misbehaviours:", this.props.misbehaviours);
         var misbehaviourLabels = Object.keys(this.props.misbehaviours).sort();
-        //console.log("misbehaviourLabels:", misbehaviourLabels);
         
         return (
             <div className="misbehaviours detail-list">
@@ -89,18 +83,29 @@ class MisbehavioursPanel extends React.Component {
     }
 
     renderMisbehaviours(misbehaviourLabels) {
-        //console.log("renderMisbehaviours");
         let self = this;
 
         let levels = this.state.levels;
         if ( jQuery.isEmptyObject(this.state.impact) ) {
             return;
         }
-        
-        //console.log("selected misbehaviour:", this.props.selectedMisbehaviour);
-        
+                
+        //flag to show MS where visible = false
+        let showInvisibleMS = this.props.filters.assetDetails.ms.showInvisible;
+
         return (
             <div>
+                <Form>
+                    <FormGroup>
+                        <Checkbox
+                            checked={showInvisibleMS}
+                            onChange={(e) => {
+                                this.setFilter(e.nativeEvent.target.checked)
+                            }}>
+                            Show hidden consequences
+                        </Checkbox>
+                    </FormGroup>
+                </Form>
                 <div key={0} className={'row head'}>
                     <span className="col-xs-4 misbehaviour">
                         Consequence
@@ -117,13 +122,11 @@ class MisbehavioursPanel extends React.Component {
                 </div>
                 {misbehaviourLabels.map((misbehaviourLabel, index) => {
                     let misbehavioursGroup = this.props.misbehaviours[misbehaviourLabel];
-                    //console.log("misbehavioursGroup:", misbehavioursGroup);
                     
                     //is misbehaviour visible?
                     let visible = misbehavioursGroup["visible"];
 
-                    if (visible !== undefined && !visible) {
-                        //console.log("Hiding misbehaviour: ", misbehavioursGroup["misbehaviourLabel"]);
+                    if (!showInvisibleMS && (visible !== undefined) && !visible) {
                         return;
                     }
                         
@@ -208,6 +211,10 @@ class MisbehavioursPanel extends React.Component {
         )
     }
 
+    setFilter(value) {
+        this.props.dispatch(toggleFilter("ms", "showInvisible", value));
+    }
+
     valueChanged(e) {
         let misbehaviourId = e.target.id;
         let selectedLevelUri = e.target.value;
@@ -238,7 +245,6 @@ class MisbehavioursPanel extends React.Component {
     }
 
     onClickRevertImpactLevel(misbehaviourId) {
-        //console.log("onClickRevertImpactLevel:", misbehaviourId);
         if (misbehaviourId) {
             //set updating flag for this impact label
             let updatedUpdating = {...this.state.updating};
@@ -261,43 +267,9 @@ class MisbehavioursPanel extends React.Component {
     }
 
     openMisbehaviourExplorer(misbehaviour) {
-        //console.log("Displaying root causes for misbehaviour: ");
-        //console.log(misbehaviour);
-
-        //this.props.dispatch(toggleThreatEditor(false, ""));
-
-        /*
-        this.setState({
-            ...this.state,
-            rootCausesModal: {
-                misbehaviour: misbehaviour,
-                show: true
-            }
-        });
-        */
-
         // Now we get root causes for a specified misbehaviour (rather than a threat)
-        //console.log("misbehaviourUri:");
-        //console.log(misbehaviour.misbehaviours[0].id);
-        let misbehaviourUri = misbehaviour.uri; //in theory all misbehaviours in group have the same id
-        //console.log(misbehaviourUri);
-        let updateRootCausesModel = true;
-        //console.log("dispatch getRootCauses...");
-        //this.props.dispatch(getRootCauses(this.props.model["id"], misbehaviourId, updateRootCausesModel));
-        //this.props.dispatch(getRootCauses(this.props.model["id"], misbehaviour.misbehaviours[0], updateRootCausesModel));
         this.props.dispatch(getRootCauses(this.props.model["id"], misbehaviour));
     }
-
-    /*
-    closeRootCausesDisplay() {
-        this.setState({
-            ...this.state,
-            rootCausesModal: {
-                show: false
-            }
-        });
-    }
-    */
 
 }
 
@@ -307,7 +279,7 @@ MisbehavioursPanel.propTypes = {
     selectedAsset: PropTypes.object,
     misbehaviours: PropTypes.object,
     selectedMisbehaviour: PropTypes.object,
-    loading: PropTypes.object,
+    filters: PropTypes.object,
     dispatch: PropTypes.func
 };
 

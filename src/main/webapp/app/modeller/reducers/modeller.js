@@ -80,6 +80,9 @@ const modelState = {
         assetDetails: {
             twas: {
                 showInvisible: false
+            },
+            ms: {
+                showInvisible: false
             }
         }
     },
@@ -1577,10 +1580,21 @@ export default function modeller(state = modelState, action) {
         let filter = action.payload.filter;
         let selected = action.payload.selected;
 
-        //TODO (if/when required): add support for toggling other filters
-        if (panel !== "twas" || filter !== "showInvisible") {
+        if (panel !== "twas" && panel !== "ms"|| filter !== "showInvisible") {
             console.log("Panel/filter not known:", panel, filter);
             return state;
+        }
+
+        //Get current checkbox values
+        let selectedTwas = state.filters.assetDetails.twas.showInvisible;
+        let selectedMS = state.filters.assetDetails.ms.showInvisible;
+
+        //Update values according to request
+        if (panel === "twas") {
+            selectedTwas = selected
+        }
+        else if (panel === "ms") {
+            selectedMS = selected
         }
 
         return {
@@ -1591,7 +1605,11 @@ export default function modeller(state = modelState, action) {
                     ...state.filters.assetDetails,
                     twas: {
                         ...state.filters.assetDetails.twas,
-                        showInvisible: selected
+                        showInvisible: selectedTwas
+                    },
+                    ms: {
+                        ...state.filters.assetDetails.ms,
+                        showInvisible: selectedMS
                     }
                 }
             }
