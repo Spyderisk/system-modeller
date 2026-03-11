@@ -677,12 +677,14 @@ public class SystemModelUpdater {
 		"   }\n" +
 		"   GRAPH <" + model.getGraph("system-inf") + "> {\n" +
 		"      ?cs core:hasCoverageLevel ?coverageLevelInferred\n" +
-		"   }\n" +
-		"} INSERT {\n" +
+		"   }\n";
+		if (defaultCoverageLevel != null) {
+			sparql +="} INSERT {\n" +
 		"   GRAPH <" + model.getGraph("system-inf") + "> {\n" +
 		"      ?cs core:hasCoverageLevel <" + SparqlHelper.escapeURI(defaultCoverageLevel) + ">\n" +
-		"   }\n" +
-		"} WHERE {\n" +
+		"   }\n";
+		}
+		sparql += "} WHERE {\n" +
 		"   BIND (<" + SparqlHelper.escapeURI(csURI) + "> as ?cs)\n" +
 		"   OPTIONAL {\n" +
 		"      GRAPH <" + model.getGraph("system") + "> {\n" +
@@ -695,7 +697,7 @@ public class SystemModelUpdater {
 		"      }\n" +
 		"   }\n" +
 		"}";
-		logger.warn(sparql);
+		logger.debug(sparql);
 		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
 	}
 
@@ -910,12 +912,14 @@ public class SystemModelUpdater {
 		"   }\n" +
 		"   GRAPH <" + model.getGraph("system-inf") + "> {\n" +
 		"      ?twas core:hasAssertedLevel ?twaslInferred\n" +
-		"   }\n" +
-		"} INSERT {\n" +
+		"   }\n";
+		if (defaultTwLevel != null) {
+			sparql += "} INSERT {\n" +
 		"   GRAPH <" + model.getGraph("system-inf") + "> {\n" +
 		"      ?twas core:hasAssertedLevel <" + SparqlHelper.escapeURI(defaultTwLevel) + ">\n" +
-		"   }\n" +
-		"} WHERE {\n" +
+		"   }\n";
+		}
+		sparql += "} WHERE {\n" +
 		"   BIND (<" + SparqlHelper.escapeURI(twasURI) + "> as ?twas)\n" +
 		"   OPTIONAL {\n" +
 		"      GRAPH <" + model.getGraph("system") + "> {\n" +
@@ -928,7 +932,7 @@ public class SystemModelUpdater {
 		"      }\n" +
 		"   }\n" +
 		"}";
-		logger.warn(sparql);
+		logger.debug(sparql);
 		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
 	}
 
@@ -985,12 +989,14 @@ public class SystemModelUpdater {
 		"   }\n" +
 		"   GRAPH <" + model.getGraph("system-inf") + "> {\n" +
 		"      ?ms core:hasImpactLevel ?mslInferred\n" +
-		"   }\n" +
-		"} INSERT {\n" +
+		"   }\n";
+		if (defaultImpactLevel != null) {
+			sparql += "} INSERT {\n" +
 		"   GRAPH <" + model.getGraph("system-inf") + "> {\n" +
 		"      ?ms core:hasImpactLevel <" + SparqlHelper.escapeURI(defaultImpactLevel) + ">\n" +
-		"   }\n" +
-		"} WHERE {\n" +
+		"   }\n";
+		}
+		sparql += "} WHERE {\n" +
 		"   BIND (<" + SparqlHelper.escapeURI(msURI) + "> as ?ms)\n" +
 		"   OPTIONAL {\n" +
 		"      GRAPH <" + model.getGraph("system") + "> {\n" +
@@ -1003,7 +1009,7 @@ public class SystemModelUpdater {
 		"      }\n" +
 		"   }\n" +
 		"}";
-		logger.warn(sparql);
+		logger.debug(sparql);
 		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
 	}
 

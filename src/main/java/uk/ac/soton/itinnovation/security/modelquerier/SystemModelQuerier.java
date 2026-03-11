@@ -2571,7 +2571,11 @@ public class SystemModelQuerier extends AModelQuerier {
 
 		List<Map<String, String>> rows = store.translateSelectResult(store.querySelect(sparql, model.getGraph("system-inf")));
 		logger.debug("Result rows: {}", rows.size());
-		if (rows.size() > 1) {
+		if (rows.isEmpty()) {
+			logger.warn("No default impact level found for consequence.");
+			return null;
+		}
+		else if (rows.size() > 1) {
 			throw new RuntimeException("Duplicate misbehaviour found.");
 		}
 
@@ -2591,7 +2595,11 @@ public class SystemModelQuerier extends AModelQuerier {
 
 		List<Map<String, String>> rows = store.translateSelectResult(store.querySelect(sparql, model.getGraph("system-inf")));
 		logger.debug("Result rows: {}", rows.size());
-		if (rows.size() > 1) {
+		if (rows.isEmpty()) {
+			logger.warn("No default TW level found for this TWAS.");
+			return null;
+		}
+		else if (rows.size() > 1) {
 			throw new RuntimeException("Duplicate TWAS found.");
 		}
 
@@ -2611,7 +2619,11 @@ public class SystemModelQuerier extends AModelQuerier {
 
 		List<Map<String, String>> rows = store.translateSelectResult(store.querySelect(sparql, model.getGraph("system-inf")));
 		logger.debug("Result rows: {}", rows.size());
-		if (rows.size() > 1) {
+		if (rows.isEmpty()) {
+			logger.warn("No default coverage level found for this ControlSet.");
+			return null;
+		}
+		else if (rows.size() > 1) {
 			throw new RuntimeException("Duplicate ControlSet found.");
 		}
 
