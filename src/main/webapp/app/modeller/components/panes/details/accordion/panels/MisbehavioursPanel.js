@@ -136,11 +136,13 @@ class MisbehavioursPanel extends React.Component {
                     //is misbehaviour selected?
                     let selected = selectedMisbehav && selectedMisbehav.id === misbehaviourId;
 
+                    let impactWarningText = "Impact level not available. Please revalidate!";
                     let impact = self.state.impact[misbehaviourLabel];
                     let likelihood = self.state.likelihood[misbehaviourLabel];
                     let risk = self.state.risk[misbehaviourLabel];
                     let updating = self.state.updating[misbehaviourLabel];
 
+                    let impactRender = getRenderedLevelText(levels, impact, false, impactWarningText);
                     let likelihoodRender = getRenderedLevelText(levels, likelihood);
                     let riskRender = getRenderedLevelText(levels, risk);
 
@@ -173,7 +175,7 @@ class MisbehavioursPanel extends React.Component {
                                 </span>
                                 </OverlayTrigger>
                                 <span className="col-xs-2 impact">
-                                    <FormControl 
+                                    {impact === null ? impactRender : <FormControl 
                                         disabled={!this.props.authz.userEdit}
                                         componentClass="select"
                                         className="impact-dropdown level"
@@ -189,7 +191,7 @@ class MisbehavioursPanel extends React.Component {
                                                 {level.label}
                                             </option>
                                         )};
-                                    </FormControl>
+                                    </FormControl>}
                                     {updating ? <i className="fa fa-spinner fa-pulse fa-lg fa-fw" /> : null}
                                     &nbsp;
                                     <span style={{cursor: "pointer", display: showRevertButton ? "inline-block" : "none"}} className="fa fa-undo undo-button" 

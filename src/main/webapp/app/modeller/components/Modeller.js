@@ -1049,7 +1049,9 @@ class Modeller extends React.Component {
 
                     //here, we reverse color map by setting reverseColours = true (as high trustworthiness is good!)
                     let reverseColours = true;
-                    let currentRender = (twas !== undefined) ? getRenderedLevelText(levels, twas.inferredTWLevel, reverseColours) : "";
+                    let twWarningText = "Assumed trustworthiness level not available. Please revalidate!";
+                    let assertedRender = getRenderedLevelText(levels, twas.assertedTWLevel, reverseColours, twWarningText);
+                    let currentRender = getRenderedLevelText(levels, twas.inferredTWLevel, reverseColours);
                     let causingMisbehaviourSet = (twas !== undefined) ? twas.causingMisbehaviourSet : null;
                     let misbehaviour = this.getMisbehaviour(causingMisbehaviourSet);
                     
@@ -1079,7 +1081,7 @@ class Modeller extends React.Component {
                                 </OverlayTrigger>
                             </span>
                             <span className="col-xs-3 impact">
-                                <FormControl
+                                {twas.assertedTWLevel === null ? assertedRender : <FormControl
                                     disabled={!this.props.authz.userEdit}
                                     componentClass="select"
                                     className="impact-dropdown level"
@@ -1095,7 +1097,7 @@ class Modeller extends React.Component {
                                             {level.label}
                                         </option>
                                     )};
-                                </FormControl>
+                                </FormControl>}
                                 {updating ? <i className="fa fa-spinner fa-pulse fa-lg fa-fw" /> : null}
                                 &nbsp;
                                 <span style={{cursor: "pointer", display: showRevertButton ? "inline-block" : "none"}} className="fa fa-undo undo-button" 
