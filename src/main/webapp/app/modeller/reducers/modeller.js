@@ -1434,11 +1434,8 @@ export default function modeller(state = modelState, action) {
         let misbehaviourUri = misbehaviour.uri;
 
         let impactLevelsArray = state.model.levels["ImpactLevel"];
-        console.log("impactLevelsArray:",impactLevelsArray);
-        console.log("impactLevel.impactLevel:", misbehaviour.impactLevel);
         let impactLevel = misbehaviour.impactLevel === null ? null : impactLevelsArray.find((level) => level["uri"] === misbehaviour.impactLevel.uri);
         let updatedImpact = impactLevel;
-        console.log("updatedImpact:", updatedImpact);
         let impactLevelAsserted = misbehaviour["impactLevelAsserted"];
 
         let updatedSelectedMisbehaviour = state.selectedMisbehaviour.misbehaviour;
