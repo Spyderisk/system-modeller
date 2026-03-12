@@ -459,15 +459,16 @@ class ModelMisBehavPanel extends React.Component {
             let visible = misbehaviour["visible"];
             
             if (visible !== undefined && !visible) {
-                //console.log("Hiding misbehaviour: ", misbehaviour);
                 return;
             }
 
+            let impactWarningText = "Impact level not available. Please revalidate!";
             let impact = misbehaviour["impactLevel"];
             let likelihood = misbehaviour["likelihood"];
             let risk = misbehaviour["riskLevel"];
             let updating = this.state.updating[uri];
 
+            let impactRender = getRenderedLevelText(levels, impact, false, impactWarningText);
             let likelihoodRender = getRenderedLevelText(levels, likelihood);
             let riskRender = getRenderedLevelText(levels, risk);
 
@@ -511,7 +512,7 @@ class ModelMisBehavPanel extends React.Component {
                         </span>
                     </OverlayTrigger>
                     <span className="col-xs-2 impact">
-                        <FormControl
+                        {impact === null ? impactRender : <FormControl
                             disabled={!this.props.authz.userEdit}
                             componentClass="select"
                             className="impact-dropdown level"
@@ -527,7 +528,7 @@ class ModelMisBehavPanel extends React.Component {
                                     {level.label}
                                 </option>
                             )};
-                        </FormControl>
+                        </FormControl>}
                         {updating ? <i className="fa fa-spinner fa-pulse fa-lg fa-fw" /> : null}
                         &nbsp;
                         <span style={{cursor: "pointer", display: showRevertButton ? "inline-block" : "none"}} className="fa fa-undo undo-button" 

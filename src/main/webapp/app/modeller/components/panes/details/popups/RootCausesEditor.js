@@ -126,12 +126,12 @@ class RootCausesEditor extends React.Component {
             return null;
         }
 
+        let impactWarningText = "Impact level not available. Please revalidate!";
         let impact = this.state.impact;
         let likelihood = misbehaviour["likelihood"];
         let risk = misbehaviour["riskLevel"];
 
-        let impactLevel = impact != null ? impact.label : "";
-
+        let impactRender = getRenderedLevelText(this.props.model.levels.impactLevel, impact, false, impactWarningText);
         let likelihoodRender = getRenderedLevelText(this.props.model.levels.Likelihood, likelihood);
         let riskRender = getRenderedLevelText(this.props.model.levels.RiskLevel, risk);
 
@@ -255,7 +255,7 @@ class RootCausesEditor extends React.Component {
                                 </div>
                                 <div className='row detail-info'>
                                     <span className="col-xs-2 impact">
-                                        <FormControl
+                                        {impact === null ? impactRender : <FormControl
                                             disabled={!this.props.authz.userEdit}
                                             componentClass="select"
                                             className="impact-dropdown level"
@@ -271,7 +271,7 @@ class RootCausesEditor extends React.Component {
                                                     {level.label}
                                                 </option>
                                             )}
-                                        </FormControl>
+                                        </FormControl>}
                                         {updating ? <i className="fa fa-spinner fa-pulse fa-lg fa-fw" /> : null}
                                     </span>
                                     <span className="likelihood col-xs-2">

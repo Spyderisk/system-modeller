@@ -42,14 +42,14 @@ class TrustworthinessPanel extends React.Component {
 
             let attribute = twa.attribute;
             let label = attribute.label;
+
             if (! twa.assertedTWLevel) {
                 console.log("WARNING: null assertedTWLevel on asset: " + label);
             }
-            else {
-                attributes.push(attribute);
-                twas[label] = twa;
-                updating[label] = false;
-            }
+
+            attributes.push(attribute);
+            twas[label] = twa;
+            updating[label] = false;
         });
 
         let updatedState = {
