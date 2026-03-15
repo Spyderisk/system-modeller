@@ -9,6 +9,7 @@ export const COPY_MODEL = "COPY_MODEL";
 export const RENAME_MODEL = "RENAME_MODEL";
 export const EDIT_MODEL = "EDIT_MODEL";
 export const SHARE_MODEL = "SHARE_MODEL";
+export const DROP_INFERRED_GRAPH = "DROP_INFERRED_GRAPH";
 export const DELETE_MODEL = "DELETE_MODEL";
 export const EXPORT_MODEL = "EXPORT_MODEL";
 export const GET_ONTOLOGIES = "GET_ONTOLOGIES";
@@ -53,6 +54,16 @@ export default function dashboard(state = {
                     {...model,
                         name: updatedModel.name,
                         description: updatedModel.description
+                    } : model)
+            };
+        case DROP_INFERRED_GRAPH:
+            //Ideally we should receive a response from the REST request, via the payload.
+            //However it seems sufficient that, with a successful (200) response here, we can simply clear the validatedDomainVersion value
+            return {
+                ...state,
+                models: state.models.map(model => model.id === action.payload.id ?
+                    {...model,
+                        validatedDomainVersion: null
                     } : model)
             };
         case DELETE_MODEL:

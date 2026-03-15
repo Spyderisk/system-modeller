@@ -3,7 +3,7 @@ import { Button, ButtonToolbar, Col, DropdownButton, MenuItem, Modal, OverlayTri
 import { saveDownload } from "../../../common/actions/api";
 import * as Constants from "../../../common/constants.js";
 import { axiosInstance, axiosInstanceDashboard } from "../../../common/rest/rest";
-import { deleteModel, updateModel } from "../../actions/api";
+import { deleteModel, updateModel, dropInferredGraph } from "../../actions/api";
 import DeleteModelModal from "../popups/DeleteModelModal";
 import EditModelModal from "../popups/EditModelModal";
 import ShareModelModal from "../popups/ShareModelModal";
@@ -351,6 +351,17 @@ class ModelItem extends Component {
                                         </div>
                                     </MenuItem>
                                     {
+                                        model.canBeEdited ?
+                                            <MenuItem onClick={e => this.clickDropInferredGraph(e)}>
+                                                <div className="card-dropdown">
+                                                    <span className="fa fa-remove"></span>
+                                                    <span>Drop inferred graph</span>
+                                                </div>
+                                            </MenuItem>
+                                        :
+                                            null
+                                    }
+                                    {
                                         model.canBeShared ?
                                             <MenuItem onClick={e => this.deleteModelModal(e)}>
                                                 <div className="card-dropdown">
@@ -474,6 +485,12 @@ class ModelItem extends Component {
     updateModel(id, updatedModel) {
         this.setState({ ...this.state, editDetailsModal: false });
         this.props.dispatch(updateModel(id, updatedModel));
+    }
+
+    clickDropInferredGraph(e) {
+        e.stopPropagation();
+        let modelId = this.props.model.id;
+        this.props.dispatch(dropInferredGraph(modelId));
     }
 
     deleteModel(id) {

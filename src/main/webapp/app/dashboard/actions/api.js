@@ -118,6 +118,21 @@ export function checkout(modelId) {
     };
 }
 
+export function dropInferredGraph(modelId) {
+    return function (dispatch) {
+        axiosInstance
+            .post("/models/" + modelId + "/clear_inferred_graph")
+            .then((response) => {
+                dispatch({
+                    type: actions.DROP_INFERRED_GRAPH,
+                    payload: {
+                        id: modelId,
+                    }
+                });
+            })
+    };
+}
+
 export function deleteModel(modelId) {
     return function (dispatch) {
         axiosInstance

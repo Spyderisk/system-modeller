@@ -6,7 +6,7 @@ import PanelHeading from "react-bootstrap/lib/PanelHeading";
 import { saveDownload } from "../../../common/actions/api";
 import * as Constants from "../../../common/constants.js";
 import { axiosInstance, axiosInstanceDashboard } from "../../../common/rest/rest";
-import { deleteModel, updateModel } from "../../actions/api";
+import { deleteModel, updateModel, dropInferredGraph } from "../../actions/api";
 import { callCopyModel } from "../modelItem/ModelItemFunctions";
 import DeleteModelModal from "../popups/DeleteModelModal";
 import EditModelModal from "../popups/EditModelModal";
@@ -212,6 +212,17 @@ class RecentCard extends Component {
                                     </MenuItem>
                                     {
                                         model.canBeShared ?
+                                            <MenuItem onClick={e => this.clickDropInferredGraph(e)}>
+                                                <div className="card-dropdown">
+                                                    <span className="fa fa-remove"></span>
+                                                    <span>Drop inferred graph</span>
+                                                </div>
+                                            </MenuItem>
+                                        :
+                                            null
+                                    }
+                                    {
+                                        model.canBeShared ?
                                             <MenuItem onClick={e => this.deleteModelModal(e)}>
                                                 <div className="card-dropdown">
                                                     <span className="fa fa-trash"></span>
@@ -308,6 +319,12 @@ class RecentCard extends Component {
     updateModel(id, updatedModel) {
         this.setState({ ...this.state, editDetailsModal: false });
         this.props.dispatch(updateModel(id, updatedModel));
+    }
+
+    clickDropInferredGraph(e) {
+        e.stopPropagation();
+        let modelId = this.props.model.id;
+        this.props.dispatch(dropInferredGraph(modelId));
     }
 
     deleteModel(id) {
