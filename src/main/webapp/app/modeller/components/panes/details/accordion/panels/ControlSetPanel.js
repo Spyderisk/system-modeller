@@ -9,7 +9,7 @@ import {
     revertControlCoverageOnAsset, 
     openControlStrategyExplorer} from "../../../../../actions/ModellerActions";
 import {bringToFrontWindow, closeWindow} from "../../../../../actions/ViewActions";
-import {renderCoverageLevel} from "../../../../util/Levels";
+import {renderCoverageLevel, getRenderedLevelText} from "../../../../util/Levels";
 
 class ControlSetPanel extends React.Component {
 
@@ -135,6 +135,8 @@ class ControlSetPanel extends React.Component {
                                 }
 
                                 let coverageLevel = levelsMap.get(controlSet.coverageLevel);
+                                let coverageWarningText = "Coverage level not available. Please revalidate!";
+                                let coverageRender = getRenderedLevelText(this.props.levels, coverageLevel, false, coverageWarningText);
 
                                 //show revert coverage button only if the level has been asserted by the user
                                 let showRevertButton = controlSet.coverageAsserted;
@@ -212,7 +214,7 @@ class ControlSetPanel extends React.Component {
                                                 {errorFlagOverlay}
                                             </div>
                                             <div class="col-xs-3" style={{paddingLeft: 8}}>
-                                                {renderCoverageLevel(controlSet.label, coverageLevel, this.props.levels, this.props.authz.userEdit, updatingCoverage, this.coverageValueChanged)}
+                                                {coverageLevel ? renderCoverageLevel(controlSet.label, coverageLevel, this.props.levels, this.props.authz.userEdit, updatingCoverage, this.coverageValueChanged) : coverageRender}
                                                 &nbsp;
                                                 <span style={{cursor: "pointer", display: showRevertButton ? "inline-block" : "none"}} className="fa fa-undo undo-button" 
                                                     onClick={((e) => {

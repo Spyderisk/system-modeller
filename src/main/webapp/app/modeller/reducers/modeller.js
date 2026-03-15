@@ -1383,7 +1383,7 @@ export default function modeller(state = modelState, action) {
             if (controlUris.includes(controlSet.uri)) {
                 controlSet.proposed = controlsUpdate.proposed;
                 controlSet.workInProgress = controlsUpdate.workInProgress;
-                if (controlsUpdate.coverageLevel) controlSet.coverageLevel = controlsUpdate.coverageLevel;
+                controlSet.coverageLevel = controlsUpdate.coverageLevel;
                 if (controlsUpdate.coverageAsserted !== undefined) controlSet.coverageAsserted = controlsUpdate.coverageAsserted;
                 return controlSet;
             } else {
@@ -1434,7 +1434,7 @@ export default function modeller(state = modelState, action) {
         let misbehaviourUri = misbehaviour.uri;
 
         let impactLevelsArray = state.model.levels["ImpactLevel"];
-        let impactLevel = impactLevelsArray.find((level) => level["uri"] === misbehaviour.impactLevel.uri);
+        let impactLevel = misbehaviour.impactLevel === null ? null : impactLevelsArray.find((level) => level["uri"] === misbehaviour.impactLevel.uri);
         let updatedImpact = impactLevel;
         let impactLevelAsserted = misbehaviour["impactLevelAsserted"];
 
