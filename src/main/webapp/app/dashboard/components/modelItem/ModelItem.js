@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from "react";
+import PropTypes from "prop-types";
 import { Button, ButtonToolbar, Col, DropdownButton, MenuItem, Modal, OverlayTrigger, Panel, Popover, Row, Tooltip } from "react-bootstrap";
 import { saveDownload } from "../../../common/actions/api";
 import * as Constants from "../../../common/constants.js";
@@ -513,5 +514,11 @@ class ModelItem extends Component {
         this.setState({deleteModelModal: !this.state.deleteModelModal});
     }
 }
+
+ModelItem.propTypes = {
+    model: PropTypes.object,
+    models: PropTypes.array,
+    dispatch: PropTypes.func,
+};
 
 export default ModelItem;

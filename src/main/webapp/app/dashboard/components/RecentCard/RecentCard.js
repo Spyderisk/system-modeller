@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import PropTypes from "prop-types";
 import { Button, ButtonToolbar, Col, DropdownButton, MenuItem, Modal, OverlayTrigger, Panel, Popover, Tooltip } from 'react-bootstrap';
 import PanelBody from "react-bootstrap/lib/PanelBody";
 import PanelFooter from "react-bootstrap/lib/PanelFooter";
@@ -347,5 +348,11 @@ class RecentCard extends Component {
         this.setState({ deleteModelModal: !this.state.deleteModelModal });
     }
 }
+
+RecentCard.propTypes = {
+    model: PropTypes.object,
+    models: PropTypes.array,
+    dispatch: PropTypes.func,
+};
 
 export default RecentCard;
