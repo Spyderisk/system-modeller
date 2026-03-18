@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import PropTypes from "prop-types";
 import { Button, ButtonToolbar, Col, DropdownButton, MenuItem, Modal, OverlayTrigger, Panel, Popover, Tooltip } from 'react-bootstrap';
 import PanelBody from "react-bootstrap/lib/PanelBody";
 import PanelFooter from "react-bootstrap/lib/PanelFooter";
@@ -6,7 +7,7 @@ import PanelHeading from "react-bootstrap/lib/PanelHeading";
 import { saveDownload } from "../../../common/actions/api";
 import * as Constants from "../../../common/constants.js";
 import { axiosInstance, axiosInstanceDashboard } from "../../../common/rest/rest";
-import { deleteModel, updateModel } from "../../actions/api";
+import { deleteModel, updateModel, dropInferredGraph } from "../../actions/api";
 import { callCopyModel } from "../modelItem/ModelItemFunctions";
 import DeleteModelModal from "../popups/DeleteModelModal";
 import EditModelModal from "../popups/EditModelModal";
@@ -212,6 +213,17 @@ class RecentCard extends Component {
                                     </MenuItem>
                                     {
                                         model.canBeShared ?
+                                            <MenuItem onClick={e => this.clickDropInferredGraph(e)}>
+                                                <div className="card-dropdown">
+                                                    <span className="fa fa-remove"></span>
+                                                    <span>Drop inferred graph</span>
+                                                </div>
+                                            </MenuItem>
+                                        :
+                                            null
+                                    }
+                                    {
+                                        model.canBeShared ?
                                             <MenuItem onClick={e => this.deleteModelModal(e)}>
                                                 <div className="card-dropdown">
                                                     <span className="fa fa-trash"></span>
@@ -310,6 +322,12 @@ class RecentCard extends Component {
         this.props.dispatch(updateModel(id, updatedModel));
     }
 
+    clickDropInferredGraph(e) {
+        e.stopPropagation();
+        let modelId = this.props.model.id;
+        this.props.dispatch(dropInferredGraph(modelId));
+    }
+
     deleteModel(id) {
         this.setState({ ...this.state, deleteModelModal: false });
         this.props.dispatch(deleteModel(id));
@@ -330,5 +348,11 @@ class RecentCard extends Component {
         this.setState({ deleteModelModal: !this.state.deleteModelModal });
     }
 }
+
+RecentCard.propTypes = {
+    model: PropTypes.object,
+    models: PropTypes.array,
+    dispatch: PropTypes.func,
+};
 
 export default RecentCard;
