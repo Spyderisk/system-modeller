@@ -55,7 +55,7 @@
     "html-webpack-plugin": "^5.5.0",
     "http-proxy-middleware": "^2.0.9",
     "mini-css-extract-plugin": "^2.4.5",
-    "postcss": "^8.4.31",
+    "postcss": "^8.5.10",
     "postcss-loader": "^6.2.1",
     "sass": "^1.45.0",
     "sass-loader": "^12.4.0",
