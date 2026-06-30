@@ -1521,6 +1521,25 @@ export function updateTwasOnAsset(modelId, assetId, updatedTwas) {
     };
 }
 
+// Refresh an asset's TWAs and misbehaviour impact levels
+export function refreshAssetTwasAndImpacts(modelId, assetId) {
+    return function (dispatch) {
+        axiosInstance.get("/models/" + modelId + "/assets/" + assetId + "/twas")
+            .then((response) => {
+                Object.values(response.data || {}).forEach((twa) => {
+                    dispatch({type: instr.UPDATE_TWAS, payload: {updatedTwas: twa}});
+                });
+            });
+        axiosInstance.get("/models/" + modelId + "/assets/" + assetId)
+            .then((response) => {
+                let misbehaviourSets = (response.data && response.data.misbehaviourSets) || {};
+                Object.values(misbehaviourSets).forEach((misbehaviour) => {
+                    dispatch({type: instr.UPDATE_MISBEHAVIOUR_IMPACT, payload: {misbehaviour: misbehaviour}});
+                });
+            });
+    };
+}
+
 export function revertAssertedTwasOnAsset(modelId, assetId, twas) {
     let twasUri = {
         uri: twas.uri

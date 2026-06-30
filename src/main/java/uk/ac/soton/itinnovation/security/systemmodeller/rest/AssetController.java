@@ -784,6 +784,43 @@ public class AssetController {
 	}
 
 	/**
+	 * Update several TWAS on an asset in a single request (generic bulk variant of
+	 * updateTwasForAsset, to avoid one HTTP round-trip per attribute).
+	 *
+	 * @param modelId Webkey of the model
+	 * @param assetId ID of the asset
+	 * @param updatedTWASList list of Trustworthiness Attribute Set objects in the request body
+	 * @return completed
+	 */
+	@RequestMapping(value = "/models/{modelId}/assets/{assetId}/twas/bulk", method = RequestMethod.PUT)
+	@ResponseBody
+	public ResponseEntity<String> updateTwasForAssetBulk(@PathVariable String modelId, @PathVariable String assetId,
+			@RequestBody List<TrustworthinessAttributeSet> updatedTWASList) {
+
+		logger.info("Called REST method to PUT {} TWAS on asset {} for model {}",
+				updatedTWASList != null ? updatedTWASList.size() : 0, assetId, modelId);
+
+		final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.WRITE);
+
+		// look up asset by ID
+		Asset asset = modelHelper.getAssetById(assetId, model, false); //no need to get full details here
+		if (asset == null) {
+			logger.error("Unknown asset '{}' for model [{}] {}", assetId, model.getId(), model.getName());
+			throw new AssetInvalidException();
+		}
+
+		//update each TWAS
+		for (TrustworthinessAttributeSet updatedTWAS : updatedTWASList) {
+			model.getUpdater().updateTWAS(storeManager.getStore(), updatedTWAS);
+		}
+
+		//set a flag to show the user they have to re-run the risk level calculation
+		model.invalidateRiskLevels();
+
+		return new ResponseEntity<>("completed", HttpStatus.OK);
+	}
+
+	/**
 	 * Revert asserted TWAS for an asset
 	 *
 	 * @param modelId Webkey of the model

@@ -11,8 +11,16 @@ import MisbehavioursPanel from "./panels/MisbehavioursPanel";
 import AdditionalPropertiesPanel from "./panels/AdditionalPropertiesPanel" ;
 import TrustworthinessPanel from "./panels/TrustworthinessPanel";
 import InferredAssetPanel from "./panels/InferredAssetPanel";
+import ExternalBindingPanel from "./panels/ExternalBindingPanel";
 import {openDocumentation} from "../../../../../common/documentation/documentation"
 import {togglePanel} from "../../../../actions/ModellerActions";
+
+// PLACEHOLDER: provider name/label for the external-binding widget.
+// TODO: replace with external config
+const EXTERNAL_BINDING_CAPABILITY = {
+    providerName: "trustguard",
+    providerLabel: "TrustGuard"
+};
 
 class DetailsAccordion extends React.Component {
 
@@ -183,6 +191,30 @@ class DetailsAccordion extends React.Component {
                         </Panel.Body>
                     </Panel.Collapse>
                 </Panel>
+
+                {/* TODO: check if an external-binding provider is enabled in
+                    configuration. Always visible for now. */}
+                {true && hasSelectedAsset &&
+                    <Panel bsStyle="primary">
+                        <Panel.Heading>
+                            <Panel.Title toggle>
+                                <div className={"doc-help"}>
+                                    <span><i className="fa fa-link" />External Binding of <i>{asset["label"]}</i></span>
+                                </div>
+                            </Panel.Title>
+                        </Panel.Heading>
+                        <Panel.Collapse>
+                            <Panel.Body>
+                                <ExternalBindingPanel dispatch={this.props.dispatch}
+                                    modelId={this.props.model["id"]}
+                                    asset={asset.uri === "" ? undefined : asset}
+                                    capability={EXTERNAL_BINDING_CAPABILITY}
+                                    authz={this.props.authz}
+                                />
+                            </Panel.Body>
+                        </Panel.Collapse>
+                    </Panel>
+                }
 
                 {inferredAssets.length > 0 &&
                     <Panel bsStyle="primary">
