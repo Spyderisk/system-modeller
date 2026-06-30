@@ -43,7 +43,6 @@ import uk.ac.soton.itinnovation.security.modelvalidator.java.PatternLink;
 
 import java.util.*;
 
-import javax.ws.rs.DefaultValue;
 
 public class Validator {
     // TODO: Replace CardinalityConstraintDB with LinkDB subclass (as storing anyway, due to work-around)

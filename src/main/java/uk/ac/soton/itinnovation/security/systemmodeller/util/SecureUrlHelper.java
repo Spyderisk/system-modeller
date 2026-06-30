@@ -29,7 +29,7 @@ import java.security.SecureRandom;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.keycloak.representations.idm.UserRepresentation;
+import uk.ac.soton.itinnovation.security.systemmodeller.auth.UserRepresentation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

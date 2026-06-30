@@ -29,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
-import org.keycloak.representations.idm.UserRepresentation;
+import uk.ac.soton.itinnovation.security.systemmodeller.auth.UserRepresentation;
 import java.util.Optional;
 import uk.ac.soton.itinnovation.security.systemmodeller.auth.KeycloakAdminClient;
 

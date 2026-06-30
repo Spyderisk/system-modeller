@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
-import org.keycloak.representations.idm.UserRepresentation;
+import uk.ac.soton.itinnovation.security.systemmodeller.auth.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
