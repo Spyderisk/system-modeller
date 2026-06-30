@@ -28,6 +28,7 @@ package uk.ac.soton.itinnovation.security.systemmodeller.rest;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -205,6 +206,35 @@ public class ThreatController {
 		model.invalidateRiskLevels();
 		
 		logger.debug("Sending response from updateMisbehaviourImpact");
+		return ResponseEntity.status(HttpStatus.OK).body("completed");
+	}
+
+	/**
+	 * Update the impact level of several misbehaviours in a single request (generic
+	 * bulk variant of updateMisbehaviourImpact, to avoid one HTTP round-trip per
+	 * misbehaviour). Each MisbehaviourSet in the body identifies its own target.
+	 *
+	 * @param modelId Webkey of the model
+	 * @param updatedMisbehaviours list of MisbehaviourSet objects in the request body
+	 * @return completed
+	 */
+	@RequestMapping(value = "/models/{modelId}/misbehaviours/impact/bulk", method = RequestMethod.PUT)
+	@ResponseBody
+	public ResponseEntity<String> updateMisbehaviourImpactBulk(@PathVariable String modelId,
+			@RequestBody List<MisbehaviourSet> updatedMisbehaviours) {
+
+		logger.info("Called REST method to PUT impact on {} misbehaviours in model {}",
+				updatedMisbehaviours != null ? updatedMisbehaviours.size() : 0, modelId);
+
+		final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.WRITE);
+
+		for (MisbehaviourSet updatedMisbehaviour : updatedMisbehaviours) {
+			model.getUpdater().updateMS(storeManager.getStore(), updatedMisbehaviour);
+		}
+
+		//set a flag to show the user they have to re-run the risk level calculation
+		model.invalidateRiskLevels();
+
 		return ResponseEntity.status(HttpStatus.OK).body("completed");
 	}
 
