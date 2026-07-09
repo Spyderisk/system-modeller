@@ -1057,6 +1057,8 @@ public class Validator {
         for (String domainThreatURI : domainThreats.keySet()) {
             // Get domain model parent
             ThreatDB domainThreat = domainThreats.get(domainThreatURI);
+            MatchingPatternDB domainMP = domainMPs.get(domainThreat.getAppliesTo());
+            String domainMPlabel = "MP-" + domainMP.getLabel();
 
             // Get lists of roles used by that parent
             List<String> uniqueRoles = uniqueRolesByThreat.getOrDefault(domainThreat.getUri(), new ArrayList<>());
@@ -1102,11 +1104,11 @@ public class Validator {
 
                 // Create the average likelihood threat, which should always exist
                 ThreatDB systemThreatAvg = new ThreatDB();
-                systemThreatAvg.setUri(String.format("%s-%s", domainThreat.getUri().replace("domain#", "system#"),
-                                                threatMatchingPattern.getUri().replace("system#", "")));
+                systemThreatAvg.setUri(String.format("%s%s", domainThreat.getUri().replace("domain#", "system#"),
+                                                threatMatchingPattern.getUri().replace(domainMPlabel, "").replace("system#", "")));
                 systemThreatAvg.setId(systemThreatAvg.generateID());
                 systemThreatAvg.setLabel(String.format("%s_%s", domainThreat.getUri().replace("domain#", ""), 
-                                                threatMatchingPattern.getLabel()));
+                                                threatMatchingPattern.getLabel().replace(domainMPlabel, "")));
                 systemThreatAvg.setDescription(generateDescription(domainThreat.getDescription(), threatMatchingPattern));
                 systemThreatAvg.setParent(domainThreat.getUri());
                 systemThreatAvg.setAppliesTo(threatMatchingPattern.getUri());
@@ -1130,10 +1132,10 @@ public class Validator {
                     String domainThreatMinURI = domainThreat.getHasMin();
                     systemThreatMin = new ThreatDB();
                     systemThreatMin.setUri(String.format("%s-%s", domainThreatMinURI.replace("domain#", "system#"),
-                                                    threatMatchingPattern.getUri().replace("system#", "")));
+                                                    threatMatchingPattern.getUri().replace(domainMPlabel, "").replace("system#", "")));
                     systemThreatMin.setId(systemThreatMin.generateID());
                     systemThreatMin.setLabel(String.format("%s_%s", domainThreatMinURI.replace("domain#", ""),
-                                                    threatMatchingPattern.getLabel()));
+                                                    threatMatchingPattern.getLabel().replace(domainMPlabel, "")));
                     systemThreatMin.setDescription(generateDescription(domainThreat.getDescription(), threatMatchingPattern));
                     systemThreatMin.setParent(domainThreat.getUri());
                     systemThreatMin.setAppliesTo(threatMatchingPattern.getUri());
@@ -1160,10 +1162,10 @@ public class Validator {
                     String domainThreatMaxURI = domainThreat.getHasMax();
                     systemThreatMax = new ThreatDB();
                     systemThreatMax.setUri(String.format("%s-%s", domainThreatMaxURI.replace("domain#", "system#"),
-                                                    threatMatchingPattern.getUri().replace("system#", "")));
+                                                    threatMatchingPattern.getUri().replace(domainMPlabel, "").replace("system#", "")));
                     systemThreatMax.setId(systemThreatMax.generateID());
                     systemThreatMax.setLabel(String.format("%s_%s", domainThreatMaxURI.replace("domain#", ""),
-                                                    threatMatchingPattern.getLabel()));
+                                                    threatMatchingPattern.getLabel().replace(domainMPlabel, "")));
                     systemThreatMax.setDescription(generateDescription(domainThreat.getDescription(), threatMatchingPattern));
                     systemThreatMax.setParent(domainThreat.getUri());
                     systemThreatMax.setAppliesTo(threatMatchingPattern.getUri());
