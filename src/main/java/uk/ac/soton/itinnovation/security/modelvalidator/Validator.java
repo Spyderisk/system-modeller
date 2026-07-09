@@ -1458,8 +1458,15 @@ public class Validator {
                         // Determine whether this CS is optional or mandatory
                         Boolean optional = optionalCS.contains(dcsUri);
 
+                        // Find nodes in the system threat matching pattern corresponding to this role
+                        List<String> nodesThisThreat = nodesByRole.getOrDefault(roleURI, new ArrayList<>());
+                        if( nodesThisThreat.isEmpty() && !optional) {
+                            // We need assets with this control in this role, but there are none
+                            missingMandatoryCS=true;
+                        }
+
                         // Find system CS at assets in the role (in this pattern) specified in the domain model CS
-                        for(String nodeUri : nodesByRole.getOrDefault(roleURI, new ArrayList<>())){
+                        for(String nodeUri : nodesThisThreat){
                             // Get the node and asset
                             NodeDB node = querier.getNode(nodeUri, "system-inf");
                             String assetURI = node.getSystemAsset();
