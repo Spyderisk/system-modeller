@@ -21,7 +21,7 @@ jobs:
     steps:
 
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v5
       with:
         lfs: true
 
@@ -46,7 +46,7 @@ jobs:
         echo "FAIL=${FAIL}" >> ${GITHUB_ENV}
 
     - name: Archive test results
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: test-artifacts
         path: test-artifacts/
@@ -67,7 +67,7 @@ jobs:
     steps:
 
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v5
       with:
         lfs: true
 
