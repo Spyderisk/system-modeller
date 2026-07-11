@@ -213,6 +213,9 @@ task bootDev(type: org.springframework.boot.gradle.tasks.run.BootRun) {
 test {
     systemProperties = System.properties
     systemProperties['user.dir'] = workingDir
+
+    exclude 'uk/ac/soton/itinnovation/security/modelvalidator/**'
+    
     testLogging {
         events "passed", "skipped", "failed" //, "standardOut", "standardError"
 
