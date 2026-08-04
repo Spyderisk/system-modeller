@@ -14,7 +14,7 @@
     "classnames": "^2.2.6",
     "es6-promise": "^4.2.4",
     "immutable": "^4.0.0-rc.12",
-    "lodash": "^4.17.23",
+    "lodash": "^4.18.1",
     "prop-types": "^15.6.2",
     "react": "16.13.1",
     "react-bootstrap": "^0.32.3",
