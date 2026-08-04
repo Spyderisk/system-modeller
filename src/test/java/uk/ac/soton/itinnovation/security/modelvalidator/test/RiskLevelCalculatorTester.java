@@ -100,6 +100,9 @@ public class RiskLevelCalculatorTester extends TestCase {
 		tester.addDomain(6, "modelvalidator/domain-ssm-testing-6a3.nq", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/ssm-testing-6a3");
 		tester.addDomain(7, "modelvalidator/ssm-testing-6a3-0-16-auto-expanded.nq", "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/ssm-testing-6a3-expanded");
 
+        tester.addDomain(8, "modelvalidator/RiskLevelCalculator/domain-network-v6a3-2-2-unfiltered.nq.gz",
+                "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network-v6a3-2-2");
+
 		//unvalidated system model for testing risk calculator
 		tester.addSystem(0, "modelvalidator/system-network.nq.gz",
 			"http://it-innovation.soton.ac.uk/system/5ad09178567d94846a9aeaec");
@@ -138,6 +141,9 @@ public class RiskLevelCalculatorTester extends TestCase {
 
 		tester.addSystem(9, "modelvalidator/Test-6a3-1ANB-HighSatC-asserted.nq",
 				"http://it-innovation.soton.ac.uk/system/63b2f38af03b473a0ce2a3b9");
+
+        tester.addSystem(10, "modelvalidator/RiskLevelCalculator/system-dataflow-test-singles-validated_domain-network-v6a3-2-2.nq.gz",
+				"http://it-innovation.soton.ac.uk/system/63d9308f8f6a206408be9010");
 
 		tester.setUp();
 
@@ -325,10 +331,9 @@ public class RiskLevelCalculatorTester extends TestCase {
 	 * Tests that the threat frequency functionality is working correctly. This uses a full domain and system model,
 	 * both of which should be replaced by simple test models in the future.
 	 */
-	@Ignore("Fails due to bad input. See https://iglab.it-innovation.soton.ac.uk/Security/system-modeller/-/merge_requests/655#note_28417")
 	@Test
 	public void testThreatFrequency() {
-		tester.switchModels(3, 4);
+		tester.switchModels(8, 10);
 
 		try {
 			IQuerierDB querierDB = new JenaQuerierDB(dataset, tester.getModel(), true);
@@ -350,7 +355,7 @@ public class RiskLevelCalculatorTester extends TestCase {
 
 		// If the frequency functionality is  working then the likelihood of this threat will be VeryLow, otherwise it
 		// will be Low
-		Threat threat = threats.get("http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#H.A.H.3-H_a9feda22");
+        Threat threat = threats.get("http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#DF.C.CCDFCS.3.2-MP-CCDFCS_6f472a59_363e1940_a40e98cc_78a9ab96_6f472a59_40cad76f_40cad76f");
 		assertEquals(threat.getLikelihood().getValue(), 0);
 	}
 
@@ -417,11 +422,9 @@ public class RiskLevelCalculatorTester extends TestCase {
 
 	}
 
-	//TODO: fix or delete this test
-	@Ignore("This test fails for refactored validator but we don't yet know why. Testing the two risk calculations separately works fine (see below).")
 	@Test
 	public void testCurrentOrFutureRiskCalculation() {
-		tester.switchModels(2, 3);
+		tester.switchModels(8, 10);
 
 		try {
 			IQuerierDB querierDB = new JenaQuerierDB(dataset, tester.getModel(), true);
@@ -430,15 +433,17 @@ public class RiskLevelCalculatorTester extends TestCase {
 			rc.calculateRiskLevels(RiskCalculationMode.CURRENT, true, new Progress(tester.getGraph("system"))); //save results, as queried below
 
 			MisbehaviourSet ms = smq.getMisbehaviourSet(tester.getStore(),
-					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#MS-LossOfAvailability-d7369b42",
+                    "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#MS-LossOfAuthenticity-a40e98cc",
 					false); //no need for causes here
-			assertEquals(2, ms.getLikelihood().getValue());
+			logger.info("Future risk: MS-LossOfAuthenticity-a40e98cc has likelihood {}, value {}",ms.getLikelihood(),ms.getLikelihood().getValue());
+			assertEquals(0, ms.getLikelihood().getValue());
 
 			rc.calculateRiskLevels(RiskCalculationMode.FUTURE, true, new Progress(tester.getGraph("system"))); //save results, as queried below
 			ms = smq.getMisbehaviourSet(tester.getStore(),
-					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#MS-LossOfAvailability-d7369b42",
-					false); //no need for causes here
-			assertEquals(1, ms.getLikelihood().getValue());
+                    "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#MS-LossOfAuthenticity-a40e98cc",
+                    false); //no need for causes here
+            logger.info("Current risk: MS-LossOfAuthenticity-a40e98cc has likelihood {}, value {}",ms.getLikelihood(),ms.getLikelihood().getValue());
+			assertEquals(3, ms.getLikelihood().getValue());
 		} catch (Exception e) {
 			logger.error("Exception thrown by risk level calculator", e);
 			fail("Exception thrown by risk level calculator");
