@@ -1058,7 +1058,7 @@ public class Validator {
             // Get domain model parent
             ThreatDB domainThreat = domainThreats.get(domainThreatURI);
             MatchingPatternDB domainMP = domainMPs.get(domainThreat.getAppliesTo());
-            String domainMPlabel = "MP-" + domainMP.getLabel();
+            String domainMPlabel = domainMP.getUri().replace("domain#","");
 
             // Get lists of roles used by that parent
             List<String> uniqueRoles = uniqueRolesByThreat.getOrDefault(domainThreat.getUri(), new ArrayList<>());
