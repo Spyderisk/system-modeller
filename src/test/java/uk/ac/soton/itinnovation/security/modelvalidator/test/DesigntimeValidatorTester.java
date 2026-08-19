@@ -1002,6 +1002,9 @@ public class DesigntimeValidatorTester extends TestCase {
 	 */
 	@Test
 	public void testConstructionLinkBetweenRootAndSecondary() {
+
+		logger.debug("Note: this test is sensitive to changes in threat URI generation in Validator.Java");
+
 		tester.switchModels(5, 6);
 
 		//make sure the model is NOT validated - there's a separate test for revalidating
@@ -1023,9 +1026,6 @@ public class DesigntimeValidatorTester extends TestCase {
 			Map<String, Threat> testThreats = threatsByType.get(
 					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#E.M.B9E.1");
 
-			for (String ss : testThreats.keySet()) {
-				logger.debug("Threat {}", ss);
-			}
 			
 			// Check (C1)-[r09]->(E-C1-D1)
 			assertTrue(testThreats.containsKey(
