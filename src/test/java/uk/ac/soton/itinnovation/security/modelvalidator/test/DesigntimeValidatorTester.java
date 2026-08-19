@@ -1023,18 +1023,22 @@ public class DesigntimeValidatorTester extends TestCase {
 			Map<String, Threat> testThreats = threatsByType.get(
 					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#E.M.B9E.1");
 
+			for (String ss : testThreats.keySet()) {
+				logger.debug("Threat {}", ss);
+			}
+			
 			// Check (C1)-[r09]->(E-C1-D1)
 			assertTrue(testThreats.containsKey(
-					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#E.M.B9E.1-B9E_d3ceb3a3_6937c94e"));
+					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#E.M.B9E.1_d3ceb3a3_6937c94e"));
 			// Check (B1)-[r09]->(E-D1)
 			assertTrue(testThreats.containsKey(
-					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#E.M.B9E.1-B9E_c908315f_cff7e9eb"));
+					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#E.M.B9E.1_c908315f_cff7e9eb"));
 			// Check (B2)-[r09]->(E-D1)
 			assertTrue(testThreats.containsKey(
-					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#E.M.B9E.1-B9E_50fbe66e_cff7e9eb"));
+					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#E.M.B9E.1_50fbe66e_cff7e9eb"));
 			// Check (C1)-[r09]->(E-D1)
 			assertTrue(testThreats.containsKey(
-					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#E.M.B9E.1-B9E_d3ceb3a3_cff7e9eb"));
+					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#E.M.B9E.1_d3ceb3a3_cff7e9eb"));
 
 			assertEquals(4, threatsByType.get(
 					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#E.M.B9E.1").size());
