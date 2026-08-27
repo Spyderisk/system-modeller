@@ -57,6 +57,7 @@ import uk.ac.soton.itinnovation.security.modelquerier.SystemModelQuerier;
 import uk.ac.soton.itinnovation.security.modelquerier.SystemModelUpdater;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.AssetDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.EntityDB;
+import uk.ac.soton.itinnovation.security.modelquerier.dto.MatchingPatternDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.MisbehaviourDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.MisbehaviourSetDB;
 import uk.ac.soton.itinnovation.security.modelquerier.dto.RiskCalcResultsDB;
@@ -383,9 +384,9 @@ public class RiskLevelCalculatorTester extends TestCase {
 		}
 
 		// Get the high likelihood threat caused directly by the least secure [C:A-B]
-		ThreatDB tmax = querierDB.getThreat("system#A.Se_Max.AtsAt.1-MP-AtsAt_b64ab6ce", "system-inf");
+		ThreatDB tmax = querierDB.getThreat("system#A.Se_Max.AtsAt.1_b64ab6ce", "system-inf");
 		if(tmax == null) {
-			fail("Unable to find highest likelihood threat 'system#A.Se_Max.AtsAt.1-MP-AtsAt_b64ab6ce'");
+			fail("Unable to find highest likelihood threat 'system#A.Se_Max.AtsAt.1_b64ab6ce'");
 		} else {
 			// Should be a root cause threat of Loss of Performance at A, but not Loss of Performance at B
 			assertTrue(tmax.isRootCause());
@@ -394,9 +395,9 @@ public class RiskLevelCalculatorTester extends TestCase {
 		}
 
 		// Get the average likelihood threat caused directly by the average [C:A-B]
-		ThreatDB tavg = querierDB.getThreat("system#A.Se.AtsAt.1-MP-AtsAt_b64ab6ce", "system-inf");
+		ThreatDB tavg = querierDB.getThreat("system#A.Se.AtsAt.1_b64ab6ce", "system-inf");
 		if(tavg == null) {
-			fail("Unable to find average likelihood threat 'system#A.Se.AtsAt.1-MP-AtsAt_b64ab6ce'");
+			fail("Unable to find average likelihood threat 'system#A.Se.AtsAt.1_b64ab6ce'");
 		} else {
 			// Should be a root cause threat of Loss of Performance at B, but not Loss of Performance at A
 			assertTrue(tavg.isRootCause());
@@ -405,9 +406,9 @@ public class RiskLevelCalculatorTester extends TestCase {
 		}
 
 		// Get the low likelihood threat caused directly by the most secure [C:A-B]
-		ThreatDB tmin = querierDB.getThreat("system#A.Se_Min.AtsAt.1-MP-AtsAt_b64ab6ce", "system-inf");
+		ThreatDB tmin = querierDB.getThreat("system#A.Se_Min.AtsAt.1_b64ab6ce", "system-inf");
 		if(tmin == null) {
-			fail("Unable to find lowest likelihood threat 'system#A.Se_Min.AtsAt.1-MP-AtsAt_b64ab6ce'");
+			fail("Unable to find lowest likelihood threat 'system#A.Se_Min.AtsAt.1_b64ab6ce'");
 		} else {
 			// Should not be a root cause threat
 			assertFalse(tmin.isRootCause());

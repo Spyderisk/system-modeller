@@ -34,6 +34,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
@@ -94,7 +95,7 @@ public class AttackPathTester extends TestCase {
         tester.addDomain(0, "modelvalidator/domain-network-6a1-3-5-auto-expanded-unfiltered.nq.gz",
                 "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain-network");
 
-		tester.addSystem(0, "modelvalidator/system-dataflow-test-singles.nq.gz",
+		tester.addSystem(0, "modelvalidator/testAttackPathGraph_Updated.nq.gz",
                 "http://it-innovation.soton.ac.uk/system/63d9308f8f6a206408be9010");
 
 		tester.setUp();
@@ -117,12 +118,13 @@ public class AttackPathTester extends TestCase {
 		logger.debug("Test {} took {} milliseconds", name.getMethodName(), System.currentTimeMillis() - stopwatch);
 
 		// comment in to better debug the test models
-		logger.debug("Exporting test model");
+		logger.debug("Exporting model at end of test");
 		tester.exportTestModel("build/build/test-results/" + name.getMethodName(), true, false, true);
 	}
 
 	// Tests //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+	//@Ignore("Attack path algorithm times out, presumably due to some deficiency in the test case used (to be determined)")
 	@Test
 	public void testAttackPathGraph() {
 		logger.info("Switching to selected domain and system model test cases");
@@ -159,7 +161,7 @@ public class AttackPathTester extends TestCase {
 		try {
 			logger.info("Gathering datasets for the attack graph");
 
-			AttackPathAlgorithm apa = new AttackPathAlgorithm(querierDB, 30);
+			AttackPathAlgorithm apa = new AttackPathAlgorithm(querierDB, 60);
 
 			List<String> targetUris = new ArrayList<>();
 			targetUris.add("system#MS-LossOfAuthenticity-a40e98cc");

@@ -736,157 +736,159 @@ public class DesigntimeValidatorTester extends TestCase {
      */
 	@Test
     public void testValidateTestModel() {
-    try {
-        tester.switchModels(4, 5);
-        setReasoner(new NullReasoner());
+		logger.debug("Note: this test is sensitive to changes in threat URI generation in Validator.Java");
+	
+		try {
+			tester.switchModels(4, 5);
+			setReasoner(new NullReasoner());
 
-        //make sure the model is NOT validated - there's a separate test for revalidating
-        tester.getStore().clearGraph(tester.getGraph("system-inf"));
+			//make sure the model is NOT validated - there's a separate test for revalidating
+			tester.getStore().clearGraph(tester.getGraph("system-inf"));
 
-        long time = System.currentTimeMillis();
-        dv.validateDesigntimeModel(new Progress("test"));
-        logger.debug("TOTAL TIME: {}", (System.currentTimeMillis() - time));
+			long time = System.currentTimeMillis();
+			dv.validateDesigntimeModel(new Progress("test"));
+			logger.debug("TOTAL TIME: {}", (System.currentTimeMillis() - time));
 
-        // Test TWAS creation for non-unique nodes
-        Threat testThreat = smq.getSystemThreat(tester.getStore(),
-				"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#A.M.A1mB.1-A1mB_95c9e105");
-        assertEquals(2, testThreat.getEntryPoints().size());
+			// Test TWAS creation for non-unique nodes
+			Threat testThreat = smq.getSystemThreat(tester.getStore(),
+					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#A.M.A1mB.1_95c9e105");
+			assertEquals(2, testThreat.getEntryPoints().size());
 
-        // Test secondary effect condition creation for non-unique nodes
-        testThreat = smq.getSystemThreat(tester.getStore(),
-                "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#A.M.A6mD.1-A6mD_ef2fee92");
-        assertEquals(2, testThreat.getSecondaryEffectConditions().size());
+			// Test secondary effect condition creation for non-unique nodes
+			testThreat = smq.getSystemThreat(tester.getStore(),
+					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#A.M.A6mD.1_ef2fee92");
+			assertEquals(2, testThreat.getSecondaryEffectConditions().size());
 
-        // Test MS creation for non-unique nodes
-		testThreat = smq.getSystemThreat(tester.getStore(),
-				"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#A.M.A1oB.1-A1oB_ef2fee92");
-		assertEquals(2, testThreat.getMisbehaviours().size());
+			// Test MS creation for non-unique nodes
+			testThreat = smq.getSystemThreat(tester.getStore(),
+					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#A.M.A1oB.1_ef2fee92");
+			assertEquals(2, testThreat.getMisbehaviours().size());
 
-       /* String query = String.format("SELECT DISTINCT ?s ?p ?o WHERE { GRAPH <%s> {"
- 				+ " ?s ?p ?o .\n"
- 				//+ " ?s a <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/core#TrustworthinessAttributeSet> .\n"
- 				+ "}}", tester.getGraph("system"));
-        List<Map<String, String>> results = smq.testQuery(query, tester.getStore());
- 		logger.debug("Results: {}", results.size());
- 		for (Map<String, String>  result : results) {
- 			if (result.toString().contains("core#Trust")) {
- 	 			logger.debug(result.toString());
- 			}
- 		}*/
+		/* String query = String.format("SELECT DISTINCT ?s ?p ?o WHERE { GRAPH <%s> {"
+					+ " ?s ?p ?o .\n"
+					//+ " ?s a <http://it-innovation.soton.ac.uk/ontologies/trustworthiness/core#TrustworthinessAttributeSet> .\n"
+					+ "}}", tester.getGraph("system"));
+			List<Map<String, String>> results = smq.testQuery(query, tester.getStore());
+			logger.debug("Results: {}", results.size());
+			for (Map<String, String>  result : results) {
+				if (result.toString().contains("core#Trust")) {
+					logger.debug(result.toString());
+				}
+			}*/
 
-        /*Map<String, Asset> assets = smq.getSystemAssets(tester.getStore());
-        List<String> sortAssets = new ArrayList<>();
-        for (Asset asset : assets.values()) {
-            sortAssets.add(asset.getLabel());
-        }
-        Collections.sort(sortAssets);*/
+			/*Map<String, Asset> assets = smq.getSystemAssets(tester.getStore());
+			List<String> sortAssets = new ArrayList<>();
+			for (Asset asset : assets.values()) {
+				sortAssets.add(asset.getLabel());
+			}
+			Collections.sort(sortAssets);*/
 
-        /*Map<String, Asset> assets = smq.getSystemAssets(tester.getStore());
-        List<String> sortAssets = new ArrayList<>();
-        for (Asset asset : assets.values()) {
-            sortAssets.add(asset.getUri());
-        }
-        Collections.sort(sortAssets);*/
+			/*Map<String, Asset> assets = smq.getSystemAssets(tester.getStore());
+			List<String> sortAssets = new ArrayList<>();
+			for (Asset asset : assets.values()) {
+				sortAssets.add(asset.getUri());
+			}
+			Collections.sort(sortAssets);*/
 
-        /*logger.debug("--- CS ---");
-    	for (ControlSet cs : smq.getControlSets(tester.getStore()).values()) {
-    		String csString = cs.getUri();
-    		csString = csString.replace(csString.split("-")[csString.split("-").length-1], "") +
-    				assets.get(cs.getAssetUri()).getLabel();
+			/*logger.debug("--- CS ---");
+			for (ControlSet cs : smq.getControlSets(tester.getStore()).values()) {
+				String csString = cs.getUri();
+				csString = csString.replace(csString.split("-")[csString.split("-").length-1], "") +
+						assets.get(cs.getAssetUri()).getLabel();
 
-    		String string = cs.isAssertable() + ", "+ cs.isProposed() + "," +
-    					cs.getControl();
+				String string = cs.isAssertable() + ", "+ cs.isProposed() + "," +
+							cs.getControl();
 
-    		logger.debug("{}: {}", csString, string);
-    	}*/
+				logger.debug("{}: {}", csString, string);
+			}*/
 
-        Map<String, Threat> threats = smq.getSystemThreats(tester.getStore());
-    	/*logger.debug("--- CSG ---");
-		for (ControlStrategy csg : smq.getControlStrategies(tester.getStore()).values()) {
-			Threat threat = threats.get(csg.getThreat());
-    		String key = threat.getLabel() + " " + csg.getLabel();
-    		String val = csg.getBlockingEffect() + " " + csg.getControlSets();
-    		String line = key + ": " + val;
-			logger.debug(line.replaceAll("http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#", ""));
-		}*/
-        /*for (Threat threat : threats.values()) {
-        	//logger.debug("{} {}", threat.getLabel(), smq.getControlStrategiesForThreat(tester.getStore(), threat.getUri()));
-        	for (ControlStrategy csg : threat.getControlStrategies().values()) {
-    			String key = threat.getLabel() + " " + csg.getLabel();
-    			String val = " ";
-        		logger.debug("{}: {}", key, val);
-        	}
-        }*/
+			Map<String, Threat> threats = smq.getSystemThreats(tester.getStore());
+			/*logger.debug("--- CSG ---");
+			for (ControlStrategy csg : smq.getControlStrategies(tester.getStore()).values()) {
+				Threat threat = threats.get(csg.getThreat());
+				String key = threat.getLabel() + " " + csg.getLabel();
+				String val = csg.getBlockingEffect() + " " + csg.getControlSets();
+				String line = key + ": " + val;
+				logger.debug(line.replaceAll("http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#", ""));
+			}*/
+			/*for (Threat threat : threats.values()) {
+				//logger.debug("{} {}", threat.getLabel(), smq.getControlStrategiesForThreat(tester.getStore(), threat.getUri()));
+				for (ControlStrategy csg : threat.getControlStrategies().values()) {
+					String key = threat.getLabel() + " " + csg.getLabel();
+					String val = " ";
+					logger.debug("{}: {}", key, val);
+				}
+			}*/
 
-        /*logger.debug("--- TWAS ---");
-        for (String assetUri : sortAssets) {
-        	Asset asset = assets.get(assetUri);
-        	for (TrustworthinessAttributeSet twas : asset.getTrustworthinessAttributeSets().values()) {
-        		String string = asset.getLabel() + " ";
-        		//string += twas.getUri().replace("http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#", "") + ": ";
-        		string += twas.getAttribute().getLabel() + ": ";
-        		string += (twas.getAssertedTWLevel() != null ? twas.getAssertedTWLevel().getLabel() : "null") + ", ";
-        		string += (twas.getInferredTWLevel() != null ? twas.getInferredTWLevel().getLabel() : "null") + ", ";
-        		String ms = twas.getCausingMisbehaviourSet() != null ? twas.getCausingMisbehaviourSet().replace("http://it-innovation.soton.ac.uk/ontologies/trustworthiness/", "") : "null";
-        		if (!ms.equals("null")) {
-        			ms = ms.replace(ms.split("-")[ms.split("-").length-1], "");
-        		}
-        		string += ms;
-        		logger.debug(string);
-        	}
-        }*/
-        /*logger.debug("--- MS ---");
-        for (String assetUri : sortAssets) {
-        	Asset asset = assets.get(assetUri);
-        	for (MisbehaviourSet ms : asset.getMisbehaviourSets().values()) {
-        		String string = asset.getLabel() + " ";
-        		//string += twas.getUri().replace("http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#", "") + ": ";
-        		String msString = ms.getLabel();
-        		msString = msString.replace(msString.split("-")[msString.split("-").length-1], "");
-        		string += msString + ": ";
-        		string += ms.toString();
-        		logger.debug(string);
-        	}
-        }*/
+			/*logger.debug("--- TWAS ---");
+			for (String assetUri : sortAssets) {
+				Asset asset = assets.get(assetUri);
+				for (TrustworthinessAttributeSet twas : asset.getTrustworthinessAttributeSets().values()) {
+					String string = asset.getLabel() + " ";
+					//string += twas.getUri().replace("http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#", "") + ": ";
+					string += twas.getAttribute().getLabel() + ": ";
+					string += (twas.getAssertedTWLevel() != null ? twas.getAssertedTWLevel().getLabel() : "null") + ", ";
+					string += (twas.getInferredTWLevel() != null ? twas.getInferredTWLevel().getLabel() : "null") + ", ";
+					String ms = twas.getCausingMisbehaviourSet() != null ? twas.getCausingMisbehaviourSet().replace("http://it-innovation.soton.ac.uk/ontologies/trustworthiness/", "") : "null";
+					if (!ms.equals("null")) {
+						ms = ms.replace(ms.split("-")[ms.split("-").length-1], "");
+					}
+					string += ms;
+					logger.debug(string);
+				}
+			}*/
+			/*logger.debug("--- MS ---");
+			for (String assetUri : sortAssets) {
+				Asset asset = assets.get(assetUri);
+				for (MisbehaviourSet ms : asset.getMisbehaviourSets().values()) {
+					String string = asset.getLabel() + " ";
+					//string += twas.getUri().replace("http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#", "") + ": ";
+					String msString = ms.getLabel();
+					msString = msString.replace(msString.split("-")[msString.split("-").length-1], "");
+					string += msString + ": ";
+					string += ms.toString();
+					logger.debug(string);
+				}
+			}*/
 
-        List<String> sortThreats = new ArrayList<>();
-        for (Threat threat : threats.values()) {
-            sortThreats.add(threat.getLabel());
-        }
-        Collections.sort(sortThreats);
+			List<String> sortThreats = new ArrayList<>();
+			for (Threat threat : threats.values()) {
+				sortThreats.add(threat.getLabel());
+			}
+			Collections.sort(sortThreats);
 
-        /*logger.debug("\n");
-        logger.debug("--- Threats ---");
-        for (String threat : sortThreats) {
-        	logger.debug(threat);
-        }*/
+			/*logger.debug("\n");
+			logger.debug("--- Threats ---");
+			for (String threat : sortThreats) {
+				logger.debug(threat);
+			}*/
 
 
 
-        // TODO: Finish
-        /*assertEquals(new Integer(4), threatTypeCounts.get("I.A.HLSI.1"));
-        assertEquals(new Integer(2), threatTypeCounts.get("LSg.A.LSgH.1"));
-        assertEquals(new Integer(1), threatTypeCounts.get("H.A.HnP.1"));
-        assertEquals(new Integer(2), threatTypeCounts.get("H.A.HPPd-u.1"));
-        assertEquals(new Integer(2), threatTypeCounts.get("H.A.HmP.1"));
-        assertEquals(new Integer(2), threatTypeCounts.get("H.A.HoP.1"));*/
-        
-        logger.debug("Threats: {}", threats.size());
-		logger.debug("Assets: {}", smq.getSystemAssets(tester.getStore()).size());
-		logger.debug("MisbehaviourSets: {}",  smq.getMisbehaviourSets(tester.getStore(), false).size()); //no need for causes here
-		logger.debug("TrustworthinessAttributeSets: {}",  smq.getTrustworthinessAttributeSets(tester.getStore()).size());
-		logger.debug("ControlSets: {}", smq.getControlSets(tester.getStore()).size());
-		logger.debug("ControlStrategies: {}", smq.getControlStrategies(tester.getStore()).size());
+			// TODO: Finish
+			/*assertEquals(new Integer(4), threatTypeCounts.get("I.A.HLSI.1"));
+			assertEquals(new Integer(2), threatTypeCounts.get("LSg.A.LSgH.1"));
+			assertEquals(new Integer(1), threatTypeCounts.get("H.A.HnP.1"));
+			assertEquals(new Integer(2), threatTypeCounts.get("H.A.HPPd-u.1"));
+			assertEquals(new Integer(2), threatTypeCounts.get("H.A.HmP.1"));
+			assertEquals(new Integer(2), threatTypeCounts.get("H.A.HoP.1"));*/
+			
+			logger.debug("Threats: {}", threats.size());
+			logger.debug("Assets: {}", smq.getSystemAssets(tester.getStore()).size());
+			logger.debug("MisbehaviourSets: {}",  smq.getMisbehaviourSets(tester.getStore(), false).size()); //no need for causes here
+			logger.debug("TrustworthinessAttributeSets: {}",  smq.getTrustworthinessAttributeSets(tester.getStore()).size());
+			logger.debug("ControlSets: {}", smq.getControlSets(tester.getStore()).size());
+			logger.debug("ControlStrategies: {}", smq.getControlStrategies(tester.getStore()).size());
 
-		for (Relation relation :smq.getSystemRelations(tester.getStore())) {
-			logger.debug("{}->{}: {}, {}", relation.getFrom(), relation.getTo(), relation.getSourceCardinality(), relation.getTargetCardinality());
+			for (Relation relation :smq.getSystemRelations(tester.getStore())) {
+				logger.debug("{}->{}: {}, {}", relation.getFrom(), relation.getTo(), relation.getSourceCardinality(), relation.getTargetCardinality());
+			}
+
+			tester.exportTestModel("build/build/test-results/" + name.getMethodName(), false, false, true);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail("Exception thrown by design time validator: " + e.getMessage());
 		}
-
-        tester.exportTestModel("build/build/test-results/" + name.getMethodName(), false, false, true);
-    } catch (Exception e) {
-		e.printStackTrace();
-		fail("Exception thrown by design time validator: " + e.getMessage());
-    }
     }
 
 	/**
@@ -1002,6 +1004,9 @@ public class DesigntimeValidatorTester extends TestCase {
 	 */
 	@Test
 	public void testConstructionLinkBetweenRootAndSecondary() {
+
+		logger.debug("Note: this test is sensitive to changes in threat URI generation in Validator.Java");
+
 		tester.switchModels(5, 6);
 
 		//make sure the model is NOT validated - there's a separate test for revalidating
@@ -1023,18 +1028,19 @@ public class DesigntimeValidatorTester extends TestCase {
 			Map<String, Threat> testThreats = threatsByType.get(
 					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#E.M.B9E.1");
 
+			
 			// Check (C1)-[r09]->(E-C1-D1)
 			assertTrue(testThreats.containsKey(
-					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#E.M.B9E.1-B9E_d3ceb3a3_6937c94e"));
+					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#E.M.B9E.1_d3ceb3a3_6937c94e"));
 			// Check (B1)-[r09]->(E-D1)
 			assertTrue(testThreats.containsKey(
-					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#E.M.B9E.1-B9E_c908315f_cff7e9eb"));
+					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#E.M.B9E.1_c908315f_cff7e9eb"));
 			// Check (B2)-[r09]->(E-D1)
 			assertTrue(testThreats.containsKey(
-					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#E.M.B9E.1-B9E_50fbe66e_cff7e9eb"));
+					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#E.M.B9E.1_50fbe66e_cff7e9eb"));
 			// Check (C1)-[r09]->(E-D1)
 			assertTrue(testThreats.containsKey(
-					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#E.M.B9E.1-B9E_d3ceb3a3_cff7e9eb"));
+					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#E.M.B9E.1_d3ceb3a3_cff7e9eb"));
 
 			assertEquals(4, threatsByType.get(
 					"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#E.M.B9E.1").size());
