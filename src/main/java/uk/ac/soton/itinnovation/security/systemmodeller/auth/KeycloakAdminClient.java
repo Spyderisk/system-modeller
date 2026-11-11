@@ -1,10 +1,12 @@
 /////////////////////////////////////////////////////////////////////////
 //
-// © University of Southampton IT Innovation Centre, 2020
+// © University of Southampton
+// Digital Health and Biomedical Engineering (DHBE),
+// IT Innovation Centre, 2026
 //
-// Copyright in this software belongs to University of Southampton
-// IT Innovation Centre of Gamma House, Enterprise Road,
-// Chilworth Science Park, Southampton, SO16 7NS, UK.
+// Copyright in this software belongs to University of Southampton,
+// Digital Health and Biomedical Engineering (DHBE), IT Innovation Centre,
+// Highfield Campus, SO17 1BJ, UK.
 //
 // This software may not be used, sold, licensed, transferred, copied
 // or reproduced in whole or in part in any manner or form or in or
@@ -17,41 +19,46 @@
 // PURPOSE, except where stated in the Licence Agreement supplied with
 // the software.
 //
-//      Created By :          Rayna Bozhkova
-//      Created Date :        17/02/2020
-//      Created for Project : EFACTORY
+//  Created By :            Panos Melas
+//  Created Date :          30/06/2026
+//  Created for Project :   FAITH
 //
 /////////////////////////////////////////////////////////////////////////
+
 package uk.ac.soton.itinnovation.security.systemmodeller.auth;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
-import javax.ws.rs.NotFoundException;
 
-import org.keycloak.OAuth2Constants;
-import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.KeycloakBuilder;
-import org.keycloak.admin.client.resource.RealmResource;
-import org.keycloak.admin.client.resource.UserResource;
-import org.keycloak.admin.client.resource.UsersResource;
-import org.keycloak.representations.idm.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.UserNotFoundException;
 import uk.ac.soton.itinnovation.security.systemmodeller.rest.exceptions.UsernameInvalidException;
 
 /**
  * Communicates with Keycloak server to perform user-related operations.
+ *
+ * Replaces keycloak-admin-client library with direct REST calls via WebClient
  */
 @Service
 public class KeycloakAdminClient {
@@ -71,33 +78,53 @@ public class KeycloakAdminClient {
     @Value("${user-role}")
     public String userRole;
 
-    private Keycloak keycloak;
-    private RealmResource realm;
-    private UsersResource users;
+    private WebClient webClient;
 
     private static final Logger logger = LoggerFactory.getLogger(KeycloakAdminClient.class);
 
     @PostConstruct
     private void init() {
-        keycloak = KeycloakBuilder.builder()
-                .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
-                .clientId(clientId)
-                .clientSecret(clientSecret)
-                .serverUrl(keycloakUrl)
-                .realm(keycloakRealm)
+        webClient = WebClient.builder()
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
+        logger.info("KeycloakAdminClient initialised against {}/realms/{}", keycloakUrl, keycloakRealm);
+    }
+
+    private String getAdminToken() {
+        String tokenUrl = keycloakUrl + "/realms/" + keycloakRealm + "/protocol/openid-connect/token";
+
+        MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
+        form.add("grant_type", "client_credentials");
+        form.add("client_id", clientId);
+        form.add("client_secret", clientSecret);
+
+        JsonNode response = webClient.post()
+                .uri(tokenUrl)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .body(BodyInserters.fromFormData(form))
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();
+
+        if (response == null || !response.has("access_token")) {
+            throw new IllegalStateException("Failed to obtain admin token from Keycloak");
+        }
+
+        return response.get("access_token").asText();
+    }
+
+    private String adminUrl() {
+        return keycloakUrl + "/admin/realms/" + keycloakRealm;
     }
 
     public boolean currentUserHasRole(String role) {
-        realm = keycloak.realm(keycloakRealm);
-        users = realm.users();
-
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         // TODO -- for tests only, authentication may be null. See comment on ModelAuditor
-        if (authentication != null){
-            Collection<SimpleGrantedAuthority> authorities = (Collection<SimpleGrantedAuthority>) authentication.getAuthorities();
+        if (authentication != null) {
+            Collection<SimpleGrantedAuthority> authorities =
+                    (Collection<SimpleGrantedAuthority>) authentication.getAuthorities();
             return authorities.stream().anyMatch(r -> r.getAuthority().equals("ROLE_" + role));
-        } 
+        }
         return false;
     }
 
@@ -107,22 +134,22 @@ public class KeycloakAdminClient {
         }
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         // TODO -- for tests only, authentication may be null. See comment on ModelAuditor
-        if (authentication != null){
+        if (authentication != null) {
             String username = authentication.getName();
             return getUserByUsername(username);
         }
         return null;
     }
 
-	/**
-	 * Get the currently logged in user according to keycloak, throwing an exception 
+    /**
+     * Get the currently logged in user according to keycloak, throwing an exception
      * if there is no user logged in, which will be turned into a web response with error status
-	 *
-	 * @return a UserRepresentation object containing user infoA
+     *
+     * @return a UserRepresentation object containing user info
      * @throws UserNotFoundException
-	 */
+     */
     public UserRepresentation getCurrentUserThrowingException() {
-	    UserRepresentation user = getCurrentUser();
+        UserRepresentation user = getCurrentUser();
         if (user == null) {
             throw new UserNotFoundException();
         }
@@ -130,24 +157,64 @@ public class KeycloakAdminClient {
     }
 
     public UserRepresentation getUserByUsername(String username) {
-        realm = keycloak.realm(keycloakRealm);
-        users = realm.users();
+        String token = getAdminToken();
 
-        List<UserRepresentation> matchedUsers = users.search(username);
+        List<UserRepresentation> matchedUsers = webClient.get()
+                .uri(adminUrl() + "/users?username={u}&exact=true", username)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .retrieve()
+                .bodyToFlux(UserRepresentation.class)
+                .collectList()
+                .block();
 
-        if (!matchedUsers.isEmpty()) {
+        if (matchedUsers != null) {
             for (UserRepresentation matchedUser : matchedUsers) {
                 if (username.equals(matchedUser.getUsername())) {
-                    UserResource userResource = users.get(matchedUser.getId());
-                    return userResource.toRepresentation();
+                    // Fetch full representation (includes userProfileMetadata)
+                    return getUserById(matchedUser.getId());
                 }
             }
         }
 
-        //If we arrive here, either there are no matches at all, or no exact matches
         logger.warn("Username {} not found", username);
-
         return null;
+    }
+
+    public UserRepresentation getUserById(String id) {
+        String token = getAdminToken();
+
+        try {
+            return webClient.get()
+                    .uri(adminUrl() + "/users/{id}", id)
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                    .retrieve()
+                    .bodyToMono(UserRepresentation.class)
+                    .block();
+        } catch (WebClientResponseException.NotFound e) {
+            logger.warn("User ID {} not found", id);
+            return null;
+        }
+    }
+
+    public List<UserRepresentation> getAllUsers() {
+        logger.info("keycloak URL: {}", keycloakUrl);
+        logger.info("keycloak realm: {}", keycloakRealm);
+
+        String token = getAdminToken();
+
+        logger.warn("got realm");
+
+        List<UserRepresentation> userList = webClient.get()
+                .uri(adminUrl() + "/users?max=1000")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .retrieve()
+                .bodyToFlux(UserRepresentation.class)
+                .collectList()
+                .block();
+
+        userList = userList != null ? userList : Collections.emptyList();
+        logger.warn("Retrieved {} users", userList.size());
+        return userList;
     }
 
     public boolean checkUsernamesExistThrowingException(Set<String> usernames) {
@@ -158,12 +225,17 @@ public class KeycloakAdminClient {
     }
 
     private boolean checkUsernameExistsThrowingException(String username) {
-        realm = keycloak.realm(keycloakRealm);
-        users = realm.users();
+        String token = getAdminToken();
 
-        List<UserRepresentation> matchedUsers = users.search(username);
+        List<UserRepresentation> matchedUsers = webClient.get()
+                .uri(adminUrl() + "/users?username={u}&exact=true", username)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .retrieve()
+                .bodyToFlux(UserRepresentation.class)
+                .collectList()
+                .block();
 
-        if (!matchedUsers.isEmpty()) {
+        if (matchedUsers != null) {
             for (UserRepresentation matchedUser : matchedUsers) {
                 if (username.equals(matchedUser.getUsername())) {
                     return true;
@@ -171,41 +243,31 @@ public class KeycloakAdminClient {
             }
         }
 
-        //If we arrive here, either there are no matches at all, or no exact matches
         logger.warn("Username {} not found", username);
         throw new UsernameInvalidException();
     }
 
-    public UserRepresentation getUserById(String id) {
-        realm = keycloak.realm(keycloakRealm);
-        users = realm.users();
-
-        try {
-            return users.get(id).toRepresentation();
-        } catch (NotFoundException e) {
-            logger.warn("User ID {} not found", id);
-            return null;
-        }
-    }
-
-    public List<UserRepresentation> getAllUsers() {
-        realm = keycloak.realm(keycloakRealm);
-        users = realm.users();
-
-        return users.list();
-    }
-
     public List<String> getRoles(UserRepresentation user) {
-        realm = keycloak.realm(keycloakRealm);
-        users = realm.users();
+        String token = getAdminToken();
 
-        return users
-            .get(user.getId())
-            .roles()
-            .getAll()
-            .getRealmMappings()
-            .stream()
-            .map(r -> r.getName())
-            .collect(Collectors.toList());
+        JsonNode rolesNode = webClient.get()
+                .uri(adminUrl() + "/users/{id}/role-mappings/realm", user.getId())
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();
+
+        if (rolesNode == null || !rolesNode.isArray()) {
+            return Collections.emptyList();
+        }
+
+        List<String> roles = new java.util.ArrayList<>();
+        rolesNode.forEach(roleNode -> {
+            if (roleNode.has("name")) {
+                roles.add(roleNode.get("name").asText());
+            }
+        });
+
+        return roles;
     }
 }

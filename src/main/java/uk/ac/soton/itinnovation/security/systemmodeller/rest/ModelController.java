@@ -59,7 +59,7 @@ import java.util.zip.GZIPOutputStream;
 import javax.naming.SizeLimitExceededException;
 import javax.servlet.http.HttpServletRequest;
 
-import org.keycloak.representations.idm.UserRepresentation;
+import uk.ac.soton.itinnovation.security.systemmodeller.auth.UserRepresentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
