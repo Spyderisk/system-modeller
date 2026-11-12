@@ -1522,7 +1522,7 @@ export function updateTwasOnAsset(modelId, assetId, updatedTwas) {
 }
 
 // Refresh an asset's TWAs and misbehaviour impact levels
-export function refreshAssetTwasAndImpacts(modelId, assetId) {
+export function refreshAssetData(modelId, assetId) {
     return function (dispatch) {
         axiosInstance.get("/models/" + modelId + "/assets/" + assetId + "/twas")
             .then((response) => {
@@ -1535,6 +1535,30 @@ export function refreshAssetTwasAndImpacts(modelId, assetId) {
                 let misbehaviourSets = (response.data && response.data.misbehaviourSets) || {};
                 Object.values(misbehaviourSets).forEach((misbehaviour) => {
                     dispatch({type: instr.UPDATE_MISBEHAVIOUR_IMPACT, payload: {misbehaviour: misbehaviour}});
+                });
+            });
+        // Group control sets by identical state: the reducer applies one state to a list of URIs, and each dispatch recomputes CSGs.
+        axiosInstance.get("/models/" + modelId + "/assets/" + assetId + "/controlsets")
+            .then((response) => {
+                let groups = {};
+                Object.values(response.data || {}).forEach((cs) => {
+                    let key = JSON.stringify([cs.proposed, cs.workInProgress, cs.coverageLevel, cs.coverageAsserted]);
+                    if (!groups[key]) {
+                        groups[key] = {
+                            controls: [],
+                            proposed: cs.proposed,
+                            workInProgress: cs.workInProgress,
+                            coverageLevel: cs.coverageLevel,
+                            coverageAsserted: cs.coverageAsserted
+                        };
+                    }
+                    groups[key].controls.push(cs.uri);
+                });
+                Object.values(groups).forEach((controlsUpdate) => {
+                    dispatch({
+                        type: instr.UPDATE_CONTROLS,
+                        payload: {controlsUpdate: controlsUpdate, controlsReset: false}
+                    });
                 });
             });
     };

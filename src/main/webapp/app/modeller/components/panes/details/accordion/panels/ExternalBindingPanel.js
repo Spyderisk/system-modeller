@@ -5,7 +5,7 @@ import {Button} from "react-bootstrap";
 import {
     retrieveMetaData,
     updateMetaData,
-    refreshAssetTwasAndImpacts
+    refreshAssetData
 } from "../../../../../actions/ModellerActions";
 
 /*
@@ -55,6 +55,7 @@ class ExternalBindingPanel extends React.Component {
                 let applied = (resp.data && resp.data.applied) || {};
                 let nTwas = (applied.twas || []).length;
                 let nImp = (applied.impacts || []).length;
+                let nCtl = (applied.controls || []).length;
                 // Record the binding as generic asset metadata
                 let metaData = (this.props.asset.metaData || [])
                     .filter((m) => m.key !== META_KEY_SYSTEM && m.key !== META_KEY_ID)
@@ -63,10 +64,10 @@ class ExternalBindingPanel extends React.Component {
                         {key: META_KEY_ID, value: externalId},
                     ]);
                 this.props.dispatch(updateMetaData(this.props.modelId, this.props.asset, metaData));
-                // Refresh the panels of affected TWAs/impacts in place
-                this.props.dispatch(refreshAssetTwasAndImpacts(this.props.modelId, this.props.asset.id));
+                // Refresh the panels of affected TWAs/impacts/controls in place
+                this.props.dispatch(refreshAssetData(this.props.modelId, this.props.asset.id));
                 this.setState({busy: false, message: {type: "info",
-                    text: `Applied ${nTwas} TWAs and ${nImp} impacts.`}});
+                    text: `Applied ${nTwas} TWAs, ${nImp} impacts and ${nCtl} controls.`}});
             })
             .catch((err) => {
                 let detail = (err.response && err.response.data && err.response.data.detail) || err.message;
