@@ -47,8 +47,8 @@ class ExternalBindingPanel extends React.Component {
 
     callAdaptorBind(externalId) {
         let base = process.env.config.API_END_POINT;   // e.g. "/system-modeller"
-        let provider = this.props.capability.providerName;
-        let url = `${base}/adaptor/api/v2/${provider}/models/${this.props.modelId}/bind`;
+        // The FAITH adaptor serves the TrustGuard binding at /api/v1/faith/...
+        let url = `${base}/adaptor/api/v1/faith/models/${this.props.modelId}/bind`;
         this.setState({busy: true, message: {type: "info", text: "Applying " + this.props.capability.providerLabel + " data…"}});
         axios.post(url, {asset_id: this.props.asset.id, external_id: externalId})
             .then((resp) => {
