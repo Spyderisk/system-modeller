@@ -151,10 +151,10 @@ public class RiskLevelCalculatorTester extends TestCase {
 		Collection<Level> likelihoods = smq.getLevels(tester.getStore(), "Likelihood").values();
 		List<Level> sortedAsc = new ArrayList<>();
 		sortedAsc.addAll(likelihoods);
-		Collections.sort(sortedAsc);
+		sortedAsc.sort(null);
 		List<Level> sortedDesc = new ArrayList<>();
 		sortedDesc.addAll(likelihoods);
-		Collections.sort(sortedDesc, Collections.reverseOrder());
+		sortedDesc.sort(Collections.reverseOrder());
 		for (int i = 0; i<likelihoods.size(); i++) {
 			inverseLikelihoods.put(sortedAsc.get(i).getUri(), sortedDesc.get(i));
 		}
