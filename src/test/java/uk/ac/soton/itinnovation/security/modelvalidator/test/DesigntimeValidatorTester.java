@@ -736,7 +736,7 @@ public class DesigntimeValidatorTester extends TestCase {
      */
 	@Test
     public void testValidateTestModel() {
-		logger.debug("Note: this test is sensitive to changes in threat URI generation in Validator.Java");
+		logger.debug("Note: this test is sensitive to changes in threat URI generation in Validator.java");
 	
 		try {
 			tester.switchModels(4, 5);
@@ -1005,7 +1005,7 @@ public class DesigntimeValidatorTester extends TestCase {
 	@Test
 	public void testConstructionLinkBetweenRootAndSecondary() {
 
-		logger.debug("Note: this test is sensitive to changes in threat URI generation in Validator.Java");
+		logger.debug("Note: this test is sensitive to changes in threat URI generation in Validator.java");
 
 		tester.switchModels(5, 6);
 
