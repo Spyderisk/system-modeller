@@ -866,6 +866,25 @@ public class SystemModelUpdater {
 	 * @param twas the TrustworthinessAttributeSet
 	 */
 	public void updateTWAS(AStoreWrapper store, TrustworthinessAttributeSet twas) {
+		store.update(createUpdateTwasSparql(twas), model.getGraph("system"), model.getGraph("system-inf"));
+	}
+
+	/**
+	 * Writes several updated TWAS levels back to the store in one batch (single transaction, all or nothing, no
+	 * triple counting). Same effect as calling {@link #updateTWAS} for each one, but much cheaper for many TWAS.
+	 *
+	 * @param store the store
+	 * @param twasList the TrustworthinessAttributeSets
+	 */
+	public void updateTWASBulk(AStoreWrapper store, List<TrustworthinessAttributeSet> twasList) {
+		List<String> sparqls = new ArrayList<>();
+		for (TrustworthinessAttributeSet twas : twasList) {
+			sparqls.add(createUpdateTwasSparql(twas));
+		}
+		store.updateBatch(sparqls, model.getGraph("system"), model.getGraph("system-inf"));
+	}
+
+	private String createUpdateTwasSparql(TrustworthinessAttributeSet twas) {
 
 		//the default level gets deleted but never inserted. whenever a twas is saved, the asserted level (which may
 		//come from the domain model as a default level) is counted as user asserted.
@@ -894,7 +913,8 @@ public class SystemModelUpdater {
 		"		}\n" +
 		"	}\n" +
 		"}";
-		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
+		logger.debug(sparql);
+		return sparql;
 	}
 
 	/**
@@ -944,6 +964,25 @@ public class SystemModelUpdater {
 	 * @param ms the MisbehaviourSet
 	 */
 	public void updateMS(AStoreWrapper store, MisbehaviourSet ms) {
+		store.update(createUpdateMsSparql(ms), model.getGraph("system"), model.getGraph("system-inf"));
+	}
+
+	/**
+	 * Writes several updated impact levels back to the store in one batch (single transaction, all or nothing, no
+	 * triple counting). Same effect as calling {@link #updateMS} for each one, but much cheaper for many MS.
+	 *
+	 * @param store the store
+	 * @param msList the MisbehaviourSets
+	 */
+	public void updateMSBulk(AStoreWrapper store, List<MisbehaviourSet> msList) {
+		List<String> sparqls = new ArrayList<>();
+		for (MisbehaviourSet ms : msList) {
+			sparqls.add(createUpdateMsSparql(ms));
+		}
+		store.updateBatch(sparqls, model.getGraph("system"), model.getGraph("system-inf"));
+	}
+
+	private String createUpdateMsSparql(MisbehaviourSet ms) {
 
 		String sparql = "DELETE {\n" +
 		"	GRAPH <" + model.getGraph("system") + "> {\n" +
@@ -970,8 +1009,8 @@ public class SystemModelUpdater {
 		"		}\n" +
 		"	}\n" +
 		"}";
-		logger.warn(sparql);
-		store.update(sparql, model.getGraph("system"), model.getGraph("system-inf"));
+		logger.debug(sparql);
+		return sparql;
 	}
 
 	/**

@@ -185,6 +185,16 @@ public interface IStoreWrapper {
 	boolean update(String sparql, String ... graph);
 
 	/**
+	 * Executes several SPARQL updates against the same graph(s) in one go.
+	 * Intended for bulk operations, where the per-update overhead of {@link #update(String, String...)} adds up.
+	 * Implementations that can do this more efficiently (e.g. in a single transaction) should do so.
+	 *
+	 * @param sparqls the SPARQL updates to execute, in order
+	 * @param graph the graph(s) the updates are addressed to (same meaning as in update())
+	 */
+	void updateBatch(List<String> sparqls, String ... graph);
+
+	/**
 	 * Translate the result of a select query
 	 *
 	 * @param results the results object as returned by querySelect(...)

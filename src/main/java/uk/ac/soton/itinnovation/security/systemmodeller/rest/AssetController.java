@@ -810,9 +810,7 @@ public class AssetController {
 		}
 
 		//update each TWAS
-		for (TrustworthinessAttributeSet updatedTWAS : updatedTWASList) {
-			model.getUpdater().updateTWAS(storeManager.getStore(), updatedTWAS);
-		}
+		model.getUpdater().updateTWASBulk(storeManager.getStore(), updatedTWASList);
 
 		//set a flag to show the user they have to re-run the risk level calculation
 		model.invalidateRiskLevels();

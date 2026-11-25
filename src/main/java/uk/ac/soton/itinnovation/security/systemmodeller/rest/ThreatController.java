@@ -228,9 +228,7 @@ public class ThreatController {
 
 		final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.WRITE);
 
-		for (MisbehaviourSet updatedMisbehaviour : updatedMisbehaviours) {
-			model.getUpdater().updateMS(storeManager.getStore(), updatedMisbehaviour);
-		}
+		model.getUpdater().updateMSBulk(storeManager.getStore(), updatedMisbehaviours);
 
 		//set a flag to show the user they have to re-run the risk level calculation
 		model.invalidateRiskLevels();

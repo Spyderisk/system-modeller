@@ -536,6 +536,55 @@ public class JenaTDBStoreWrapper extends AStoreWrapper {
 		return diff != 0;
 	}
 
+	/**
+	 * Executes several updates in a single write transaction, all or nothing.
+	 */
+	@Override
+	public void updateBatch(List<String> sparqls, String... graph) {
+		if (graph == null) {
+			throw new IllegalArgumentException("'null' not a valid graph.");
+		}
+		if (sparqls == null) {
+			throw new IllegalArgumentException("'null' not a valid sparql query.");
+		}
+		if (sparqls.isEmpty()) {
+			return;
+		}
+
+		RuntimeException exceptionToThrow = null;
+
+		openTransaction(ReadWrite.WRITE);
+		try {
+			for (String sparql : sparqls) {
+				if (sparql == null) {
+					throw new IllegalArgumentException("'null' not a valid sparql query.");
+				}
+				String sparqlG = addGraphsToSparql(sparql, SparqlType.UPDATE, graph);
+				UpdateRequest update = UpdateFactory.create(getSPARQLPrefixes() + sparqlG, Syntax.syntaxARQ);
+				logger.debug("{}", update.toString());
+
+				if (graph.length == 1) {
+					UpdateAction.execute(update, dataset.getNamedModel(graph[0]));
+				} else {
+					UpdateAction.execute(update, dataset);
+				}
+			}
+			commitTransaction();
+			logger.info("Batch of {} updates executed against graph(s) {}", sparqls.size(), graph);
+		} catch (Exception e) {
+			dataset.abort();
+			String message = String.format("Could not execute batch of %d updates against graph(s) %s", sparqls.size(), String.join(", ", graph));
+			logger.error(message, e);
+			exceptionToThrow = new RuntimeException(message);
+			exceptionToThrow.initCause(e);
+		} finally {
+			closeTransaction();
+			if (exceptionToThrow != null) {
+				throw exceptionToThrow;
+			}
+		}
+	}
+
 	@Override
 	public List<Map<String, String>> translateSelectResult(Object results) {
 

@@ -185,6 +185,13 @@ public abstract class AStoreWrapper implements IStoreWrapper {
 	}
 
 	@Override
+	public void updateBatch(List<String> sparqls, String... graph) {
+		for (String sparql : sparqls) {
+			update(sparql, graph);
+		}
+	}
+
+	@Override
 	public List<Map<String, String>> translateSelectResult(Object results) {
 		logger.error("Translating SELECT results has not yet been implemented for store of type {}", this.getClass());
 		return null;
