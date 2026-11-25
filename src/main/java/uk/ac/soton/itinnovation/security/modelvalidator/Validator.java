@@ -51,20 +51,20 @@ public class Validator {
 
     private static final Logger logger = LoggerFactory.getLogger(Validator.class);
 
-    private IQuerierDB querier;
+    private final IQuerierDB querier;
 
     // Domain model data
-    private ModelDB domainModel;                                                // Basic information about the domain model
+    private final ModelDB domainModel;                                                // Basic information about the domain model
     private Map<String, ModelFeatureDB> domainFeatures = new HashMap<>();       // Map of domain model features
 
     private Map<String, LevelDB> poLevels = new HashMap<>();                    // Map of domain model population levels indexed by URI
-    private List<LevelDB> populationLevels = new ArrayList<>();                 // List of population levels, ordered by level value (increasing population)
+    private final List<LevelDB> populationLevels = new ArrayList<>();                 // List of population levels, ordered by level value (increasing population)
 
     private Map<String, LevelDB> twLevels = new HashMap<>();                    // Map of domain model trustworthiness levels indexed by URI
-    private List<LevelDB> trustworthinessLevels = new ArrayList<>();            // List of trustworthiness levels, ordered by level value (increasing TW)
+    private final List<LevelDB> trustworthinessLevels = new ArrayList<>();            // List of trustworthiness levels, ordered by level value (increasing TW)
 
     private Map<String, LevelDB> imLevels = new HashMap<>();                    // Map of domain model impact levels indexed by URI
-    private List<LevelDB> impactLevels = new ArrayList<>();                     // List of impact levels, ordered by level value (increasing impact)
+    private final List<LevelDB> impactLevels = new ArrayList<>();                     // List of impact levels, ordered by level value (increasing impact)
 
     private Map<String, Set<String>> assetRolesMap = null;                      // Map from domain model assets classes to roles that may be taken by assets in each class
 
@@ -85,13 +85,13 @@ public class Validator {
     private Map<String, ThreatDB> domainThreats = new HashMap<>();                      // Domain model Threats
     Map<String, String> dtavg = new HashMap<>();
     Map<String, String> dtmax = new HashMap<>();
-    private Map<String, List<String>> uniqueRolesByThreat = new HashMap<>();            // Map of unique roles indexed by domain model threat URI
-    private Map<String, List<String>> necessaryRolesByThreat = new HashMap<>();         // Map of necessary roles indexed by domain model threat URI
-    private Map<String, List<String>> sufficientRolesByThreat = new HashMap<>();        // Map of sufficient roles indexed by domain model threat URI
-    private Map<String, List<String>> optionalRolesByThreat = new HashMap<>();          // Map of optional roles indexed by domain model threat URI
+    private final Map<String, List<String>> uniqueRolesByThreat = new HashMap<>();      // Map of unique roles indexed by domain model threat URI
+    private final Map<String, List<String>> necessaryRolesByThreat = new HashMap<>();   // Map of necessary roles indexed by domain model threat URI
+    private final Map<String, List<String>> sufficientRolesByThreat = new HashMap<>();  // Map of sufficient roles indexed by domain model threat URI
+    private final Map<String, List<String>> optionalRolesByThreat = new HashMap<>();    // Map of optional roles indexed by domain model threat URI
 
     private Map<String, ControlStrategyDB> domainCSGs = new HashMap<>();                // Domain model CSGs
-    private Map<String, Set<ControlStrategyDB>> threatCSGs = new HashMap<>();           // Map of all domain model CSGs related to each domain model threat
+    private final Map<String, Set<ControlStrategyDB>> threatCSGs = new HashMap<>();     // Map of all domain model CSGs related to each domain model threat
 
     private Map<String, MisbehaviourSetDB> domainMSs = new HashMap<>();                 // Domain model MS
     private Map<String, TrustworthinessAttributeSetDB> domainTWASs = new HashMap<>();   // Domain model TWAS
@@ -100,17 +100,17 @@ public class Validator {
     private Map<String, Set<CardinalityConstraintDB>> missingAssetLinksFrom;            // Map of links from missing (possibly inferred) assets
     private Map<String, Set<CardinalityConstraintDB>> missingAssetLinksTo;              // Map of links to missing (possibly inferred) assets
 
-    private Map<String, NodeDB> systemNodes = new HashMap<>();                          // System model nodes: initialised after construction
-    private Map<String, Map<String,NodeDB>> systemNodeMap = new HashMap<>();            // System model nodes: listed by role against the associated asset
+    private final Map<String, NodeDB> systemNodes = new HashMap<>();                    // System model nodes: initialised after construction
+    private final Map<String, Map<String,NodeDB>> systemNodeMap = new HashMap<>();      // System model nodes: listed by role against the associated asset
 
-    private Map<String, ThreatDB> systemThreats = new HashMap<>();                      // System threats, to be generated
-    private Map<String, ControlStrategyDB> systemCSGs = new HashMap<>();                // System CSGs, to be generated
+    private final Map<String, ThreatDB> systemThreats = new HashMap<>();                // System threats, to be generated
+    private final Map<String, ControlStrategyDB> systemCSGs = new HashMap<>();          // System CSGs, to be generated
 
-    private Map<String, Map<String, TrustworthinessAttributeSetDB>> twasByAsset = new HashMap<>();  // Map of system TWAS indexed by asset URI, then TWA URI
-    private Map<String, Map<String, MisbehaviourSetDB>> msByAsset = new HashMap<>();                // Map of system MS indexed by asset URI, then Misbehaviour URI
-    private Map<String, Map<String, ControlSetDB>> csByAsset = new HashMap<>();                     // Map of system CS indexed by asset URI, then Control URI
+    private final Map<String, Map<String, TrustworthinessAttributeSetDB>> twasByAsset = new HashMap<>();  // Map of system TWAS indexed by asset URI, then TWA URI
+    private final Map<String, Map<String, MisbehaviourSetDB>> msByAsset = new HashMap<>();                // Map of system MS indexed by asset URI, then Misbehaviour URI
+    private final Map<String, Map<String, ControlSetDB>> csByAsset = new HashMap<>();                     // Map of system CS indexed by asset URI, then Control URI
 
-    Map<String, List<CardinalityConstraintDB>> linksFromAssets = new HashMap<>();                   // Lists of cardinality constraints indexed by the source asset URI
+    Map<String, List<CardinalityConstraintDB>> linksFromAssets = new HashMap<>();       // Lists of cardinality constraints indexed by the source asset URI
 
     public Validator(IQuerierDB querier) {
         final long startTime = System.currentTimeMillis();
@@ -1766,7 +1766,7 @@ public class Validator {
         if(!csg.getMandatoryCS().isEmpty()) {
             List<String> cslist = new ArrayList<>();
             cslist.addAll(csg.getMandatoryCS());
-            Collections.sort(cslist);
+            cslist.sort(null);
             uri = uri.concat("_M");
             for(String csURI : cslist){
                 ControlSetDB cs = querier.getControlSet(csURI, "system-inf");
@@ -1778,7 +1778,7 @@ public class Validator {
         if(!csg.getOptionalCS().isEmpty()) {
             List<String> cslist = new ArrayList<>();
             cslist.addAll(csg.getOptionalCS());
-            Collections.sort(cslist);
+            cslist.sort(null);
             uri = uri.concat("_O");
             for(String csURI : cslist){
                 ControlSetDB cs = querier.getControlSet(csURI, "system-inf");
@@ -1821,7 +1821,7 @@ public class Validator {
         // Now iterate through the lists of asset names to create and apply the substitutions
         for(String roleLabel : substitutions.keySet()){
             List<String> assetLabels = substitutions.get(roleLabel);
-            Collections.sort(assetLabels);
+            assetLabels.sort(null);
 
             String replaceString = roleLabel;
             if (!(replaceString.startsWith("_") && replaceString.endsWith("_"))) {
@@ -1942,7 +1942,7 @@ public class Validator {
                 querier.store(cc, "system-inf");
             } else {
                 // log a warning, although this may just mean one or both assets is yet to be inferred
-                logger.warn(String.format("Orphaned CardinalityConstraint found: [%s]-[%s]-[%s]", cc.getLinksFrom(), cc.getLinkType(), cc.getLinksTo()));
+                logger.warn("Orphaned CardinalityConstraint found: [{}]-[{}]-[{}]", cc.getLinksFrom(), cc.getLinkType(), cc.getLinksTo());
             }
         }
 

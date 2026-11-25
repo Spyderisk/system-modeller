@@ -855,7 +855,7 @@ public class DesigntimeValidatorTester extends TestCase {
 			for (Threat threat : threats.values()) {
 				sortThreats.add(threat.getLabel());
 			}
-			Collections.sort(sortThreats);
+			sortThreats.sort(null);
 
 			/*logger.debug("\n");
 			logger.debug("--- Threats ---");
