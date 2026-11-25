@@ -65,6 +65,13 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.RDFWriter;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.sparql.core.DatasetChanges;
+import org.apache.jena.sparql.core.DatasetChangesCounter;
+import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.core.DatasetGraphFactory;
+import org.apache.jena.sparql.core.DatasetGraphMonitor;
+import org.apache.jena.sparql.core.Quad;
+import org.apache.jena.sparql.core.QuadAction;
 import org.apache.jena.sparql.resultset.ResultSetMem;
 import org.apache.jena.tdb.TDB;
 import org.apache.jena.tdb.TDBFactory;
@@ -481,63 +488,77 @@ public class JenaTDBStoreWrapper extends AStoreWrapper {
 		if (sparql == null) {
 			throw new IllegalArgumentException("'null' not a valid sparql query.");
 		}
-		
-		RuntimeException exceptionToThrow = null;
-		
+
 		//take graphs into account if any are given
 		String sparqlG = addGraphsToSparql(sparql, SparqlType.UPDATE, graph);
 
 		openTransaction(ReadWrite.WRITE);
-		long diff = 0;
+		boolean changed = false;
 		try {
-			long countBefore;
-
 			//ARQ syntax is required for "complex" property paths, see https://jena.apache.org/documentation/query/property_paths.html
 			UpdateRequest update = UpdateFactory.create(getSPARQLPrefixes() + sparqlG, Syntax.syntaxARQ);
 			logger.debug("{}", update.toString());
 
-			//no originalGraph specified: run on the entire dataset
-			if (graph.length < 1) {
-				countBefore = getCount();
-				UpdateAction.execute(update, dataset);
-				diff = getCount() - countBefore;
-				//execute on one originalGraph only
-			} else if (graph.length == 1) {
-				countBefore = dataset.getNamedModel(graph[0]).size();
-				UpdateAction.execute(update, dataset.getNamedModel(graph[0]));
-				diff = dataset.getNamedModel(graph[0]).size() - countBefore;
-				//TODO: investigate if multiple graphs can be addressed in a more efficient way
-			} else {
-				countBefore = countTriples(dataset);
-				UpdateAction.execute(update, dataset);
-				diff = countTriples(dataset) - countBefore;
-			}
+			//The monitor reports the quads that were really added or deleted (so, not those that were already
+			//there or not there), without having to scan the store.
+			DatasetChangesCounter changes = new DatasetChangesCounter();
+			UpdateAction.execute(update, new DatasetGraphMonitor(dataset.asDatasetGraph(), changes));
+			changed = changes.hasChanged();
 
-			if (diff == 0) {
-				logger.info("Update executed, the number of triples is unchanged");
-			} else {
-				logger.info("Update executed, {} triple{} {} graph(s) {}",
-					Math.abs(diff), Math.abs(diff)>1?"s":"", diff>0?"added to":"deleted from", graph);
-			}
+			logger.debug("Update executed, the store was {}", changed ? "changed" : "not changed");
 			commitTransaction();
 		} catch (Exception e) {
 			dataset.abort();
-			String message = String.format("Could not execute update %s against graph %s", getSPARQLPrefixes() + sparql, graph);
+			String message = String.format("Could not execute update %s against graph(s) %s", getSPARQLPrefixes() + sparql, Arrays.toString(graph));
 			logger.error(message, e);
-			exceptionToThrow = new RuntimeException(message);
-			exceptionToThrow.initCause(e);
+			throw new RuntimeException(message, e);
 		} finally {
 			closeTransaction();
-			if (exceptionToThrow != null) {
-				throw exceptionToThrow;
-			}
 		}
-		
-		return diff != 0;
+
+		return changed;
+	}
+
+	@Override
+	public boolean updateInGraph(String sparql, String graph) {
+		if (graph == null) {
+			throw new IllegalArgumentException("'null' not a valid graph.");
+		}
+		if (sparql == null) {
+			throw new IllegalArgumentException("'null' not a valid sparql query.");
+		}
+
+		openTransaction(ReadWrite.WRITE);
+		boolean changed = false;
+		try {
+			UpdateRequest update = UpdateFactory.create(getSPARQLPrefixes() + sparql, Syntax.syntaxARQ);
+			logger.debug("{}", update.toString());
+
+			//Jena runs an update on a single graph like this: the graph becomes the default graph of a temporary dataset.
+			//Unqualified patterns therefore refer to the graph, and GRAPH blocks to named graphs of the temporary
+			//dataset (so, to nothing). Only changes to the default graph are changes of the store.
+			DefaultGraphChanges changes = new DefaultGraphChanges();
+			DatasetGraph inGraph = DatasetGraphFactory.create(dataset.getNamedModel(graph).getGraph());
+			UpdateAction.execute(update, new DatasetGraphMonitor(inGraph, changes));
+			changed = changes.hasChanged();
+
+			logger.debug("Update in graph {} executed, the store was {}", graph, changed ? "changed" : "not changed");
+			commitTransaction();
+		} catch (Exception e) {
+			dataset.abort();
+			String message = String.format("Could not execute update %s in graph %s", getSPARQLPrefixes() + sparql, graph);
+			logger.error(message, e);
+			throw new RuntimeException(message, e);
+		} finally {
+			closeTransaction();
+		}
+
+		return changed;
 	}
 
 	/**
-	 * Executes several updates in a single write transaction, all or nothing.
+	 * Executes several updates in a single write transaction, all or nothing. Graphs have the same meaning as in
+	 * {@link #update(String, String...)}.
 	 */
 	@Override
 	public void updateBatch(List<String> sparqls, String... graph) {
@@ -551,8 +572,6 @@ public class JenaTDBStoreWrapper extends AStoreWrapper {
 			return;
 		}
 
-		RuntimeException exceptionToThrow = null;
-
 		openTransaction(ReadWrite.WRITE);
 		try {
 			for (String sparql : sparqls) {
@@ -563,25 +582,48 @@ public class JenaTDBStoreWrapper extends AStoreWrapper {
 				UpdateRequest update = UpdateFactory.create(getSPARQLPrefixes() + sparqlG, Syntax.syntaxARQ);
 				logger.debug("{}", update.toString());
 
-				if (graph.length == 1) {
-					UpdateAction.execute(update, dataset.getNamedModel(graph[0]));
-				} else {
-					UpdateAction.execute(update, dataset);
-				}
+				UpdateAction.execute(update, dataset);
 			}
+			logger.debug("Batch of {} updates executed against graph(s) {}", sparqls.size(), Arrays.toString(graph));
 			commitTransaction();
-			logger.info("Batch of {} updates executed against graph(s) {}", sparqls.size(), graph);
 		} catch (Exception e) {
 			dataset.abort();
-			String message = String.format("Could not execute batch of %d updates against graph(s) %s", sparqls.size(), String.join(", ", graph));
+			String message = String.format("Could not execute batch of %d updates against graph(s) %s", sparqls.size(), Arrays.toString(graph));
 			logger.error(message, e);
-			exceptionToThrow = new RuntimeException(message);
-			exceptionToThrow.initCause(e);
+			throw new RuntimeException(message, e);
 		} finally {
 			closeTransaction();
-			if (exceptionToThrow != null) {
-				throw exceptionToThrow;
+		}
+	}
+
+	/**
+	 * Detects changes of the default graph only. Used for updates that run on a single graph, where
+	 * anything that happens in other (named) graphs happens in a temporary dataset and is thrown away.
+	 */
+	private static class DefaultGraphChanges implements DatasetChanges {
+		private boolean changed = false;
+
+		boolean hasChanged() {
+			return changed;
+		}
+
+		@Override
+		public void change(QuadAction action, org.apache.jena.graph.Node g, org.apache.jena.graph.Node s,
+				org.apache.jena.graph.Node p, org.apache.jena.graph.Node o) {
+			if ((action == QuadAction.ADD || action == QuadAction.DELETE) && (g == null || Quad.isDefaultGraph(g))) {
+				changed = true;
 			}
+		}
+
+		@Override
+		public void start() {}
+
+		@Override
+		public void finish() {}
+
+		@Override
+		public void reset() {
+			changed = false;
 		}
 	}
 

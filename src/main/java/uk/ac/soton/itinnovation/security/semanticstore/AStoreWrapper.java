@@ -185,6 +185,12 @@ public abstract class AStoreWrapper implements IStoreWrapper {
 	}
 
 	@Override
+	public boolean updateInGraph(String sparql, String graph) {
+		logger.error("UPDATEs in a graph not currently supported for store of type {}", this.getClass());
+		return false;
+	}
+
+	@Override
 	public void updateBatch(List<String> sparqls, String... graph) {
 		for (String sparql : sparqls) {
 			update(sparql, graph);

@@ -1424,8 +1424,8 @@ public class ModelObjectsHelper {
 		logger.info("Adding user: {}", label);
 		String uri = SparqlHelper.escapeURI(storeManager.getManagementGraph() + "#" + label);
 
-		AStoreWrapper store = storeManager.getStore();
-		store.update(TemplateLoader.formatTemplate(queries.get("CreateNewUser"), SparqlHelper.escapeLiteral(label),
+		AStoreWrapper store = storeManager.getStore();		
+		store.updateInGraph(TemplateLoader.formatTemplate(queries.get("CreateNewUser"), SparqlHelper.escapeLiteral(label),
 			SparqlHelper.escapeLiteral(email), uri), storeManager.getManagementGraph());
 
 		return true;
