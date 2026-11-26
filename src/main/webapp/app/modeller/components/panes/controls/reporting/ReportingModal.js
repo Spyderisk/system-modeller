@@ -74,7 +74,7 @@ class ReportingModal extends React.Component {
                 process.env.config.API_END_POINT + "/models/" + this.props.modelId + "/authz",
                 {headers: {"X-Requested-With": "XMLHttpRequest"}}
             );
-            const readUrl = authzResponse.data && authzResponse.data.readUrl;
+            const readUrl = authzResponse.data?.readUrl;
             if (!readUrl) {
                 throw new Error("The model read-only URL is unavailable");
             }
@@ -96,7 +96,7 @@ class ReportingModal extends React.Component {
                     headers: {"X-Requested-With": "XMLHttpRequest"},
                 }
             );
-            const reportId = createResponse.data && createResponse.data.rjob_id;
+            const reportId = createResponse.data?.rjob_id;
             if (!reportId) {
                 throw new Error("The reporting job was not created");
             }
@@ -112,7 +112,7 @@ class ReportingModal extends React.Component {
                         + "/adaptor/api/v2/ssmtools/reporting/status/" + reportId,
                     {headers: {"X-Requested-With": "XMLHttpRequest"}}
                 );
-                jobStatus = statusResponse.data && statusResponse.data.status;
+                jobStatus = statusResponse.data?.status;
                 this.setState({elapsedSeconds: Math.floor((Date.now() - startedAt) / 1000)});
             }
 
