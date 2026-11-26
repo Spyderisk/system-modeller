@@ -67,6 +67,25 @@ class ReportingModal extends React.Component {
     async generateReport() {
         const report = REPORTS[this.state.report];
         this.setState({generating: true, error: null, elapsedSeconds: 0});
+        
+        try {
+            console.log("Checking SSM adaptor...");
+            const adaptorServiceResponse = await axios.get(
+                process.env.config.API_END_POINT
+                + "/adaptor/",
+                { headers: { "X-Requested-With": "XMLHttpRequest" } }
+            );
+            console.log("OK");
+        } catch (error) {
+            console.error("SSM Adaptor service unavailable", error);
+            this.setState({
+                generating: false,
+                elapsedSeconds: 0,
+                error: "Reporting error. SSM Adaptor service unavailable",
+            });
+            return;
+        }
+
         const startedAt = Date.now();
 
         try {
