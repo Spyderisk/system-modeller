@@ -102,11 +102,14 @@ class ReportingModal extends React.Component {
             }
 
             let jobStatus = createResponse.data.status;
+
             while (jobStatus !== "finished") {
                 if (jobStatus === "failed") {
                     throw new Error("The reporting job failed");
                 }
                 await delay(2000);
+                // Poll sequentially to avoid overlapping status requests.
+                // Await inside the loop is intentional.
                 const statusResponse = await axios.get(
                     process.env.config.API_END_POINT
                         + "/adaptor/api/v2/ssmtools/reporting/status/" + reportId,
