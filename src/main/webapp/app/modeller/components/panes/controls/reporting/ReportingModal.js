@@ -70,7 +70,7 @@ class ReportingModal extends React.Component {
         
         try {
             console.log("Checking SSM adaptor...");
-            const adaptorServiceResponse = await axios.get(
+            await axios.get(
                 process.env.config.API_END_POINT
                 + "/adaptor/",
                 { headers: { "X-Requested-With": "XMLHttpRequest" } }
