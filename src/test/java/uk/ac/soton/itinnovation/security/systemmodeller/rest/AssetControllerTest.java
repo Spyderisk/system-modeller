@@ -33,6 +33,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
@@ -403,6 +404,60 @@ public class AssetControllerTest extends CommonTestSetup{
 			filter(userSession).
 		when().
 			get("/models/notATestModel/assets/notAnAssetID/twas").
+		then().
+			assertThat().statusCode(HttpStatus.SC_NOT_FOUND);
+	}
+
+	/**
+	 * Test getting misbehaviour sets of a known asset from a model
+	 * Asset ID "3e77c20d" (URI ...system#5c6848a5) taken from Host-Process-Connected-Validated.nq (model 3)
+	 * Asserts OK 200 status
+	 * Asserts that the number of misbehaviour sets matches what the querier finds for the asset
+	 */
+	@Test
+	public void testGetAssetMisbehaviourSets() {
+		switchToSystemModel(3);
+
+		int expectedSize = querier.getMisbehaviourSets(testHelper.getStore(),
+			"http://it-innovation.soton.ac.uk/ontologies/trustworthiness/system#5c6848a5", null, false).size();
+		assertTrue(expectedSize > 0);
+
+		given().
+			filter(userSession).
+		when().
+			get("/models/testModel/assets/3e77c20d/misbehaviours").
+		then().
+			assertThat().statusCode(HttpStatus.SC_OK).
+			and().
+			assertThat().body("size()", is(expectedSize));
+	}
+
+	/**
+	 * Test getting misbehaviour sets from an invalid asset
+	 * Asserts NOT FOUND 404 status
+	 */
+	@Test
+	public void testGetAssetMisbehaviourSetsInvalidAsset() {
+		switchToSystemModel(3);
+
+		given().
+			filter(userSession).
+		when().
+			get("/models/testModel/assets/notAnAssetID/misbehaviours").
+		then().
+			assertThat().statusCode(HttpStatus.SC_NOT_FOUND);
+	}
+
+	/**
+	 * Test getting misbehaviour sets from an invalid model
+	 * Asserts NOT FOUND 404 status
+	 */
+	@Test
+	public void testGetAssetMisbehaviourSetsInvalidModel() {
+		given().
+			filter(userSession).
+		when().
+			get("/models/notATestModel/assets/notAnAssetID/misbehaviours").
 		then().
 			assertThat().statusCode(HttpStatus.SC_NOT_FOUND);
 	}
@@ -1230,6 +1285,116 @@ public class AssetControllerTest extends CommonTestSetup{
 			body(new TrustworthinessAttributeSet()).
 		when().
 			put("/models/notATestModel/assets/notAnAssetID/twas").
+		then().
+			assertThat().statusCode(HttpStatus.SC_NOT_FOUND);
+	}
+
+	/**
+	 * Testing updating several TWAS for an asset in one request
+	 * Asserts OK 200 status
+	 * Asserts that the asserted levels of all TWAS of the asset are changed
+	 */
+	@Test
+	public void testUpdateTwasForAssetBulk() {
+		switchToSystemModel(3);
+
+		String mediumLevelUri = "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#TrustworthinessLevelMedium";
+
+		List<TrustworthinessAttributeSet> testTwasList = new ArrayList<>(querier
+			.getTrustworthinessAttributeSetsForAssetID(testHelper.getStore(), "3e77c20d")
+			.values());
+		assertEquals(4, testTwasList.size());
+
+		Level updatedTwasLevel = new Level();
+		updatedTwasLevel.setUri(mediumLevelUri);
+		for (TrustworthinessAttributeSet testTwas : testTwasList) {
+			testTwas.setAssertedTWLevel(updatedTwasLevel);
+		}
+
+		given().
+			filter(userSession).
+			contentType(ContentType.JSON).
+			body(testTwasList).
+		when().
+			put("/models/testModel/assets/3e77c20d/twas/bulk").
+		then().
+			assertThat().statusCode(HttpStatus.SC_OK).
+			and().
+			assertThat().body(is("completed"));
+
+		for (TrustworthinessAttributeSet twas : querier
+			.getTrustworthinessAttributeSetsForAssetID(testHelper.getStore(), "3e77c20d")
+			.values()) {
+			assertEquals(mediumLevelUri, twas.getAssertedTWLevel().getUri());
+		}
+	}
+
+	/**
+	 * Test updating an empty list of TWAS for an asset
+	 * Asserts OK 200 status (nothing to do)
+	 */
+	@Test
+	public void testUpdateTwasForAssetBulkEmptyList() {
+		switchToSystemModel(3);
+
+		given().
+			filter(userSession).
+			contentType(ContentType.JSON).
+			body(new ArrayList<TrustworthinessAttributeSet>()).
+		when().
+			put("/models/testModel/assets/3e77c20d/twas/bulk").
+		then().
+			assertThat().statusCode(HttpStatus.SC_OK);
+	}
+
+	/**
+	 * Test updating TWAS for an asset with a body that is not a list (JSON null)
+	 * Asserts BAD REQUEST 400 status
+	 */
+	@Test
+	public void testUpdateTwasForAssetBulkNullBody() {
+		switchToSystemModel(3);
+
+		given().
+			filter(userSession).
+			contentType(ContentType.JSON).
+			body("null").
+		when().
+			put("/models/testModel/assets/3e77c20d/twas/bulk").
+		then().
+			assertThat().statusCode(HttpStatus.SC_BAD_REQUEST);
+	}
+
+	/**
+	 * Test updating several TWAS for unknown asset
+	 * Asserts NOT FOUND 404 status
+	 */
+	@Test
+	public void testUpdateTwasForAssetBulkUnknownAsset() {
+		switchToSystemModel(3);
+
+		given().
+			filter(userSession).
+			contentType(ContentType.JSON).
+			body(new ArrayList<TrustworthinessAttributeSet>()).
+		when().
+			put("/models/testModel/assets/notAnAssetID/twas/bulk").
+		then().
+			assertThat().statusCode(HttpStatus.SC_NOT_FOUND);
+	}
+
+	/**
+	 * Test updating several TWAS for unknown model
+	 * Asserts NOT FOUND 404 status
+	 */
+	@Test
+	public void testUpdateTwasForAssetBulkUnknownModel() {
+		given().
+			filter(userSession).
+			contentType(ContentType.JSON).
+			body(new ArrayList<TrustworthinessAttributeSet>()).
+		when().
+			put("/models/notATestModel/assets/notAnAssetID/twas/bulk").
 		then().
 			assertThat().statusCode(HttpStatus.SC_NOT_FOUND);
 	}

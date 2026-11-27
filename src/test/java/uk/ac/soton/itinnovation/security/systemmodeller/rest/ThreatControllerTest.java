@@ -24,6 +24,9 @@
 /////////////////////////////////////////////////////////////////////////
 package uk.ac.soton.itinnovation.security.systemmodeller.rest;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.restassured.http.ContentType;
 import org.apache.http.HttpStatus;
 import org.junit.Before;
@@ -46,6 +49,7 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 
@@ -446,6 +450,103 @@ public class ThreatControllerTest extends CommonTestSetup{
 			body(testMS).
 		when().
 			put("/models/notATestModel/misbehaviours/" + testMS.getID() + "/impact").
+		then().
+			assertThat().statusCode(HttpStatus.SC_NOT_FOUND);
+	}
+
+	/**
+	 * Tests updating the impact level of several misbehaviour sets in one request
+	 * Takes three misbehaviour sets from Host-Process-Connected-Validated.nq file (model 3)
+	 * Asserts OK 200 status
+	 * Asserts that the impact levels of all of them are changed
+	 */
+	@Test
+	public void testUpdateMisbehaviourImpactBulk() {
+		switchToSystemModel(3);
+
+		String veryHighUri = "http://it-innovation.soton.ac.uk/ontologies/trustworthiness/domain#ImpactLevelVeryHigh";
+
+		Level updatedLevel = new Level();
+		updatedLevel.setValue(4);
+		updatedLevel.setLabel("Very High");
+		updatedLevel.setUri(veryHighUri);
+
+		List<MisbehaviourSet> testMSList = new ArrayList<>();
+		for (MisbehaviourSet ms : querier.getMisbehaviourSets(testHelper.getStore(), false).values()) { //no need for causes and effects here
+			if (ms.getImpactLevel() != null && !veryHighUri.equals(ms.getImpactLevel().getUri()) && testMSList.size() < 3) {
+				testMSList.add(ms);
+			}
+		}
+		assertEquals(3, testMSList.size());
+		for (MisbehaviourSet testMS : testMSList) {
+			testMS.setImpactLevel(updatedLevel);
+		}
+
+		given().
+			filter(userSession).
+			contentType(ContentType.JSON).
+			body(testMSList).
+		when().
+			put("/models/testModel/misbehaviours/impact/bulk").
+		then().
+			assertThat().statusCode(HttpStatus.SC_OK).
+			and().
+			assertThat().body(is("completed"));
+
+		for (MisbehaviourSet testMS : testMSList) {
+			MisbehaviourSet updatedMS = querier.getMisbehaviourSet(testHelper.getStore(), testMS.getUri(), false);
+			assertEquals(veryHighUri, updatedMS.getImpactLevel().getUri());
+		}
+	}
+
+	/**
+	 * Tests updating an empty list of misbehaviour impacts
+	 * Asserts OK 200 status (nothing to do)
+	 */
+	@Test
+	public void testUpdateMisbehaviourImpactBulkEmptyList() {
+		switchToSystemModel(3);
+
+		given().
+			filter(userSession).
+			contentType(ContentType.JSON).
+			body(new ArrayList<MisbehaviourSet>()).
+		when().
+			put("/models/testModel/misbehaviours/impact/bulk").
+		then().
+			assertThat().statusCode(HttpStatus.SC_OK);
+	}
+
+	/**
+	 * Tests updating misbehaviour impacts with a body that is not a list (JSON null)
+	 * Asserts BAD REQUEST 400 status
+	 */
+	@Test
+	public void testUpdateMisbehaviourImpactBulkNullBody() {
+		switchToSystemModel(3);
+
+		given().
+			filter(userSession).
+			contentType(ContentType.JSON).
+			body("null").
+		when().
+			put("/models/testModel/misbehaviours/impact/bulk").
+		then().
+			assertThat().statusCode(HttpStatus.SC_BAD_REQUEST);
+	}
+
+	/**
+	 * Tests updating several misbehaviour impacts on an unknown model
+	 * Asserts NOT FOUND 404 status
+	 */
+	@Test
+	public void testUpdateMisbehaviourImpactBulkUnknownModel() {
+		given().
+			filter(userSession).
+			contentType(ContentType.JSON).
+			body(new ArrayList<MisbehaviourSet>()).
+		when().
+			put("/models/notATestModel/misbehaviours/impact/bulk").
 		then().
 			assertThat().statusCode(HttpStatus.SC_NOT_FOUND);
 	}

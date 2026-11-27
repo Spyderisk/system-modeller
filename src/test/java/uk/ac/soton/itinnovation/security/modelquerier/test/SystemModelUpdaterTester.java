@@ -1028,6 +1028,89 @@ public class SystemModelUpdaterTester extends TestCase {
 		assertEquals(tester.getModel().getNS("domain") + "ImpactLevelMedium", ms2.getImpactLevel().getUri());
 	}
 
+	@Test
+	public void testUpdateTWASBulk() {
+
+		tester.switchModels(0, 0);
+
+		String asset1 = tester.getModel().getNS("system") + "5237319b";
+		String highUri = tester.getModel().getNS("domain") + "TrustworthinessLevelHigh";
+
+		Level newLevel = new Level();
+		newLevel.setUri(highUri);
+		newLevel.setLabel("High");
+
+		//change the asserted level of all TWAS of the asset in one go
+		Asset a1 = querier.getSystemAsset(tester.getStore(), asset1);
+		List<TrustworthinessAttributeSet> twasList = new ArrayList<>(a1.getTrustworthinessAttributeSets().values());
+		assertThat(twasList.size()).isGreaterThan(1);
+		for (TrustworthinessAttributeSet twas : twasList) {
+			if (twas.getAssertedTWLevel() != null) { //TWAS with only a default level have no asserted level
+				assertThat(twas.getAssertedTWLevel().getUri()).isNotEqualTo(highUri);
+			}
+			twas.setAssertedTWLevel(newLevel);
+		}
+
+		updater.updateTWASBulk(tester.getStore(), twasList);
+
+		Asset a2 = querier.getSystemAsset(tester.getStore(), asset1);
+		for (TrustworthinessAttributeSet twas : a2.getTrustworthinessAttributeSets().values()) {
+			assertEquals(highUri, twas.getAssertedTWLevel().getUri());
+		}
+	}
+
+	@Test
+	public void testUpdateTWASBulkEmptyList() {
+
+		tester.switchModels(0, 0);
+
+		long countBefore = tester.getStore().getCount(tester.getModel().getGraph("system"));
+
+		updater.updateTWASBulk(tester.getStore(), new ArrayList<>());
+
+		assertEquals(countBefore, tester.getStore().getCount(tester.getModel().getGraph("system")));
+	}
+
+	@Test
+	public void testUpdateMSBulk() {
+
+		tester.switchModels(0, 0);
+
+		String mediumUri = tester.getModel().getNS("domain") + "ImpactLevelMedium";
+
+		Level newLevel = new Level();
+		newLevel.setUri(mediumUri);
+		newLevel.setLabel("Medium");
+
+		//change the impact level of two misbehaviour sets in one go
+		String ms1Uri = tester.getModel().getNS("system") + "MS-LossOfAvailability-2d5019c7";
+		MisbehaviourSet ms1 = querier.getMisbehaviourSet(tester.getStore(), ms1Uri, false); //no need for causes here
+		MisbehaviourSet ms2 = querier.getMisbehaviourSets(tester.getStore(), false).values().stream()
+			.filter(ms -> !ms.getUri().equals(ms1Uri) && !mediumUri.equals(ms.getImpactLevel().getUri()))
+			.findFirst().get();
+		assertThat(ms1.getImpactLevel().getUri()).isNotEqualTo(mediumUri);
+
+		ms1.setImpactLevel(newLevel);
+		ms2.setImpactLevel(newLevel);
+
+		updater.updateMSBulk(tester.getStore(), Arrays.asList(ms1, ms2));
+
+		assertEquals(mediumUri, querier.getMisbehaviourSet(tester.getStore(), ms1Uri, false).getImpactLevel().getUri());
+		assertEquals(mediumUri, querier.getMisbehaviourSet(tester.getStore(), ms2.getUri(), false).getImpactLevel().getUri());
+	}
+
+	@Test
+	public void testUpdateMSBulkEmptyList() {
+
+		tester.switchModels(0, 0);
+
+		long countBefore = tester.getStore().getCount(tester.getModel().getGraph("system"));
+
+		updater.updateMSBulk(tester.getStore(), new ArrayList<>());
+
+		assertEquals(countBefore, tester.getStore().getCount(tester.getModel().getGraph("system")));
+	}
+
 	@Test@Ignore
 	//TODO: investigate if this is still needed
 	public void testCleanAssertedModel() {
