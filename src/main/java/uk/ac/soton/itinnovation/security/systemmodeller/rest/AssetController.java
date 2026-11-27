@@ -53,6 +53,7 @@ import uk.ac.soton.itinnovation.security.model.system.Asset;
 import uk.ac.soton.itinnovation.security.model.system.AssetGroup;
 import uk.ac.soton.itinnovation.security.model.system.ControlSet;
 import uk.ac.soton.itinnovation.security.model.system.MetadataPair;
+import uk.ac.soton.itinnovation.security.model.system.MisbehaviourSet;
 import uk.ac.soton.itinnovation.security.model.system.Relation;
 import uk.ac.soton.itinnovation.security.model.system.TrustworthinessAttributeSet;
 import uk.ac.soton.itinnovation.security.systemmodeller.model.Model;
@@ -237,6 +238,35 @@ public class AssetController {
 		logger.info("Returning {} control sets", controlSets.size());
 
 		return ResponseEntity.status(HttpStatus.OK).body(controlSets);
+	}
+
+	/**
+	 * Get misbehaviour sets for a given asset. Unlike the misbehaviour sets of the full asset
+	 * (see {@link #getAssetInModel}), these do not include their causes and effects.
+	 *
+	 * @param modelId Webkey of the model
+	 * @param assetId ID of the asset
+	 * @return A map of the misbehaviour sets
+	 */
+	@RequestMapping(value = "/models/{modelId}/assets/{assetId}/misbehaviours", method = RequestMethod.GET)
+	@ResponseBody
+	public ResponseEntity<Map<String, MisbehaviourSet>> getAssetMisbehaviourSets(@PathVariable String modelId, @PathVariable String assetId) {
+
+		logger.info("Called REST method to GET asset misbehaviour sets {} for model {}", assetId, modelId);
+
+		final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.READ);
+
+		// look up asset by ID
+		Asset asset = modelHelper.getAssetById(assetId, model, false); //no need to get full details here
+		if (asset == null) {
+			logger.error("Unknown asset '{}' for model [{}] {}", assetId, model.getId(), model.getName());
+			throw new AssetInvalidException();
+		}
+
+		Map<String, MisbehaviourSet> misbehaviourSets = modelHelper.getAssetMisbehaviourSets(asset, model);
+		logger.info("Returning {} misbehaviour sets", misbehaviourSets.size());
+
+		return ResponseEntity.status(HttpStatus.OK).body(misbehaviourSets);
 	}
 
 	/**
@@ -776,6 +806,41 @@ public class AssetController {
 
 		//update the TWAS
 		model.getUpdater().updateTWAS(storeManager.getStore(), updatedTWAS);
+
+		//set a flag to show the user they have to re-run the risk level calculation
+		model.invalidateRiskLevels();
+
+		return new ResponseEntity<>("completed", HttpStatus.OK);
+	}
+
+	/**
+	 * Update several TWAS on an asset in a single request (generic bulk variant of
+	 * updateTwasForAsset, to avoid one HTTP round-trip per attribute).
+	 *
+	 * @param modelId Webkey of the model
+	 * @param assetId ID of the asset
+	 * @param updatedTWASList list of Trustworthiness Attribute Set objects in the request body
+	 * @return completed
+	 */
+	@RequestMapping(value = "/models/{modelId}/assets/{assetId}/twas/bulk", method = RequestMethod.PUT)
+	@ResponseBody
+	public ResponseEntity<String> updateTwasForAssetBulk(@PathVariable String modelId, @PathVariable String assetId,
+			@RequestBody List<TrustworthinessAttributeSet> updatedTWASList) {
+
+		logger.info("Called REST method to PUT {} TWAS on asset {} for model {}",
+				updatedTWASList != null ? updatedTWASList.size() : 0, assetId, modelId);
+
+		final Model model = secureUrlHelper.getModelFromUrlThrowingException(modelId, WebKeyRole.WRITE);
+
+		// look up asset by ID
+		Asset asset = modelHelper.getAssetById(assetId, model, false); //no need to get full details here
+		if (asset == null) {
+			logger.error("Unknown asset '{}' for model [{}] {}", assetId, model.getId(), model.getName());
+			throw new AssetInvalidException();
+		}
+
+		//update each TWAS
+		model.getUpdater().updateTWASBulk(storeManager.getStore(), updatedTWASList);
 
 		//set a flag to show the user they have to re-run the risk level calculation
 		model.invalidateRiskLevels();

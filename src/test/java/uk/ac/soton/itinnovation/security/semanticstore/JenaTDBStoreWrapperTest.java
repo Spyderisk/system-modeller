@@ -29,6 +29,8 @@ package uk.ac.soton.itinnovation.security.semanticstore;
 import java.io.File;
 import java.io.InputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -252,15 +254,6 @@ public class JenaTDBStoreWrapperTest extends TestCase {
 		defaultGraphSize = store.getCountDefault();
 
 		//adds triple to graph a
-		store.update("INSERT DATA {" +
-			"	<http://example.com/a2> <http://example.com/b2> <http://example.com/c2> ." +
-			"}", GRAPH_A);
-		assertEquals(aGraphSize + 1, store.getCount(GRAPH_A));
-		assertEquals(defaultGraphSize, store.getCountDefault());
-		aGraphSize = store.getCount(GRAPH_A);
-		defaultGraphSize = store.getCountDefault();
-
-		//adds triple to graph a
 		store.update("INSERT DATA { GRAPH <" + GRAPH_A + "> {" +
 			"	<http://example.com/a3> <http://example.com/b3> <http://example.com/c3> ." +
 			"}}");
@@ -270,11 +263,11 @@ public class JenaTDBStoreWrapperTest extends TestCase {
 		defaultGraphSize = store.getCountDefault();
 		//store.printSizes();
 
-		//doesn't add anything: OK because we're talking directly to the graph so the GRAPH block will not refer to any known graph
+		//adds triple to graph a: the graph is given as well, which does not change where the GRAPH block writes to
 		store.update("INSERT DATA { GRAPH <" + GRAPH_A + "> {" +
 			"	<http://example.com/a4> <http://example.com/b4> <http://example.com/c4> ." +
 			"}}", GRAPH_A);
-		assertEquals(aGraphSize, store.getCount(GRAPH_A));
+		assertEquals(aGraphSize + 1, store.getCount(GRAPH_A));
 		assertEquals(defaultGraphSize, store.getCountDefault());
 		aGraphSize = store.getCount(GRAPH_A);
 		defaultGraphSize = store.getCountDefault();
@@ -312,20 +305,13 @@ public class JenaTDBStoreWrapperTest extends TestCase {
 		assertEquals(defaultGraphSize-1, store.getCountDefault());
 
 		//deletes triple from graph a
-		store.update("DELETE DATA {" +
-			"	<http://example.com/a6> <http://example.com/b6> <http://example.com/c6> ." +
-			"}", GRAPH_A);
-		assertEquals(aGraphSize-1, store.getCount(GRAPH_A));
-		assertEquals(defaultGraphSize-1, store.getCountDefault());
-
-		//deletes triple from graph a
 		store.update("DELETE DATA { GRAPH <" + GRAPH_A + "> {" +
 			"	<http://example.com/a7> <http://example.com/b7> <http://example.com/c7> ." +
 			"}}");
-		assertEquals(aGraphSize - 2, store.getCount(GRAPH_A));
+		assertEquals(aGraphSize - 1, store.getCount(GRAPH_A));
 		assertEquals(defaultGraphSize-1, store.getCountDefault());
 
-		//doesn't delete anything: OK because we're talking directly to the graph so the GRAPH block will not refer to any known graph
+		//deletes triple from graph a: the graph is given as well, which does not change where the GRAPH block deletes from
 		store.update("DELETE DATA { GRAPH <" + GRAPH_A + "> {" +
 			"	<http://example.com/a8> <http://example.com/b8> <http://example.com/c8> ." +
 			"}}", GRAPH_A);
@@ -404,6 +390,136 @@ public class JenaTDBStoreWrapperTest extends TestCase {
 		
 		
 		
+		// ------ Test 4: Return value ------
+
+		logger.info("Test 4: Testing the return value (whether the store was changed).");
+		store.clearGraph(GRAPH_A);
+		store.clearGraph(GRAPH_B);
+		store.clearDefaultGraph();
+
+		//adds a triple
+		assertTrue(store.update("INSERT DATA {\n" +
+			"	GRAPH <" + GRAPH_A + "> {" +
+			"		<http://example.com/a> <http://example.com/b> <http://example.com/c> ." +
+			"	}\n" +
+			"}"));
+
+		//the triple is already there
+		assertFalse(store.update("INSERT DATA {\n" +
+			"	GRAPH <" + GRAPH_A + "> {" +
+			"		<http://example.com/a> <http://example.com/b> <http://example.com/c> ." +
+			"	}\n" +
+			"}"));
+
+		//deletes a triple that is not there
+		assertFalse(store.update("DELETE DATA {\n" +
+			"	GRAPH <" + GRAPH_A + "> {" +
+			"		<http://example.com/a> <http://example.com/b> <http://example.com/x> ." +
+			"	}\n" +
+			"}"));
+
+		//nothing matches
+		assertFalse(store.update("DELETE WHERE {\n" +
+			"	GRAPH <" + GRAPH_A + "> {\n" +
+			"		?s <http://example.com/none> ?o .\n" +
+			"	}\n" +
+			"}"));
+
+		//replaces the triple: the number of triples stays the same, but the store is changed
+		aGraphSize = store.getCount(GRAPH_A);
+		assertTrue(store.update("DELETE {\n" +
+		"	GRAPH <" + GRAPH_A + "> {\n" +
+		"		?s <http://example.com/b> ?o .\n" +
+		"	}\n" +
+		"} INSERT {\n" +
+		"	GRAPH <" + GRAPH_A + "> {\n" +
+		"		?s <http://example.com/b> <http://example.com/d> .\n" +
+		"	}\n" +
+		"} WHERE {\n" +
+		"	GRAPH <" + GRAPH_A + "> {\n" +
+		"		?s <http://example.com/b> ?o .\n" +
+		"	}\n" +
+		"}"));
+		assertEquals(aGraphSize, store.getCount(GRAPH_A));
+
+		//clears an empty graph
+		assertFalse(store.update("CLEAR SILENT GRAPH <" + GRAPH_B + ">"));
+
+		//clears a graph
+		store.update("INSERT DATA {\n" +
+			"	GRAPH <" + GRAPH_B + "> {" +
+			"		<http://example.com/a> <http://example.com/b> <http://example.com/c> ." +
+			"	}\n" +
+			"}");
+		assertTrue(store.update("CLEAR GRAPH <" + GRAPH_B + ">"));
+
+		//drops a graph
+		store.update("INSERT DATA {\n" +
+			"	GRAPH <" + GRAPH_B + "> {" +
+			"		<http://example.com/a> <http://example.com/b> <http://example.com/c> ." +
+			"	}\n" +
+			"}");
+		assertTrue(store.update("DROP GRAPH <" + GRAPH_B + ">"));
+
+
+
+		// ------ Test 5: Graphs given to an update ------
+
+		logger.info("Test 5: Testing the graphs given to an update.");
+		store.clearGraph(GRAPH_A);
+		store.clearGraph(GRAPH_B);
+		store.clearGraph(GRAPH_C);
+		store.clearDefaultGraph();
+
+		//set up store
+		store.update("INSERT DATA {\n" +
+			"	GRAPH <" + GRAPH_A + "> {" +
+			"		<http://example.com/a> <http://example.com/b> <http://example.com/c> ." +
+			"		<http://example.com/a> <http://example.com/b> <http://example.com/d> ." +
+			"	}\n" +
+			"	GRAPH <" + GRAPH_B + "> {" +
+			"		<http://example.com/e> <http://example.com/b> <http://example.com/f> ." +
+			"	}\n" +
+			"}");
+
+		aGraphSize = store.getCount(GRAPH_A);
+		bGraphSize = store.getCount(GRAPH_B);
+		defaultGraphSize = store.getCountDefault();
+
+		//the graph is only used in a WHERE clause, so it does not decide where INSERT DATA writes to: the default graph
+		store.update("INSERT DATA {" +
+			"	<http://example.com/g> <http://example.com/h> <http://example.com/i> ." +
+			"}", GRAPH_A);
+		assertEquals(aGraphSize, store.getCount(GRAPH_A));
+		assertEquals(defaultGraphSize + 1, store.getCountDefault());
+		defaultGraphSize = store.getCountDefault();
+
+		//one graph: the WHERE clause reads this graph (like for any number of graphs), the template writes to graph c
+		store.update("INSERT {\n" +
+		"	GRAPH <" + GRAPH_C + "> {\n" +
+		"		?s <http://example.com/q> ?o .\n" +
+		"	}\n" +
+		"} WHERE {\n" +
+		"	?s <http://example.com/b> ?o .\n" +
+		"}", GRAPH_A);
+		assertEquals(2, store.getCount(GRAPH_C));
+		assertEquals(aGraphSize, store.getCount(GRAPH_A));
+		assertEquals(bGraphSize, store.getCount(GRAPH_B));
+		assertEquals(defaultGraphSize, store.getCountDefault());
+
+		//two graphs: the WHERE clause reads both
+		store.clearGraph(GRAPH_C);
+		store.update("INSERT {\n" +
+		"	GRAPH <" + GRAPH_C + "> {\n" +
+		"		?s <http://example.com/q> ?o .\n" +
+		"	}\n" +
+		"} WHERE {\n" +
+		"	?s <http://example.com/b> ?o .\n" +
+		"}", GRAPH_A, GRAPH_B);
+		assertEquals(3, store.getCount(GRAPH_C));
+		
+		
+		
 		// Test exception cases.
 		Assertions.assertThatThrownBy(() -> {
 			store.update(null);}).isInstanceOf(RuntimeException.class);
@@ -413,6 +529,173 @@ public class JenaTDBStoreWrapperTest extends TestCase {
 			store.update("INSERT DATA {" +
 					"	<http://example.com/a1> <http://example.com/b1> <http://example.com/c1> ." +
 					"}", new String[] {null});}).isInstanceOf(RuntimeException.class);
+	}
+
+	@Test
+	public void testUpdateInGraph() {
+		long aGraphSize;
+		long defaultGraphSize;
+		
+
+		// ------ Test 1: Inserting of data ------
+		
+		logger.info("Test 1: Testing inserting of data in a graph.");
+		store.clearGraph(GRAPH_A);
+		store.clearDefaultGraph();
+
+		aGraphSize = store.getCount(GRAPH_A);
+		defaultGraphSize = store.getCountDefault();
+
+		//adds triple to default graph
+		assertTrue(store.updateInGraph("INSERT DATA {" +
+			"	<http://example.com/a1> <http://example.com/b1> <http://example.com/c1> ." +
+			"}", "urn:x-arq:DefaultGraph"));
+		assertEquals(aGraphSize, store.getCount(GRAPH_A));
+		assertEquals(defaultGraphSize + 1, store.getCountDefault());
+		aGraphSize = store.getCount(GRAPH_A);
+		defaultGraphSize = store.getCountDefault();
+
+		//adds triple to graph a
+		assertTrue(store.updateInGraph("INSERT DATA {" +
+			"	<http://example.com/a2> <http://example.com/b2> <http://example.com/c2> ." +
+			"}", GRAPH_A));
+		assertEquals(aGraphSize + 1, store.getCount(GRAPH_A));
+		assertEquals(defaultGraphSize, store.getCountDefault());
+		aGraphSize = store.getCount(GRAPH_A);
+		defaultGraphSize = store.getCountDefault();
+
+		//the triple is already there
+		assertFalse(store.updateInGraph("INSERT DATA {" +
+			"	<http://example.com/a2> <http://example.com/b2> <http://example.com/c2> ." +
+			"}", GRAPH_A));
+		assertEquals(aGraphSize, store.getCount(GRAPH_A));
+
+		//doesn't add anything: OK because we're talking directly to the graph so the GRAPH block will not refer to any known graph
+		assertFalse(store.updateInGraph("INSERT DATA { GRAPH <" + GRAPH_A + "> {" +
+			"	<http://example.com/a4> <http://example.com/b4> <http://example.com/c4> ." +
+			"}}", GRAPH_A));
+		assertEquals(aGraphSize, store.getCount(GRAPH_A));
+		assertEquals(defaultGraphSize, store.getCountDefault());
+		
+		
+		
+		// ------ Test 2: Deleting of data ------
+		
+		logger.info("Test 2: Deleting of data in a graph.");
+		store.clearGraph(GRAPH_A);
+		store.clearDefaultGraph();
+
+		//set up store
+		store.update("INSERT DATA { GRAPH <" + GRAPH_A + "> {" +
+			"	<http://example.com/a5> <http://example.com/b5> <http://example.com/c5> ." +
+			"	<http://example.com/a6> <http://example.com/b6> <http://example.com/c6> ." +
+			"	<http://example.com/a7> <http://example.com/b7> <http://example.com/c7> ." +
+			"	<http://example.com/a8> <http://example.com/b8> <http://example.com/c8> ." +
+			"}}");
+		store.update("INSERT DATA { GRAPH <" + "urn:x-arq:DefaultGraph" + "> {" +
+			"	<http://example.com/a5> <http://example.com/b5> <http://example.com/c5> ." +
+			"	<http://example.com/a6> <http://example.com/b6> <http://example.com/c6> ." +
+			"	<http://example.com/a7> <http://example.com/b7> <http://example.com/c7> ." +
+			"	<http://example.com/a8> <http://example.com/b8> <http://example.com/c8> ." +
+			"}}");
+
+		aGraphSize = store.getCount(GRAPH_A);
+		defaultGraphSize = store.getCountDefault();
+
+		//deletes triple from graph a
+		assertTrue(store.updateInGraph("DELETE DATA {" +
+			"	<http://example.com/a6> <http://example.com/b6> <http://example.com/c6> ." +
+			"}", GRAPH_A));
+		assertEquals(aGraphSize-1, store.getCount(GRAPH_A));
+		assertEquals(defaultGraphSize, store.getCountDefault());
+
+		//the triple is already deleted
+		assertFalse(store.updateInGraph("DELETE DATA {" +
+			"	<http://example.com/a6> <http://example.com/b6> <http://example.com/c6> ." +
+			"}", GRAPH_A));
+		assertEquals(aGraphSize-1, store.getCount(GRAPH_A));
+
+		//doesn't delete anything: OK because we're talking directly to the graph so the GRAPH block will not refer to any known graph
+		assertFalse(store.updateInGraph("DELETE DATA { GRAPH <" + GRAPH_A + "> {" +
+			"	<http://example.com/a8> <http://example.com/b8> <http://example.com/c8> ." +
+			"}}", GRAPH_A));
+		assertEquals(aGraphSize-1, store.getCount(GRAPH_A));
+		assertEquals(defaultGraphSize, store.getCountDefault());
+		
+		
+		
+		// ------ Test 3: DELETE/INSERT -----
+		
+		logger.info("Test 3: DELETE/INSERT in a graph.");
+		store.clearGraph(GRAPH_A);
+		store.clearGraph(GRAPH_B);
+		store.clearDefaultGraph();
+
+		//set up store
+		store.updateInGraph("INSERT DATA {" +
+			"	<http://example.com/a> <http://example.com/b> <http://example.com/c> ." +
+			"	<http://example.com/d> <http://example.com/b> <http://example.com/c> ." +
+			"}", GRAPH_A);
+
+		aGraphSize = store.getCount(GRAPH_A);
+		defaultGraphSize = store.getCountDefault();
+
+		//delete/insert: a pattern without GRAPH reads the graph, also in the WHERE clause
+		String replace = "DELETE {\n" +
+		"	?s <http://example.com/b> <http://example.com/c> .\n" +
+		"} INSERT {\n" +
+		"	?s <http://example.com/b> <http://example.com/e> .\n" +
+		"} WHERE {\n" +
+		"	?s <http://example.com/b> <http://example.com/c> .\n" +
+		"}";
+		assertTrue(store.updateInGraph(replace, GRAPH_A));
+		assertEquals(aGraphSize, store.getCount(GRAPH_A));
+		assertEquals(defaultGraphSize, store.getCountDefault());
+		assertFalse(store.queryAsk("ASK { GRAPH <" + GRAPH_A + "> { ?s <http://example.com/b> <http://example.com/c> } }"));
+		assertTrue(store.queryAsk("ASK { GRAPH <" + GRAPH_A + "> { ?s <http://example.com/b> <http://example.com/e> } }"));
+
+		//nothing left to replace
+		assertFalse(store.updateInGraph(replace, GRAPH_A));
+		
+		
+		
+		// Test exception cases.
+		Assertions.assertThatThrownBy(() -> {
+			store.updateInGraph("INSERT DATA {" +
+					"	<http://example.com/a1> <http://example.com/b1> <http://example.com/c1> ." +
+					"}", null);}).isInstanceOf(RuntimeException.class);
+		Assertions.assertThatThrownBy(() -> {
+			store.updateInGraph(null, GRAPH_A);}).isInstanceOf(RuntimeException.class);
+		Assertions.assertThatThrownBy(() -> {
+			store.updateInGraph("INVALID QUERY", GRAPH_A);}).isInstanceOf(RuntimeException.class);
+	}
+
+	@Test
+	public void testUpdateBatch() {
+		//no updates
+		store.updateBatch(new ArrayList<String>(), GRAPH_A);
+		assertEquals(0, store.getCount(GRAPH_A));
+
+		store.updateBatch(Arrays.asList(
+			"INSERT DATA { GRAPH <" + GRAPH_A + "> { <http://example.com/a> <http://example.com/b> <http://example.com/c> } }",
+			"INSERT DATA { GRAPH <" + GRAPH_A + "> { <http://example.com/d> <http://example.com/e> <http://example.com/f> } }",
+			"INSERT DATA { GRAPH <" + GRAPH_A + "> { <http://example.com/g> <http://example.com/h> <http://example.com/i> } }"
+		), GRAPH_A);
+		assertEquals(3, store.getCount(GRAPH_A));
+
+		//all or nothing: if one of the updates fails, none of them is applied
+		Assertions.assertThatThrownBy(() -> {
+			store.updateBatch(Arrays.asList(
+				"INSERT DATA { GRAPH <" + GRAPH_A + "> { <http://example.com/j> <http://example.com/k> <http://example.com/l> } }",
+				"INVALID QUERY",
+				"INSERT DATA { GRAPH <" + GRAPH_A + "> { <http://example.com/m> <http://example.com/n> <http://example.com/o> } }"
+			), GRAPH_A);}).isInstanceOf(RuntimeException.class);
+		assertEquals(3, store.getCount(GRAPH_A));
+
+
+		// Test exception cases.
+		Assertions.assertThatThrownBy(() -> {
+			store.updateBatch(null, GRAPH_A);}).isInstanceOf(RuntimeException.class);
 	}
 
 	@Test

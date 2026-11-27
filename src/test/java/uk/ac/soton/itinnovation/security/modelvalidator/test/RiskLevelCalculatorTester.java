@@ -216,14 +216,15 @@ public class RiskLevelCalculatorTester extends TestCase {
 		String sparql = "DELETE {\n" +
 		"	?csg core:hasBlockingEffect ?be .\n" +
 		"} INSERT {\n" +
-		"	?csg core:hasBlockingEffect domain:BlockingEffect" + level + " .\n" +
+		"	?csg core:hasBlockingEffect domain:TrustworthinessLevel" + level + " .\n" +
 		"} WHERE {\n" +
 		"	SELECT * WHERE {\n" +
 		"		?csg a core:ControlStrategy .\n" +
 		"		?csg core:hasBlockingEffect ?be .\n" +
 		"	} ORDER BY RAND() LIMIT " + number + "\n" +
 		"}";
-		tester.getStore().update(sparql, tester.getModel().getGraph("domain"));
+		//the query has no GRAPH blocks: run it in the domain graph
+		tester.getStore().updateInGraph(sparql, tester.getModel().getGraph("domain"));
 	}
 
 	/**

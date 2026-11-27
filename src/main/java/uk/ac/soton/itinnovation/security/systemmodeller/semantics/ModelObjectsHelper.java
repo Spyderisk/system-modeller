@@ -706,6 +706,19 @@ public class ModelObjectsHelper {
 		return controlSets;
 	}
 
+	/**
+	 * Returns misbehaviour sets for an asset from a model, without their causes and effects
+	 * (these need the threats of the whole model).
+	 *
+	 * @param asset The asset object
+	 * @param model The model object
+	 * @return A map of the misbehaviour sets
+	 */
+	public Map<String, MisbehaviourSet> getAssetMisbehaviourSets(Asset asset, Model model) {
+		Map<String, MisbehaviourSet> misbehaviourSets = model.getQuerier().getMisbehaviourSets(storeManager.getStore(), asset.getUri(), null, false);
+		return misbehaviourSets;
+	}
+
 	public Map<String, Control> getControls(Model model) {
 		Map<String, Control> controls = model.getQuerier().getControls(storeManager.getStore());
 		return controls;
@@ -1424,8 +1437,8 @@ public class ModelObjectsHelper {
 		logger.info("Adding user: {}", label);
 		String uri = SparqlHelper.escapeURI(storeManager.getManagementGraph() + "#" + label);
 
-		AStoreWrapper store = storeManager.getStore();
-		store.update(TemplateLoader.formatTemplate(queries.get("CreateNewUser"), SparqlHelper.escapeLiteral(label),
+		AStoreWrapper store = storeManager.getStore();		
+		store.updateInGraph(TemplateLoader.formatTemplate(queries.get("CreateNewUser"), SparqlHelper.escapeLiteral(label),
 			SparqlHelper.escapeLiteral(email), uri), storeManager.getManagementGraph());
 
 		return true;

@@ -178,11 +178,33 @@ public interface IStoreWrapper {
 	/**
 	 * Runs an update (e.g. INSERT, DELETE, ...) on a SPARQL update compatible endpoint
 	 *
-	 * @param graph the graph on which to execute the query or null if no graph specified. If no graph is given,
-	 *			the update is executed against the default graph.
 	 * @param sparql the update query to run
+	 * @param graph the graph(s) to read in the WHERE clause. If no graph is given, the update is executed against
+	 *			the whole dataset.
+	 * @return true if the store was modified (triples were really added or removed). Implementations that cannot
+	 *			tell this return false.
 	 */
 	boolean update(String sparql, String ... graph);
+
+	/**
+	 * Runs an update (e.g. INSERT, DELETE, ...) with the given graph as the default graph
+	 *
+	 * @param sparql the update query to run
+	 * @param graph the graph to run the update in
+	 * @return true if the graph was modified (triples were really added or removed). Implementations that cannot
+	 *			tell this return false.
+	 */
+	boolean updateInGraph(String sparql, String graph);
+
+	/**
+	 * Executes several SPARQL updates against the same graph(s) in one go.
+	 * Intended for bulk operations, where the per-update overhead of {@link #update(String, String...)} adds up.
+	 * Implementations that can do this more efficiently (e.g. in a single transaction) should do so.
+	 *
+	 * @param sparqls the SPARQL updates to execute, in order
+	 * @param graph the graph(s) the updates are addressed to (same meaning as in update())
+	 */
+	void updateBatch(List<String> sparqls, String ... graph);
 
 	/**
 	 * Translate the result of a select query
