@@ -41,7 +41,7 @@
     "url": "https://iglab.it-innovation.soton.ac.uk/Security/system-modeller.git"
   },
   "devDependencies": {
-    "@babel/core": "^7.16.5",
+    "@babel/core": "^7.29.6",
     "@babel/plugin-transform-runtime": "^7.16.5",
     "@babel/preset-env": "^7.16.5",
     "@babel/preset-react": "^7.16.5",
