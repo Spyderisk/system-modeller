@@ -7,9 +7,11 @@ import {
     OverlayTrigger,
     Tooltip,
     ButtonToolbar,
+    Modal,
 } from "react-bootstrap";
 import * as Constants from "../../../../../common/constants.js";
 import OptionsModal from "../options/OptionsModal";
+import ReportingModal from "../reporting/ReportingModal";
 import {
     getShortestPathPlot,
     getRecommendations,
@@ -33,6 +35,12 @@ class ControlPane extends React.Component {
             optionsModal: {
                 show: false,
             },
+            reportingModal: {
+                show: false,
+            },
+            reportingPrerequisiteModal: {
+                show: false,
+            },
             //transformOrigin: [0.5, 0.5]
         };
         this.handleEdit = this.handleEdit.bind(this);
@@ -43,6 +51,9 @@ class ControlPane extends React.Component {
 
         this.openOptionsModal = this.openOptionsModal.bind(this);
         this.closeOptionsModal = this.closeOptionsModal.bind(this);
+        this.openReportingModal = this.openReportingModal.bind(this);
+        this.closeReportingModal = this.closeReportingModal.bind(this);
+        this.closeReportingPrerequisiteModal = this.closeReportingPrerequisiteModal.bind(this);
     }
 
     /*
@@ -403,6 +414,30 @@ class ControlPane extends React.Component {
                         </MenuItem>
                     </SplitButton>
                 </OverlayTrigger>
+
+                <OverlayTrigger
+                    delayShow={Constants.TOOLTIP_DELAY}
+                    placement="bottom"
+                    trigger={["hover"]}
+                    rootClose
+                    overlay={
+                        <Tooltip id="reporting-tooltip">
+                            {riskLevelsValid ? "Generate report" : "Calculate risks before generating a report"}
+                        </Tooltip>
+                    }
+                >
+                    <Button
+                        bsStyle={riskLevelsValid ? "success" : "danger"}
+                        disabled={
+                            this.props.loading.model ||
+                            this.props.model.validating ||
+                            this.props.model.calculatingRisks
+                        }
+                        onClick={this.openReportingModal}
+                    >
+                        <i className="fa fa-file-pdf-o" />
+                    </Button>
+                </OverlayTrigger>
                 </ButtonToolbar>
                 <OptionsModal
                     dispatch={this.props.dispatch}
@@ -412,6 +447,23 @@ class ControlPane extends React.Component {
                     show={this.state.optionsModal.show}
                     onHide={this.closeOptionsModal}
                 />
+                <ReportingModal
+                    modelId={this.props.model.id}
+                    show={this.state.reportingModal.show}
+                    onHide={this.closeReportingModal}
+                />
+                <Modal
+                    show={this.state.reportingPrerequisiteModal.show}
+                    onHide={this.closeReportingPrerequisiteModal}
+                >
+                    <Modal.Header closeButton>
+                        <Modal.Title>Report unavailable</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>Run the risk calculation before generating a report.</Modal.Body>
+                    <Modal.Footer>
+                        <Button onClick={this.closeReportingPrerequisiteModal}>Close</Button>
+                    </Modal.Footer>
+                </Modal>
 
             </div>
         );
@@ -430,6 +482,39 @@ class ControlPane extends React.Component {
         this.setState({
             ...this.state,
             optionsModal: {
+                show: false,
+            },
+        });
+    }
+
+    openReportingModal() {
+        if (!this.props.model.valid || !this.props.model.riskLevelsValid) {
+            this.setState({
+                reportingPrerequisiteModal: {
+                    show: true,
+                },
+            });
+            return;
+        }
+
+        this.setState({
+            reportingModal: {
+                show: true,
+            },
+        });
+    }
+
+    closeReportingModal() {
+        this.setState({
+            reportingModal: {
+                show: false,
+            },
+        });
+    }
+
+    closeReportingPrerequisiteModal() {
+        this.setState({
+            reportingPrerequisiteModal: {
                 show: false,
             },
         });

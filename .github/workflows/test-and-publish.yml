@@ -2,7 +2,7 @@ name: Test and publish
 
 on:
   push:
-    branches: [ "dev", "main" ]
+    branches: [ "dev", "main", "ds2-sdm" ]
   pull_request:
     branches: [ "dev", "main" ]
   release:

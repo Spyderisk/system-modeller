@@ -2,9 +2,9 @@ import React, {Component} from 'react';
 import PropTypes from "prop-types";
 import {
     Button,
-    DropdownButton,
+    //DropdownButton,
     Label,
-    MenuItem,
+    //MenuItem,
     OverlayTrigger,
     Panel,
     Row,
@@ -191,7 +191,7 @@ class ModelSummary extends Component {
                         <Panel.Heading>
                             <Panel.Title toggle>
                                 <div className={"doc-help"}>
-                                    <span><i className="fa fa-info-circle " />Model Details and Reports</span>
+                                    <span><i className="fa fa-info-circle " />Model Details</span>
                                     <button onClick={e => openDocumentation(e, "redirect/model-details")} className={"doc-help-button"}><i className="fa fa-question" /></button>
                                 </div>
                             </Panel.Title>
@@ -223,7 +223,7 @@ class ModelSummary extends Component {
                                     <Button disabled={!this.props.authz.userEdit} bsClass="btn btn-primary btn-xs"
                                         onClick={() => { this.setState({ ...this.state, editDetailsModal: true }) }}
                                     >Edit Details</Button>
-                                    <DropdownButton
+                                    {/* <DropdownButton
                                         id="open-reports"
                                         bsStyle="primary"
                                         bsSize="xs"
@@ -232,7 +232,7 @@ class ModelSummary extends Component {
                                         <MenuItem onClick={() => this.openReport("technicalReport")}>Technical Report</MenuItem>
                                         <MenuItem divider />
                                         <MenuItem onClick={() => this.openReport("riskTreatmentPlan")}>Risk Treatment Plan</MenuItem>
-                                    </DropdownButton>
+                                    </DropdownButton> */}
                                 </ButtonToolbar>
                             </Panel.Body>
                         </Panel.Collapse>
