@@ -11,18 +11,16 @@
 # ssm-dev
 #
 
-FROM gradle:6.3.0-jdk8 AS ssm-dev
-# gradle:6.3.0-jdk8 builds on adoptopenjdk:8-jdk-hotspot which builds on ubuntu:18.04
-#TODO: use smaller image with specific versions of tools
-#TODO: remove gradle from image now that we are using gradle wrapper
+FROM eclipse-temurin:8-jdk-jammy AS ssm-dev
+# Java 8 JDK on Ubuntu 22.04.
+# Gradle is provided by the project's Gradle wrapper.
 
 # LABELs are added to the image metadata
 LABEL org.opencontainers.image.vendor="IT Innovation Centre"
 LABEL org.opencontainers.image.title="Spyderisk System Modeller development image"
 
-# Need gradle v6, java v8, python3 and python3-lxml (needed for jacoco2cobertura), killall (from psmisc)
-RUN apt-get update && apt-get -y install python3 python3-lxml psmisc
-
+# Build tools: Python, lxml, killall, unzip and Git
+RUN apt-get update && apt-get -y install python3 python3-lxml psmisc unzip git
 WORKDIR /code
 
 # This command ensures that the container continues running when started
