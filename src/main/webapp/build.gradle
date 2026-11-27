@@ -11,14 +11,15 @@ version '0.0.1'
 
 buildDir = 'dist'
 
-node {
-    version = '14.21.3'
-    download = true
-    yarnVersion = '1.21.1'
-}
 
 task bundle(type: YarnTask) {
     args = ['run', 'bundle']
+}
+
+node {
+    version = '24.22.3'
+    download = true
+    yarnVersion = '1.21.1'
 }
 
 task bundleProd(type: YarnTask) {
